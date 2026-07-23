@@ -123,6 +123,17 @@
       border-radius:12px; padding:16px; margin-top:14px; font-size:15px;
       color:#264c40; display:none;
     }
+
+    /* ---------- 채팅(대화) 상담 ---------- */
+    #chatArea{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+    #chatArea:empty{ margin-bottom:0; }
+    .msg{ max-width:85%; padding:11px 14px; border-radius:14px; font-size:15px;
+          line-height:1.55; white-space:pre-wrap; }
+    .msg.user{ align-self:flex-end; background:var(--green); color:#fff;
+               border-bottom-right-radius:4px; }
+    .msg.ai{ align-self:flex-start; background:var(--green-l); color:#264c40;
+             border:1px solid #D3E6DD; border-bottom-left-radius:4px; }
+    .msg.ai.thinking{ color:var(--ink-soft); }
     .thinking{ color:var(--ink-soft); font-size:14px; }
 
     /* ---------- 보관함 카드 ---------- */
@@ -285,20 +296,23 @@
     </div>
 
     <div class="card">
-      <h2>AI 육아 선생님에게 물어보기</h2>
-      <p class="desc">고민을 적거나 말로 물어보면, 우리 가족의 원칙과 윤하 나이에 맞춰 조언해줘요.</p>
-      <label class="field" for="worryInput">지금 어떤 점이 고민이세요?</label>
-      <textarea id="worryInput" placeholder="예: 윤하가 밤마다 자주 깨서 힘들어요. 어떻게 하면 좋을까요?"></textarea>
+      <h2>AI 육아 선생님과 대화</h2>
+      <p class="desc">원칙과 윤하 나이를 바탕으로 대화하듯 이어서 상담해요.
+        대화는 "저장하고 새 상담"을 누르면 보관함에 통째로 저장돼요.</p>
+
+      <!-- 주고받은 대화가 말풍선으로 쌓이는 곳 -->
+      <div id="chatArea"></div>
+
+      <textarea id="chatInput" placeholder="예: 윤하가 밤마다 자주 깨서 힘들어요. 어떻게 하면 좋을까요?"></textarea>
       <div class="row-actions">
-        <button class="btn btn-ghost btn-sm" id="worryMic">🎤 말로 묻기</button>
-        <button class="btn btn-main" id="askAI">선생님께 물어보기</button>
+        <button class="btn btn-ghost btn-sm" id="chatMic">🎤 말로 묻기</button>
+        <button class="btn btn-main" id="chatSend">보내기</button>
       </div>
-      <p class="hint" id="worryMicMsg"></p>
-      <div id="aiAnswer"></div>
-      <div class="row-actions" id="listenRow" style="display:none;">
-        <button class="btn btn-ghost btn-sm" id="listenBtn">🔊 답변 듣기</button>
+      <p class="hint" id="chatMicMsg"></p>
+      <div class="row-actions">
+        <button class="btn btn-ghost btn-sm" id="chatListen" style="display:none;">🔊 마지막 답변 듣기</button>
+        <button class="btn btn-ghost btn-sm" id="chatNew" style="display:none;">💾 저장하고 새 상담</button>
       </div>
-      <p class="hint">답변은 자동으로 보관함에 저장돼요.</p>
     </div>
   </section>
 
@@ -795,124 +809,137 @@ $('#changeKey').addEventListener('click', () => {
 });
 
 /* ------------------------------------------------------------------
-   [5-2] AI 상담: 고민을 보내면 원칙을 기준으로 조언을 받아요 (Gemini)
+   [5-2] AI 상담 (채팅식): 대화하듯 이어서 상담해요 (Gemini)
 ------------------------------------------------------------------ */
-$('#askAI').addEventListener('click', async () => {
-  const worry = $('#worryInput').value.trim();
-  const answerBox = $('#aiAnswer');
-  const btn = $('#askAI');
+let chatMessages = [];      // 지금 대화 [{role:'user'|'model', text}]
+let lastAnswerText = '';    // 마지막 AI 답변 (소리로 읽어줄 때 사용)
 
-  // (검사1) 고민을 안 적었으면 안내만 하고 멈춰요
-  if(!worry){
-    answerBox.style.display = 'block';
-    answerBox.classList.remove('thinking');
-    answerBox.textContent = '먼저 고민 내용을 적어주세요.';
-    return;
-  }
-  // (검사2) 키가 없으면 위쪽 '연결'을 안내해요
-  if(!geminiKey){
-    answerBox.style.display = 'block';
-    answerBox.classList.remove('thinking');
-    answerBox.textContent = '먼저 위쪽 "Gemini 연결"에 API 키를 한 번 입력해 주세요.';
-    return;
+// 대화 말풍선을 화면에 그려요
+function renderChat(){
+  const area = $('#chatArea');
+  area.innerHTML = '';
+  chatMessages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + (m.role === 'user' ? 'user' : 'ai');
+    div.textContent = m.text;   // textContent 라서 어떤 글자를 넣어도 안전해요
+    area.appendChild(div);
+  });
+  // 대화가 있으면 '듣기 / 저장하고 새 상담' 버튼을 보여줘요
+  const hasChat = chatMessages.length > 0;
+  $('#chatNew').style.display = hasChat ? 'inline-block' : 'none';
+  $('#chatListen').style.display = (hasChat && lastAnswerText) ? 'inline-block' : 'none';
+}
+
+// '보내기' 버튼
+$('#chatSend').addEventListener('click', sendChat);
+
+async function sendChat(){
+  const input = $('#chatInput');
+  const textIn = input.value.trim();
+  const btn = $('#chatSend');
+
+  if(!textIn) return;                      // 빈 내용이면 무시
+  if(!geminiKey){                          // 키가 없으면 안내
+    chatMessages.push({ role:'model', text:'먼저 위쪽 "Gemini 연결"에 API 키를 한 번 입력해 주세요.' });
+    renderChat(); return;
   }
 
-  // 원칙을 글로 정리해서 AI에게 배경으로 알려줘요
+  // 내 말풍선 추가
+  chatMessages.push({ role:'user', text:textIn });
+  input.value = '';
+  renderChat();
+
+  // '생각 중' 임시 말풍선
+  const area = $('#chatArea');
+  const thinking = document.createElement('div');
+  thinking.className = 'msg ai thinking';
+  thinking.textContent = '선생님이 답을 준비하고 있어요…';
+  area.appendChild(thinking);
+
+  // 배경 정보(원칙 + 윤하 나이 + 그동안 기록)를 알려줘요
   const prinText =
     '육아 목표: ' + (principles.goal || '(아직 없음)') + '\n' +
     '방향성: '   + ((principles.directions || []).join(' / ') || '(아직 없음)') + '\n' +
     '세부 원칙: '+ ((principles.rules || []).join(' / ') || '(아직 없음)');
-
-  // 그동안의 일기와 지난 상담을 정리해서 함께 참고하게 해요
   const historyText = await buildHistoryContext();
-
-  // AI에게 줄 '역할 설명' (원칙 + 그동안의 기록 + 윤하 나이를 참고해 조언)
   const systemPrompt =
     '당신은 따뜻하고 신뢰가는 육아 상담 선생님입니다. ' + babyContext() + ' ' +
-    '아래에는 이 가정의 육아 원칙과, 그동안 쌓인 일기·지난 상담 기록이 있습니다. ' +
-    '이 원칙을 반드시 존중하고, 아이의 지금 나이와 그동안의 기록을 참고해 최근 상황에 맞게, ' +
-    '부모의 고민에 공감하며 구체적이고 실천 가능한 조언을 한국어로 다정하게 해주세요. ' +
+    '이 가정의 육아 원칙을 존중하고, 아이의 나이와 그동안의 기록을 참고해 대화하듯 ' +
+    '이어서 조언해 주세요. 답변은 한국어로 다정하고 간결하게. ' +
     '단정적인 의학 진단은 피하고, 걱정되는 신호가 있으면 소아과 상담을 부드럽게 권하세요.\n\n' +
     '[이 가정의 육아 원칙]\n' + prinText + '\n\n' +
     '[그동안의 일기·지난 상담 — 참고용]\n' + historyText;
 
-  // 버튼을 잠깐 잠그고 '생각 중' 표시
-  btn.disabled = true;
-  answerBox.style.display = 'block';
-  answerBox.classList.add('thinking');
-  answerBox.textContent = '선생님이 원칙과 그동안의 기록을 살펴보며 답을 준비하고 있어요…';
+  // 사용량을 아끼려고 '최근 대화 위주로만'(마지막 8개) 보내요
+  let recent = chatMessages.slice(-8).map(m => ({ role: m.role, parts: [ { text: m.text } ] }));
+  // 대화는 '나(user)'로 시작해야 해서, 앞쪽 선생님 말풍선은 떼어내요
+  while(recent.length && recent[0].role === 'model'){ recent.shift(); }
 
+  btn.disabled = true;
   try{
-    // Gemini 선생님에게 편지를 보내요 (키는 주소 뒤에 붙여요)
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/'
               + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(geminiKey);
-
     const res = await fetch(url, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [ { text: systemPrompt } ] },
-        contents: [ { role:'user', parts: [ { text: worry } ] } ],
+        contents: recent,
         generationConfig: { maxOutputTokens: 1000 }
       })
     });
-
     const data = await res.json();
+    thinking.remove();
 
-    // 오류일 때 원인별로 친절히 안내해요 (앱은 멈추지 않아요)
     if(!res.ok){
       let m = '지금은 답을 받지 못했어요.';
-      const reason = (data && data.error && data.error.message) ? data.error.message : '';
-      if(res.status === 400 || res.status === 403){
-        m = '키가 올바르지 않은 것 같아요. "키 변경"에서 다시 확인해 주세요.';
-      }else if(res.status === 429){
-        m = '무료 사용량을 잠시 다 썼어요. 조금 뒤에 다시 시도해 주세요.';
-      }
-      answerBox.classList.remove('thinking');
-      answerBox.textContent = m + (reason ? '\n(' + reason + ')' : '');
-      return;
+      if(res.status === 400 || res.status === 403){ m = '키가 올바르지 않은 것 같아요. "키 변경"에서 확인해 주세요.'; }
+      else if(res.status === 429){ m = '무료 사용량을 잠시 다 썼어요. 조금 뒤에 다시 시도해 주세요.'; }
+      chatMessages.push({ role:'model', text:m });
+      renderChat(); return;
     }
 
-    // 답에서 글(text) 부분만 골라 이어붙여요
     const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
-    const text = parts.map(p => p.text || '').join('').trim();
-
-    // 안전필터 등으로 답이 비었을 때
-    if(!text){
-      answerBox.classList.remove('thinking');
-      answerBox.textContent = '답변을 받지 못했어요. 질문을 조금 바꿔 다시 시도해 주세요.';
-      return;
+    const answer = parts.map(p => p.text || '').join('').trim();
+    if(!answer){
+      chatMessages.push({ role:'model', text:'답변을 받지 못했어요. 다시 시도해 주세요.' });
+      renderChat(); return;
     }
-
-    answerBox.classList.remove('thinking');
-    answerBox.textContent = text;
-
-    // 답변을 소리로 들을 수 있게 '답변 듣기' 버튼을 보여줘요
-    lastAnswerText = text;
-    $('#listenRow').style.display = 'flex';
-
-    // 상담 내용을 자동으로 보관함에 저장해요
-    await addEntry({ kind:'consult', question: worry, answer: text });
+    chatMessages.push({ role:'model', text:answer });
+    lastAnswerText = answer;
+    renderChat();
 
   }catch(err){
-    // 인터넷 문제 등으로 편지가 아예 안 갔을 때
-    answerBox.classList.remove('thinking');
-    answerBox.textContent = '지금은 선생님과 연결이 어려워요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.';
+    thinking.remove();
+    chatMessages.push({ role:'model', text:'연결이 어려워요. 인터넷을 확인한 뒤 다시 시도해 주세요.' });
+    renderChat();
   }finally{
-    btn.disabled = false;  // 버튼 다시 열기
+    btn.disabled = false;
   }
+}
+
+// '저장하고 새 상담': 지금 대화를 보관함에 통째로 저장하고 새로 시작해요
+$('#chatNew').addEventListener('click', async () => {
+  const realMsgs = chatMessages.filter(m => m.text && m.text.length);
+  if(realMsgs.length > 0){
+    const transcript = realMsgs.map(m => (m.role === 'user' ? '나: ' : '선생님: ') + m.text).join('\n\n');
+    const firstQ = (realMsgs.find(m => m.role === 'user') || {}).text || '';
+    await addEntry({ kind:'chat', question: firstQ, transcript: transcript });
+  }
+  chatMessages = [];
+  lastAnswerText = '';
+  if(('speechSynthesis' in window) && speechSynthesis.speaking){ speechSynthesis.cancel(); }
+  renderChat();
 });
 
 /* ------------------------------------------------------------------
-   [5-2b] 상담 음성: 말로 묻기(🎤) + 답변 듣기(🔊)
+   [5-2b] 상담 음성: 말로 묻기(🎤) + 마지막 답변 듣기(🔊)
 ------------------------------------------------------------------ */
-let lastAnswerText = '';        // 마지막 AI 답변 (소리로 읽어줄 때 사용)
-let consultRecog = null;        // 상담용 음성 인식기
+let consultRecog = null;
 let consultListening = false;
 
-// 🎤 말로 묻기: 말하면 고민 칸에 글로 적혀요
-$('#worryMic').addEventListener('click', () => {
-  const micMsg = $('#worryMicMsg');
+$('#chatMic').addEventListener('click', () => {
+  const micMsg = $('#chatMicMsg');
   if(!SR){
     micMsg.textContent = '이 브라우저는 앱 안 음성 입력을 지원하지 않아요. 갤럭시 키보드의 🎤 버튼을 이용해 주세요.';
     micMsg.style.color = 'var(--danger)'; return;
@@ -924,7 +951,7 @@ $('#worryMic').addEventListener('click', () => {
   consultRecog.interimResults = true;
   consultRecog.continuous = true;
 
-  const target = $('#worryInput');
+  const target = $('#chatInput');
   let base = target.value;
 
   consultRecog.onresult = (e) => {
@@ -948,40 +975,36 @@ $('#worryMic').addEventListener('click', () => {
   };
   consultRecog.onend = () => {
     consultListening = false;
-    $('#worryMic').classList.remove('recording');
-    $('#worryMic').textContent = '🎤 말로 묻기';
+    $('#chatMic').classList.remove('recording');
+    $('#chatMic').textContent = '🎤 말로 묻기';
   };
   try{
     consultRecog.start();
     consultListening = true;
-    $('#worryMic').classList.add('recording');
-    $('#worryMic').textContent = '⏹ 멈추기';
+    $('#chatMic').classList.add('recording');
+    $('#chatMic').textContent = '⏹ 멈추기';
     micMsg.textContent = '듣고 있어요… 편하게 말씀하세요.';
     micMsg.style.color = 'var(--ink-soft)';
   }catch(err){ /* 이미 시작된 경우 등은 조용히 넘겨요 */ }
 });
 
-// 🔊 답변 듣기: AI 답변을 소리로 읽어줘요 (다시 누르면 멈춰요)
-$('#listenBtn').addEventListener('click', () => {
-  // 브라우저에 소리 읽기 기능이 없을 때
+$('#chatListen').addEventListener('click', () => {
   if(!('speechSynthesis' in window)){
-    $('#worryMicMsg').textContent = '이 브라우저는 소리 읽기를 지원하지 않아요.';
-    $('#worryMicMsg').style.color = 'var(--danger)';
-    return;
+    $('#chatMicMsg').textContent = '이 브라우저는 소리 읽기를 지원하지 않아요.';
+    $('#chatMicMsg').style.color = 'var(--danger)'; return;
   }
-  // 이미 읽는 중이면 멈춰요
   if(speechSynthesis.speaking){
     speechSynthesis.cancel();
-    $('#listenBtn').textContent = '🔊 답변 듣기';
-    return;
+    $('#chatListen').textContent = '🔊 마지막 답변 듣기'; return;
   }
   if(!lastAnswerText) return;
   const u = new SpeechSynthesisUtterance(lastAnswerText);
   u.lang = 'ko-KR';
-  u.onend = () => { $('#listenBtn').textContent = '🔊 답변 듣기'; };
-  $('#listenBtn').textContent = '⏹ 멈추기';
+  u.onend = () => { $('#chatListen').textContent = '🔊 마지막 답변 듣기'; };
+  $('#chatListen').textContent = '⏹ 멈추기';
   speechSynthesis.speak(u);
 });
+
 $('#contentBtn').addEventListener('click', async () => {
   const box = $('#contentResult');
   const btn = $('#contentBtn');
@@ -1337,6 +1360,8 @@ async function buildHistoryContext(){
           it.reflection && ('느낀점:' + it.reflection)
         ].filter(Boolean).join(' / ');
       }
+    }else if(it.kind === 'chat'){
+      block = '[' + when + ' 상담] ' + (it.transcript || '');
     }else{
       block = '[' + when + ' 상담] 고민:' + (it.question || '') + ' / 조언:' + (it.answer || '');
     }
@@ -1373,7 +1398,7 @@ async function renderArchive(){
     top.className = 'top';
 
     const tag = document.createElement('span');
-    tag.className = 'tag ' + item.kind;
+    tag.className = 'tag ' + (item.kind === 'diary' ? 'diary' : 'consult');
     tag.textContent = (item.kind === 'diary') ? '육아일기' : 'AI 상담';
 
     const right = document.createElement('div');
@@ -1408,6 +1433,8 @@ async function renderArchive(){
         addLine(card, '나의 대응',   item.response);
         addLine(card, '느낀 점',     item.reflection);
       }
+    }else if(item.kind === 'chat'){
+      addLine(card, '대화', item.transcript);
     }else{
       addLine(card, '고민',        item.question);
       addLine(card, '선생님 조언', item.answer);
