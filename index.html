@@ -28,16 +28,16 @@
     *{ box-sizing:border-box; }               /* 크기 계산을 편하게 해주는 설정 */
     body{
       margin:0; background:var(--bg); color:var(--ink);
-      font-family:var(--font); line-height:1.5; -webkit-text-size-adjust:100%;
+      font-family:var(--font); line-height:1.45; -webkit-text-size-adjust:100%;
     }
 
     /* ---------- 전체를 가운데로 모아주는 틀 ---------- */
-    .wrap{ max-width:720px; margin:0 auto; padding:0 16px 40px; }
+    .wrap{ max-width:720px; margin:0 auto; padding:0 14px 30px; }
 
     /* ---------- 맨 위 제목 ---------- */
-    header{ text-align:center; padding:14px 0 8px; }
-    header h1{ margin:0; font-size:22px; letter-spacing:-0.3px; }
-    header p{ margin:4px 0 0; color:var(--ink-soft); font-size:13px; }
+    header{ text-align:center; padding:8px 0 6px; }
+    header h1{ margin:0; font-size:19px; letter-spacing:-0.3px; }
+    header p{ display:none; }   /* 부제 설명은 숨겨서 공간 절약 */
 
     /* ---------- 저장 안내 띠 (임시저장일 때만 보임) ---------- */
     #storageWarn{
@@ -46,11 +46,11 @@
     }
 
     /* ---------- 방을 고르는 메뉴(탭) ---------- */
-    nav{ display:flex; gap:6px; background:var(--card); border:1px solid var(--line);
-         border-radius:var(--radius); padding:5px; margin-bottom:12px; }
+    nav{ display:flex; gap:5px; background:var(--card); border:1px solid var(--line);
+         border-radius:var(--radius); padding:4px; margin-bottom:10px; }
     nav button{
       flex:1; border:0; background:transparent; color:var(--ink-soft);
-      font-family:inherit; font-size:14px; font-weight:600; padding:8px 4px;
+      font-family:inherit; font-size:14px; font-weight:600; padding:7px 4px;
       border-radius:10px; cursor:pointer; transition:.15s;
     }
     nav button.active{ background:var(--green); color:#fff; }
@@ -61,48 +61,48 @@
     .view.active{ display:block; } /* 선택된 방만 보임 */
     .card{
       background:var(--card); border:1px solid var(--line);
-      border-radius:var(--radius); padding:14px 15px; margin-bottom:10px;
+      border-radius:var(--radius); padding:12px 13px; margin-bottom:8px;
     }
-    .card h2{ margin:0 0 3px; font-size:16px; }
-    .card .desc{ margin:0 0 10px; color:var(--ink-soft); font-size:13px; }
+    .card h2{ margin:0 0 2px; font-size:15px; }
+    .card .desc{ margin:0 0 8px; color:var(--ink-soft); font-size:12px; line-height:1.4; }
 
-    label.field{ display:block; font-size:13px; font-weight:600;
-                 color:var(--ink-soft); margin:10px 0 5px; }
-    input[type=text], input[type=email], input[type=password], textarea{
+    label.field{ display:block; font-size:12px; font-weight:600;
+                 color:var(--ink-soft); margin:8px 0 4px; }
+    input[type=text], input[type=email], input[type=password], input[type=date], select, textarea{
       width:100%; font-family:inherit; font-size:15px; color:var(--ink);
-      border:1px solid var(--line); border-radius:10px; padding:9px 11px;
+      border:1px solid var(--line); border-radius:10px; padding:8px 11px;
       background:#FCFBF9; resize:vertical;
     }
-    input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, textarea:focus{
+    input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, textarea:focus, select:focus{
       outline:none; border-color:var(--green); background:#fff;
     }
-    textarea{ min-height:56px; line-height:1.5; }
+    textarea{ min-height:52px; line-height:1.45; }
 
     /* ---------- 버튼들 ---------- */
     .btn{
       font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;
-      border:0; border-radius:10px; padding:10px 16px; transition:.15s;
+      border:0; border-radius:10px; padding:9px 15px; transition:.15s;
     }
     .btn-main{ background:var(--green); color:#fff; }
     .btn-main:hover{ background:var(--green-d); }
     .btn-main:disabled{ background:#B9C9C2; cursor:not-allowed; }
     .btn-ghost{ background:var(--green-l); color:var(--green-d); }
     .btn-ghost:hover{ background:#D8E8E0; }
-    .btn-sm{ font-size:13px; padding:7px 11px; }
-    .row-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .btn-sm{ font-size:13px; padding:6px 10px; }
+    .row-actions{ display:flex; gap:7px; flex-wrap:wrap; margin-top:8px; }
 
     /* ---------- 원칙 목록(방향성/세부원칙) 한 줄 ---------- */
     .plist{ list-style:none; margin:0; padding:0; }
-    .plist li{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+    .plist li{ display:flex; gap:7px; align-items:center; margin-bottom:5px; }
     .plist li input{ flex:1; }
     .del{
-      flex:none; width:32px; height:32px; border:0; border-radius:8px;
-      background:#F6ECEA; color:var(--danger); font-size:18px; cursor:pointer;
+      flex:none; width:30px; height:30px; border:0; border-radius:8px;
+      background:#F6ECEA; color:var(--danger); font-size:17px; cursor:pointer;
       line-height:1;
     }
     .del:hover{ background:#F0DAD7; }
     .goal-box{ background:var(--green-l); border:1px solid #D3E6DD;
-               border-radius:12px; padding:11px; }
+               border-radius:12px; padding:9px; }
 
     /* ---------- AI 상담 대답 상자 ---------- */
     #aiAnswer, #contentResult{
@@ -157,9 +157,9 @@
 
     /* ---------- 휴대폰처럼 좁은 화면일 때 조정 ---------- */
     @media (max-width:480px){
-      header h1{ font-size:20px; }
+      header h1{ font-size:18px; }
       nav button{ font-size:13px; }
-      .card{ padding:13px 13px; margin-bottom:9px; }
+      .card{ padding:11px 12px; margin-bottom:7px; }
     }
   </style>
 </head>
@@ -212,12 +212,11 @@
     <!-- 윤하 정보: 나이를 계산해서 AI가 나이에 맞춰 조언·추천하게 해줘요 -->
     <div class="card">
       <h2>윤하 정보</h2>
-      <p class="desc">생년월일을 넣으면 지금 나이를 자동으로 계산해서, AI가 나이에 맞게 조언·추천해줘요.</p>
+      <p class="desc">생년월일을 넣으면 나이에 맞춰 AI가 조언·추천해줘요.</p>
       <label class="field" for="babyBirth">생년월일</label>
       <input type="date" id="babyBirth">
       <label class="field" for="babyGender">성별</label>
-      <select id="babyGender" style="width:100%; font-family:inherit; font-size:15px;
-              border:1px solid var(--line); border-radius:10px; padding:11px 12px; background:#FCFBF9;">
+      <select id="babyGender">
         <option value="">선택 안 함</option>
         <option value="여아">여아</option>
         <option value="남아">남아</option>
@@ -230,7 +229,7 @@
 
     <div class="card">
       <h2>1층 · 육아 목표</h2>
-      <p class="desc">가장 큰 그림이에요. 윤하가 어떤 아이로 자라길 바라나요?</p>
+      <p class="desc">윤하가 어떤 아이로 자라길 바라나요?</p>
       <div class="goal-box">
         <input type="text" id="goalInput" placeholder="예: 윤하가 몸도 마음도 건강하게 자란다">
       </div>
@@ -238,14 +237,14 @@
 
     <div class="card">
       <h2>2층 · 방향성</h2>
-      <p class="desc">목표로 가는 큰 길이에요. 오른쪽 × 로 지우고, 아래 버튼으로 더할 수 있어요.</p>
+      <p class="desc">목표로 가는 큰 길이에요. (× 삭제 / 아래 버튼으로 추가)</p>
       <ul class="plist" id="dirList"></ul>
       <button class="btn btn-ghost btn-sm" id="addDir">+ 방향성 추가</button>
     </div>
 
     <div class="card">
       <h2>3층 · 세부 원칙</h2>
-      <p class="desc">매일 지키는 구체적인 약속이에요. AI 선생님이 이 원칙을 기준으로 조언해요.</p>
+      <p class="desc">매일 지키는 구체적 약속. AI가 이 원칙으로 조언해요.</p>
       <ul class="plist" id="ruleList"></ul>
       <button class="btn btn-ghost btn-sm" id="addRule">+ 원칙 추가</button>
 
@@ -404,8 +403,7 @@
       <p class="desc">그동안 쌓인 일기와 상담을 바탕으로, 인스타그램에 올릴 콘텐츠 아이디어를 뽑아줘요.</p>
 
       <label class="field" for="contentType">어떤 형태의 콘텐츠가 필요하세요?</label>
-      <select id="contentType" style="width:100%; font-family:inherit; font-size:15px;
-              border:1px solid var(--line); border-radius:10px; padding:11px 12px; background:#FCFBF9;">
+      <select id="contentType">
         <option value="피드 캡션(사진 한 장에 붙일 글)">피드 캡션 (사진 글)</option>
         <option value="카드뉴스(여러 장으로 넘기는 정보성 게시물)">카드뉴스 (여러 장)</option>
         <option value="릴스 대본(15~30초 짧은 영상 스크립트)">릴스 대본 (짧은 영상)</option>
