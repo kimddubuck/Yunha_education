@@ -134,6 +134,11 @@
     .tag.consult{ background:#EDE7F5; color:#6A57A0; }
     .entry .line{ font-size:14px; margin:5px 0; }
     .entry .line b{ color:var(--ink-soft); font-weight:600; }
+    .entry .title{ display:flex; align-items:center; gap:8px; margin-top:6px; cursor:pointer; }
+    .entry .title .txt{ flex:1; min-width:0; font-size:14px; color:var(--ink);
+                        white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .entry .title .chev{ flex:none; font-size:12px; color:var(--ink-soft); }
+    .entry .body{ margin-top:8px; }
     .empty{ text-align:center; color:var(--ink-soft); font-size:14px; padding:30px 10px; }
 
     /* ---------- 작은 안내 문구 ---------- */
@@ -1600,26 +1605,65 @@ async function renderArchive(){
     top.appendChild(right);
     card.appendChild(top);
 
-    // 아랫줄: 내용 (종류에 따라 다르게)
+    // 제목 줄 (평소엔 이것만 보여요. 누르면 내용이 펼쳐져요)
+    const titleRow = document.createElement('div');
+    titleRow.className = 'title';
+    const txt = document.createElement('span');
+    txt.className = 'txt';
+    txt.textContent = entrySummary(item);
+    const chev = document.createElement('span');
+    chev.className = 'chev';
+    chev.textContent = '▼ 펼치기';
+    titleRow.appendChild(txt);
+    titleRow.appendChild(chev);
+    card.appendChild(titleRow);
+
+    // 내용 (기본은 숨김 → 제목 줄을 누르면 열려요)
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.style.display = 'none';
+
     if(item.kind === 'diary'){
-      // 간편(한 문단) 일기면 note 를, 자세히 일기면 4칸을 보여줘요
       if(item.note){
-        addLine(card, '일기', item.note);
+        addLine(body, '일기', item.note);
       }else{
-        addLine(card, '있었던 일',   item.situation);
-        addLine(card, '기분·상태',   item.mood);
-        addLine(card, '나의 대응',   item.response);
-        addLine(card, '느낀 점',     item.reflection);
+        addLine(body, '있었던 일',   item.situation);
+        addLine(body, '기분·상태',   item.mood);
+        addLine(body, '나의 대응',   item.response);
+        addLine(body, '느낀 점',     item.reflection);
       }
     }else if(item.kind === 'chat'){
-      addLine(card, '대화', item.transcript);
+      addLine(body, '대화', item.transcript);
     }else{
-      addLine(card, '고민',        item.question);
-      addLine(card, '선생님 조언', item.answer);
+      addLine(body, '고민',        item.question);
+      addLine(body, '선생님 조언', item.answer);
     }
+    card.appendChild(body);
+
+    // 제목 줄을 누르면 열고 닫아요
+    titleRow.addEventListener('click', () => {
+      const open = body.style.display === 'none';
+      body.style.display = open ? 'block' : 'none';
+      chev.textContent = open ? '▲ 접기' : '▼ 펼치기';
+    });
 
     box.appendChild(card);
   });
+}
+
+// 카드에 보여줄 짧은 제목(요약)을 만들어요
+function entrySummary(item){
+  let s = '';
+  if(item.kind === 'diary'){
+    s = item.note || item.situation || item.mood || item.response || item.reflection || '';
+  }else if(item.kind === 'chat'){
+    s = item.question || item.transcript || '';
+  }else{
+    s = item.question || item.answer || '';
+  }
+  s = (s || '').replace(/\n/g, ' ').replace(/^나:\s*/, '').trim();
+  if(!s) return '(내용 없음)';
+  return s.length > 30 ? (s.slice(0, 30) + '…') : s;
 }
 
 // 내용 한 줄 만들기 (내용이 있을 때만 보여줘요)
