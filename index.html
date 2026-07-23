@@ -28,16 +28,16 @@
     *{ box-sizing:border-box; }               /* 크기 계산을 편하게 해주는 설정 */
     body{
       margin:0; background:var(--bg); color:var(--ink);
-      font-family:var(--font); line-height:1.65; -webkit-text-size-adjust:100%;
+      font-family:var(--font); line-height:1.5; -webkit-text-size-adjust:100%;
     }
 
     /* ---------- 전체를 가운데로 모아주는 틀 ---------- */
-    .wrap{ max-width:720px; margin:0 auto; padding:0 16px 60px; }
+    .wrap{ max-width:720px; margin:0 auto; padding:0 16px 40px; }
 
     /* ---------- 맨 위 제목 ---------- */
-    header{ text-align:center; padding:26px 0 14px; }
-    header h1{ margin:0; font-size:24px; letter-spacing:-0.3px; }
-    header p{ margin:6px 0 0; color:var(--ink-soft); font-size:14px; }
+    header{ text-align:center; padding:14px 0 8px; }
+    header h1{ margin:0; font-size:22px; letter-spacing:-0.3px; }
+    header p{ margin:4px 0 0; color:var(--ink-soft); font-size:13px; }
 
     /* ---------- 저장 안내 띠 (임시저장일 때만 보임) ---------- */
     #storageWarn{
@@ -47,10 +47,10 @@
 
     /* ---------- 방을 고르는 메뉴(탭) ---------- */
     nav{ display:flex; gap:6px; background:var(--card); border:1px solid var(--line);
-         border-radius:var(--radius); padding:6px; margin-bottom:20px; }
+         border-radius:var(--radius); padding:5px; margin-bottom:12px; }
     nav button{
       flex:1; border:0; background:transparent; color:var(--ink-soft);
-      font-family:inherit; font-size:14px; font-weight:600; padding:10px 4px;
+      font-family:inherit; font-size:14px; font-weight:600; padding:8px 4px;
       border-radius:10px; cursor:pointer; transition:.15s;
     }
     nav button.active{ background:var(--green); color:#fff; }
@@ -61,48 +61,48 @@
     .view.active{ display:block; } /* 선택된 방만 보임 */
     .card{
       background:var(--card); border:1px solid var(--line);
-      border-radius:var(--radius); padding:18px; margin-bottom:16px;
+      border-radius:var(--radius); padding:14px 15px; margin-bottom:10px;
     }
-    .card h2{ margin:0 0 4px; font-size:17px; }
-    .card .desc{ margin:0 0 14px; color:var(--ink-soft); font-size:13px; }
+    .card h2{ margin:0 0 3px; font-size:16px; }
+    .card .desc{ margin:0 0 10px; color:var(--ink-soft); font-size:13px; }
 
     label.field{ display:block; font-size:13px; font-weight:600;
-                 color:var(--ink-soft); margin:14px 0 6px; }
+                 color:var(--ink-soft); margin:10px 0 5px; }
     input[type=text], input[type=email], input[type=password], textarea{
       width:100%; font-family:inherit; font-size:15px; color:var(--ink);
-      border:1px solid var(--line); border-radius:10px; padding:11px 12px;
+      border:1px solid var(--line); border-radius:10px; padding:9px 11px;
       background:#FCFBF9; resize:vertical;
     }
     input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, textarea:focus{
       outline:none; border-color:var(--green); background:#fff;
     }
-    textarea{ min-height:70px; line-height:1.55; }
+    textarea{ min-height:56px; line-height:1.5; }
 
     /* ---------- 버튼들 ---------- */
     .btn{
       font-family:inherit; font-size:15px; font-weight:600; cursor:pointer;
-      border:0; border-radius:10px; padding:12px 18px; transition:.15s;
+      border:0; border-radius:10px; padding:10px 16px; transition:.15s;
     }
     .btn-main{ background:var(--green); color:#fff; }
     .btn-main:hover{ background:var(--green-d); }
     .btn-main:disabled{ background:#B9C9C2; cursor:not-allowed; }
     .btn-ghost{ background:var(--green-l); color:var(--green-d); }
     .btn-ghost:hover{ background:#D8E8E0; }
-    .btn-sm{ font-size:13px; padding:8px 12px; }
-    .row-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+    .btn-sm{ font-size:13px; padding:7px 11px; }
+    .row-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 
     /* ---------- 원칙 목록(방향성/세부원칙) 한 줄 ---------- */
     .plist{ list-style:none; margin:0; padding:0; }
-    .plist li{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .plist li{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
     .plist li input{ flex:1; }
     .del{
-      flex:none; width:34px; height:34px; border:0; border-radius:8px;
+      flex:none; width:32px; height:32px; border:0; border-radius:8px;
       background:#F6ECEA; color:var(--danger); font-size:18px; cursor:pointer;
       line-height:1;
     }
     .del:hover{ background:#F0DAD7; }
     .goal-box{ background:var(--green-l); border:1px solid #D3E6DD;
-               border-radius:12px; padding:14px; }
+               border-radius:12px; padding:11px; }
 
     /* ---------- AI 상담 대답 상자 ---------- */
     #aiAnswer, #contentResult{
@@ -157,9 +157,9 @@
 
     /* ---------- 휴대폰처럼 좁은 화면일 때 조정 ---------- */
     @media (max-width:480px){
-      header h1{ font-size:21px; }
+      header h1{ font-size:20px; }
       nav button{ font-size:13px; }
-      .card{ padding:15px; }
+      .card{ padding:13px 13px; margin-bottom:9px; }
     }
   </style>
 </head>
