@@ -2016,12 +2016,38 @@ $('#loginBtn').addEventListener('click', async () => {
   }
   msg.textContent = '로그인 중이에요…'; msg.style.color = 'var(--ink-soft)';
   try{
-    await fbAuth.signInWithEmailAndPassword(email, pw);
+    // 응답이 아예 안 올 때 '로그인 중' 상태로 멈춰 있지 않도록 20초까지만 기다려요
+    await Promise.race([
+      fbAuth.signInWithEmailAndPassword(email, pw),
+      new Promise((_, reject) => setTimeout(() => {
+        const err = new Error('timeout');
+        err.code = '응답없음-20초초과';
+        reject(err);
+      }, 20000))
+    ]);
     // 성공하면 아래 onAuthStateChanged 가 자동으로 화면을 바꿔줘요
     $('#loginPw').value = '';
     msg.textContent = '';
   }catch(e){
-    msg.textContent = '로그인에 실패했어요. 이메일·비밀번호를 확인해 주세요.';
+    // 왜 안 됐는지 화면에 그대로 보여줘요 (대괄호 안이 진짜 원인이에요)
+    const code = (e && e.code) ? e.code : '알수없음';
+    let why = '이메일·비밀번호를 확인해 주세요.';
+    if(code === 'auth/wrong-password' || code === 'auth/invalid-credential'){
+      why = '비밀번호가 맞지 않아요.';
+    }else if(code === 'auth/user-not-found'){
+      why = '그 이메일로 만든 계정이 없어요.';
+    }else if(code === 'auth/invalid-email'){
+      why = '이메일 형식이 올바르지 않아요.';
+    }else if(code === 'auth/network-request-failed' || code === '응답없음-20초초과'){
+      why = '인터넷이 막혀 있거나 불안정해요. 와이파이로 바꿔서 다시 해보세요.';
+    }else if(code === 'auth/too-many-requests'){
+      why = '여러 번 실패해서 잠시 막혔어요. 몇 분 뒤에 다시 해보세요.';
+    }else if(code === 'auth/unauthorized-domain'){
+      why = '이 주소에서는 로그인이 허용돼 있지 않아요.';
+    }else if(code === 'auth/web-storage-unsupported'){
+      why = '브라우저에서 사이트 저장소가 막혀 있어요. 시크릿 모드를 끄고 다시 해보세요.';
+    }
+    msg.textContent = '로그인 실패 — ' + why + '  [' + code + ']';
     msg.style.color = 'var(--danger)';
   }
 });
