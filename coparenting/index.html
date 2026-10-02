@@ -98,6 +98,9 @@ aside h2{margin:0;font-size:16px;font-weight:600}
 .match{background:var(--tag);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
 .match .label{margin:0}
 .say{margin:0;font-size:15px;font-weight:600}
+.intro{border-left:3px solid var(--line);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:4px;max-width:62ch}
+.intro p{margin:0;font-size:14.5px}
+.intro .intro-q{font-weight:600;font-size:15.5px}
 .tag.same{background:var(--pick);color:var(--pick-fg)}
 .today .slotname{font-size:12px;color:var(--muted);display:block}
 
@@ -126,12 +129,20 @@ aside h2{margin:0;font-size:16px;font-weight:600}
 
   <main>
     <section class="slot" id="habitSlot">
-      <div class="slot-h"><h2>① 우리 일 함께하기</h2><span class="rule">"~해 볼래?" 상황극. 하나 정해서 몇 주 반복해요</span></div>
+      <div class="slot-h"><h2>① 우리 일 함께하기</h2><span class="rule">하나 정해서 몇 주 반복해요</span></div>
+      <div class="intro">
+        <p class="intro-q">우리 아기가 배웠으면 하는 생활 속 행동</p>
+        <p>숟가락질, 손 씻기, 빨래 개기, 정리하기처럼 엄마 아빠가 매일 하는 일을 "숟가락 해 볼래?", "이거 넣어 줄래?" 하고 아이에게 맡겨 보는 상황극이에요. 처음엔 관심이 없어도 같은 걸 몇 주 반복하면 아이가 먼저 손을 뻗어요.</p>
+      </div>
       <div class="cards" id="habitCards"></div>
     </section>
 
     <section class="slot" id="devSlot">
-      <div class="slot-h"><h2>② 발달 놀이</h2><span class="rule">터널, 얼음처럼 새로운 경험을 자주 바꿔 가며</span></div>
+      <div class="slot-h"><h2>② 발달 놀이</h2><span class="rule">자주 바꿔 가며 새로 해요</span></div>
+      <div class="intro">
+        <p class="intro-q">우리 아기가 해 봤으면 하는 경험</p>
+        <p>상자 터널을 기어서 통과하고, 차가운 얼음을 만지고, 이불 위에서 양말 공을 튀기는 것처럼 집에서는 잘 못 해 본 경험이에요. 매번 새로운 걸 골라 아이가 여러 가지를 겪어 보게 해요.</p>
+      </div>
       <div class="match" id="match" hidden>
         <p class="label" id="matchLabel"></p>
         <div class="cards" id="matchCards"></div>
@@ -147,15 +158,16 @@ aside h2{margin:0;font-size:16px;font-weight:600}
 
     <section class="slot" id="board">
       <div class="slot-h"><h2>💬 의견 나눠요</h2><span class="rule">이름 없이 남겨져요. 아이 이름은 적지 말아 주세요</span></div>
+      <p class="hint">우리 아기가 배웠으면 하는 행동, 해 봤으면 하는 경험, 해 보니 어땠는지를 자유롭게 적어 주세요. 다음 놀이를 고를 때 반영할게요.</p>
       <div class="toolbar" id="opTabs" role="group" aria-label="의견 주제">
-        <button class="chip" data-topic="habit" aria-pressed="true">① 우리 일 함께하기 (생활습관)</button>
-        <button class="chip" data-topic="dev" aria-pressed="false">② 발달 놀이</button>
+        <button class="chip" data-topic="habit" aria-pressed="true">① 배웠으면 하는 생활 속 행동</button>
+        <button class="chip" data-topic="dev" aria-pressed="false">② 해 봤으면 하는 경험</button>
       </div>
       <form class="board-form" id="opForm">
         <label class="label" for="opPlay">어떤 놀이에 대한 의견인가요? (선택)</label>
         <select id="opPlay"></select>
         <label class="label" for="opText">의견</label>
-        <textarea id="opText" maxlength="500" placeholder="예: 숟가락질 세 번째 하니까 이제 국자를 꽉 잡아요. / 이런 놀이도 해 보고 싶어요."></textarea>
+        <textarea id="opText" maxlength="500" placeholder=""></textarea>
         <div class="board-row">
           <span class="hint" id="opCount">0 / 500</span>
           <button class="btn primary" type="submit" id="opSend">익명으로 남기기</button>
@@ -342,7 +354,11 @@ function boardInit(){
   }
 }
 
+const OP_HINT = {
+  habit:'예: 신발을 스스로 벗어서 정리했으면 좋겠어요. / 숟가락질을 세 번째 하니까 이제 국자를 꽉 잡아요.',
+  dev:'예: 모래나 흙을 만져 보게 하고 싶어요. / 얼음 만질 때 처음엔 놀랐는데 나중엔 웃었어요.'};
 function renderOpTabs(){
+  $('#opText').placeholder = OP_HINT[board.topic];
   document.querySelectorAll('#opTabs [data-topic]').forEach(b => b.setAttribute('aria-pressed', b.dataset.topic===board.topic));
   $('#opPlay').innerHTML = '<option value="">놀이 전체 / 기타</option>' +
     TOPIC_PLAYS[board.topic]().map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
