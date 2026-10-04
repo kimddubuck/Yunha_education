@@ -145,6 +145,16 @@ function gateCss(){
     #gate .g-rooms{display:flex;flex-direction:column;gap:6px}
     #gate .g-room{background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important;font-weight:600}
     #gate .g-room[aria-current]{outline:2px solid var(--pick,#2a9095)}
+    #gate .g-room{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left}
+    #gate .g-rname{flex:1;overflow-wrap:anywhere}
+    #gate .g-chips{display:flex;gap:4px;flex:none}
+    #gate .g-chip{font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+    #gate .g-chip.sos{background:#e8382f;color:#fff}
+    #gate .g-chip.meet{background:var(--pick,#2a9095);color:var(--pick-fg,#fff)}
+    #gate .g-chip.quiet, #gate .g-chip.gone{background:transparent;color:var(--muted,#736e75);font-weight:500}
+    #gate .g-legend{font-size:12.5px!important;margin:0}
+    #gate .g-more{text-align:left}
+    #gate .g-more[open]{display:flex;flex-direction:column;gap:10px}
     #gate .g-extra{text-align:left;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line,#e3e3e5);padding-top:14px}
     #gate .g-extra details p, #gate .g-extra ol, #gate .g-extra ul{font-size:13.5px;line-height:1.6;margin:6px 0}
     #gate .g-extra input{width:100%;box-sizing:border-box;margin:6px 0}
@@ -264,10 +274,11 @@ function inviteCode(text){
 function showRooms(closable){
   gateCss();
   if(document.getElementById('gate')) return;
+  const pick = closable === 'pick';
   const rooms = sosRooms(), invite = INVITE && !ROOM;
   const box = document.createElement('div'); box.id = 'gate'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '모임 방');
-  const list = rooms.length && !invite ? `<p class="g-pw">🏠 이 휴대폰에 기억된 방 <small>(눌러서 바로 이동)</small></p><div class="g-rooms">` +
-    rooms.map(r => `<button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}></button>`).join('') + '</div>' : '';
+  const list = rooms.length && !invite ? `<p class="g-pw">${pick ? '🏠 <b>어느 방으로 갈까요?</b>' : '🏠 이 휴대폰에 기억된 방'} <small>(눌러서 바로 이동)</small></p><div class="g-rooms">` +
+    rooms.map(r => `<button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}><span class="g-rname"></span><span class="g-chips"></span></button>`).join('') + '</div>' : '';
   const formHtml = `
 ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       ${list}
@@ -280,7 +291,17 @@ ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       <button type="submit">방 만들기</button>`}
       <p class="g-msg" id="gateMsg" aria-live="polite"></p>`;
   // 처음 열 때: ① 앱 소개(이야기 · 설치 안내 · 개인정보) → [시작하기] → ② 비밀번호 / 방 만들기
-  box.innerHTML = closable ? `<form class="g-card" autocomplete="off">
+  box.innerHTML = pick ? `<form class="g-card" autocomplete="off">
+      <button type="button" class="g-close" aria-label="닫기">✕</button>
+      <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
+      <h1>공동육아 SOS 🆘</h1>
+      ${list}
+      <p class="g-legend">🆘 = 1주일 안의 SOS 예약 · 🙌 = 다가오는 모임</p>
+      <details class="how-to g-more"><summary>＋ 새 방 만들기 · 초대 링크로 들어가기</summary>
+${formHtml.replace(list, '')}
+${GATE_PASTE}
+      </details>
+    </form>` : closable ? `<form class="g-card" autocomplete="off">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
@@ -300,10 +321,20 @@ ${formHtml}
 ${invite ? '' : GATE_PASTE}
       <button type="button" class="g-back">← 앱 소개 다시 보기</button>
     </form>`;
-  box.querySelectorAll('[data-room]').forEach(b => { b.textContent = rooms.find(r => r.roomId === b.dataset.room).name; });   // 방 이름은 글자로만
+  box.querySelectorAll('[data-room]').forEach(b => {
+    const room = rooms.find(r => r.roomId === b.dataset.room);
+    b.querySelector('.g-rname').textContent = room.name;   // 방 이름은 글자로만
+    roomCounts(room).then(c => {
+      const chips = b.querySelector('.g-chips');
+      if(!c) return;
+      if(c.gone){ chips.innerHTML = '<span class="g-chip gone">지워진 방</span>'; forgetRoom(room.roomId); b.disabled = true; return; }
+      chips.innerHTML = (c.sos ? `<span class="g-chip sos">🆘 ${c.sos}</span>` : '') + (c.meet ? `<span class="g-chip meet">🙌 ${c.meet}</span>` : '')
+        || '<span class="g-chip quiet">조용해요</span>';
+    });
+  });
   const msg = t => { box.querySelector('#gateMsg').textContent = t; };
   if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;
-  const enter = room => { rememberRoom(room); location.href = 'index.html'; };
+  const enter = room => { rememberRoom(room); markPicked(); location.href = 'index.html'; };
   box.addEventListener('click', async e => {
     const step = n => { box.querySelector('.g-step1').hidden = n !== 1; box.querySelector('.g-step2').hidden = n !== 2; box.scrollTop = 0; };
     if(e.target.closest('.g-start')){ step(2); return; }
@@ -318,7 +349,7 @@ ${invite ? '' : GATE_PASTE}
     }
     const r = e.target.closest('[data-room]');
     if(r){ enter(rooms.find(x => x.roomId === r.dataset.room)); return; }
-    if(closable && (e.target === box || e.target.closest('.g-close'))) box.remove();
+    if(closable && (e.target === box || e.target.closest('.g-close'))){ markPicked(); box.remove(); }
   });
   box.querySelector('form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -344,6 +375,32 @@ ${invite ? '' : GATE_PASTE}
   });
   document.body.appendChild(box);
 }
+
+// 방마다 1주일 안의 SOS 예약 수와 다가오는 모임 수를 세요 (방 목록 옆 표시용). 못 세면 null
+function ymdAfter(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+async function roomCounts(room){
+  const db = sosDb(); if(!db) return null;
+  try{
+    const r = db.collection('rooms').doc(room.key);
+    if(roomGone(await r.get())) return {gone: true};
+    const id = firebase.firestore.FieldPath.documentId(), today = ymdAfter(0);
+    const [sos, ops] = await Promise.all([
+      r.collection('sos').where(id, '>=', today).where(id, '<=', ymdAfter(6)).get(),
+      r.collection('opinions').where('date', '>=', today).limit(50).get()]);
+    let n = 0; sos.forEach(d => { const v = d.data(); Object.keys(v).forEach(k => { if(/^h\d+$/.test(k)) n += v[k] || 0; }); });
+    return {sos: n, meet: ops.docs.filter(d => { const o = d.data(); return o.topic === 'meet' && !o.cancelled; }).length};
+  }catch(e){ return null; }
+}
+
+// 앱을 열 때 방이 2개 이상이면 먼저 고르게 해요 (브라우저를 새로 열 때 한 번)
+function markPicked(){ try{ sessionStorage.setItem('sosPicked', '1'); }catch(e){} }
+(function pickOnOpen(){
+  if(!ROOM || INVITE || sosRooms().length < 2) return;
+  if(!/(^|\/)(index\.html)?$/.test(location.pathname)) return;   // 홈에서만
+  try{ if(sessionStorage.getItem('sosPicked')) return; }catch(e){ return; }
+  const go = () => showRooms('pick');
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();
 
 (function gate(){
   if(ROOM || document.documentElement.hasAttribute('data-public')) return;
