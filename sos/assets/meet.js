@@ -14,10 +14,11 @@ function meetInit(){
     $('#meetEmpty').textContent = '인터넷 연결을 확인해 주세요. 모임 요청을 불러오지 못했어요.';
     $('#meetSend').disabled = true; return;
   }
-  meet.col.orderBy('createdAt','desc').limit(300).onSnapshot(snap => {
+  // 다가오는 모임 + 지난 30일 모임만 읽어요 (읽기 횟수 절약, 지난 모임은 최근 5개만 보여 줘요)
+  meet.col.where('date', '>=', dayStr(-30)).limit(300).onSnapshot(serverOnly(snap => {
     meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
     watchComments(); renderMeets();
-  }, () => { $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
+  }), err => { sosTrouble(err); $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
 }
 
 // 다가오는 요청마다 댓글을 실시간으로 받아요 (한 번만 구독)
@@ -147,7 +148,7 @@ function renderMeets(){
 const meetPicker = createPicker($('#meetPicker'), {whenText: st => `${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''}에 모여요`});
 // SOS에서 '＋ 모임 만들기'를 누르면 고른 날짜·시간을 채워서 열어요
 function openMeetForm(date, slot){
-  if(date && date >= todayStr()){ meetPicker.state.date = date; const [y,m] = date.split('-').map(Number); meetPicker.state.month = {y,m}; }
+  if(date && date >= todayStr() && date <= lastBookDay()){ meetPicker.state.date = date; const [y,m] = date.split('-').map(Number); meetPicker.state.month = {y,m}; }
   if(slot) meetPicker.state.slot = slot;
   meetPicker.render(); $('#meetForm').hidden = false;
   $('#meetForm').scrollIntoView({behavior:'smooth', block:'start'});
@@ -158,7 +159,7 @@ $('#meetForm').addEventListener('submit', async e => {
   e.preventDefault();
   const text = $('#meetText').value.trim(), date = meetPicker.state.date, host = $('#meetHost').value.trim();
   // 양식 칸(장소:/시간:/놀이:)만 남아 있으면 빈 글로 봐요
-  if(!date || date < todayStr()){ $('#meetMsg').textContent = '오늘 이후 날짜를 골라 주세요.'; return; }
+  if(!date || date < todayStr() || date > lastBookDay()){ $('#meetMsg').textContent = '오늘부터 1주일 안의 날짜를 골라 주세요.'; return; }
   if(!meetPicker.state.slot){ $('#meetMsg').textContent = '시간을 골라 주세요.'; return; }
   if(!host){ $('#meetMsg').textContent = '주최자 이름을 적어 주세요. (예: 하늘맘)'; $('#meetHost').focus(); return; }
   if(!text.replace(/^(장소|시간|놀이):/gm, '').trim()){ $('#meetMsg').textContent = '장소나 놀이를 적어 주세요.'; return; }
@@ -170,7 +171,7 @@ $('#meetForm').addEventListener('submit', async e => {
     try{ localStorage.setItem('copHost', host); }catch(e){}
     if(ref && ref.id) addMyMeet(ref.id);
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
-  }catch(err){ $('#meetMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
+  }catch(err){ sosTrouble(err); $('#meetMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
   finally{ $('#meetSend').disabled = false; }
 });
 
@@ -206,7 +207,7 @@ $('#meetList').addEventListener('click', async e => {
   const b = e.target.closest('[data-vote]'); if(!b || !meet.col || choices()[b.dataset.id]) return;
   b.disabled = true;
   try{ await meet.col.doc(b.dataset.id).update({[b.dataset.vote]: firebase.firestore.FieldValue.increment(1)}); markChoice(b.dataset.id, b.dataset.vote); renderMeets(); }
-  catch(err){ b.disabled = false; $('#meetEmpty').textContent = '참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
+  catch(err){ sosTrouble(err); b.disabled = false; $('#meetEmpty').textContent = '참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
 });
 $('#meetList').addEventListener('input', e => {
   const f = e.target.closest('[data-comment]'); if(f) meet.drafts[f.dataset.comment] = e.target.value;

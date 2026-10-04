@@ -7,6 +7,36 @@ const HOURS = [9,10,11,12,13,14,15,16,17,18,19,20];   // 모임·SOS에서 고�
 // 같은 날 모임 정렬용: '10시' → 10, 예전 시간대는 대략적인 시각으로
 function slotOrder(s){ const m = /^(\d+)시$/.exec(s || ''); return m ? +m[1] : ({'오전':9.5,'점심':12.5,'오후':15.5,'저녁':18.5})[s] || 99; }
 
+// 모임·SOS는 오늘부터 7일(1주일) 안에서만 고를 수 있어요
+const BOOK_DAYS = 7;
+// 오늘에서 n일 뒤 날짜를 YYYY-MM-DD로 (기기 시간 기준)
+function dayStr(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+const lastBookDay = () => dayStr(BOOK_DAYS - 1);
+
+/* 서버에서 실제로 받은 데이터만 써요: 인터넷이 끊기면 Firebase가 '빈 임시 데이터(fromCache)'를 먼저 보내는데,
+   그걸 그대로 그리면 'SOS 0명'처럼 보여서 오해할 수 있어요. 8초 안에 서버 답이 없으면 연결 안내를 띄워요. */
+function serverOnly(onData){
+  let got = false;
+  const timer = setTimeout(() => { if(!got) sosTrouble({code: 'unavailable'}); }, 8000);
+  return snap => {
+    if(snap.metadata.fromCache && !got) return;
+    if(!got){ got = true; clearTimeout(timer); const bar = document.getElementById('troubleBar'); if(bar) bar.remove(); }
+    onData(snap);
+  };
+}
+
+/* 서버 문제 안내 띠: 무료 사용량이 다 찼거나(resource-exhausted) 연결이 안 될 때 화면 맨 위에 알려요.
+   (숫자가 0명으로 보여서 'SOS가 없네'로 오해하지 않게) */
+function sosTrouble(err){
+  const quota = err && err.code === 'resource-exhausted';
+  let bar = document.getElementById('troubleBar');
+  if(!bar){ bar = document.createElement('div'); bar.id = 'troubleBar'; bar.className = 'trouble'; bar.setAttribute('role', 'alert');
+    (document.querySelector('main') || document.body).prepend(bar); }
+  bar.innerHTML = quota
+    ? '<b>⚠️ 오늘은 쓰는 분이 많아 잠시 멈췄어요.</b><br>오후 5시쯤 다시 열려요. 저장된 기록은 그대로예요.'
+    : '<b>⚠️ 서버에 연결하지 못했어요.</b><br>인터넷 연결을 확인하고 새로고침해 주세요.';
+}
+
 // 오늘 날짜를 YYYY-MM-DD로 (기기 시간 기준)
 function todayStr(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 // 글 올린 시각 (아직 서버 시각이 안 붙었으면 '방금')
@@ -44,12 +74,12 @@ function copCollection(){ const r = roomRef(); return r && r.collection('opinion
 // 모임 요청(topic 'meet') 중 오늘 이후 것을 가까운 순으로 cb에 넘겨요. 못 불러오면 null
 function watchMeets(cb){
   const col = copCollection(); if(!col){ cb(null); return; }
-  col.orderBy('createdAt','desc').limit(300).onSnapshot(snap => {
+  col.where('date', '>=', todayStr()).limit(100).onSnapshot(serverOnly(snap => {   // 오늘 이후 모임만 읽어요 (읽기 횟수 절약)
     const today = todayStr();
     cb(snap.docs.map(d => ({id:d.id, ...d.data()}))
       .filter(o => o.topic==='meet' && o.date && o.date >= today && !o.cancelled)
       .sort((a,b) => a.date.localeCompare(b.date) || slotOrder(a.slot) - slotOrder(b.slot)));
-  }, () => cb(null));
+  }), err => { sosTrouble(err); cb(null); });
 }
 
 // 홈 화면 설치(웹앱)용 서비스 워커 등록 — 캐시는 하지 않아요
@@ -61,7 +91,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load', () => { naviga
    - root 안에 달력과 시간 버튼을 그려요. 지난 날은 막고, 이번 달부터 months달까지 넘겨 볼 수 있어요.
    - dayBadge(날짜) / hourBadge(날짜, '10시') 가 숫자를 돌려주면 작게 표시해요 (SOS 수 등). */
 function createPicker(root, opts = {}){
-  const months = opts.months || 3;
+  const months = opts.months || 2;   // 1주일이 다음 달로 넘어갈 수 있어서 두 달까지 넘겨 봐요
   const st = {date: todayStr(), slot: null, slots: [], month: null};
   const ymd = (y,m,d) => `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
   root.classList.add('picker');
@@ -78,12 +108,12 @@ function createPicker(root, opts = {}){
     const {y, m} = st.month, idx = (y - ty) * 12 + (m - tm);
     root.querySelector('.cal-title').textContent = `${y}.${String(m).padStart(2,'0')}`;
     root.querySelector('[data-nav="-1"]').disabled = idx <= 0;
-    root.querySelector('[data-nav="1"]').disabled = idx >= months - 1;
+    root.querySelector('[data-nav="1"]').disabled = idx >= months - 1 || lastBookDay().slice(0,7) <= `${y}-${String(m).padStart(2,'0')}`;
     const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate();
     let html = '';
     for(let i = 0; i < first; i++) html += '<span></span>';
     for(let d = 1; d <= days; d++){
-      const v = ymd(y,m,d), dow = (first + d - 1) % 7, past = v < today, n = opts.dayBadge ? opts.dayBadge(v) : 0;
+      const v = ymd(y,m,d), dow = (first + d - 1) % 7, past = v < today || v > lastBookDay(), n = opts.dayBadge ? opts.dayBadge(v) : 0;
       const cls = ['cal-day', dow===0 ? 'sun' : dow===6 ? 'sat' : '', v===today ? 'today' : '', v===st.date ? 'on' : ''].join(' ');
       html += `<button type="button" class="${cls}" data-date="${v}" ${past ? 'disabled' : ''} aria-pressed="${v===st.date}">${d}<small>${n ? n + '명' : v===today ? '오늘' : ''}</small></button>`;
     }
@@ -118,11 +148,11 @@ function createPicker(root, opts = {}){
 function sosWatch(cb){
   const r = roomRef(), col = r && r.collection('sos');
   if(!col){ cb(null, null); return null; }
-  const start = new Date(); start.setDate(start.getDate() - 29);
-  const startStr = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
-  col.where(firebase.firestore.FieldPath.documentId(), '>=', startStr).onSnapshot(snap => {
+  // 예약할 수 있는 오늘~1주일치만 읽어요 (읽기 횟수 절약)
+  col.where(firebase.firestore.FieldPath.documentId(), '>=', todayStr())
+     .where(firebase.firestore.FieldPath.documentId(), '<=', lastBookDay()).onSnapshot(serverOnly(snap => {
     const data = {}; snap.docs.forEach(d => { data[d.id] = d.data(); }); cb(data, col);
-  }, () => cb(null, col));
+  }), err => { sosTrouble(err); cb(null, col, err); });
   return col;
 }
 const sosSentKey = () => 'copSosSent:' + (ROOM ? ROOM.roomId : '');   // 내 SOS 예약은 방마다 따로 기억
@@ -130,10 +160,10 @@ const sosDayTotal = v => v ? Object.keys(v).filter(k => /^h\d+$/.test(k)).reduce
 
 function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
-  let data = {}, col = null, sent = [];
+  let data = {}, col = null, sent = [], broken = false;
   try{ sent = JSON.parse(localStorage.getItem(sosSentKey()) || '[]'); }catch(e){}
   root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count"></p></div>
-    <p class="sos-sub">혼자 독박하는 날,<br>미용실 예약하듯 SOS를 예약해 두세요.<br><b>누가 예약했는지는 아무도 몰라요.</b><br>예약이 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
+    <p class="sos-sub">혼자 독박하는 날,<br>미용실 예약하듯 SOS를 예약해 두세요. <small>(오늘부터 1주일까지)</small><br><b>누가 예약했는지는 아무도 몰라요.</b><br>예약이 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
     <div class="sos-picker"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
@@ -149,9 +179,9 @@ function sosInit(){
     const st = picker.state, keys = st.slots.map(v => st.date + '-' + v), done = keys.length > 0 && keys.every(k => sent.includes(k));
     root.querySelector('.sos-count').innerHTML = `오늘 SOS <b>${sosDayTotal(data[todayStr()])}</b>명`;
     const b = root.querySelector('.sos-btn');
-    b.disabled = !keys.length || done || !col;
+    b.disabled = !keys.length || done || !col || broken;
     b.className = 'sos-btn' + (done ? ' done' : '');
-    b.innerHTML = done ? '✅ SOS 예약했어요<small>🫂 아래 "내 SOS 예약"에서 취소할 수 있어요</small>'
+    b.innerHTML = broken ? '⚠️ 지금은 SOS 예약을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 예약했어요<small>🫂 아래 "내 SOS 예약"에서 취소할 수 있어요</small>'
       : keys.length ? `🆘 SOS 예약하기${keys.length > 1 ? ` (${keys.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')}</small>` : '🆘 SOS 예약하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
     // 내 SOS 예약 (이 휴대폰에서 한 것, 오늘 이후만) — 실수로 눌렀으면 여기서 취소
     const mine = sent.filter(k => k.slice(0,10) >= todayStr()).sort();
@@ -159,7 +189,7 @@ function sosInit(){
     box.innerHTML = '<p class="sos-mine-h">📌 내 SOS 예약 <small>(이 휴대폰에서만 보여요)</small></p>' + mine.map(k =>
       `<div class="sos-mine-row"><span>${dayLabel(k.slice(0,10))} ${k.slice(11)}</span><button type="button" class="sos-cancel" data-cancel="${k}">예약 취소</button></div>`).join('');
   }
-  col = sosWatch((d, c) => { col = c; if(d) data = d; picker.render(); draw(); });
+  col = sosWatch((d, c, err) => { col = c; if(d) data = d; if(err) broken = true; picker.render(); draw(); });
   root.querySelector('.sos-mine').addEventListener('click', async e => {
     const c = e.target.closest('[data-cancel]'); if(!c || !col) return;
     const key = c.dataset.cancel, date = key.slice(0,10), hk = 'h' + parseInt(key.slice(11));
@@ -168,7 +198,7 @@ function sosInit(){
       if(((data[date] || {})[hk] || 0) > 0) await col.doc(date).update({[hk]: firebase.firestore.FieldValue.increment(-1)});
       sent = sent.filter(k => k !== key); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(err){}
       draw();
-    }catch(err){ c.disabled = false; c.textContent = '다시 눌러 주세요'; }
+    }catch(err){ sosTrouble(err); c.disabled = false; c.textContent = '다시 눌러 주세요'; }
   });
   draw();
   root.querySelector('.sos-btn').addEventListener('click', async () => {
@@ -180,7 +210,7 @@ function sosInit(){
       try{
         await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1)}, {merge:true});
         sent = [...sent, key].slice(-200); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(e){}
-      }catch(err){ break; }
+      }catch(err){ sosTrouble(err); broken = true; break; }
     }
     draw();
   });
@@ -198,6 +228,7 @@ function sosSummary(){
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; });
   const name = i => i === 0 ? '오늘' : i === 1 ? '내일' : null;
   let sel = 0, last = null;
+  let failed = false;
   const draw = data => {
     last = data;
     const keep = box.querySelector('.sos-tabs'), sx = keep ? keep.scrollLeft : 0;   // 다시 그려도 날짜 줄 스크롤 위치는 그대로
@@ -206,12 +237,12 @@ function sosSummary(){
     const tabs = days.map((d, i) => { const n = data ? sosDayTotal(data[d]) : 0;
       return `<button type="button" class="sos-tab" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
     const cells = HOURS.map(h => { const n = t['h'+h] || 0;
-      return `<div class="sos-cell${n ? ' on' : ''}"><b>${h}시</b><span>${n}명</span></div>`; }).join('');
+      return `<div class="sos-cell${n ? ' on' : ''}"><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></div>`; }).join('');
     const upcoming = data ? Object.keys(data).filter(d => d > today).sort().map(d => {
       const hs = HOURS.filter(h => data[d]['h'+h]).map(h => `<span class="sos-chip">${h}시 ${data[d]['h'+h]}명</span>`);
       return hs.length ? `<div class="sos-day"><b>${dayLabel(d)}</b><div>${hs.join('')}</div></div>` : '';
     }).filter(Boolean).slice(0,5) : [];
-    box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : 0}</b>명</p></div>
+    box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 예약</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
       <p class="sos-note">👀 시간별로 SOS를 예약한 사람 수예요.<br>예약은 아래 빨간 버튼에서 해요.</p>
@@ -225,7 +256,7 @@ function sosSummary(){
     sel = +b.dataset.sosDay; draw(last);
   });
   draw(null);
-  sosWatch(d => draw(d));
+  sosWatch((d, c, err) => { if(err) failed = true; draw(d); });
 }
 
 /* 확인 팝업: sosConfirm({icon, title, body(HTML), ok, danger}) → 누르면 true, 취소면 false */

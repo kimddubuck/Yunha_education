@@ -167,7 +167,7 @@ function renderAddForm(){
   $('#addKind').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if(!b) return; addState.kind = b.dataset.kind; renderAddForm(); });
   const room = roomRef(), col = room && room.collection('plays');
   if(!col){ $('#addOpen').disabled = true; $('#addOpen').title = '인터넷 연결이 없어 놀이를 추가할 수 없어요'; return; }
-  col.orderBy('createdAt').limit(200).onSnapshot(snap => mergeUserPlays(snap.docs.map(d => ({id:d.id, ...d.data()}))), () => {});
+  col.orderBy('createdAt').limit(200).onSnapshot(snap => mergeUserPlays(snap.docs.map(d => ({id:d.id, ...d.data()}))), sosTrouble);
 
   $('#addForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -182,7 +182,7 @@ function renderAddForm(){
       await col.add(doc);
       $('#addForm').reset(); renderAddForm();
       $('#addMsg').textContent = '놀이를 추가했어요! 카드 목록에서 볼 수 있어요. 🙌';
-    }catch(err){ $('#addMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
+    }catch(err){ sosTrouble(err); $('#addMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
     finally{ $('#addSend').disabled = false; }
   });
 })();

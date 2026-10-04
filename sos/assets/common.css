@@ -401,3 +401,6 @@ a.sos-btn{text-decoration:none;text-align:center}
 .pop-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .pop-btns .btn{width:100%;padding:11px 8px}
 .btn.danger{background:#d64535;color:#fff;border-color:#d64535}
+
+/* 서버 문제 안내 띠 (무료 사용량 초과·연결 끊김) */
+.trouble{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fdecea;border:1px solid #f5c2bb;color:#8a2a1f;font-size:14px;line-height:1.6}

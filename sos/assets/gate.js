@@ -84,6 +84,8 @@ async function deleteRoom(){
 // 들어와 있는 방이 지워졌으면 이 휴대폰에서도 빼고 알려 줘요
 window.addEventListener('load', async () => {
   const db = sosDb(); if(!db || !ROOM) return;
+  const checked = 'sosChecked:' + ROOM.roomId;   // 브라우저를 새로 열 때 한 번만 확인해요 (읽기 횟수 절약)
+  try{ if(sessionStorage.getItem(checked)) return; sessionStorage.setItem(checked, '1'); }catch(e){}
   try{
     const snap = await db.collection('rooms').doc(ROOM.key).get();
     if(roomGone(snap)){ forgetRoom(ROOM.roomId); alert(`'${ROOM.name}' 방은 방장이 지웠어요.`); location.href = 'index.html'; }
@@ -97,6 +99,7 @@ function newRoomId(){
 }
 function roomError(err){
   const c = (err && err.code) || '';
+  if(c === 'resource-exhausted') return '오늘은 쓰는 분이 많아 잠시 멈췄어요. 오후 5시쯤 다시 열려요.';
   if(c === 'unavailable') return '인터넷 연결을 확인해 주세요.';
   if(c === 'permission-denied') return '서버가 거절했어요. 잠시 뒤 다시 해 주세요.';
   return '문제가 생겼어요. 잠시 뒤 다시 해 주세요.';
