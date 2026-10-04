@@ -453,3 +453,9 @@ a.sos-btn{text-decoration:none;text-align:center}
 .safe2 .safe-flow{gap:4px;flex-wrap:nowrap}
 .safe2 .sf-item{padding:7px 8px;font-size:13px;white-space:nowrap}
 .safe2 .safe-auto{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);color:var(--fg);font-size:13.5px;line-height:1.6}
+
+/* 홈: 🔔 알림 카드 */
+.push-card{background:var(--bg);border:1.5px dashed var(--pick);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.push-card p{margin:0}
+.push-h{font-weight:800;font-size:16px}
+.push-sub{font-size:13.5px;line-height:1.6;color:var(--muted)}

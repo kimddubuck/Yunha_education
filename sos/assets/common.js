@@ -217,8 +217,10 @@ function sosInit(){
     for(const v of st.slots){
       const key = st.date + '-' + v; if(sent.includes(key)) continue;
       try{
+        const before = (data[st.date] || {})['h' + parseInt(v)] || 0;
         await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1), ...ttl(st.date)}, {merge:true});
         sent = [...sent, key].slice(-200); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(e){}
+        if(typeof pushSosCrowd === 'function') pushSosCrowd(st.date, v, before + 1);   // 같은 시간 SOS가 3명이 되는 순간 방에 알림
       }catch(err){ sosTrouble(err); broken = true; break; }
     }
     draw();

@@ -172,6 +172,7 @@ $('#meetForm').addEventListener('submit', async e => {
     $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
     try{ localStorage.setItem('copHost', host); }catch(e){}
     if(ref && ref.id) addMyMeet(ref.id);
+    if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetPicker.state.slot, host);   // 방에 새 모임 알림
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
   }catch(err){ sosTrouble(err); $('#meetMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
   finally{ $('#meetSend').disabled = false; }
@@ -211,7 +212,12 @@ $('#meetList').addEventListener('click', async e => {
   // 같은 걸 다시 누르면 취소(-1), 다른 걸 누르면 바꾸기(예전 것 -1, 새 것 +1), 처음이면 +1
   const change = old === v ? {[v]: inc(-1)} : old ? {[old]: inc(-1), [v]: inc(1)} : {[v]: inc(1)};
   b.disabled = true;
-  try{ await meet.col.doc(id).update(change); markChoice(id, old === v ? null : v); renderMeets(); }
+  try{
+    await meet.col.doc(id).update(change); markChoice(id, old === v ? null : v); renderMeets();
+    // 새로 참석했으면 모임 주최자에게 알림 (내가 연 모임이면 안 보냄)
+    const o = meet.items.find(x => x.id === id);
+    if(v === 'joins' && old !== 'joins' && o && !myMeets().includes(id) && typeof pushMeetJoin === 'function') pushMeetJoin(o, (o.joins || 0) + 1);
+  }
   catch(err){ sosTrouble(err); b.disabled = false; $('#meetEmpty').textContent = '참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
 });
 $('#meetList').addEventListener('input', e => {
@@ -239,6 +245,7 @@ $('#meetList').addEventListener('submit', async e => {
     setComKey(ref.id, k);
     const m = meet.items.find(o => o.id === id);   // 댓글도 모임과 같은 날 함께 지워져요
     await ref.set({text, kh: await sha256hex(k), ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    if(m && !myMeets().includes(id) && typeof pushMeetComment === 'function') pushMeetComment(m, text);   // 모임 주최자에게 댓글 알림
   }catch(err){
     meet.drafts[id] = text; renderMeets();
     $('#meetEmpty').textContent = '댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
