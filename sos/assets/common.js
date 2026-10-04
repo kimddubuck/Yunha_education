@@ -240,7 +240,6 @@ function sosInit(){
   root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count"></p></div>
     <p class="sos-sub">혼자 독박하는 날,<br>미리 SOS를 요청해 두세요. <small>(오늘부터 1주일까지)</small><br>SOS가 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
     <div class="sos-picker"></div>
-    <div class="sos-who"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
     <p class="sos-hint">👀 SOS가 몰린 시간을 봤다면?<br>용기 내서 <a href="#new" class="sos-make"></a></p>`;
@@ -255,12 +254,6 @@ function sosInit(){
     const st = picker.state, mine = sosMine(data[st.date]), hs = st.slots.map(v => parseInt(v));
     const done = hs.length > 0 && hs.every(h => mine.includes(h));
     root.querySelector('.sos-count').innerHTML = `오늘 SOS <b>${sosDayTotal(data[todayStr()])}</b>명`;
-    // 고른 날짜에 누가 SOS를 보냈는지 (시간을 누르면 크게)
-    const v = data[st.date], rows = HOURS.filter(h => sosHourCount(v, h));
-    root.querySelector('.sos-who').innerHTML = rows.length ? `<p class="sos-who-h">👀 ${dayLabel(st.date)} SOS 보낸 사람 <small>눌러서 크게</small></p>`
-      + rows.map(h => `<button type="button" class="sos-who-row" data-who="${h}"><b>${h}시</b><span></span></button>`).join('') : '';
-    root.querySelectorAll('.sos-who-row').forEach(r => { const h = +r.dataset.who, old = (v && v['h' + h]) || 0;
-      r.querySelector('span').textContent = [...sosHourNames(v, h), ...(old ? [`예전 ${old}명`] : [])].join(', '); });   // 닉네임은 글자로만
     // 달력에서 고른 날짜·시간을 그대로 넣어 모임 만들기 (아래 큰 '＋ 모임 만들기'는 빈 양식)
     root.querySelector('.sos-make').textContent = `🙌 ${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''}로 모임 만들기`;
     const b = root.querySelector('.sos-btn');
@@ -278,7 +271,6 @@ function sosInit(){
     ? col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true})
     : col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
   col = sosWatch((d, c, err) => { col = c; if(d) data = d; if(err) broken = true; picker.render(); draw(); });
-  root.addEventListener('click', e => { const w = e.target.closest('[data-who]'); if(w) showSosNames(picker.state.date, +w.dataset.who, data[picker.state.date]); });
   root.querySelector('.sos-mine').addEventListener('click', async e => {
     const c = e.target.closest('[data-cancel]'); if(!c || !col) return;
     const [day, h] = c.dataset.cancel.split('|');
