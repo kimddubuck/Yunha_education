@@ -415,12 +415,16 @@ async function roomCounts(room){
   }catch(e){ return null; }
 }
 
-// 앱을 열 때 방이 2개 이상이면 먼저 고르게 해요 (브라우저를 새로 열 때 한 번)
+// 앱을 열 때 첫 화면은 '내 방 목록'이에요
+//  - 홈 화면 아이콘으로 열면(시작 주소 index.html?pick=1) 항상 목록부터
+//  - 브라우저로 열어도 새로 열 때(세션당 1번)는 목록부터. 앱 안에서 홈으로 돌아올 땐 다시 묻지 않아요
 function markPicked(){ try{ sessionStorage.setItem('sosPicked', '1'); }catch(e){} }
 (function pickOnOpen(){
-  if(!ROOM || INVITE || sosRooms().length < 2) return;
+  const q = new URLSearchParams(location.search), forced = q.has('pick');
+  if(forced){ q.delete('pick'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); }
+  if(!ROOM || INVITE || !sosRooms().length) return;
   if(!/(^|\/)(index\.html)?$/.test(location.pathname)) return;   // 홈에서만
-  try{ if(sessionStorage.getItem('sosPicked')) return; }catch(e){ return; }
+  if(!forced){ try{ if(sessionStorage.getItem('sosPicked')) return; }catch(e){ return; } }
   const go = () => showRooms('pick');
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
 })();
