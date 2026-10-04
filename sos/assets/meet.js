@@ -10,17 +10,17 @@ const myVote = o => ((o.v || {})[ME.uid] || {}).s || null;
 function meetInit(){
   meet.col = copCollection();
   if(!meet.col){
-    $('#meetEmpty').textContent = '인터넷 연결을 확인해 주세요. 모임 요청을 불러오지 못했어요.';
+    $('#upSec').hidden = false; $('#meetEmpty').textContent = '인터넷 연결을 확인해 주세요. 모임 요청을 불러오지 못했어요.';
     $('#meetSend').disabled = true; return;
   }
   // 다가오는 모임 + 지난 30일 모임만 읽어요 (읽기 횟수 절약, 지난 모임은 최근 5개만 보여 줘요)
   sosReady().then(ok => {
-    if(!ok){ $('#meetEmpty').textContent = '모임을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; return; }
+    if(!ok){ $('#upSec').hidden = false; $('#meetEmpty').textContent = '모임을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; return; }
     $('#meetHost').textContent = ME.nick;
     meet.col.where('date', '>=', dayStr(-30)).limit(300).onSnapshot(serverOnly(snap => {
       meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
       watchComments(); renderMeets();
-    }), err => { sosTrouble(err); $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
+    }), err => { sosTrouble(err); $('#upSec').hidden = false; $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
   });
 }
 
@@ -142,7 +142,8 @@ function renderMeets(){
     .sort((a,b) => a.date.localeCompare(b.date) || slotOrder(a.slot) - slotOrder(b.slot));
   const past = meet.items.filter(o => o.date < today).sort((a,b) => b.date.localeCompare(a.date)).slice(0,5);
   const ul = $('#meetList'); ul.innerHTML = ''; up.forEach(o => ul.appendChild(meetCard(o, false)));
-  $('#meetEmpty').textContent = up.length ? '' : '다가오는 모임이 없어요. 같이 놀고 싶은 날을 올려 주세요.';
+  $('#meetEmpty').textContent = '';
+  $('#upSec').hidden = !up.length;   // 다가오는 모임이 없으면 칸째 숨겨요
   const pl = $('#pastList'); pl.innerHTML = ''; past.forEach(o => pl.appendChild(meetCard(o, true)));
   $('#pastSec').hidden = !past.length;
 

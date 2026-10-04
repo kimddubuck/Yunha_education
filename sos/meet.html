@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610041522">
+<link rel="manifest" href="manifest.webmanifest?v=202610041526">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610041522">
-<script src="assets/gate.js?v=202610041522"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610041526">
+<script src="assets/gate.js?v=202610041526"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -24,10 +24,6 @@
     <header class="page-h">
       <h1>🆘 SOS · 🙌 모임</h1>
       <div class="sos" data-sos></div>
-      <div class="anon-box">
-        <p class="anon-h">🆘 SOS는 솔직하게, 💪 모임은 용기</p>
-        <p>독박하는 날은 <b>SOS 요청</b>만 눌러 두세요.<br>시간 숫자를 누르면 누가 보냈는지 보여요.<br>SOS가 몰린 시간을 보고,<br>용기 낸 한 명이 <b>모임</b>을 열어요.</p>
-      </div>
     </header>
 
     <section class="sec">
@@ -57,7 +53,7 @@
       </form>
     </section>
 
-    <section class="sec">
+    <section class="sec" id="upSec" hidden>
       <h2>다가오는 모임</h2>
       <ul class="ops" id="meetList"></ul>
       <p class="hint" id="meetEmpty"></p>
@@ -74,8 +70,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610041522"></script>
-<script src="assets/push.js?v=202610041522"></script>
-<script src="assets/meet.js?v=202610041522"></script>
+<script src="assets/common.js?v=202610041526"></script>
+<script src="assets/push.js?v=202610041526"></script>
+<script src="assets/meet.js?v=202610041526"></script>
 </body>
 </html>
