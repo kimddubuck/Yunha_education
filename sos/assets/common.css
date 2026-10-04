@@ -627,3 +627,13 @@ body{padding-block:16px 120px}
 .sos-sub-s{line-height:1.65}
 [data-sos] .sos-btn{padding:12px 16px;font-size:16px;gap:3px}
 [data-sos] .sos-hint{line-height:1.7}
+/* 💪 용기 상자: SOS를 보고 모임을 여는 한 명 */
+.sos-brave{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 14px 14px;border-radius:16px;border:2px solid #f2b531;background:linear-gradient(160deg,rgba(242,181,49,.14),rgba(42,144,149,.10));text-align:center}
+.brave-h{margin:0;font-size:17px;font-weight:800;color:var(--fg)}
+.brave-sub{margin:0;font-size:13px;line-height:1.6;color:var(--muted);word-break:keep-all}
+.brave-sub b{color:var(--fg)}
+.brave-btn{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:11px 12px;border-radius:12px;background:var(--pick);color:var(--pick-fg);font-weight:800;font-size:15px;text-decoration:none;box-shadow:0 3px 10px rgba(42,144,149,.3)}
+.brave-star{position:absolute;color:#f2b531;font-size:16px;line-height:1}
+.brave-star.s1{top:-9px;left:14px}
+.brave-star.s2{bottom:-8px;right:16px;font-size:12px}
+.sos-brave .brave-btn{color:var(--pick-fg)!important}

@@ -247,7 +247,12 @@ function sosInit(){
     <div class="sos-picker"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
-    <p class="sos-hint">👀 SOS가 몰린 시간을 봤다면?<br>용기 내서 <a href="#new" class="sos-make"></a></p>`;
+    <div class="sos-brave">
+      <span class="brave-star s1" aria-hidden="true">✦</span><span class="brave-star s2" aria-hidden="true">✦</span>
+      <p class="brave-h">💪 용기 한 번 내 볼까요?</p>
+      <p class="brave-sub">SOS가 몰린 시간에 내가 먼저 모임을 열면<br><b>누군가의 독박이 끝나요</b> 🫶</p>
+      <a href="#new" class="sos-make brave-btn"></a>
+    </div>`;
   const picker = createPicker(root.querySelector('.sos-picker'), {
     dayBadge: d => sosDayTotal(data[d]),
     hourBadge: (d, slot) => sosHourCount(data[d], parseInt(slot)),
@@ -260,7 +265,7 @@ function sosInit(){
     const done = hs.length > 0 && hs.every(h => mine.includes(h));
     root.querySelector('.sos-count').innerHTML = `오늘 SOS <b>${sosDayTotal(data[todayStr()])}</b>명`;
     // 달력에서 고른 날짜·시간을 그대로 넣어 모임 만들기 (아래 큰 '＋ 모임 만들기'는 빈 양식)
-    root.querySelector('.sos-make').textContent = `🙌 ${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''}로 모임 만들기`;
+    root.querySelector('.sos-make').textContent = `🙌 ${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''} 모임 열기`;
     const b = root.querySelector('.sos-btn');
     b.disabled = !hs.length || done || !col || broken;
     b.className = 'sos-btn' + (done ? ' done' : '');
