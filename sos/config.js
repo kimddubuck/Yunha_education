@@ -8,10 +8,10 @@
 // 이 값들은 비밀번호가 아니라 "주소" 같은 것이라 공개돼도 괜찮아요.
 // 실제 보호는 firestore.rules 파일의 규칙이 맡아요.
 window.SOS_FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyAnS-wdTTxJS-rdCopSZpDxfueZ_4TK2lU",
+  authDomain: "sos-calendar-f6bf7.firebaseapp.com",
+  projectId: "sos-calendar-f6bf7",
+  storageBucket: "sos-calendar-f6bf7.firebasestorage.app",
+  messagingSenderId: "133710590792",
+  appId: "1:133710590792:web:1a4d163ac4679ed6d1397d"
 };
