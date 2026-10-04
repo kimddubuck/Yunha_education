@@ -1,7 +1,7 @@
 {
   "name": "공동육아 SOS",
   "short_name": "공동육아 SOS",
-  "description": "어떤 플랫폼에서 모이든, 공동육아의 모임 도우미. 카톡 오픈채팅·당근 모임·밴드 어디든 링크 하나로 붙여 쓰는 익명 공동육아 도구",
+  "description": "어떤 플랫폼에서 모이든, 공동육아의 모임을 도와드립니다. 카톡 오픈채팅·당근 모임·밴드 어디든 링크 하나로 붙여 쓰는 익명 공동육아 도구",
   "start_url": "./index.html?pick=1",
   "scope": "./",
   "display": "standalone",

@@ -107,7 +107,7 @@ function roomError(err){
 
 // 첫 화면 이야기(이 앱을 만든 이유) + 3줄 사용법 — 입장 화면과 '소개 다시 보기'가 같이 써요
 const GATE_STORY = `        <div class="g-tool">
-          <p class="g-tool-h">어떤 플랫폼에서 모이든,<br><b>🆘 공동육아의 모임 도우미</b></p>
+          <p class="g-tool-h">어떤 플랫폼에서 모이든,<br><b>🆘 공동육아의 모임을 도와드립니다.</b></p>
           <p class="g-tool-chips"><span>💬 카톡 오픈채팅</span><span>🥕 당근 모임</span><span>🟢 네이버 밴드</span><span>👥 소모임</span></p>
           <p class="g-tool-sub">대화는 원래 모임에서 그대로,<br>링크 하나로 붙여 써요. 가입 없이 익명으로.</p>
         </div>
@@ -142,7 +142,7 @@ function gateCss(){
     #gate .g-msg{color:#c0392b;min-height:1.2em}
     #gate .g-tool{display:flex;flex-direction:column;gap:8px;padding:14px 12px;border-radius:14px;border:2px solid var(--pick,#2a9095)}
     #gate .g-tool-h{font-size:16px!important;line-height:1.5;color:var(--fg,#22282a)!important}
-    #gate .g-tool-h b{color:var(--accent-ink,#1c7276);font-size:18px}
+    #gate .g-tool-h b{color:var(--accent-ink,#1c7276);font-size:17px;word-break:keep-all}
     #gate .g-tool-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
     #gate .g-tool-chips span{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--tag,#efefef);color:var(--fg,#22282a)}
     #gate .g-tool-sub{font-size:13px!important;line-height:1.6}
