@@ -381,3 +381,46 @@ try {
 } catch (err) {
   document.querySelector('.wrap').append(el('div', { className: 'card' }, el('p', { className: 'error', textContent: err.message })));
 }
+
+/* ---------- 처음 열었을 때 앱 소개 ---------- */
+const INTRO_KEY = 'sos.introSeen';
+let installPrompt = null; // 크롬이 "설치 가능" 신호를 주면 여기에 보관
+
+function openIntro(showInstall) {
+  $('introMain').hidden = !!showInstall;
+  $('introInstall').hidden = !showInstall;
+  $('installNow').hidden = !installPrompt;
+  $('intro').hidden = false;
+  $('intro').scrollTop = 0;
+}
+function closeIntro() {
+  $('intro').hidden = true;
+  try { localStorage.setItem(INTRO_KEY, '1'); } catch (e) { /* 저장 불가 환경: 다음에 또 보여도 괜찮아요 */ }
+}
+$('introStart').addEventListener('click', closeIntro);
+$('introClose').addEventListener('click', closeIntro);
+$('helpBtn').addEventListener('click', () => openIntro(false));
+$('introHowTo').addEventListener('click', () => openIntro(true));
+$('introBack').addEventListener('click', () => openIntro(false));
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  if (!$('intro').hidden) $('installNow').hidden = false;
+});
+$('installNow').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  const { outcome } = await installPrompt.userChoice;
+  installPrompt = null;
+  $('installNow').hidden = true;
+  if (outcome === 'accepted') { closeIntro(); toast('설치했어요. 홈 화면에서 열어보세요!'); }
+});
+
+(function showIntroOnce() {
+  let seen = false;
+  try { seen = localStorage.getItem(INTRO_KEY) === '1'; } catch (e) { /* 못 읽으면 처음으로 봐요 */ }
+  // 홈 화면 앱으로 이미 설치해서 연 경우엔 소개를 건너뛰어요.
+  const installed = window.matchMedia('(display-mode: standalone)').matches;
+  if (!seen && !installed) openIntro(false);
+})();

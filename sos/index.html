@@ -14,7 +14,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1><a href="#">🆘 공동육아 SOS 달력</a></h1>
+    <h1><a href="#"><img src="icon-192.png" alt="" class="logo"> 공동육아 SOS 달력</a></h1>
+    <button class="help" type="button" id="helpBtn" aria-label="앱 소개 다시 보기">?</button>
   </header>
 
   <div class="demo" id="demoBanner" hidden>
@@ -106,6 +107,55 @@
   </div>
   <p class="empty" id="sheetPast" hidden>지난 날짜는 볼 수만 있어요.</p>
   <button class="btn ghost full" type="button" id="sheetClose">닫기</button>
+</div>
+
+<!-- 처음 열었을 때 보이는 앱 소개 -->
+<div class="intro" id="intro" hidden>
+  <div class="intro-box" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <button class="intro-x" type="button" id="introClose" aria-label="닫기">×</button>
+
+    <div id="introMain">
+      <img src="icon-192.png" alt="" class="intro-icon">
+      <h2 id="introTitle">공동육아 SOS 달력</h2>
+      <div class="story">
+        <p class="q">"아… 오늘은 또 어떻게 버티지?"</p>
+        <p class="soft">갑자기 병원에 가야 하는 날,<br>출근은 해야 하는데 아이가 아픈 날.</p>
+        <p>단톡방에 "누가 좀 봐줄 수 있어요?"<br>올리기는 미안하고,<br>누가 되는지 한 명씩 묻기도 어렵죠.</p>
+        <p class="soft">그렇다고 매번 혼자<br>버틸 수도 없잖아요.</p>
+        <p><strong>그래서 만들었어요.</strong><br>급한 날엔 SOS만 꾹, 되는 사람은 손만 번쩍.<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
+      </div>
+      <ul class="points">
+        <li>🚨 <b>급한 날</b>엔 달력에 SOS만 꾹</li>
+        <li>✋ <b>도와줄 수 있는 날</b>엔 손만 번쩍</li>
+        <li>🔒 <b>비밀번호 아는 우리 모임</b>끼리만 봐요</li>
+        <li>📱 다운로드 없이 <b>홈 화면 바로가기</b>로 앱처럼</li>
+      </ul>
+      <button class="btn full" type="button" id="introStart">시작하기</button>
+      <button class="linkish" type="button" id="introHowTo">📱 홈 화면에 설치하는 방법 보기</button>
+    </div>
+
+    <div id="introInstall" hidden>
+      <h2>📱 홈 화면에 설치하기</h2>
+      <button class="btn full" type="button" id="installNow" hidden>지금 바로 설치하기</button>
+      <div class="howto">
+        <h3>갤럭시 · 안드로이드 (크롬)</h3>
+        <ol>
+          <li>크롬에서 이 페이지를 열어요.</li>
+          <li>오른쪽 위 <b>⋮</b> 메뉴를 눌러요.</li>
+          <li><b>홈 화면에 추가</b> (또는 <b>앱 설치</b>)를 눌러요.</li>
+        </ol>
+        <p class="tip">삼성 인터넷: 아래 <b>≡</b> 메뉴 → <b>현재 페이지 추가</b> → <b>홈 화면</b></p>
+        <h3>아이폰 (사파리)</h3>
+        <ol>
+          <li>사파리에서 이 페이지를 열어요.</li>
+          <li>아래쪽 <b>공유 버튼(□↑)</b>을 눌러요.</li>
+          <li><b>홈 화면에 추가</b>를 눌러요.</li>
+        </ol>
+        <p class="tip">카카오톡에서 링크를 열었다면, 오른쪽 아래 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러주세요.</p>
+      </div>
+      <button class="btn full" type="button" id="introBack">돌아가기</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
