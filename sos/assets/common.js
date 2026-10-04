@@ -253,9 +253,9 @@ function sosInit(){
       <p class="brave-sub">SOS가 몰린 시간에 내가 먼저 모임을 열면<br><b>누군가의 독박이 끝나요</b> 🫶</p>
       <a href="#new" class="sos-make brave-btn"></a>
     </div>`;
-  // 💪 용기 상자는 아래 '＋ 모임 만들기' 바로 밑으로 옮겨요
+  // 💪 용기 상자는 SOS 달력 카드 아래, 모임 만들기 양식 바로 위로 옮겨요 (버튼을 누르면 양식이 그 아래 펼쳐져요)
   const brave = root.querySelector('.sos-brave'), anchor = document.getElementById('meetForm');
-  if(anchor) anchor.after(brave);
+  if(anchor) anchor.before(brave);
   const picker = createPicker(root.querySelector('.sos-picker'), {
     dayBadge: d => sosDayTotal(data[d]),
     hourBadge: (d, slot) => sosHourCount(data[d], parseInt(slot)),
