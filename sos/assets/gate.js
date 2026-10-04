@@ -168,6 +168,15 @@ function gateCss(){
     #gate .g-safety{text-align:center;margin-top:4px}
     #gate .g-card[hidden]{display:none}
     #gate .g-back{background:transparent!important;color:var(--accent-ink,#1c7276)!important;font-weight:600}
+    #gate .g-box{display:flex;flex-direction:column;gap:10px;padding:16px 14px;border:2px solid var(--pick,#2a9095);border-radius:16px;background:var(--accent-soft,#e1f2f1)}
+    #gate .g-box-h{font-size:16px!important;font-weight:800;color:var(--accent-ink,#1c7276)!important;margin:0}
+    #gate .g-box p{margin:0}
+    #gate .g-box .g-msg{margin:0;min-height:0}
+    #gate input{border:1.5px solid rgba(127,127,127,.6)!important;background:var(--bg,#fff)}
+    #gate input:focus{outline:2px solid var(--pick,#2a9095);border-color:var(--pick,#2a9095)!important}
+    #gate .g-paste{border:2px dashed #e0a400!important;border-radius:14px}
+    #gate .g-paste summary{color:#b88600;font-weight:700}
+    @media (prefers-color-scheme: dark){ #gate .g-paste summary{color:#ffc83d} }
     #gate .g-pw{margin-top:4px;border-top:1px solid var(--line,#e3e3e5);padding-top:14px}`;
   css.id = 'gateCss'; document.head.appendChild(css);
 }
@@ -248,7 +257,7 @@ const GATE_EXTRA = `      <div class="g-extra">
         <a class="g-link g-safety" href="safety.html">🔒 무엇을 저장하나요? 개인정보 안내 보기</a>
       </div>`;
 const GATE_PASTE = `      <div class="g-extra">
-        <details class="how-to">
+        <details class="how-to g-paste">
           <summary>🔗 초대 링크를 받았어요</summary>
           <p>단톡방에서 받은 초대 링크를 길게 눌러 복사한 뒤 여기에 붙여넣어 주세요.<br>(아이폰에서 홈 화면 앱으로 처음 열었을 때도 여기서 들어가요)</p>
           <input id="gateLink" aria-label="초대 링크" placeholder="초대 링크 붙여넣기" autocomplete="off">
@@ -282,14 +291,18 @@ function showRooms(closable){
   const formHtml = `
 ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       ${list}
-      ${invite ? `<p class="g-pw">🔑 초대받은 모임 방이에요.<br>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
+      <div class="g-box">
+      ${invite ? `<p class="g-box-h">🔑 초대받은 모임 방이에요</p>
+      <p>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
       <button type="submit">들어가기</button>`
-      : `<p class="g-pw">🏠 <b>새 모임 방 만들기</b><br>방을 만들고 초대 링크를 단톡방에 올리면 끝!</p>
+      : `<p class="g-box-h">🏠 새 모임 방 만들기</p>
+      <p>방을 만들고 초대 링크를 단톡방에 올리면 끝!</p>
       <input id="gateName" aria-label="방 이름" placeholder="방 이름 (예: 래미안 3단지 공동육아)" maxlength="30">
       <input type="password" id="gatePw" aria-label="방 비밀번호" placeholder="비밀번호 (4자 이상)" maxlength="40">
       <button type="submit">방 만들기</button>`}
-      <p class="g-msg" id="gateMsg" aria-live="polite"></p>`;
+      <p class="g-msg" id="gateMsg" aria-live="polite"></p>
+      </div>`;
   // 처음 열 때: ① 앱 소개(이야기 · 설치 안내 · 개인정보) → [시작하기] → ② 비밀번호 / 방 만들기
   box.innerHTML = pick ? `<form class="g-card" autocomplete="off">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
