@@ -661,3 +661,4 @@ body{padding-block:16px 120px}
 .seg-tabs a[aria-current]{background:var(--bg);color:var(--accent-ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .seg-tabs a:not([aria-current]){color:var(--muted)!important}
 @media (max-width:380px){.site-nav .brand{font-size:16px}}
+.tally span.tally-who::before{content:none}
