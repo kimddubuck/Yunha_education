@@ -181,7 +181,7 @@ function createPicker(root, opts = {}){
   return {state: st, render};
 }
 
-/* 🆘 공동육아 예약 도우미(🆘 SOS 예약): 혼자 독박하는 날짜와 시간(9~20시)을 골라 "이때 나 힘들어요"를 보내요.
+/* 🆘 공동육아 SOS 도우미(🆘 SOS 요청): 혼자 독박하는 날짜와 시간(9~20시)을 골라 "이때 나 힘들어요"를 보내요.
    저장: rooms/{방 열쇠}/sos/YYYY-MM-DD 문서의 p 지도 — {내 uid: {h: [시간들], n: 닉네임}} (예전 숫자 칸 h9 등도 함께 세요)
    시간 숫자를 누르면 누가 보냈는지 닉네임이 보여요.
    달력에는 날짜별 SOS 수, 시간 버튼에는 그 날 시간별 SOS 수가 보여요 → 보고 눈치게임으로 모임 만들기.
@@ -197,7 +197,7 @@ function sosWatch(cb){
   }), err => { sosTrouble(err); cb(null, col, err); }); });
   return col;
 }
-// 내 SOS 예약 시간들 (그 날 문서의 p[내 uid].h)
+// 내 SOS 요청 시간들 (그 날 문서의 p[내 uid].h)
 const sosMine = v => ((v && v.p && v.p[ME.uid]) || {}).h || [];
 // 그 시간에 SOS 보낸 사람 팝업
 function showSosNames(day, h, v){
@@ -212,8 +212,8 @@ function showSosNames(day, h, v){
 function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
   let data = {}, col = null, broken = false;
-  root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count"></p></div>
-    <p class="sos-sub">혼자 독박하는 날,<br>미용실 예약하듯 SOS를 예약해 두세요. <small>(오늘부터 1주일까지)</small><br>예약이 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
+  root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 SOS 도우미</p><p class="sos-count"></p></div>
+    <p class="sos-sub">혼자 독박하는 날,<br>미리 SOS를 요청해 두세요. <small>(오늘부터 1주일까지)</small><br>SOS가 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
     <div class="sos-picker"></div>
     <div class="sos-who"></div>
     <button type="button" class="sos-btn"></button>
@@ -239,13 +239,13 @@ function sosInit(){
     const b = root.querySelector('.sos-btn');
     b.disabled = !hs.length || done || !col || broken;
     b.className = 'sos-btn' + (done ? ' done' : '');
-    b.innerHTML = broken ? '⚠️ 지금은 SOS 예약을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 예약했어요<small>🫂 아래 "내 SOS 예약"에서 취소할 수 있어요</small>'
-      : hs.length ? `🆘 SOS 예약하기${hs.length > 1 ? ` (${hs.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')} · ${esc(ME.nick || '내 닉네임')}(으)로</small>` : '🆘 SOS 예약하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
-    // 내 SOS 예약 (오늘 이후) — 실수로 눌렀으면 여기서 취소
+    b.innerHTML = broken ? '⚠️ 지금은 SOS 요청을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 요청했어요<small>🫂 아래 "내 SOS 요청"에서 취소할 수 있어요</small>'
+      : hs.length ? `🆘 SOS 요청하기${hs.length > 1 ? ` (${hs.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')} · ${esc(ME.nick || '내 닉네임')}(으)로</small>` : '🆘 SOS 요청하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
+    // 내 SOS 요청 (오늘 이후) — 실수로 눌렀으면 여기서 취소
     const list = Object.keys(data).filter(d => d >= todayStr()).sort().flatMap(d => sosMine(data[d]).slice().sort((x, y) => x - y).map(h => [d, h]));
     const box = root.querySelector('.sos-mine'); box.hidden = !list.length;
-    box.innerHTML = '<p class="sos-mine-h">📌 내 SOS 예약</p>' + list.map(([d, h]) =>
-      `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">예약 취소</button></div>`).join('');
+    box.innerHTML = '<p class="sos-mine-h">📌 내 SOS 요청</p>' + list.map(([d, h]) =>
+      `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">요청 취소</button></div>`).join('');
   }
   const put = (day, hours) => hours.length
     ? col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true})
@@ -278,7 +278,7 @@ function sosInit(){
   });
 }
 
-// 홈: 오늘의 SOS 예약 시간표(9~20시) + 다가오는 날의 예약 목록 + SOS 예약하러 가기
+// 홈: 오늘의 SOS 요청 시간표(9~20시) + 다가오는 날의 예약 목록 + SOS 요청하러 가기
 function sosSummary(){
   const box = document.querySelector('[data-sos-summary]'); if(!box) return;
   // 오늘부터 7일 중 하루를 골라 그날 시간표를 봐요
@@ -300,13 +300,13 @@ function sosSummary(){
       const hs = HOURS.filter(h => sosHourCount(data[d], h)).map(h => `<button type="button" class="sos-chip" data-sos-hour="${h}" data-sos-date="${d}">${h}시 ${sosHourCount(data[d], h)}명</button>`);
       return hs.length ? `<div class="sos-day"><b>${dayLabel(d)}</b><div>${hs.join('')}</div></div>` : '';
     }).filter(Boolean).slice(0,5) : [];
-    box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
+    box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 SOS 도우미</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
-      <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 예약</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
-      <p class="sos-note">👀 시간별로 SOS를 예약한 사람 수예요.<br><b>숫자를 누르면 누가 보냈는지 보여요.</b></p>
+      <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 요청</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
+      <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>숫자를 누르면 누가 보냈는지 보여요.</b></p>
       <div class="sos-today">${cells}</div>
-      ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 예약</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}
-      <a class="sos-btn" href="meet.html#sos">🆘 독박 예정? SOS 예약하기<small>날짜와 시간만 누르면 끝</small></a>`;
+      ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 요청</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}
+      <a class="sos-btn" href="meet.html#sos">🆘 독박 예정? SOS 요청하기<small>날짜와 시간만 누르면 끝</small></a>`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
   };
   box.addEventListener('click', e => {
@@ -339,12 +339,13 @@ function sosConfirm({icon = '', title, body = '', ok = '확인', danger = false}
   });
 }
 
-/* 보기 팝업: sosInfo({icon, title, body(HTML)}) — 확인 버튼 하나 */
+/* 보기 팝업: sosInfo({icon, title, body(HTML)}) — 오른쪽 위 ✕ 로 닫기 (바깥을 눌러도 닫혀요) */
 function sosInfo({icon = '', title, body = ''}){
   const box = document.createElement('div'); box.className = 'pop-back';
-  box.innerHTML = `<div class="pop" role="dialog" aria-modal="true" aria-labelledby="popT">
+  box.innerHTML = `<div class="pop pop-info" role="dialog" aria-modal="true" aria-labelledby="popT">
+      <button type="button" class="pop-x" data-pop="1" aria-label="닫기">✕</button>
       ${icon ? `<p class="pop-icon" aria-hidden="true">${icon}</p>` : ''}<p class="pop-t" id="popT"></p>
-      <div class="pop-b">${body}</div><div class="pop-btns"><button type="button" class="btn primary" data-pop="1">확인</button></div></div>`;
+      <div class="pop-b">${body}</div></div>`;
   box.querySelector('#popT').textContent = title;
   const done = () => { box.remove(); document.removeEventListener('keydown', key); };
   const key = e => { if(e.key === 'Escape') done(); };
@@ -360,7 +361,7 @@ function sosInfo({icon = '', title, body = ''}){
   document.querySelectorAll('[data-room-name]').forEach(el => { el.textContent = ROOM.name; });
   const inv = document.querySelector('[data-invite]');
   if(inv) inv.addEventListener('click', async () => {
-    const text = `[${ROOM.name}] 공동육아 SOS 🆘 방에 초대해요!\n독박 예정인 날 SOS 예약하고, 같이 모여요 💪\n${inviteUrl()}\n(비밀번호는 따로 알려드릴게요)`;
+    const text = `[${ROOM.name}] 공동육아 SOS 🆘 방에 초대해요!\n독박 예정인 날 SOS 요청하고, 같이 모여요 💪\n${inviteUrl()}\n(비밀번호는 따로 알려드릴게요)`;
     if(navigator.share){ try{ await navigator.share({text}); return; }catch(e){ if(e.name === 'AbortError') return; } }
     try{ await navigator.clipboard.writeText(text); inv.textContent = '✅ 복사했어요! 단톡방에 붙여넣으세요'; setTimeout(() => { inv.textContent = '🔗 친구 초대하기'; }, 2500); }
     catch(e){ window.prompt('아래 글을 복사해서 단톡방에 붙여넣으세요.', text); }
@@ -382,7 +383,7 @@ function sosInfo({icon = '', title, body = ''}){
         forgetRoom(ROOM.roomId); location.href = 'index.html'; return;
       }
       const yes = await sosConfirm({icon: '⚠️', title: `'${ROOM.name}' 방을 지울까요?`, danger: true, ok: '네, 지울게요',
-        body: '<p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 예약, 모임, 댓글이 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
+        body: '<p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 요청, 모임, 댓글이 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
       if(!yes) return;
       lv.disabled = true; lv.textContent = '지우는 중…';
       try{ await deleteRoom(); await sosConfirm({icon: '🗑', title: '방을 지웠어요.', body: '<p>기록도 모두 지웠어요.</p>', ok: '확인'}); location.href = 'index.html'; }

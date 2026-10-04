@@ -214,7 +214,7 @@ const GATE_STORY = `        <div class="g-tool">
               <span class="g-ding" aria-hidden="true">🔔 띵동!</span>
               <img src="assets/icon.svg" alt="" width="40" height="40">
               <p class="g-ft">공동육아 SOS</p>
-              <p class="g-fs">🆘 SOS 예약<br>🙌 모임 날짜<br>🔔 새 모임 알림<br><b>약속은 여기서</b></p>
+              <p class="g-fs">🆘 SOS 요청<br>🙌 모임 날짜<br>🔔 새 모임 알림<br><b>약속은 여기서</b></p>
             </div>
           </div>
           <p class="g-fnick">🙋 가입 없이 <b>닉네임</b>만 정하면 끝</p>
@@ -376,7 +376,7 @@ const GATE_HOW_CREATE = `      <div class="g-guide">
         <ol>
           <li>여기서 <b>방 이름 · 비밀번호 · 내 닉네임</b>을 정해 방을 만들어요.</li>
           <li>홈의 <b>🔗 친구 초대하기</b>를 눌러 나온 링크를<br>단톡방·밴드 공지에 올리고, <b>비밀번호도 알려 주세요.</b></li>
-          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹</li>
+          <li>독박 예정인 날엔 <b>🆘 SOS 요청</b>만 꾹</li>
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
         </ol>
         <p class="g-guide-tip">💡 비밀번호는 1234처럼 쉬운 것보다 우리끼리 아는 말로 정해 주세요.<br>비밀번호를 잊으면 되찾을 수 없어요.</p>
@@ -384,7 +384,7 @@ const GATE_HOW_CREATE = `      <div class="g-guide">
 const GATE_HOW_INVITE = `      <div class="g-guide">
         <p class="g-guide-h">📖 들어오면 이렇게 써요</p>
         <ol>
-          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹</li>
+          <li>독박 예정인 날엔 <b>🆘 SOS 요청</b>만 꾹</li>
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
         </ol>
@@ -479,7 +479,7 @@ ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
       ${list}
-      <p class="g-legend">🆘 = 1주일 안의 SOS 예약 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
+      <p class="g-legend">🆘 = 1주일 안의 SOS 요청 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
 ${formHtml.replace(list, '')}
 ${GATE_PASTE}
@@ -566,7 +566,7 @@ ${invite ? '' : GATE_PASTE}
   document.body.appendChild(box);
 }
 
-// 방마다 1주일 안의 SOS 예약 수와 다가오는 모임 수를 세요 (방 목록 옆 표시용). 못 세면 null
+// 방마다 1주일 안의 SOS 요청 수와 다가오는 모임 수를 세요 (방 목록 옆 표시용). 못 세면 null
 function ymdAfter(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 async function roomCounts(room){
   const db = sosDb(); if(!db) return null;
