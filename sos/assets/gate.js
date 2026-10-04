@@ -166,7 +166,7 @@ function gateCss(){
     #gate .g-row .g-room{padding:8px 7px 8px 9px!important;font-size:14px!important;gap:4px}
     #gate .g-row .g-rname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;letter-spacing:-.3px}
     #gate .g-row .g-now{font-size:10px;padding:1px 5px;letter-spacing:-.3px}
-    #gate .g-row .g-chips{gap:3px}
+    #gate .g-row .g-chips{gap:3px;margin-left:6px}
     #gate .g-row .g-chip{font-size:10.5px;padding:1px 5px;letter-spacing:-.3px}
     #gate .g-row .g-chip.quiet{padding:1px 0}
     #gate .g-row .g-go-arrow{font-size:15px}
