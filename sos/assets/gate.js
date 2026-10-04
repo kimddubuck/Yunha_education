@@ -159,12 +159,17 @@ function gateCss(){
     #gate .g-room{padding:12px!important}
     #gate .g-row{display:flex;gap:6px;align-items:stretch}
     #gate .g-row .g-room{flex:1;min-width:0}
-    #gate .bell{flex:none;width:38px;padding:0!important;font-size:16px!important;border-radius:10px!important;background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important}
-    #gate .g-row .g-room{padding:9px 10px!important;font-size:14px!important;gap:6px}
-    #gate .g-row .g-rname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-    #gate .g-row .g-now{font-size:10.5px;padding:1px 6px}
-    #gate .g-row .g-chip{font-size:11.5px;padding:1px 6px}
-    #gate .g-row .g-go-arrow{font-size:17px}
+    #gate .bell{flex:none;width:30px;padding:0!important;font-size:13px!important;border-radius:9px!important;background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important}
+    #gate .g-listbox{padding:10px 8px!important}
+    @media (max-width:370px){#gate{padding-left:10px;padding-right:10px} #gate .g-card{padding-left:12px!important;padding-right:12px!important}}
+    #gate .g-row{gap:4px!important}
+    #gate .g-row .g-room{padding:8px 7px 8px 9px!important;font-size:14px!important;gap:4px}
+    #gate .g-row .g-rname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;letter-spacing:-.3px}
+    #gate .g-row .g-now{font-size:10px;padding:1px 5px;letter-spacing:-.3px}
+    #gate .g-row .g-chips{gap:3px}
+    #gate .g-row .g-chip{font-size:10.5px;padding:1px 5px;letter-spacing:-.3px}
+    #gate .g-row .g-chip.quiet{padding:1px 0}
+    #gate .g-row .g-go-arrow{font-size:15px}
     #gate .bell.on{background:var(--bg,#fff)!important;box-shadow:inset 0 0 0 2px var(--pick,#2a9095)}
     #gate .g-pushhelp .push-help{margin:0;text-align:left}
     #gate .g-pushhelp .push-help > summary{font-size:13px;font-weight:600;color:var(--muted,#736e75);text-align:center;padding:4px}
