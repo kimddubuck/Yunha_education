@@ -493,3 +493,8 @@ a.sos-btn{text-decoration:none;text-align:center}
 .switch:checked::after{left:23px}
 .switch:disabled{opacity:.6}
 .push-saved{margin:0;font-size:12.5px;color:var(--muted);min-height:1em}
+
+/* 홈 표지: 방 이름을 큰 제목으로, 앱 이름·안내는 작게 */
+.cover .cover-app{font-size:13px}
+.cover h1.room-title{font-size:30px;line-height:1.25;margin:2px 0 4px;overflow-wrap:anywhere;color:var(--fg)}
+.cover .cover-sub{font-size:13.5px}
