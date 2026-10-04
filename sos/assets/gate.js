@@ -106,7 +106,12 @@ function roomError(err){
 }
 
 // 첫 화면 이야기(이 앱을 만든 이유) + 3줄 사용법 — 입장 화면과 '소개 다시 보기'가 같이 써요
-const GATE_STORY = `        <div class="g-story">
+const GATE_STORY = `        <div class="g-tool">
+          <p class="g-tool-h">어디서 모이든, 육아모임의<br><b>🆘 SOS · 🙌 모임 도구</b></p>
+          <p class="g-tool-chips"><span>💬 카톡 오픈채팅</span><span>🥕 당근 모임</span><span>🟢 네이버 밴드</span><span>👥 소모임</span></p>
+          <p class="g-tool-sub">대화는 원래 모임에서 그대로,<br>링크 하나로 붙여 써요. 가입 없이 익명으로.</p>
+        </div>
+        <div class="g-story">
           <p class="g-q">"아… 오늘은 또 어떻게 버티지?"</p>
           <p class="g-sub">아기랑 하루 종일 붙어 있는데<br>시간만 흘러가는 것 같은 날.</p>
           <p>같이 육아하면 서로 의지도 되고<br>아이에게도 좋은 에너지를<br>줄 수 있을 것 같은데…</p>
@@ -117,6 +122,8 @@ const GATE_STORY = `        <div class="g-story">
           <li>🆘 <b>힘든 날</b>엔 이름 없이 SOS만 꾹</li>
           <li>👀 SOS가 <b>몰린 시간</b>은 모두가 봐요</li>
           <li>🙌 <b>용기 낸 한 명</b>이 모임을 열어요</li>
+          <li>💬 대화는 <b>원래 단톡방·밴드</b>에서 그대로</li>
+          <li>🙈 가입·프로필 없이 <b>링크 + 비밀번호</b>만</li>
           <li>📲 다운로드 없이 <b>홈 화면 바로가기</b>로 앱처럼</li>
         </ul>`;
 
@@ -133,6 +140,12 @@ function gateCss(){
     #gate input{font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line,#e2e6e1);background:var(--bg,#fff);color:var(--fg,#1f2a24);text-align:center}
     #gate button{font:inherit;font-weight:700;font-size:15px;padding:12px;border-radius:12px;border:0;background:var(--pick,#2a9095);color:var(--pick-fg,#fff);cursor:pointer}
     #gate .g-msg{color:#c0392b;min-height:1.2em}
+    #gate .g-tool{display:flex;flex-direction:column;gap:8px;padding:14px 12px;border-radius:14px;border:2px solid var(--pick,#2a9095)}
+    #gate .g-tool-h{font-size:16px!important;line-height:1.5;color:var(--fg,#22282a)!important}
+    #gate .g-tool-h b{color:var(--accent-ink,#1c7276);font-size:18px}
+    #gate .g-tool-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
+    #gate .g-tool-chips span{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--tag,#efefef);color:var(--fg,#22282a)}
+    #gate .g-tool-sub{font-size:13px!important;line-height:1.6}
     #gate .g-story{text-align:left;display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
@@ -233,7 +246,7 @@ ${GATE_STORY}
 // 비밀번호 화면의 사용 방법: 이미 쓰는 모임 앱(단톡방·밴드 등) 옆에 붙여 쓰는 도구라는 것
 const GATE_HOW_CREATE = `      <div class="g-guide">
         <p class="g-guide-h">📖 이렇게 써요</p>
-        <p>우리 모임이 있는 곳은 그대로 두세요.<br><b>카카오톡 오픈채팅 · 네이버 밴드</b><br><b>당근 모임 · 소모임</b> 등 어디든 괜찮아요.<br>이 앱은 그 모임에서 <b>공동육아 모임을<br>쉽게 추진할 수 있게 돕는 도구</b>라고 생각하면 돼요.</p>
+        <p>우리 모임은 원래 있던 곳에 그대로 두세요.<br><b>카톡 오픈채팅 · 당근 모임 · 밴드 · 소모임</b><br>어디든 <b>링크 하나로 붙여 쓰는 도구</b>예요.<br>대화는 거기서, <b>SOS와 모임 날짜만 여기서.</b></p>
         <ol>
           <li>여기서 <b>방 이름과 비밀번호</b>를 정해 방을 만들어요.</li>
           <li>홈의 <b>🔗 친구 초대하기</b>를 눌러 나온 링크를<br>단톡방·밴드 공지에 올리고, <b>비밀번호도 알려 주세요.</b></li>
