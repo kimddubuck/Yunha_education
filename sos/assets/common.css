@@ -573,3 +573,6 @@ button.sos-chip{font:inherit;border:0;cursor:pointer}
 .sos-pop-btn small{font-size:12px;font-weight:600;opacity:.92}
 .sos-pop-btn.on{background:var(--tag);color:var(--accent-ink);box-shadow:inset 0 0 0 2px var(--pick)}
 .sos-pop-btn:disabled{opacity:.6;cursor:default}
+.pop .sos-pop-btn{width:auto;min-width:200px;margin:10px auto 2px;padding:8px 18px;font-size:14px;box-shadow:0 2px 8px rgba(224,51,43,.3)}
+.pop .sos-pop-btn small{font-size:11px}
+.pop .sos-pop-btn.on{box-shadow:inset 0 0 0 2px var(--pick)}
