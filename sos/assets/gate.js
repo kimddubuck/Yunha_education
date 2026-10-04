@@ -102,6 +102,13 @@ function gateCss(){
     #gate .g-rooms{display:flex;flex-direction:column;gap:6px}
     #gate .g-room{background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important;font-weight:600}
     #gate .g-room[aria-current]{outline:2px solid var(--pick,#2a9095)}
+    #gate .g-extra{text-align:left;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line,#e3e3e5);padding-top:14px}
+    #gate .g-extra details p, #gate .g-extra ol, #gate .g-extra ul{font-size:13.5px;line-height:1.6;margin:6px 0}
+    #gate .g-extra input{width:100%;box-sizing:border-box;margin:6px 0}
+    #gate .g-extra .g-go, #gate .g-extra .g-install{width:100%}
+    #gate .g-safety{text-align:center;margin-top:4px}
+    #gate .g-card[hidden]{display:none}
+    #gate .g-back{background:transparent!important;color:var(--accent-ink,#1c7276)!important;font-weight:600}
     #gate .g-pw{margin-top:4px;border-top:1px solid var(--line,#e3e3e5);padding-top:14px}`;
   css.id = 'gateCss'; document.head.appendChild(css);
 }
@@ -127,6 +134,62 @@ ${GATE_STORY}
   box.querySelector('.g-ok').focus();
 }
 
+// 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
+const GATE_EXTRA = `      <div class="g-extra">
+        <details class="how-to">
+          <summary>📲 홈 화면에 앱으로 설치하기</summary>
+          <p>설치하면 홈 화면에 SOS 깃발 든 가족<br>아이콘이 생겨서 앱처럼 바로 열려요.</p>
+          <div class="webapp-note">
+            <p class="webapp-h">💡 웹앱이 뭐예요? 다운로드 아니에요!</p>
+            <p>이 웹사이트를<br><b>홈 화면에 바로가기로 추가</b>하는 거예요.<br>컴퓨터 바탕화면 바로가기와 같아요.</p>
+            <ul>
+              <li>앱스토어에서 받지 않아요</li>
+              <li>용량도 거의 차지하지 않아요</li>
+              <li>필요 없으면 아이콘만 지우면 끝이에요</li>
+            </ul>
+          </div>
+          <button type="button" class="g-install" hidden>📲 지금 설치하기</button>
+          <p><b>🤖 안드로이드 (크롬)</b></p>
+          <ol>
+            <li>크롬으로 이 사이트를 열어요.</li>
+            <li>오른쪽 위 <b>⋮ (점 세 개)</b>를 눌러요.</li>
+            <li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 눌러요.</li>
+            <li><b>설치</b>를 누르면 끝! 홈 화면에 공동육아 SOS 아이콘이 생겨요.</li>
+          </ol>
+          <p><b>🍎 아이폰 (크롬 · 사파리)</b></p>
+          <ol>
+            <li><b>크롬</b>: 주소창 오른쪽의 <b>공유 버튼 (⬆︎ 네모에 화살표)</b>을 눌러요.<br><b>사파리</b>: 아래쪽 가운데 <b>공유 버튼</b>을 눌러요.</li>
+            <li>목록을 아래로 내려 <b>홈 화면에 추가</b>를 눌러요.</li>
+            <li>오른쪽 위 <b>추가</b>를 누르면 끝! 홈 화면에 공동육아 SOS 아이콘이 생겨요.</li>
+          </ol>
+          <p>아이폰은 설치한 앱을 처음 열 때 방을 한 번 더 물어봐요. <b>시작하기</b>를 누르고 <b>🔗 초대 링크를 받았어요</b>에 링크를 붙여넣고 비밀번호를 넣어 주세요.</p>
+          <p>카카오톡에서 링크를 열었다면, 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러 주세요.</p>
+        </details>
+        <a class="g-link g-safety" href="safety.html">🔒 무엇을 저장하나요? 개인정보 안내 보기</a>
+      </div>`;
+const GATE_PASTE = `      <div class="g-extra">
+        <details class="how-to">
+          <summary>🔗 초대 링크를 받았어요</summary>
+          <p>단톡방에서 받은 초대 링크를 길게 눌러 복사한 뒤 여기에 붙여넣어 주세요.<br>(아이폰에서 홈 화면 앱으로 처음 열었을 때도 여기서 들어가요)</p>
+          <input id="gateLink" aria-label="초대 링크" placeholder="초대 링크 붙여넣기" autocomplete="off">
+          <button type="button" class="g-go">이 방으로 가기</button>
+        </details>
+      </div>`;
+
+// 안드로이드 크롬이 "바로 설치할 수 있어요" 신호를 주면 입장 화면의 '지금 설치하기' 버튼을 보여 줘요
+let gateInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  gateInstall = e;
+  const b = document.querySelector('#gate .g-install'); if(b) b.hidden = false;
+});
+
+// 초대 링크(또는 방 코드만)에서 방 코드를 꺼내요
+function inviteCode(text){
+  const t = String(text || '').trim();
+  const m = /[?&]r=([a-z0-9]{6,20})/i.exec(t) || /^([a-z0-9]{6,20})$/i.exec(t);
+  return m ? m[1].toLowerCase() : null;
+}
+
 // 방 고르기 화면: 초대 링크로 왔으면 비밀번호, 아니면 방 만들기 (+ 이 기기에 기억된 방 목록)
 function showRooms(closable){
   gateCss();
@@ -135,25 +198,52 @@ function showRooms(closable){
   const box = document.createElement('div'); box.id = 'gate'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '모임 방');
   const list = rooms.length && !invite ? `<p class="g-pw">🏠 이 휴대폰에 기억된 방</p><div class="g-rooms">` +
     rooms.map(r => `<button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}></button>`).join('') + '</div>' : '';
-  box.innerHTML = `<form class="g-card" autocomplete="off">
-      ${closable ? '<button type="button" class="g-close" aria-label="닫기">✕</button>' : ''}
-      <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
-      <h1>공동육아 SOS 🆘</h1>
-${closable ? '' : GATE_STORY}
+  const formHtml = `
       ${list}
       ${invite ? `<p class="g-pw">🔑 초대받은 모임 방이에요.<br>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
       <button type="submit">들어가기</button>`
-      : `<p class="g-pw">🏠 <b>새 모임 방 만들기</b><br>방을 만들고 초대 링크를 단톡방에 올리면 끝!<br>초대 링크를 받았다면 그 링크로 열어 주세요.</p>
+      : `<p class="g-pw">🏠 <b>새 모임 방 만들기</b><br>방을 만들고 초대 링크를 단톡방에 올리면 끝!</p>
       <input id="gateName" aria-label="방 이름" placeholder="방 이름 (예: 래미안 3단지 공동육아)" maxlength="30">
       <input type="password" id="gatePw" aria-label="방 비밀번호" placeholder="비밀번호 (4자 이상)" maxlength="40">
       <button type="submit">방 만들기</button>`}
-      <p class="g-msg" id="gateMsg" aria-live="polite"></p>
+      <p class="g-msg" id="gateMsg" aria-live="polite"></p>`;
+  // 처음 열 때: ① 앱 소개(이야기 · 설치 안내 · 개인정보) → [시작하기] → ② 비밀번호 / 방 만들기
+  box.innerHTML = closable ? `<form class="g-card" autocomplete="off">
+      <button type="button" class="g-close" aria-label="닫기">✕</button>
+      <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
+      <h1>공동육아 SOS 🆘</h1>
+${formHtml}
+    </form>` : `<div class="g-card g-step1">
+      <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
+      <h1>공동육아 SOS 🆘</h1>
+${GATE_STORY}
+      <button type="button" class="g-start">시작하기</button>
+${GATE_EXTRA}
+    </div>
+    <form class="g-card g-step2" autocomplete="off" hidden>
+      <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
+      <h1>공동육아 SOS 🆘</h1>
+${formHtml}
+${invite ? '' : GATE_PASTE}
+      <button type="button" class="g-back">← 앱 소개 다시 보기</button>
     </form>`;
   box.querySelectorAll('[data-room]').forEach(b => { b.textContent = rooms.find(r => r.roomId === b.dataset.room).name; });   // 방 이름은 글자로만
   const msg = t => { box.querySelector('#gateMsg').textContent = t; };
+  if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;
   const enter = room => { rememberRoom(room); location.href = 'index.html'; };
-  box.addEventListener('click', e => {
+  box.addEventListener('click', async e => {
+    const step = n => { box.querySelector('.g-step1').hidden = n !== 1; box.querySelector('.g-step2').hidden = n !== 2; box.scrollTop = 0; };
+    if(e.target.closest('.g-start')){ step(2); return; }
+    if(e.target.closest('.g-back')){ step(1); return; }
+    if(e.target.closest('.g-go')){
+      const code = inviteCode(box.querySelector('#gateLink').value);
+      if(!code){ msg('초대 링크를 확인해 주세요. 링크 전체를 붙여넣어 주세요.'); return; }
+      location.href = 'index.html?r=' + code; return;
+    }
+    if(e.target.closest('.g-install') && gateInstall){
+      gateInstall.prompt(); await gateInstall.userChoice.catch(() => {}); gateInstall = null; e.target.closest('.g-install').hidden = true; return;
+    }
     const r = e.target.closest('[data-room]');
     if(r){ enter(rooms.find(x => x.roomId === r.dataset.room)); return; }
     if(closable && (e.target === box || e.target.closest('.g-close'))) box.remove();
@@ -183,7 +273,7 @@ ${closable ? '' : GATE_STORY}
 }
 
 (function gate(){
-  if(ROOM) return;
+  if(ROOM || document.documentElement.hasAttribute('data-public')) return;
   document.documentElement.classList.add('gate-locked');
   if(document.body) showRooms(false); else document.addEventListener('DOMContentLoaded', () => showRooms(false));
 })();

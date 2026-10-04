@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-public>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610040053">
+<link rel="manifest" href="manifest.webmanifest?v=202610040306">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610040053">
-<script src="assets/gate.js?v=202610040053"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610040306">
+<script src="assets/gate.js?v=202610040306"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -37,7 +37,7 @@
     </section>
 
     <section class="slot">
-      <h2>☁️ 서버(Google Firebase)에 저장되는 것 — 모두가 보는 내용</h2>
+      <h2>☁️ 서버(Google Firebase)에 저장되는 것 — 같은 방 사람들이 보는 내용</h2>
       <table class="safe-table">
         <tr><th>어디서</th><th>저장되는 것</th></tr>
         <tr><td>🏠 모임 방</td><td><b>방 이름만</b>. 비밀번호는 저장하지 않아요. 비밀번호로 만든 암호화된 열쇠가 방 주소가 돼서, 비밀번호를 아는 사람만 방을 찾을 수 있어요.</td></tr>
@@ -45,7 +45,7 @@
         <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 별명</b>(직접 적은 것), 참석·미확정·불참 숫자, 댓글 글</td></tr>
         <tr><td>🧸 놀이 추가</td><td>놀이 이름·방법·준비물</td></tr>
       </table>
-      <p class="hint">통신은 모두 암호화(HTTPS)돼요. 서버는 Google Firebase를 써요.</p>
+      <p class="hint">모임 방마다 따로 저장돼서, <b>방 비밀번호를 아는 사람만</b> 그 방의 SOS·모임·댓글을 볼 수 있어요. 다른 방 사람은 볼 수 없어요.<br>통신은 모두 암호화(HTTPS)돼요. 서버는 Google Firebase를 써요.</p>
     </section>
 
     <section class="slot">
@@ -67,12 +67,13 @@
         <li><b>SOS 예약</b>: '📌 내 SOS 예약'에서 언제든 취소 → 숫자가 바로 1 줄어요.</li>
         <li><b>모임</b>: 연 휴대폰에서 '내가 연 모임 취소하기' → '취소된 모임'으로 표시돼요.</li>
         <li><b>모임 댓글</b>: 쓴 휴대폰에서 댓글 옆 '수정'·'삭제'를 누르면 돼요.</li>
+        <li><b>모임 방</b>: 이 휴대폰에서 방을 빼려면 브라우저의 사이트 데이터를 지우면 돼요. 서버의 방 자체를 지우고 싶으면 운영자에게 알려 주세요.</li>
       </ul>
     </section>
   </main>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610040053"></script>
+<script src="assets/common.js?v=202610040306"></script>
 </body>
 </html>
