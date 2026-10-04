@@ -199,14 +199,39 @@ function sosWatch(cb){
 }
 // 내 SOS 요청 시간들 (그 날 문서의 p[내 uid].h)
 const sosMine = v => ((v && v.p && v.p[ME.uid]) || {}).h || [];
-// 그 시간에 SOS 보낸 사람 팝업
+// 이 시간 SOS 요청 ↔ 취소 (내 칸만 바꿔요). 바뀐 뒤의 날짜 문서(화면용)를 돌려줘요
+async function sosToggleHour(day, h, v){
+  const col = roomRef().collection('sos'), mine = sosMine(v), on = mine.includes(h);
+  const hours = on ? mine.filter(x => x !== h) : [...mine, h].sort((x, y) => x - y);
+  if(hours.length) await col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true});
+  else await col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
+  if(!on && typeof pushSosCrowd === 'function') pushSosCrowd(day, h + '시', sosHourCount(v, h) + 1);   // 같은 시간 3명이 되는 순간 알림
+  const nv = {...(v || {}), p: {...((v && v.p) || {})}};
+  if(hours.length) nv.p[ME.uid] = {h: hours, n: ME.nick}; else delete nv.p[ME.uid];
+  return nv;
+}
+// 그 시간에 SOS 보낸 사람 팝업 + 바로 요청하기(다시 누르면 취소)
 function showSosNames(day, h, v){
+  h = +h;
   const names = sosHourNames(v, h), old = (v && v['h' + h]) || 0;
+  const mine = ME.uid && sosMine(v).includes(h);
+  const past = day < todayStr() || (day === todayStr() && h < new Date().getHours());
+  const btn = !ME.uid ? '' : past && !mine ? '<p class="who-none">지난 시간이라 요청할 수 없어요.</p>'
+    : `<button type="button" class="sos-pop-btn${mine ? ' on' : ''}" data-sos-toggle>${mine
+      ? '✅ SOS 요청했어요<small>다시 누르면 취소돼요</small>'
+      : `🆘 이 시간 SOS 요청하기<small>${esc(ME.nick)}(으)로 보내요</small>`}</button>`;
   const body = (names.length ? `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>` : '')
     + (old ? `<p class="who-none">+ 예전 기록 ${old}명 (닉네임 없음)</p>` : '')
     + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
+    + btn
     + '<p class="who-tip">💪 같은 시간에 SOS가 모였다면 모임을 열어 보세요!</p>';
-  sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body});
+  const box = sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body});
+  box.addEventListener('click', async e => {
+    const b = e.target.closest('[data-sos-toggle]'); if(!b || b.disabled) return;
+    b.disabled = true; b.innerHTML = '저장 중…';
+    try{ const nv = await sosToggleHour(day, h, v); box.remove(); showSosNames(day, h, nv); }
+    catch(err){ sosTrouble(err); b.disabled = false; b.innerHTML = '⚠️ 저장하지 못했어요<small>다시 눌러 주세요</small>'; }
+  });
 }
 
 function sosInit(){
@@ -305,10 +330,9 @@ function sosSummary(){
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 요청</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
-      <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>숫자를 누르면 누가 보냈는지 보여요.</b></p>
+      <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>시간을 누르면 누가 보냈는지 보이고, 바로 요청할 수 있어요.</b></p>
       <div class="sos-today">${cells}</div>
-      ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 요청</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}
-      <a class="sos-btn" href="meet.html#sos">🆘 독박 예정? SOS 요청하기<small>날짜와 시간만 누르면 끝</small></a>`;
+      ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 요청</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
   };
   box.addEventListener('click', e => {
