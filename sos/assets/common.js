@@ -228,6 +228,26 @@ function sosSummary(){
   sosWatch(d => draw(d));
 }
 
+/* 확인 팝업: sosConfirm({icon, title, body(HTML), ok, danger}) → 누르면 true, 취소면 false */
+function sosConfirm({icon = '', title, body = '', ok = '확인', danger = false}){
+  return new Promise(resolve => {
+    const box = document.createElement('div'); box.className = 'pop-back';
+    box.innerHTML = `<div class="pop" role="alertdialog" aria-modal="true" aria-labelledby="popT">
+        ${icon ? `<p class="pop-icon" aria-hidden="true">${icon}</p>` : ''}
+        <p class="pop-t" id="popT"></p>
+        <div class="pop-b">${body}</div>
+        <div class="pop-btns"><button type="button" class="btn" data-pop="0">취소</button>
+        <button type="button" class="btn ${danger ? 'danger' : 'primary'}" data-pop="1">${ok}</button></div>
+      </div>`;
+    box.querySelector('#popT').textContent = title;   // 방 이름이 들어가니 글자로만
+    const done = v => { box.remove(); document.removeEventListener('keydown', esc); resolve(v); };
+    const esc = e => { if(e.key === 'Escape') done(false); };
+    box.addEventListener('click', e => { const b = e.target.closest('[data-pop]'); if(b) done(b.dataset.pop === '1'); else if(e.target === box) done(false); });
+    document.addEventListener('keydown', esc);
+    document.body.appendChild(box); box.querySelector('[data-pop="0"]').focus();
+  });
+}
+
 /* 모임 방 이름 · 친구 초대 · 방 바꾸기 (홈 표지) */
 (function roomBar(){
   if(!ROOM) return;
@@ -239,6 +259,30 @@ function sosSummary(){
     try{ await navigator.clipboard.writeText(text); inv.textContent = '✅ 복사했어요! 단톡방에 붙여넣으세요'; setTimeout(() => { inv.textContent = '🔗 친구 초대하기'; }, 2500); }
     catch(e){ window.prompt('아래 글을 복사해서 단톡방에 붙여넣으세요.', text); }
   });
+  // 🗑 방 지우기(방장) / 이 휴대폰에서 방 빼기(초대받은 사람)
+  const lv = document.querySelector('[data-leave]');
+  if(lv){
+    // 방장(이 휴대폰에서 만든 방)이거나, 방장 열쇠 없이 만든 예전 방이면 지울 수 있어요
+    let canDelete = !!ROOM.owner;
+    const label = () => { lv.textContent = canDelete ? '🗑 방 지우기' : '🚪 이 휴대폰에서 방 빼기'; };
+    label();
+    const r = roomRef();
+    if(r && !canDelete) r.get().then(d => { if(d.exists && !d.data().oh){ canDelete = true; label(); } }).catch(() => {});
+    lv.addEventListener('click', async () => {
+      if(!canDelete){
+        const yes = await sosConfirm({icon: '🚪', title: `이 휴대폰에서 '${ROOM.name}' 방을 뺄까요?`,
+          body: '<p>내 목록에서만 사라져요. 방과 기록은 그대로 있어요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>', ok: '방 빼기'});
+        if(!yes) return;
+        forgetRoom(ROOM.roomId); location.href = 'index.html'; return;
+      }
+      const yes = await sosConfirm({icon: '⚠️', title: `'${ROOM.name}' 방을 지울까요?`, danger: true, ok: '네, 지울게요',
+        body: '<p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 예약, 모임, 댓글, 추가한 놀이가 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
+      if(!yes) return;
+      lv.disabled = true; lv.textContent = '지우는 중…';
+      try{ await deleteRoom(); await sosConfirm({icon: '🗑', title: '방을 지웠어요.', body: '<p>기록도 모두 지웠어요.</p>', ok: '확인'}); location.href = 'index.html'; }
+      catch(e){ lv.disabled = false; lv.textContent = '🗑 방 지우기'; sosConfirm({icon: '😢', title: '지우지 못했어요.', body: '<p>인터넷 연결을 확인하고 다시 눌러 주세요.</p>', ok: '확인'}); }
+    });
+  }
   const sw = document.querySelector('[data-rooms]');
   if(sw) sw.addEventListener('click', () => showRooms(true));
 })();

@@ -388,3 +388,16 @@ a.sos-btn{text-decoration:none;text-align:center}
 /* 홈 표지: 친구 초대 · 방 바꾸기 */
 .room-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .room-bar .btn{font-size:13px}
+
+/* 확인 팝업 (방 지우기 등) */
+.pop-back{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,30,28,.45)}
+.pop{width:100%;max-width:340px;background:var(--bg);border-radius:18px;padding:22px 18px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);text-align:center}
+.pop-icon{margin:0;font-size:34px}
+.pop-t{margin:6px 0 10px;font-size:17px;font-weight:700;word-break:keep-all;overflow-wrap:anywhere}
+.pop-b{text-align:left;font-size:14px;line-height:1.6;color:var(--fg)}
+.pop-b p{margin:0 0 8px}
+.pop-b ul{margin:0 0 4px;padding-left:18px}
+.pop-warn{color:#c0392b;font-weight:700;text-align:center}
+.pop-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.pop-btns .btn{width:100%;padding:11px 8px}
+.btn.danger{background:#d64535;color:#fff;border-color:#d64535}

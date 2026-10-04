@@ -16,6 +16,12 @@ const ROOMS_KEY = 'sosRooms', CUR_KEY = 'sosRoom';
 
 // 이 기기에 기억된 방 목록 [{roomId, key, name}]
 function sosRooms(){ try{ return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); }catch(e){ return []; } }
+function forgetRoom(roomId){
+  try{
+    localStorage.setItem(ROOMS_KEY, JSON.stringify(sosRooms().filter(r => r.roomId !== roomId)));
+    if(localStorage.getItem(CUR_KEY) === roomId) localStorage.removeItem(CUR_KEY);
+  }catch(e){}
+}
 function rememberRoom(room){
   try{
     localStorage.setItem(ROOMS_KEY, JSON.stringify([room, ...sosRooms().filter(r => r.roomId !== room.roomId)].slice(0, 20)));
@@ -50,6 +56,40 @@ async function roomKey(roomId, pw){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(roomId + ':' + pw.trim().normalize('NFC')));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
 }
+function randomHex(){ return Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2,'0')).join(''); }
+async function sha256Hex(t){ const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return Array.from(new Uint8Array(h), b => b.toString(16).padStart(2,'0')).join(''); }
+const roomGone = snap => !snap.exists || snap.data().deleted === true;
+
+// 방 지우기 (방을 만든 휴대폰만)
+//  1) 방이 살아 있을 때 방 안의 기록(모임·댓글·SOS·놀이) 위치를 모두 모아 두고
+//  2) 방장 열쇠(owner)를 보내 '지워짐' 표시 + 방 이름 비우기 (서버의 지문 oh 와 맞아야 함)
+//  3) 모아 둔 기록을 서버에서 실제로 지워요 (서버 규칙: 지워진 방의 기록만 지울 수 있음)
+//  예전에 열쇠 없이 만든 방은 들어온 사람 누구나 지울 수 있어요.
+async function deleteRoom(){
+  const db = sosDb(); if(!db || !ROOM) throw new Error('offline');
+  const room = db.collection('rooms').doc(ROOM.key), refs = [];
+  const ops = await room.collection('opinions').get();
+  for(const d of ops.docs){
+    refs.push(d.ref);
+    (await d.ref.collection('comments').get()).docs.forEach(c => refs.push(c.ref));
+  }
+  for(const name of ['sos', 'plays']) (await room.collection(name).get()).docs.forEach(d => refs.push(d.ref));
+  await room.update({deleted: true, name: '', k: ROOM.owner || ''});
+  forgetRoom(ROOM.roomId);
+  for(let i = 0; i < refs.length; i += 400){
+    const batch = db.batch(); refs.slice(i, i + 400).forEach(r => batch.delete(r)); await batch.commit();
+  }
+}
+
+// 들어와 있는 방이 지워졌으면 이 휴대폰에서도 빼고 알려 줘요
+window.addEventListener('load', async () => {
+  const db = sosDb(); if(!db || !ROOM) return;
+  try{
+    const snap = await db.collection('rooms').doc(ROOM.key).get();
+    if(roomGone(snap)){ forgetRoom(ROOM.roomId); alert(`'${ROOM.name}' 방은 방장이 지웠어요.`); location.href = 'index.html'; }
+  }catch(e){ /* 인터넷 문제: 그냥 둬요 */ }
+});
+
 function inviteUrl(){ return location.href.split(/[?#]/)[0].replace(/[^/]*$/, '') + 'index.html?r=' + ROOM.roomId; }
 function newRoomId(){
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';   // 헷갈리는 글자(0,o,1,l,i) 빼고
@@ -106,6 +146,12 @@ function gateCss(){
     #gate .g-extra details p, #gate .g-extra ol, #gate .g-extra ul{font-size:13.5px;line-height:1.6;margin:6px 0}
     #gate .g-extra input{width:100%;box-sizing:border-box;margin:6px 0}
     #gate .g-extra .g-go, #gate .g-extra .g-install{width:100%}
+    #gate .g-guide{text-align:left;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
+    #gate .g-guide p, #gate .g-guide ol{font-size:13.5px;line-height:1.65;color:var(--fg,#22282a);margin:0 0 6px}
+    #gate .g-guide ol{padding-left:20px}
+    #gate .g-guide li{margin:3px 0}
+    #gate .g-guide-h{font-weight:700;font-size:15px!important}
+    #gate .g-guide-tip{color:var(--muted,#736e75)!important;font-size:12.5px!important;margin:6px 0 0!important}
     #gate .g-safety{text-align:center;margin-top:4px}
     #gate .g-card[hidden]{display:none}
     #gate .g-back{background:transparent!important;color:var(--accent-ink,#1c7276)!important;font-weight:600}
@@ -133,6 +179,27 @@ ${GATE_STORY}
   document.body.appendChild(box);
   box.querySelector('.g-ok').focus();
 }
+
+// 비밀번호 화면의 사용 방법: 이미 쓰는 모임 앱(단톡방·밴드 등) 옆에 붙여 쓰는 도구라는 것
+const GATE_HOW_CREATE = `      <div class="g-guide">
+        <p class="g-guide-h">📖 이렇게 써요</p>
+        <p>우리 모임이 있는 곳은 그대로 두세요.<br><b>카카오톡 오픈채팅 · 네이버 밴드</b><br><b>당근 모임 · 소모임</b> 등 어디든 괜찮아요.<br>이 앱은 그 옆에 붙여 쓰는 SOS 도우미예요.</p>
+        <ol>
+          <li>여기서 <b>방 이름과 비밀번호</b>를 정해 방을 만들어요.</li>
+          <li>홈의 <b>🔗 친구 초대하기</b>를 눌러 나온 링크를<br>단톡방·밴드 공지에 올리고, <b>비밀번호도 알려 주세요.</b></li>
+          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹 (누가 눌렀는지 몰라요)</li>
+          <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
+        </ol>
+        <p class="g-guide-tip">💡 비밀번호는 1234처럼 쉬운 것보다 우리끼리 아는 말로 정해 주세요.<br>비밀번호를 잊으면 되찾을 수 없어요.</p>
+      </div>`;
+const GATE_HOW_INVITE = `      <div class="g-guide">
+        <p class="g-guide-h">📖 들어오면 이렇게 써요</p>
+        <ol>
+          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹 (누가 눌렀는지 몰라요)</li>
+          <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
+          <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
+        </ol>
+      </div>`;
 
 // 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
 const GATE_EXTRA = `      <div class="g-extra">
@@ -199,6 +266,7 @@ function showRooms(closable){
   const list = rooms.length && !invite ? `<p class="g-pw">🏠 이 휴대폰에 기억된 방</p><div class="g-rooms">` +
     rooms.map(r => `<button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}></button>`).join('') + '</div>' : '';
   const formHtml = `
+${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       ${list}
       ${invite ? `<p class="g-pw">🔑 초대받은 모임 방이에요.<br>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
@@ -256,15 +324,16 @@ ${invite ? '' : GATE_PASTE}
     try{
       if(invite){
         const key = await roomKey(INVITE, pw), snap = await db.collection('rooms').doc(key).get();
-        if(!snap.exists){ msg('비밀번호가 맞지 않아요. 단톡방 공지를 확인해 주세요.'); box.querySelector('#gatePw').select(); return; }
+        if(roomGone(snap)){ msg('비밀번호가 맞지 않거나, 방장이 지운 방이에요.'); box.querySelector('#gatePw').select(); return; }
         enter({roomId: INVITE, key, name: snap.data().name});
       }else{
         const name = box.querySelector('#gateName').value.trim();
         if(!name){ msg('방 이름을 적어 주세요.'); return; }
         if(pw.trim().length < 4){ msg('비밀번호는 4자 이상으로 해 주세요.'); return; }
         const roomId = newRoomId(), key = await roomKey(roomId, pw);
-        await db.collection('rooms').doc(key).set({name, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-        enter({roomId, key, name});
+        const owner = randomHex();   // 방장 열쇠: 이 휴대폰에만 두고, 서버에는 지문만
+        await db.collection('rooms').doc(key).set({name, oh: await sha256Hex(owner), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+        enter({roomId, key, name, owner});
       }
     }catch(err){ msg(roomError(err)); }
     finally{ btn.disabled = false; }
