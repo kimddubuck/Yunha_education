@@ -261,7 +261,11 @@ $('#meetList').addEventListener('submit', async e => {
 
 $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
 $('#newToggle').addEventListener('click', () => { $('#meetForm').hidden = !$('#meetForm').hidden; if(!$('#meetForm').hidden) $('#meetText').focus(); });
-if(location.hash==='#new') $('#meetForm').hidden = false;
+if(location.hash==='#new'){   // 홈의 '모임 열기'로 왔으면 모임 만들기 칸까지 바로 내려가요
+  $('#meetForm').hidden = false;
+  const go = () => $('#newToggle').scrollIntoView({block: 'start', behavior: 'smooth'});
+  setTimeout(go, 150); setTimeout(() => { if(window.scrollY < 50) go(); }, 900);
+}
 if(location.hash==='#sos') setTimeout(() => $('[data-sos]').scrollIntoView({block:'start'}), 50);
 meetInit();
 sosInit();
