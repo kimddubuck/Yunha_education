@@ -8,25 +8,62 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610040443">
+<link rel="manifest" href="manifest.webmanifest?v=202610040509">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610040443">
-<script src="assets/gate.js?v=202610040443"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610040509">
+<script src="assets/gate.js?v=202610040509"></script>
 </head>
 <body>
 <div class="wrap single">
   <nav class="site-nav" id="siteNav" data-page="safety" aria-label="메뉴"></nav>
-  <main class="safety">
-    <section class="slot">
-      <div class="slot-h"><h1>🔒 개인정보</h1></div>
-      <p class="hint">걱정되시는 분들을 위해, 이 사이트가 무엇을 저장하고 무엇을 저장하지 않는지 있는 그대로 적었어요. 쓰기 싫으시면 안 쓰셔도 괜찮아요 🙂</p>
+  <main class="safety safe2">
+    <section class="safe-hero">
+      <p class="safe-lock" aria-hidden="true">🔒</p>
+      <h1>안심하고 쓰세요</h1>
+      <p>이름도, 전화번호도 받지 않아요.<br>우리 방 사람끼리만 봐요.</p>
+      <div class="safe-badges">
+        <span>✅ 회원가입 없음</span>
+        <span>✅ 이름·전화번호 안 받음</span>
+        <span>✅ 광고·추적 없음</span>
+      </div>
     </section>
 
-    <section class="slot">
+    <section class="safe-card">
+      <h2>🔑 우리 방 사람만 봐요</h2>
+      <div class="safe-flow">
+        <span class="sf-item">🔗 초대 링크</span><span class="sf-op">+</span><span class="sf-item">🔑 비밀번호</span><span class="sf-op">=</span><span class="sf-item sf-ok">🏠 입장</span>
+      </div>
+      <p>둘 중 하나만 있으면 못 들어와요.<br>다른 방 사람은 우리 방을 찾을 수도 없어요.</p>
+    </section>
+
+    <section class="safe-card">
+      <h2>☁️ 서버에 남는 건 이것뿐</h2>
+      <div class="safe-grid">
+        <div><b>🆘 SOS</b><span>시간별 <em>숫자만</em><br>누가 눌렀는지 몰라요</span></div>
+        <div><b>🙌 모임</b><span>날짜·장소 글<br>주최자 <em>별명</em></span></div>
+        <div><b>💬 댓글</b><span>쓴 글만<br>누가 썼는지 안 남아요</span></div>
+        <div><b>🏠 방</b><span><em>방 이름만</em><br>비밀번호는 저장 안 해요</span></div>
+      </div>
+    </section>
+
+    <section class="safe-card">
+      <h2>🗑 언제든 지울 수 있어요</h2>
+      <ul class="safe-short">
+        <li>SOS 예약은 <b>내 SOS 예약 → 취소</b></li>
+        <li>내 모임·댓글은 쓴 휴대폰에서 <b>취소·삭제</b></li>
+        <li>방장은 <b>🗑 방 지우기</b> → 기록까지 모두 삭제</li>
+      </ul>
+    </section>
+
+    <p class="safe-tip">💡 방 이름과 주최자 이름은 <b>실명 대신 별명</b>을 추천해요. (예: 3단지 놀이터 모임, 하늘맘)</p>
+
+    <details class="safe-more">
+      <summary>📄 자세히 보기</summary>
+<section class="slot">
       <h2>✅ 모으지 않는 것</h2>
       <ul class="safe-list">
         <li>회원가입·로그인이 없어요. <b>이름, 전화번호, 카카오 계정, 이메일을 받지 않아요.</b></li>
@@ -70,10 +107,12 @@
         <li><b>모임 방</b>: 방을 만든 휴대폰에서 홈의 '🗑 방 지우기'를 누르면 방과 그 안의 기록(SOS 예약·모임·댓글·놀이)이 서버에서 모두 지워져요. 초대받은 사람은 '🚪 이 휴대폰에서 방 빼기'로 내 목록에서만 뺄 수 있어요.</li>
       </ul>
     </section>
+
+    </details>
   </main>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610040443"></script>
+<script src="assets/common.js?v=202610040509"></script>
 </body>
 </html>

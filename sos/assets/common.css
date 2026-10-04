@@ -424,3 +424,31 @@ a.sos-btn{text-decoration:none;text-align:center}
 .next-star.s2{bottom:-12px;right:26px;font-size:18px;animation-delay:1.2s}
 @keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
 @media (prefers-reduced-motion: reduce){.next-star{animation:none}}
+
+/* 개인정보: 짧고 한눈에 (안심 배지 · 입장 그림 · 저장 항목 타일) */
+.safe2{display:flex;flex-direction:column;gap:14px}
+.safe-hero{text-align:center;padding:22px 16px;border-radius:18px;background:var(--accent-soft);border:1px solid var(--line)}
+.safe-lock{font-size:44px;margin:0}
+.safe-hero h1{margin:4px 0 6px;font-size:24px;color:var(--accent-ink)}
+.safe-hero p{margin:0;font-size:15px;line-height:1.6}
+.safe-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
+.safe-badges span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600}
+.safe-card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.safe-card h2{margin:0 0 10px;font-size:17px}
+.safe-card p{margin:10px 0 0;font-size:14px;line-height:1.6;color:var(--muted)}
+.safe-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.sf-item{background:var(--tag);border-radius:10px;padding:8px 10px;font-weight:700;font-size:14px}
+.sf-ok{background:var(--pick);color:var(--pick-fg)}
+.sf-op{font-weight:800;color:var(--muted)}
+.safe-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.safe-grid div{background:var(--tag);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px}
+.safe-grid b{font-size:14.5px}
+.safe-grid span{font-size:12.5px;line-height:1.5;color:var(--muted)}
+.safe-grid em{font-style:normal;font-weight:700;color:var(--accent-ink)}
+.safe-short{margin:0;padding-left:18px;font-size:14px;line-height:1.8}
+.safe-tip{margin:0;font-size:13.5px;line-height:1.6;padding:12px 14px;border-radius:12px;background:var(--tag)}
+.safe-more{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+.safe-more summary{font-weight:700;cursor:pointer}
+.safe2 .safe-lock{font-size:44px;line-height:1.1}
+.safe2 .safe-flow{gap:4px;flex-wrap:nowrap}
+.safe2 .sf-item{padding:7px 8px;font-size:13px;white-space:nowrap}
