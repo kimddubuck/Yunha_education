@@ -13,7 +13,7 @@ const SOS_FIREBASE = {
   appId: "1:133710590792:web:1a4d163ac4679ed6d1397d"
 };
 const ROOMS_KEY = 'sosRooms', CUR_KEY = 'sosRoom';
-const SOS_CONTACT = '';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
+const SOS_CONTACT = 'ifb1321@gmail.com';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
   if(SOS_CONTACT){ el.innerHTML = ''; const a = document.createElement('a'); a.href = 'mailto:' + SOS_CONTACT; a.textContent = SOS_CONTACT; el.appendChild(a); }
   else el.textContent = '(운영자 이메일 준비 중)';
