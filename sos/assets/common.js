@@ -17,7 +17,7 @@ const lastBookDay = () => dayStr(BOOK_DAYS - 1);
 const KEEP_DAYS = 7;
 // 자동 삭제 스위치: 서버 규칙(expireAt 허용 + 지난 기록 삭제 허용)을 게시한 뒤에 true 로 켜요.
 // (꺼져 있으면 expireAt 을 보내지 않고, '7일 뒤 자동 삭제' 안내 문구도 숨겨요 — 사실이 아닌 안내를 보이지 않게)
-const TTL_READY = false;
+const TTL_READY = true;   // 2026-10-04 서버 규칙 게시·확인 후 켬
 const ttl = ymd => TTL_READY ? {expireAt: expireAt(ymd)} : {};
 document.addEventListener('DOMContentLoaded', () => { if(!TTL_READY) document.querySelectorAll('.ttl-only').forEach(el => { el.hidden = true; }); });
 function expireAt(ymd){ const [y,m,d] = ymd.split('-').map(Number); return firebase.firestore.Timestamp.fromDate(new Date(y, m-1, d + 1 + KEEP_DAYS)); }
