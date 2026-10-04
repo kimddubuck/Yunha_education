@@ -266,7 +266,7 @@ function showRooms(closable){
   if(document.getElementById('gate')) return;
   const rooms = sosRooms(), invite = INVITE && !ROOM;
   const box = document.createElement('div'); box.id = 'gate'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '모임 방');
-  const list = rooms.length && !invite ? `<p class="g-pw">🏠 이 휴대폰에 기억된 방</p><div class="g-rooms">` +
+  const list = rooms.length && !invite ? `<p class="g-pw">🏠 이 휴대폰에 기억된 방 <small>(눌러서 바로 이동)</small></p><div class="g-rooms">` +
     rooms.map(r => `<button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}></button>`).join('') + '</div>' : '';
   const formHtml = `
 ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
@@ -285,6 +285,7 @@ ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
 ${formHtml}
+${GATE_PASTE}
     </form>` : `<div class="g-card g-step1">
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
