@@ -253,6 +253,9 @@ function sosInit(){
       <p class="brave-sub">SOS가 몰린 시간에 내가 먼저 모임을 열면<br><b>누군가의 독박이 끝나요</b> 🫶</p>
       <a href="#new" class="sos-make brave-btn"></a>
     </div>`;
+  // 💪 용기 상자는 아래 '＋ 모임 만들기' 바로 밑으로 옮겨요
+  const brave = root.querySelector('.sos-brave'), anchor = document.getElementById('meetForm');
+  if(anchor) anchor.after(brave);
   const picker = createPicker(root.querySelector('.sos-picker'), {
     dayBadge: d => sosDayTotal(data[d]),
     hourBadge: (d, slot) => sosHourCount(data[d], parseInt(slot)),
@@ -265,7 +268,7 @@ function sosInit(){
     const done = hs.length > 0 && hs.every(h => mine.includes(h));
     root.querySelector('.sos-count').innerHTML = `오늘 SOS <b>${sosDayTotal(data[todayStr()])}</b>명`;
     // 달력에서 고른 날짜·시간을 그대로 넣어 모임 만들기 (아래 큰 '＋ 모임 만들기'는 빈 양식)
-    root.querySelector('.sos-make').textContent = `🙌 ${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''} 모임 열기`;
+    brave.querySelector('.sos-make').textContent = `🙌 ${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''} 모임 열기`;
     const b = root.querySelector('.sos-btn');
     b.disabled = !hs.length || done || !col || broken;
     b.className = 'sos-btn' + (done ? ' done' : '');
@@ -302,7 +305,7 @@ function sosInit(){
     draw();
   });
   // 고른 날짜·시간을 그대로 모임 만들기에 넘겨요
-  root.querySelector('.sos-make').addEventListener('click', e => {
+  brave.querySelector('.sos-make').addEventListener('click', e => {
     if(typeof openMeetForm === 'function'){ e.preventDefault(); openMeetForm(picker.state.date, picker.state.slot); }
   });
 }

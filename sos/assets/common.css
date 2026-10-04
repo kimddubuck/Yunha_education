@@ -637,3 +637,4 @@ body{padding-block:16px 120px}
 .brave-star.s1{top:-9px;left:14px}
 .brave-star.s2{bottom:-8px;right:16px;font-size:12px}
 .sos-brave .brave-btn{color:var(--pick-fg)!important}
+.sec > .sos-brave{margin-top:18px}
