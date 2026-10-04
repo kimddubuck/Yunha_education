@@ -559,3 +559,12 @@ button.sos-chip{font:inherit;border:0;cursor:pointer}
 .who-list{gap:4px}
 .who-chip{padding:3px 9px;font-size:13px}
 .mem-renick{margin:8px 0 2px;padding:9px!important;font-size:14px}
+/* 세로 여백 줄이기: 칸 사이 · 홈 표지 */
+.wrap.single main{gap:20px}
+.cover{padding:16px 18px;gap:6px}
+.cover-icon{width:48px;height:48px;border-radius:12px}
+.cover .title-row h1,.cover h1.room-title{margin:0}
+.cover-sub{line-height:1.5}
+.room-bar{margin-top:6px}
+.mem-btn{top:14px;right:14px;padding:5px 9px}
+.cover .bell{width:36px;height:36px;font-size:18px}
