@@ -547,3 +547,6 @@ button.sos-chip{font:inherit;border:0;cursor:pointer}
 .cal-grid{row-gap:2px}
 .cal-day{min-height:36px;padding:3px 0;gap:0;line-height:1.15}
 .cal-day small{min-height:11px;line-height:11px}
+/* 팝업 구분: 테두리 + 뒤 화면 더 어둡게 */
+.pop{border:2px solid var(--pick);box-shadow:0 10px 36px rgba(0,0,0,.45)}
+.pop-back{background:rgba(8,12,12,.68)}
