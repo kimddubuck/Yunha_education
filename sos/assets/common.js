@@ -12,9 +12,10 @@ const BOOK_DAYS = 7;
 // 오늘에서 n일 뒤 날짜를 YYYY-MM-DD로 (기기 시간 기준)
 function dayStr(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 const lastBookDay = () => dayStr(BOOK_DAYS - 1);
-// 지난 모임·댓글·SOS 숫자는 그 날짜가 지나고 7일 뒤 서버에서 자동으로 지워져요 (Firestore TTL: expireAt 칸)
+// 지난 모임·댓글·SOS 숫자는 그 날짜가 지나고 7일 뒤 지워져요: 저장할 때 지울 날짜(expireAt)를 적어 두고,
+// 방 사람이 앱을 열 때 지울 날짜가 지난 기록을 앱이 정리해요 (무료 요금제라 서버 TTL 대신, cleanupExpired)
 const KEEP_DAYS = 7;
-// 자동 삭제 스위치: 서버 규칙 게시 + Firestore TTL 정책 설정이 끝나야 true 로 켜요.
+// 자동 삭제 스위치: 서버 규칙(expireAt 허용 + 지난 기록 삭제 허용)을 게시한 뒤에 true 로 켜요.
 // (꺼져 있으면 expireAt 을 보내지 않고, '7일 뒤 자동 삭제' 안내 문구도 숨겨요 — 사실이 아닌 안내를 보이지 않게)
 const TTL_READY = false;
 const ttl = ymd => TTL_READY ? {expireAt: expireAt(ymd)} : {};
@@ -325,3 +326,23 @@ function sosConfirm({icon = '', title, body = '', ok = '확인', danger = false}
   const sw = document.querySelector('[data-rooms]');
   if(sw) sw.addEventListener('click', () => showRooms(true));
 })();
+
+/* 지난 기록 정리: 지울 날짜(expireAt)가 지난 모임(+댓글)·SOS를 지워요. 브라우저를 열 때 방마다 한 번만.
+   지울 날짜가 없는 예전 기록은 서버 규칙상 지울 수 없어서 건너뛰어요. */
+async function cleanupExpired(){
+  const r = roomRef(); if(!r) return;
+  const now = firebase.firestore.Timestamp.now(), del = ref => ref.delete().catch(() => {});
+  const ops = await r.collection('opinions').where('expireAt', '<', now).limit(50).get();
+  for(const d of ops.docs){
+    const cs = await d.ref.collection('comments').get();
+    await Promise.all(cs.docs.map(c => del(c.ref)));
+    await del(d.ref);
+  }
+  const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
+  await Promise.all(sos.docs.map(d => del(d.ref)));
+}
+if(TTL_READY && typeof ROOM !== 'undefined' && ROOM) window.addEventListener('load', () => {
+  const k = 'sosCleaned:' + ROOM.roomId;
+  try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); }catch(e){}
+  setTimeout(() => cleanupExpired().catch(() => {}), 3000);   // 화면을 먼저 그리고 나서 천천히
+});
