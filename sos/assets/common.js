@@ -71,6 +71,13 @@ const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🙌','모�
   nav.innerHTML = `<a class="brand" href="index.html">공동육아 SOS 🆘</a><div class="nav-links">` +
     NAV.map(([href,key,icon,label]) => `<a href="${href}"${key===cur ? ' aria-current="page"' : ''}><span class="ti" aria-hidden="true">${icon}</span><span>${label}</span></a>`).join('') + '</div>' +
     '<button type="button" class="intro-btn" aria-label="공동육아 SOS 소개 다시 보기">📖 소개</button>';
+  // 왼쪽 위 '🏠 방 목록': 방에 들어와 있을 때만 (gate.js의 showRooms)
+  if(typeof ROOM !== 'undefined' && ROOM){
+    const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'rooms-btn'; rb.textContent = '🏠 방 목록';
+    rb.setAttribute('aria-label', '내 방 목록 보기 · 방 바꾸기 · 새 방 만들기');
+    rb.addEventListener('click', () => { if(typeof showRooms === 'function') showRooms(true); });
+    nav.prepend(rb);
+  }
   // 첫 화면 이야기 다시 보기 (showIntro는 gate.js)
   nav.querySelector('.intro-btn').addEventListener('click', () => { if(typeof showIntro === 'function') showIntro(); });
 })();

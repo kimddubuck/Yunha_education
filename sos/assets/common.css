@@ -498,3 +498,8 @@ a.sos-btn{text-decoration:none;text-align:center}
 .cover .cover-app{font-size:13px}
 .cover h1.room-title{font-size:30px;line-height:1.25;margin:2px 0 4px;overflow-wrap:anywhere;color:var(--fg)}
 .cover .cover-sub{font-size:13.5px}
+
+/* 왼쪽 위 🏠 방 목록 버튼 (오른쪽 위 📖 소개와 짝) */
+.rooms-btn{border:1.5px solid var(--pick);background:var(--bg);color:var(--accent-ink);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.rooms-btn:hover{background:var(--hover)}
+@media (max-width:820px){ .rooms-btn{position:absolute;left:0;top:50%;transform:translateY(-50%);margin:0} }
