@@ -66,16 +66,20 @@ service cloud.firestore {
           && (!('maybes' in request.resource.data) || request.resource.data.maybes == 0)
           && (!('nos' in request.resource.data) || request.resource.data.nos == 0)
           && request.resource.data.createdAt == request.time;
-        // 참석(joins)·미확정(maybes)·불참(nos): 셋 중 하나의 숫자를 1씩 올리기
+        // 참석(joins)·미확정(maybes)·불참(nos): 하나를 1 올리기 / 1 내리기(취소, 0 아래 불가) / 하나 내리고 하나 올리기(바꾸기)
         // 모임 취소: cancelled 를 true 로 한 번만 바꾸기 (되돌릴 수 없음)
-        allow update: if roomAlive(roomKey) && ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cancelled'])
-                          && request.resource.data.cancelled == true && resource.data.topic == 'meet')
-                      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joins'])
-                          && request.resource.data.joins == resource.data.get('joins', 0) + 1)
-                      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['maybes'])
-                          && request.resource.data.maybes == resource.data.get('maybes', 0) + 1)
-                      || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nos'])
-                          && request.resource.data.nos == resource.data.get('nos', 0) + 1));
+        function up(f) { return request.resource.data.get(f, 0) == resource.data.get(f, 0) + 1; }
+        function down(f) { return resource.data.get(f, 0) >= 1 && request.resource.data.get(f, 0) == resource.data.get(f, 0) - 1; }
+        function voteOk(keys) {
+          return (keys.hasOnly(['joins']) && (up('joins') || down('joins'))) || (keys.hasOnly(['maybes']) && (up('maybes') || down('maybes'))) || (keys.hasOnly(['nos']) && (up('nos') || down('nos')))
+            || (keys.hasOnly(['joins', 'maybes']) && keys.size() == 2 && ((up('joins') && down('maybes')) || (down('joins') && up('maybes'))))
+            || (keys.hasOnly(['joins', 'nos']) && keys.size() == 2 && ((up('joins') && down('nos')) || (down('joins') && up('nos'))))
+            || (keys.hasOnly(['maybes', 'nos']) && keys.size() == 2 && ((up('maybes') && down('nos')) || (down('maybes') && up('nos'))));
+        }
+        allow update: if roomAlive(roomKey) && (
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cancelled'])
+            && request.resource.data.cancelled == true && resource.data.topic == 'meet')
+          || voteOk(request.resource.data.diff(resource.data).affectedKeys()));
 
         // 모임 댓글: 쓴 휴대폰만 고치거나 지울 수 있어요 (비밀값의 지문 kh 로 확인)
         match /comments/{cid} {

@@ -4,9 +4,9 @@
 const MEET_TEMPLATE = '장소: \n놀이: ';
 const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:''};   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
 
-// '참석' / '미확정' / '불참'은 이 기기에서 둘 중 하나만, 한 번만 (완벽한 막기는 아니에요)
+// '참석' / '미확정' / '불참'은 이 기기에서 셋 중 하나만 (완벽한 막기는 아니에요). 다시 누르면 취소, 다른 걸 누르면 바꾸기
 function choices(){ try{ return JSON.parse(localStorage.getItem('copChoice')||'{}'); }catch(e){ return {}; } }
-function markChoice(id, v){ try{ localStorage.setItem('copChoice', JSON.stringify({...choices(), [id]:v})); }catch(e){} }
+function markChoice(id, v){ try{ const c = {...choices()}; if(v) c[id] = v; else delete c[id]; localStorage.setItem('copChoice', JSON.stringify(c)); }catch(e){} }
 
 function meetInit(){
   meet.col = copCollection();
@@ -74,19 +74,21 @@ function meetCard(o, past){
   const row = document.createElement('div'); row.className = 'vote-row';
   const mine = choices()[o.id];
   const jb = document.createElement('button'); jb.type = 'button'; jb.className = 'join'; jb.dataset.vote = 'joins'; jb.dataset.id = o.id;
-  jb.setAttribute('aria-pressed', mine==='joins'); jb.disabled = !!mine;
+  jb.setAttribute('aria-pressed', mine==='joins');
   jb.textContent = mine==='joins' ? '🙋 참석했어요' : '🙋 참석';
   const nb = document.createElement('button'); nb.type = 'button'; nb.className = 'join'; nb.dataset.vote = 'nos'; nb.dataset.id = o.id;
-  nb.setAttribute('aria-pressed', mine==='nos'); nb.disabled = !!mine;
+  nb.setAttribute('aria-pressed', mine==='nos');
   nb.textContent = mine==='nos' ? '🙅 불참했어요' : '🙅 불참';
   const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'join'; mb.dataset.vote = 'maybes'; mb.dataset.id = o.id;
-  mb.setAttribute('aria-pressed', mine==='maybes'); mb.disabled = !!mine;
+  mb.setAttribute('aria-pressed', mine==='maybes');
   mb.textContent = mine==='maybes' ? '🤔 미확정했어요' : '🤔 미확정';
   const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'join'; cb.dataset.toggle = o.id;
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
   cb.textContent = `💬 댓글${cs.length ? ' ' + cs.length : ''}`;
   cb.className = 'join comment-toggle';
-  row.append(jb, mb, nb); body.append(row, cb);
+  row.append(jb, mb, nb); body.append(row);
+  if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소, 다른 걸 누르면 바꿀 수 있어요'; body.append(h); }
+  body.append(cb);
   if(myMeets().includes(o.id)){
     const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet'; x.dataset.cancelMeet = o.id;
     x.textContent = meet.cancelErr && meet.cancelErr.id===o.id ? meet.cancelErr.msg
@@ -204,9 +206,12 @@ $('#meetList').addEventListener('click', async e => {
   }
   const tg = e.target.closest('[data-toggle]');
   if(tg){ const id = tg.dataset.toggle; meet.open.has(id) ? meet.open.delete(id) : meet.open.add(id); renderMeets(); return; }
-  const b = e.target.closest('[data-vote]'); if(!b || !meet.col || choices()[b.dataset.id]) return;
+  const b = e.target.closest('[data-vote]'); if(!b || !meet.col) return;
+  const id = b.dataset.id, v = b.dataset.vote, old = choices()[id], inc = firebase.firestore.FieldValue.increment;
+  // 같은 걸 다시 누르면 취소(-1), 다른 걸 누르면 바꾸기(예전 것 -1, 새 것 +1), 처음이면 +1
+  const change = old === v ? {[v]: inc(-1)} : old ? {[old]: inc(-1), [v]: inc(1)} : {[v]: inc(1)};
   b.disabled = true;
-  try{ await meet.col.doc(b.dataset.id).update({[b.dataset.vote]: firebase.firestore.FieldValue.increment(1)}); markChoice(b.dataset.id, b.dataset.vote); renderMeets(); }
+  try{ await meet.col.doc(id).update(change); markChoice(id, old === v ? null : v); renderMeets(); }
   catch(err){ sosTrouble(err); b.disabled = false; $('#meetEmpty').textContent = '참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
 });
 $('#meetList').addEventListener('input', e => {
