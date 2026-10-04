@@ -2,6 +2,7 @@
    - 알림 켜기: 브라우저 알림 허용 → Firebase 알림 주소(토큰) 받기 → 내 방들의 알림 채널에 가입 (/api/push)
    - 알림 보내기: 새 모임 → 방 채널, SOS 몰림(같은 시간 3명) → 방 채널, 내 모임에 참석·댓글 → 모임 주최자 채널
    - 채널 이름은 방 열쇠로 만든 해시라 방 사람만 알아요. 이름·전화번호는 다루지 않아요.
+   - 잠금화면에 보일 수 있어서 알림 글은 간단히(방 이름만). 날짜·장소·별명·댓글 내용은 앱을 열어야 보여요.
    - PUSH_VAPID 가 비어 있으면 알림 기능 전체가 숨겨져요 (Firebase 설정 전). */
 const PUSH_VAPID = '';
 const PUSH_API = 'api/push';
@@ -21,9 +22,12 @@ const pushStandalone = () => matchMedia('(display-mode: standalone)').matches ||
 async function roomTopic(room){ return 'r' + (await sha256Hex('push:' + room.key)).slice(0, 40); }
 async function meetTopic(meetId){ return 'm' + (await sha256Hex('push:' + ROOM.key + ':' + meetId)).slice(0, 40); }
 
+let pushLastError = '';
 async function pushApi(body){
   const r = await fetch(PUSH_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  return r.ok ? r.json() : null;
+  const j = await r.json().catch(() => ({}));
+  if(!r.ok){ pushLastError = `${r.status} ${j.error || ''} ${j.detail || ''}`.trim(); return null; }
+  return j;
 }
 
 // 알림 주소(토큰) 받기. ask=true 면 허용 창을 띄워요
@@ -88,19 +92,19 @@ async function pushNewMeet(meetId, date, slot, host){
     pushLS.set('sosPushMeetTopics', [...pushLS.get('sosPushMeetTopics', []), t].slice(-30));
     pushSync(false).catch(() => {});
   }
-  pushNotify(await roomTopic(ROOM), '🙌 새 모임이 열렸어요', `[${ROOM.name}] ${dayLabel(date)} ${slot || ''} · ${host} 주최`, pushLink('meet.html'), 'meet-' + meetId);
+  pushNotify(await roomTopic(ROOM), '🙌 새 모임이 열렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'meet-' + meetId);
 }
 async function pushSosCrowd(date, slot, count){
   if(!pushSupported() || !ROOM || count !== SOS_ALERT_AT) return;
-  pushNotify(await roomTopic(ROOM), '🆘 SOS가 몰렸어요', `[${ROOM.name}] ${dayLabel(date)} ${slot}에 ${count}명이 SOS를 보냈어요. 용기 내서 모임을 열어 볼까요?`, pushLink('meet.html'), 'sos-' + date + slot);
+  pushNotify(await roomTopic(ROOM), '🆘 SOS가 몰렸어요', `${ROOM.name} · 용기 내서 모임을 열어 볼까요?`, pushLink('meet.html'), 'sos-' + date + slot);
 }
 async function pushMeetJoin(o, joins){
   if(!pushSupported() || !ROOM) return;
-  pushNotify(await meetTopic(o.id), '🙋 내 모임에 참석이 늘었어요', `${dayLabel(o.date)} ${o.slot || ''} 모임 · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);
+  pushNotify(await meetTopic(o.id), '🙋 내 모임에 참석이 늘었어요', `${ROOM.name} · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);
 }
 async function pushMeetComment(o, text){
   if(!pushSupported() || !ROOM) return;
-  pushNotify(await meetTopic(o.id), '💬 내 모임에 댓글이 달렸어요', `${dayLabel(o.date)} ${o.slot || ''} 모임 · "${text.slice(0, 40)}"`, pushLink('meet.html'), 'cmt-' + o.id);
+  pushNotify(await meetTopic(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
 }
 
 // --- 홈의 🔔 알림 카드 ---
@@ -128,9 +132,9 @@ async function pushMeetComment(o, text){
     const b = e.target.closest('[data-push]'); if(!b) return;
     b.disabled = true; b.textContent = '잠시만요…';
     try{
-      if(b.dataset.push === 'on'){ if(!(await pushSync(true))) alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.'); }
+      if(b.dataset.push === 'on'){ pushLastError = ''; if(!(await pushSync(true))) alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '')); }
       else await pushOff();
-    }catch(err){ alert('알림을 켜지 못했어요. 잠시 뒤 다시 해 주세요.'); }
+    }catch(err){ alert('알림을 켜지 못했어요. 잠시 뒤 다시 해 주세요.\n(원인: ' + (err && (err.code || err.message) || err) + ')'); }
     draw();
   });
   draw();

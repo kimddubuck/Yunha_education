@@ -34,7 +34,10 @@ export async function onRequestPost({ request, env }) {
           headers: { Authorization: `Bearer ${at}`, access_token_auth: 'true', 'Content-Type': 'application/json' },
           body: JSON.stringify({ to: `/topics/${t}`, registration_tokens: [b.token] })
         });
-        out[t] = r.ok;
+        const j = await r.json().catch(() => ({}));
+        const err = !r.ok ? `iid_${r.status}` : (j.results && j.results[0] && j.results[0].error) || '';
+        if(err) return json({ error: 'subscribe_failed', detail: `${err} ${JSON.stringify(j.error || '').slice(0, 120)}` }, 502);
+        out[t] = true;
       }
       return json({ ok: true, topics: out });
     }
@@ -50,7 +53,8 @@ export async function onRequestPost({ request, env }) {
         headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: { topic: b.topic, webpush: { headers: { Urgency: 'high', TTL: '86400' }, data } } })
       });
-      return json({ ok: r.ok, status: r.status }, r.ok ? 200 : 502);
+      if(!r.ok){ const j = await r.json().catch(() => ({})); return json({ error: 'send_failed', detail: `fcm_${r.status} ${JSON.stringify(j.error && j.error.message || '').slice(0, 120)}` }, 502); }
+      return json({ ok: true });
     }
     return json({ error: 'bad_action' }, 400);
   } catch (e) {
