@@ -41,8 +41,11 @@ function sosTrouble(err){
   let bar = document.getElementById('troubleBar');
   if(!bar){ bar = document.createElement('div'); bar.id = 'troubleBar'; bar.className = 'trouble'; bar.setAttribute('role', 'alert');
     (document.querySelector('main') || document.body).prepend(bar); }
+  const code = err && err.code;
   bar.innerHTML = quota
     ? '<b>⚠️ 오늘은 쓰는 분이 많아 잠시 멈췄어요.</b><br>오후 5시쯤 다시 열려요. 저장된 기록은 그대로예요.'
+    : code === 'auth' ? '<b>⚠️ 로그인 준비가 안 됐어요.</b><br>인터넷 연결을 확인하고 새로고침해 주세요.<br><small>(계속되면 운영자에게 알려 주세요: 익명 로그인 설정)</small>'
+    : code === 'permission-denied' ? '<b>⚠️ 이 방 기록을 볼 수 없어요.</b><br>방장이 내보냈거나, 서버 설정이 바뀌는 중이에요. 잠시 뒤 새로고침해 주세요.'
     : '<b>⚠️ 서버에 연결하지 못했어요.</b><br>인터넷 연결을 확인하고 새로고침해 주세요.';
 }
 
@@ -90,12 +93,33 @@ function copCollection(){ const r = roomRef(); return r && r.collection('opinion
 // 모임 요청(topic 'meet') 중 오늘 이후 것을 가까운 순으로 cb에 넘겨요. 못 불러오면 null
 function watchMeets(cb){
   const col = copCollection(); if(!col){ cb(null); return; }
-  col.where('date', '>=', todayStr()).limit(100).onSnapshot(serverOnly(snap => {   // 오늘 이후 모임만 읽어요 (읽기 횟수 절약)
+  sosReady().then(ok => { if(!ok){ cb(null); return; } col.where('date', '>=', todayStr()).limit(100).onSnapshot(serverOnly(snap => {   // 오늘 이후 모임만 읽어요 (읽기 횟수 절약)
     const today = todayStr();
     cb(snap.docs.map(d => ({id:d.id, ...d.data()}))
       .filter(o => o.topic==='meet' && o.date && o.date >= today && !o.cancelled)
       .sort((a,b) => a.date.localeCompare(b.date) || slotOrder(a.slot) - slotOrder(b.slot)));
-  }), err => { sosTrouble(err); cb(null); });
+  }), err => { sosTrouble(err); cb(null); }); });
+}
+// 모임의 참석·미확정·불참: 닉네임 표(v: {uid: {s, n}}) + 예전 숫자 칸(joins/maybes/nos)
+const VOTE_KINDS = [['join', 'joins', '참석'], ['maybe', 'maybes', '미확정'], ['no', 'nos', '불참']];
+function meetVotes(o){
+  const out = {}; VOTE_KINDS.forEach(([s, old]) => { out[s] = {names: [], old: o[old] || 0}; });
+  Object.entries(o.v || {}).forEach(([uid, e]) => { if(out[e.s]) out[e.s].names.push({uid, n: e.n}); });
+  VOTE_KINDS.forEach(([s]) => { out[s].count = out[s].names.length + out[s].old; });
+  return out;
+}
+function tallyHtml(o){
+  const v = meetVotes(o);
+  return VOTE_KINDS.map(([s, , label]) => `<span>${label} <b>${v[s].count}</b></span>`).join('') + '<span class="tally-who">👀 누가?</span>';
+}
+// 누가 참석·미확정·불참했는지 + 아직 답 안 한 멤버 (팝업)
+async function showVoters(o){
+  const v = meetVotes(o), members = await sosMembers();
+  const answered = new Set(Object.keys(o.v || {}));
+  const chips = list => list.length ? list.map(x => `<span class="who-chip">${esc(x)}</span>`).join('') : '<span class="who-none">없어요</span>';
+  const body = VOTE_KINDS.map(([s, , label]) => `<p class="who-h">${label} ${v[s].count}명</p><div class="who-list">${chips(v[s].names.map(x => x.n))}${v[s].old ? `<span class="who-none">+ 예전 기록 ${v[s].old}명</span>` : ''}</div>`).join('')
+    + `<p class="who-h">🤷 아직 답 안 함</p><div class="who-list">${chips(members.filter(m => !answered.has(m.uid)).map(m => m.nick))}</div>`;
+  sosInfo({icon: '🙌', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body});
 }
 
 // 홈 화면 설치(웹앱)용 서비스 워커 등록 — 캐시는 하지 않아요
@@ -157,79 +181,95 @@ function createPicker(root, opts = {}){
   return {state: st, render};
 }
 
-/* 🆘 공동육아 예약 도우미(🆘 SOS 예약): 혼자 독박하는 날짜와 시간(9~20시)을 골라 "이때 나 힘들어요"를 익명으로 보내요.
-   저장: rooms/{방 열쇠}/sos/YYYY-MM-DD 문서의 h9 ~ h20 (그 날 그 시간에 SOS 보낸 사람 수).
+/* 🆘 공동육아 예약 도우미(🆘 SOS 예약): 혼자 독박하는 날짜와 시간(9~20시)을 골라 "이때 나 힘들어요"를 보내요.
+   저장: rooms/{방 열쇠}/sos/YYYY-MM-DD 문서의 p 지도 — {내 uid: {h: [시간들], n: 닉네임}} (예전 숫자 칸 h9 등도 함께 세요)
+   시간 숫자를 누르면 누가 보냈는지 닉네임이 보여요.
    달력에는 날짜별 SOS 수, 시간 버튼에는 그 날 시간별 SOS 수가 보여요 → 보고 눈치게임으로 모임 만들기.
    기기당 같은 날짜·시간에는 한 번만. 홈에는 요약(sosSummary)만 보여 줘요. */
 function sosWatch(cb){
   const r = roomRef(), col = r && r.collection('sos');
   if(!col){ cb(null, null); return null; }
   // 예약할 수 있는 오늘~1주일치만 읽어요 (읽기 횟수 절약)
+  sosReady().then(ok => { if(!ok){ cb(null, col, {code: 'auth'}); return; }
   col.where(firebase.firestore.FieldPath.documentId(), '>=', todayStr())
      .where(firebase.firestore.FieldPath.documentId(), '<=', lastBookDay()).onSnapshot(serverOnly(snap => {
     const data = {}; snap.docs.forEach(d => { data[d.id] = d.data(); }); cb(data, col);
-  }), err => { sosTrouble(err); cb(null, col, err); });
+  }), err => { sosTrouble(err); cb(null, col, err); }); });
   return col;
 }
-const sosSentKey = () => 'copSosSent:' + (ROOM ? ROOM.roomId : '');   // 내 SOS 예약은 방마다 따로 기억
-const sosDayTotal = v => v ? Object.keys(v).filter(k => /^h\d+$/.test(k)).reduce((a,k) => a + (v[k] || 0), 0) + (v.count || 0) : 0;
+// 내 SOS 예약 시간들 (그 날 문서의 p[내 uid].h)
+const sosMine = v => ((v && v.p && v.p[ME.uid]) || {}).h || [];
+// 그 시간에 SOS 보낸 사람 팝업
+function showSosNames(day, h, v){
+  const names = sosHourNames(v, h), old = (v && v['h' + h]) || 0;
+  const body = (names.length ? `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>` : '')
+    + (old ? `<p class="who-none">+ 예전 기록 ${old}명 (닉네임 없음)</p>` : '')
+    + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
+    + '<p class="who-tip">💪 같은 시간에 SOS가 모였다면 모임을 열어 보세요!</p>';
+  sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body});
+}
 
 function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
-  let data = {}, col = null, sent = [], broken = false;
-  try{ sent = JSON.parse(localStorage.getItem(sosSentKey()) || '[]'); }catch(e){}
+  let data = {}, col = null, broken = false;
   root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count"></p></div>
-    <p class="sos-sub">혼자 독박하는 날,<br>미용실 예약하듯 SOS를 예약해 두세요. <small>(오늘부터 1주일까지)</small><br><b>누가 예약했는지는 아무도 몰라요.</b><br>예약이 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
+    <p class="sos-sub">혼자 독박하는 날,<br>미용실 예약하듯 SOS를 예약해 두세요. <small>(오늘부터 1주일까지)</small><br>예약이 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
     <div class="sos-picker"></div>
+    <div class="sos-who"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
     <p class="sos-hint">👀 SOS가 몰린 시간을 봤다면?<br>용기 내서 <a href="#new" class="sos-make">＋ 모임 만들기</a></p>`;
   const picker = createPicker(root.querySelector('.sos-picker'), {
     dayBadge: d => sosDayTotal(data[d]),
-    hourBadge: (d, slot) => (data[d] || {})['h' + parseInt(slot)] || 0,
+    hourBadge: (d, slot) => sosHourCount(data[d], parseInt(slot)),
     multi: true,
     whenText: st => st.slots.length ? `${dayLabel(st.date)} ${st.slots.join('·')} 골랐어요` : `${dayLabel(st.date)} · 시간을 골라 주세요`,
     onChange: draw
   });
   function draw(){
-    const st = picker.state, keys = st.slots.map(v => st.date + '-' + v), done = keys.length > 0 && keys.every(k => sent.includes(k));
+    const st = picker.state, mine = sosMine(data[st.date]), hs = st.slots.map(v => parseInt(v));
+    const done = hs.length > 0 && hs.every(h => mine.includes(h));
     root.querySelector('.sos-count').innerHTML = `오늘 SOS <b>${sosDayTotal(data[todayStr()])}</b>명`;
+    // 고른 날짜에 누가 SOS를 보냈는지 (시간을 누르면 크게)
+    const v = data[st.date], rows = HOURS.filter(h => sosHourCount(v, h));
+    root.querySelector('.sos-who').innerHTML = rows.length ? `<p class="sos-who-h">👀 ${dayLabel(st.date)} SOS 보낸 사람 <small>눌러서 크게</small></p>`
+      + rows.map(h => `<button type="button" class="sos-who-row" data-who="${h}"><b>${h}시</b><span></span></button>`).join('') : '';
+    root.querySelectorAll('.sos-who-row').forEach(r => { const h = +r.dataset.who, old = (v && v['h' + h]) || 0;
+      r.querySelector('span').textContent = [...sosHourNames(v, h), ...(old ? [`예전 ${old}명`] : [])].join(', '); });   // 닉네임은 글자로만
     const b = root.querySelector('.sos-btn');
-    b.disabled = !keys.length || done || !col || broken;
+    b.disabled = !hs.length || done || !col || broken;
     b.className = 'sos-btn' + (done ? ' done' : '');
     b.innerHTML = broken ? '⚠️ 지금은 SOS 예약을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 예약했어요<small>🫂 아래 "내 SOS 예약"에서 취소할 수 있어요</small>'
-      : keys.length ? `🆘 SOS 예약하기${keys.length > 1 ? ` (${keys.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')}</small>` : '🆘 SOS 예약하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
-    // 내 SOS 예약 (이 휴대폰에서 한 것, 오늘 이후만) — 실수로 눌렀으면 여기서 취소
-    const mine = sent.filter(k => k.slice(0,10) >= todayStr()).sort();
-    const box = root.querySelector('.sos-mine'); box.hidden = !mine.length;
-    box.innerHTML = '<p class="sos-mine-h">📌 내 SOS 예약 <small>(이 휴대폰에서만 보여요)</small></p>' + mine.map(k =>
-      `<div class="sos-mine-row"><span>${dayLabel(k.slice(0,10))} ${k.slice(11)}</span><button type="button" class="sos-cancel" data-cancel="${k}">예약 취소</button></div>`).join('');
+      : hs.length ? `🆘 SOS 예약하기${hs.length > 1 ? ` (${hs.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')} · ${esc(ME.nick || '내 닉네임')}(으)로</small>` : '🆘 SOS 예약하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
+    // 내 SOS 예약 (오늘 이후) — 실수로 눌렀으면 여기서 취소
+    const list = Object.keys(data).filter(d => d >= todayStr()).sort().flatMap(d => sosMine(data[d]).slice().sort((x, y) => x - y).map(h => [d, h]));
+    const box = root.querySelector('.sos-mine'); box.hidden = !list.length;
+    box.innerHTML = '<p class="sos-mine-h">📌 내 SOS 예약</p>' + list.map(([d, h]) =>
+      `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">예약 취소</button></div>`).join('');
   }
+  const put = (day, hours) => hours.length
+    ? col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true})
+    : col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
   col = sosWatch((d, c, err) => { col = c; if(d) data = d; if(err) broken = true; picker.render(); draw(); });
+  root.addEventListener('click', e => { const w = e.target.closest('[data-who]'); if(w) showSosNames(picker.state.date, +w.dataset.who, data[picker.state.date]); });
   root.querySelector('.sos-mine').addEventListener('click', async e => {
     const c = e.target.closest('[data-cancel]'); if(!c || !col) return;
-    const key = c.dataset.cancel, date = key.slice(0,10), hk = 'h' + parseInt(key.slice(11));
+    const [day, h] = c.dataset.cancel.split('|');
     c.disabled = true; c.textContent = '취소 중…';
-    try{
-      if(((data[date] || {})[hk] || 0) > 0) await col.doc(date).update({[hk]: firebase.firestore.FieldValue.increment(-1)});
-      sent = sent.filter(k => k !== key); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(err){}
-      draw();
-    }catch(err){ sosTrouble(err); c.disabled = false; c.textContent = '다시 눌러 주세요'; }
+    try{ await put(day, sosMine(data[day]).filter(x => x !== +h)); }
+    catch(err){ sosTrouble(err); c.disabled = false; c.textContent = '다시 눌러 주세요'; }
   });
   draw();
   root.querySelector('.sos-btn').addEventListener('click', async () => {
-    const st = picker.state; if(!st.slots.length || !col) return;
+    const st = picker.state; if(!st.slots.length || !col || !ME.uid) return;
+    const before = data[st.date], mine = sosMine(before), add = st.slots.map(v => parseInt(v)).filter(h => !mine.includes(h));
+    if(!add.length) return;
     root.querySelector('.sos-btn').disabled = true;
-    // 고른 시간마다 하나씩 올려요 (규칙상 한 번에 한 시간씩), 이미 예약한 시간은 건너뛰어요
-    for(const v of st.slots){
-      const key = st.date + '-' + v; if(sent.includes(key)) continue;
-      try{
-        const before = (data[st.date] || {})['h' + parseInt(v)] || 0;
-        await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1), ...ttl(st.date)}, {merge:true});
-        sent = [...sent, key].slice(-200); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(e){}
-        if(typeof pushSosCrowd === 'function') pushSosCrowd(st.date, v, before + 1);   // 같은 시간 SOS가 3명이 되는 순간 방에 알림
-      }catch(err){ sosTrouble(err); broken = true; break; }
-    }
+    try{
+      await put(st.date, [...mine, ...add].sort((x, y) => x - y));
+      // 같은 시간 SOS가 3명이 되는 순간 방에 알림
+      if(typeof pushSosCrowd === 'function') add.forEach(h => pushSosCrowd(st.date, h + '시', sosHourCount(before, h) + 1));
+    }catch(err){ sosTrouble(err); broken = true; }
     draw();
   });
   // 고른 날짜·시간을 그대로 모임 만들기에 넘겨요
@@ -254,22 +294,24 @@ function sosSummary(){
     const label = name(sel) || dayLabel(day);
     const tabs = days.map((d, i) => { const n = data ? sosDayTotal(data[d]) : 0;
       return `<button type="button" class="sos-tab" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
-    const cells = HOURS.map(h => { const n = t['h'+h] || 0;
-      return `<div class="sos-cell${n ? ' on' : ''}"><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></div>`; }).join('');
+    const cells = HOURS.map(h => { const n = sosHourCount(t, h);
+      return `<button type="button" class="sos-cell${n ? ' on' : ''}" data-sos-hour="${h}"${data ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
     const upcoming = data ? Object.keys(data).filter(d => d > today).sort().map(d => {
-      const hs = HOURS.filter(h => data[d]['h'+h]).map(h => `<span class="sos-chip">${h}시 ${data[d]['h'+h]}명</span>`);
+      const hs = HOURS.filter(h => sosHourCount(data[d], h)).map(h => `<button type="button" class="sos-chip" data-sos-hour="${h}" data-sos-date="${d}">${h}시 ${sosHourCount(data[d], h)}명</button>`);
       return hs.length ? `<div class="sos-day"><b>${dayLabel(d)}</b><div>${hs.join('')}</div></div>` : '';
     }).filter(Boolean).slice(0,5) : [];
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 예약 도우미</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 예약</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
-      <p class="sos-note">👀 시간별로 SOS를 예약한 사람 수예요.<br>예약은 아래 빨간 버튼에서 해요.</p>
+      <p class="sos-note">👀 시간별로 SOS를 예약한 사람 수예요.<br><b>숫자를 누르면 누가 보냈는지 보여요.</b></p>
       <div class="sos-today">${cells}</div>
       ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 예약</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}
       <a class="sos-btn" href="meet.html#sos">🆘 독박 예정? SOS 예약하기<small>날짜와 시간만 누르면 끝</small></a>`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
   };
   box.addEventListener('click', e => {
+    const hb = e.target.closest('[data-sos-hour]');
+    if(hb && last){ const d = hb.dataset.sosDate || days[sel]; showSosNames(d, +hb.dataset.sosHour, last[d]); return; }
     const b = e.target.closest('[data-sos-day]'); if(!b) return;
     sel = +b.dataset.sosDay; draw(last);
   });
@@ -295,6 +337,21 @@ function sosConfirm({icon = '', title, body = '', ok = '확인', danger = false}
     document.addEventListener('keydown', esc);
     document.body.appendChild(box); box.querySelector('[data-pop="0"]').focus();
   });
+}
+
+/* 보기 팝업: sosInfo({icon, title, body(HTML)}) — 확인 버튼 하나 */
+function sosInfo({icon = '', title, body = ''}){
+  const box = document.createElement('div'); box.className = 'pop-back';
+  box.innerHTML = `<div class="pop" role="dialog" aria-modal="true" aria-labelledby="popT">
+      ${icon ? `<p class="pop-icon" aria-hidden="true">${icon}</p>` : ''}<p class="pop-t" id="popT"></p>
+      <div class="pop-b">${body}</div><div class="pop-btns"><button type="button" class="btn primary" data-pop="1">확인</button></div></div>`;
+  box.querySelector('#popT').textContent = title;
+  const done = () => { box.remove(); document.removeEventListener('keydown', key); };
+  const key = e => { if(e.key === 'Escape') done(); };
+  box.addEventListener('click', e => { if(e.target === box || e.target.closest('[data-pop]')) done(); });
+  document.addEventListener('keydown', key);
+  document.body.appendChild(box); box.querySelector('[data-pop]').focus();
+  return box;
 }
 
 /* 모임 방 이름 · 친구 초대 · 방 바꾸기 (홈 표지) */
@@ -336,6 +393,43 @@ function sosConfirm({icon = '', title, body = '', ok = '확인', danger = false}
   if(sw) sw.addEventListener('click', () => showRooms(true));
 })();
 
+/* 👥 방 멤버 (홈 표지 오른쪽 위): 닉네임 목록 · 내 닉네임 바꾸기 · 방장은 내보내기 */
+(function membersButton(){
+  const btn = document.querySelector('[data-members]'); if(!btn || !ROOM) return;
+  const load = fresh => sosMembers(fresh).then(list => { btn.querySelector('b').textContent = list.length || '…'; return list; });
+  load(false);
+  btn.addEventListener('click', async () => open(await load(false)));
+  function open(list){
+    const row = m => `<li data-uid="${m.uid}"><span class="mem-nick"></span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
+      + (ME.owner && m.uid !== ME.uid ? `<button type="button" class="mem-kick" data-kick="${m.uid}">내보내기</button>` : '') + '</li>';
+    const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
+      body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p><ul class="mem-list">${list.map(row).join('')}</ul>
+        <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>`});
+    box.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
+    box.addEventListener('click', async e => {
+      const k = e.target.closest('[data-kick]');
+      if(k){
+        const m = list.find(x => x.uid === k.dataset.kick); box.remove();
+        const yes = await sosConfirm({icon: '🚫', title: `'${m.nick}' 님을 내보낼까요?`, danger: true, ok: '내보내기',
+          body: '<ul><li>이 사람은 이 방의 SOS·모임을 더 이상 볼 수 없어요.</li><li>같은 휴대폰으로는 다시 들어올 수 없어요.</li><li>앱을 지우고 다시 깔면 들어올 수 있으니, 꼭 막아야 하면 <b>새 방을 만들어 새 비밀번호</b>로 옮겨 주세요.</li></ul>'});
+        if(!yes){ open(list); return; }
+        try{ await roomRef().collection('members').doc(m.uid).update({on: false}); open(await load(true)); }
+        catch(err){ sosConfirm({icon: '😢', title: '내보내지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }
+        return;
+      }
+      if(e.target.closest('[data-renick]')){
+        box.remove();
+        const nick = await askNick('내 닉네임 바꾸기', '앞으로 SOS·모임·댓글에 새 닉네임이 보여요.', ME.nick);
+        if(!nick || nick === ME.nick){ open(list); return; }
+        try{
+          await roomRef().collection('members').doc(ME.uid).update({nick: nick.slice(0, NICK_MAX)});
+          ME.nick = nick.slice(0, NICK_MAX); saveNick(ME.nick); open(await load(true));
+        }catch(err){ sosConfirm({icon: '😢', title: '바꾸지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }
+      }
+    });
+  }
+})();
+
 /* 지난 기록 정리: 지울 날짜(expireAt)가 지난 모임(+댓글)·SOS를 지워요. 브라우저를 열 때 방마다 한 번만.
    지울 날짜가 없는 예전 기록은 서버 규칙상 지울 수 없어서 건너뛰어요. */
 async function cleanupExpired(){
@@ -353,5 +447,5 @@ async function cleanupExpired(){
 if(TTL_READY && typeof ROOM !== 'undefined' && ROOM) window.addEventListener('load', () => {
   const k = 'sosCleaned:' + ROOM.roomId;
   try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); }catch(e){}
-  setTimeout(() => cleanupExpired().catch(() => {}), 3000);   // 화면을 먼저 그리고 나서 천천히
+  setTimeout(() => sosReady().then(ok => ok && cleanupExpired()).catch(() => {}), 3000);   // 화면을 먼저 그리고 나서 천천히
 });

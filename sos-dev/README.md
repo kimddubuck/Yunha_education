@@ -22,7 +22,9 @@
 
 ## 서버
 - Firebase 프로젝트 `sos-calendar-f6bf7` (Spark 무료)
-- 데이터: `rooms/{방 열쇠}` 아래 `opinions`(모임·댓글), `sos`(시간별 예약 수), `plays`(추가한 놀이)
+- 데이터: `rooms/{방 열쇠}` 아래 `members`(닉네임, uid = 익명 로그인), `opinions`(모임·댓글, 참석은 `v` 지도에 닉네임), `sos`(날짜별 `p` 지도 = {uid: {h: 시간들, n: 닉네임}}), `plays`(추가한 놀이)
+- 로그인: Firebase 익명 로그인(Authentication → 익명 사용 설정 필요). 방장 = 방 문서의 `ou`(uid)
+- 규칙 테스트: Firestore 에뮬레이터로 56개 항목 확인 (멤버·내보내기·닉네임 위조 막기·예전 방 방장 등록·방 지우기)
 - 방 열쇠 = SHA-256("방코드:비밀번호"). 비밀번호는 어디에도 저장하지 않아요 → **잊으면 되찾을 수 없어요**
 
 ## 올리기 (Cloudflare Pages · GitHub 자동 배포)

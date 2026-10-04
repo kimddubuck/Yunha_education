@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610041349">
+<link rel="manifest" href="manifest.webmanifest?v=202610041413">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610041349">
-<script src="assets/gate.js?v=202610041349"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610041413">
+<script src="assets/gate.js?v=202610041413"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -24,10 +24,10 @@
     <section class="safe-hero">
       <p class="safe-lock" aria-hidden="true">🔒</p>
       <h1>안심하고 쓰세요</h1>
-      <p>이름도, 전화번호도 받지 않아요.<br>우리 방 사람끼리만 봐요.</p>
+      <p>실명도, 전화번호도 받지 않아요.<br>방에서 쓸 <b>닉네임</b>만 정하면 돼요.<br>우리 방 사람끼리만 봐요.</p>
       <div class="safe-badges">
         <span>✅ 회원가입 없음</span>
-        <span>✅ 이름·전화번호 안 받음</span>
+        <span>✅ 실명·전화번호 안 받음</span>
         <span>✅ 광고·추적 없음</span>
       </div>
     </section>
@@ -35,17 +35,17 @@
     <section class="safe-card">
       <h2>🔑 우리 방 사람만 봐요</h2>
       <div class="safe-flow">
-        <span class="sf-item">🔗 초대 링크</span><span class="sf-op">+</span><span class="sf-item">🔑 비밀번호</span><span class="sf-op">=</span><span class="sf-item sf-ok">🏠 입장</span>
+        <span class="sf-item">🔗 초대 링크</span><span class="sf-op">+</span><span class="sf-item">🔑 비밀번호</span><span class="sf-op">+</span><span class="sf-item">🙋 닉네임</span><span class="sf-op">=</span><span class="sf-item sf-ok">🏠 입장</span>
       </div>
-      <p>둘 중 하나만 있으면 못 들어와요.<br>다른 방 사람은 우리 방을 찾을 수도 없어요.</p>
+      <p>링크와 비밀번호 중 하나만 있으면 못 들어와요.<br>검색이 없어서 다른 사람은 우리 방을 찾을 수도 없어요.<br>👑 방장은 <b>👥 멤버</b>에서 들어온 사람을 보고 내보낼 수 있어요.</p>
     </section>
 
     <section class="safe-card">
       <h2>☁️ 서버에 남는 건 이것뿐</h2>
       <div class="safe-grid">
-        <div><b>🆘 SOS</b><span>시간별 <em>숫자만</em><br>누가 눌렀는지 몰라요</span></div>
-        <div><b>🙌 모임</b><span>날짜·장소 글<br>주최자 <em>별명</em></span></div>
-        <div><b>💬 댓글</b><span>쓴 글만<br>누가 썼는지 안 남아요</span></div>
+        <div><b>🙋 멤버</b><span>방에서 쓰는<br><em>닉네임만</em></span></div>
+        <div><b>🆘 SOS</b><span>날짜·시간<br>+ <em>닉네임</em></span></div>
+        <div><b>🙌 모임</b><span>날짜·장소 글<br>참석·댓글 <em>닉네임</em></span></div>
         <div><b>🏠 방</b><span><em>방 이름만</em><br>비밀번호는 저장 안 해요</span></div>
       </div>
       <p class="safe-auto">⏳ 모임 날짜·장소는 <b>우리 방 사람만</b> 볼 수 있어요.<span class="ttl-only"><br><b>지난 모임·댓글·SOS는 7일 뒤 자동으로 지워져요.</b></span></p>
@@ -60,20 +60,22 @@
       <h2>🗑 언제든 지울 수 있어요</h2>
       <ul class="safe-short">
         <li>SOS 예약은 <b>내 SOS 예약 → 취소</b></li>
-        <li>내 모임·댓글은 쓴 휴대폰에서 <b>취소·삭제</b></li>
+        <li>내 모임·댓글은 <b>취소·삭제</b>, 참석은 다시 눌러 취소</li>
+        <li>방에서 나가려면 <b>🚪 방 빼기</b></li>
         <li>방장은 <b>🗑 방 지우기</b> → 기록까지 모두 삭제</li>
         <li class="ttl-only">지난 모임·댓글·SOS는 <b>7일 뒤 저절로</b> 지워져요</li>
       </ul>
     </section>
 
-    <p class="safe-tip">💡 방 이름과 주최자 이름은 <b>실명 대신 별명</b>을 추천해요. (예: 3단지 놀이터 모임, 하늘맘)</p>
+    <p class="safe-tip">💡 방 이름과 닉네임은 <b>실명 대신 별명</b>을 추천해요. (예: 3단지 놀이터 모임, 하늘맘)</p>
 
     <details class="safe-more">
       <summary>📄 자세히 보기</summary>
 <section class="slot">
       <h2>✅ 모으지 않는 것</h2>
       <ul class="safe-list">
-        <li>회원가입·로그인이 없어요. <b>이름, 전화번호, 카카오 계정, 이메일을 받지 않아요.</b></li>
+        <li>회원가입이 없어요. <b>실명, 전화번호, 카카오 계정, 이메일을 받지 않아요.</b></li>
+        <li>휴대폰마다 Firebase <b>익명 로그인</b>으로 보이지 않는 번호(uid)가 하나 생겨요. 이 번호로 '이 휴대폰이 방 멤버인지'만 확인해요. 이 번호에는 이름·전화번호가 없어요.</li>
         <li>사진·위치·연락처·카메라 권한을 요청하지 않아요.</li>
         <li>이 사이트 코드에는 광고, 방문 추적(애널리틱스), 쿠키 수집이 없어요.</li>
         <li>글을 저장할 때 IP 주소나 기기 정보를 함께 적지 않아요. 저장되는 칸은 아래 표가 전부예요.</li>
@@ -85,8 +87,9 @@
       <table class="safe-table">
         <tr><th>어디서</th><th>저장되는 것</th></tr>
         <tr><td>🏠 모임 방</td><td><b>방 이름만</b>. 비밀번호는 저장하지 않아요. 비밀번호로 만든 암호화된 열쇠가 방 주소가 돼서, 비밀번호를 아는 사람만 방을 찾을 수 있어요.</td></tr>
-        <tr><td>🆘 SOS 예약</td><td>날짜·시간별 <b>숫자만</b> (예: 10월 3일 16시 = 2명). 누가 눌렀는지는 서버에 없어요.</td></tr>
-        <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 별명</b>(직접 적은 것), 참석·미확정·불참 숫자, 댓글 글</td></tr>
+        <tr><td>🙋 멤버</td><td>방에서 쓰는 <b>닉네임</b>(직접 적은 것), 들어온 시각, 익명 로그인 번호(uid)</td></tr>
+        <tr><td>🆘 SOS 예약</td><td>날짜·시간 + <b>예약한 사람의 닉네임</b>. 방 사람들은 시간 숫자를 눌러 누가 보냈는지 볼 수 있어요.</td></tr>
+        <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 닉네임</b>, 참석·미확정·불참한 사람의 닉네임, 댓글 글과 닉네임</td></tr>
       </table>
       <p class="hint">모임 방마다 따로 저장돼서, <b>방 비밀번호를 아는 사람만</b> 그 방의 SOS·모임·댓글을 볼 수 있어요. 다른 방 사람은 볼 수 없어요.<br>통신은 모두 암호화(HTTPS)돼요. 서버는 Google Firebase를 써요.</p>
     </section>
@@ -96,19 +99,18 @@
       <p>아래 기록은 <b>서버로 보내지 않고 내 휴대폰 브라우저 안에만</b> 저장돼요. 다른 사람은 볼 수 없어요.</p>
       <ul class="safe-list">
         <li>들어간 모임 방 목록과 방 열쇠 (비밀번호 자체가 아니라 암호화된 값)</li>
-        <li>내가 누른 SOS 예약 시간 — 그래서 '📌 내 SOS 예약'은 나한테만 보여요</li>
-        <li>내가 연 모임 목록 — 그래서 '모임 취소' 버튼은 연 휴대폰에만 보여요</li>
         <li>내 댓글 열쇠 — 그래서 댓글 '수정'·'삭제'는 쓴 휴대폰에만 보여요 (서버에는 열쇠의 지문만 저장돼요)</li>
-        <li>내가 누른 참석·미확정·불참, 마지막으로 적은 주최자 별명</li>
+        <li>마지막으로 쓴 닉네임 (다음 방에 들어갈 때 미리 채워 줘요)</li>
       </ul>
-      <p class="hint">브라우저의 '인터넷 기록/사이트 데이터 삭제'를 하면 이 기록은 모두 지워져요. (서버에 올라간 글·숫자는 그대로예요)</p>
+      <p class="hint">브라우저의 '인터넷 기록/사이트 데이터 삭제'를 하면 이 기록과 익명 로그인 번호가 지워져요. 그러면 방에 다시 들어갈 때 비밀번호와 닉네임을 다시 넣어요. (서버에 올라간 글은 그대로예요)</p>
     </section>
 
     <section class="slot">
       <h2>🗑 취소하고 지우기</h2>
       <ul class="safe-list">
-        <li><b>SOS 예약</b>: '📌 내 SOS 예약'에서 언제든 취소 → 숫자가 바로 1 줄어요.</li>
-        <li><b>모임</b>: 연 휴대폰에서 '내가 연 모임 취소하기' → '취소된 모임'으로 표시돼요.</li>
+        <li><b>SOS 예약</b>: '📌 내 SOS 예약'에서 언제든 취소 → 내 닉네임이 바로 빠져요.</li>
+        <li><b>모임</b>: 연 사람(또는 방장)이 '모임 취소하기' → '취소된 모임'으로 표시돼요. 참석·미확정·불참은 다시 누르면 취소돼요.</li>
+        <li><b>멤버</b>: 방장은 '👥 멤버'에서 내보낼 수 있어요. 내보내진 휴대폰은 그 방을 더 이상 볼 수 없어요.</li>
         <li><b>모임 댓글</b>: 쓴 휴대폰에서 댓글 옆 '수정'·'삭제'를 누르면 돼요.</li>
         <li><b>알림</b>: 알림을 켜면 이 휴대폰의 알림 주소(토큰)가 Google 알림 서버(Firebase Cloud Messaging)에 우리 방 채널로 등록돼요. 잠금화면에 보일 수 있어서 알림에는 방 이름만 넣고(날짜·장소·별명·댓글 내용은 앱을 열어야 보여요), 홈의 '알림 끄기'로 언제든 빠질 수 있어요.</li>
         <li class="ttl-only"><b>자동 삭제</b>: 모임·댓글·SOS 예약 숫자는 그 날짜가 지나고 7일 뒤 서버에서 자동으로 지워져요. (방 사람이 앱을 열 때 정리돼요. 아무도 열지 않으면 조금 늦어질 수 있어요)</li>
@@ -120,7 +122,8 @@
   </main>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610041349"></script>
+<script src="assets/common.js?v=202610041413"></script>
 </body>
 </html>

@@ -5,7 +5,12 @@ rules_version = '2';
 // 구조: rooms/{방 열쇠}                — 방 이름
 //       rooms/{방 열쇠}/opinions/{id}  — 모임 (topic 'meet'), 아래 comments 에 댓글
 //       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20)
-//       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이
+//       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이 (지금은 앱에서 안 씀)
+//       rooms/{방 열쇠}/members/{uid}  — 방 멤버 닉네임 (uid = 휴대폰마다 생기는 익명 로그인 번호)
+//       rooms/{방 열쇠}/private/owner  — 예전 방의 방장 확인용 (아무도 읽을 수 없음)
+// 로그인: Firebase 익명 로그인(Anonymous). 이름·전화번호·이메일은 없어요.
+// 방 안의 기록은 '방 멤버'(members 에 내 uid 문서가 있고 on == true)만 읽고 쓸 수 있어요.
+// 멤버가 되려면 방 열쇠를 알아야 해요 (= 초대 링크 + 비밀번호). 방장(ou)은 멤버를 내보낼 수 있어요(on = false).
 // 방 열쇠 = SHA-256("방코드:비밀번호"). 비밀번호를 모르면 열쇠를 모르고, 방 목록 보기(list)는 막혀 있어서
 // 다른 방을 찾을 수 없어요. 방 안의 규칙은 동래아 공동육아 사이트와 같아요.
 // 지난 모임·댓글·SOS는 expireAt(날짜+7일)이 지나면, 방 사람이 앱을 열 때 앱이 지워요 (무료 요금제라 TTL 정책 대신).
@@ -32,11 +37,24 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('deleted', false) == false;
     }
 
+    // 방 멤버인지 (내보내진 사람은 아님)
+    function meDoc(roomKey) { return /databases/$(database)/documents/rooms/$(roomKey)/members/$(request.auth.uid); }
+    function isMember(roomKey) {
+      return request.auth != null && exists(meDoc(roomKey)) && get(meDoc(roomKey)).data.get('on', false) == true;
+    }
+    function canUse(roomKey) { return roomAlive(roomKey) && isMember(roomKey); }
+    function myNick(roomKey) { return get(meDoc(roomKey)).data.nick; }
+    function isOwner(roomKey) {
+      return request.auth != null && get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('ou', '') == request.auth.uid;
+    }
+    function nickOk(n) { return n is string && n.size() >= 1 && n.size() <= 20; }
+
     match /rooms/{roomKey} {
       allow get: if true;
       allow list, delete: if false;
       allow create: if roomKey.matches('^[0-9a-f]{64}$')
-        && request.resource.data.keys().hasOnly(['name', 'oh', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['name', 'oh', 'ou', 'createdAt'])
+        && (!('ou' in request.resource.data) || (request.auth != null && request.resource.data.ou == request.auth.uid))
         && (!('oh' in request.resource.data)
             || (request.resource.data.oh is string && request.resource.data.oh.size() == 64))
         && request.resource.data.name is string
@@ -45,20 +63,64 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
       // 방 지우기: 방장 열쇠(k)의 지문이 oh 와 맞으면 '지워짐' 표시 + 방 이름 비우기 (되돌릴 수 없음)
       //  - 방장 열쇠(oh) 없이 만든 예전 방은 비밀번호를 아는 사람 누구나 지울 수 있어요
-      allow update: if resource.data.get('deleted', false) == false
+      allow update: if (resource.data.get('deleted', false) == false
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted', 'name', 'k'])
         && request.resource.data.deleted == true
         && request.resource.data.name == ''
         && request.resource.data.k is string
         && (!('oh' in resource.data)
-            || hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.oh);
+            || hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.oh))
+        // 예전 방(ou 없음)의 방장 등록: 같은 묶음 쓰기로 private/owner 에 방장 열쇠를 맞게 넣었을 때만 ou = 내 uid
+        || (resource.data.get('deleted', false) == false
+          && !('ou' in resource.data) && ('oh' in resource.data)
+          && request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ou'])
+          && request.resource.data.ou == request.auth.uid
+          && getAfter(/databases/$(database)/documents/rooms/$(roomKey)/private/owner).data.uid == request.auth.uid);
+
+      // 방장 확인용 열쇠 보관 (읽기 불가). 방장 열쇠의 지문이 oh 와 맞을 때만 한 번 만들 수 있어요
+      match /private/{doc} {
+        allow read, update: if false;
+        allow delete: if roomDeleted(roomKey);
+        allow create: if doc == 'owner' && roomAlive(roomKey)
+          && request.auth != null
+          && request.resource.data.keys().hasOnly(['k', 'uid'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.k is string
+          && hashing.sha256(request.resource.data.k).toHexString().lower() == get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('oh', '');
+      }
+
+      // 멤버 (닉네임)
+      //  - 들어오기: 방 열쇠를 알면 내 uid 문서를 만들 수 있어요 (내보내진 사람은 문서가 남아 있어서 다시 못 만들어요)
+      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기
+      match /members/{uid} {
+        allow get: if request.auth != null && request.auth.uid == uid;
+        allow read: if canUse(roomKey);
+        allow create: if roomAlive(roomKey)
+          && request.auth != null && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['nick', 'on', 'joinedAt'])
+          && nickOk(request.resource.data.nick)
+          && request.resource.data.on == true
+          && request.resource.data.joinedAt == request.time;
+        allow update: if roomAlive(roomKey) && request.auth != null && (
+          (request.auth.uid == uid && resource.data.on == true
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick'])
+            && nickOk(request.resource.data.nick))
+          || (isOwner(roomKey) && request.auth.uid != uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['on'])
+            && request.resource.data.on == false));
+        allow delete: if roomDeleted(roomKey)
+          || (request.auth != null && request.auth.uid == uid && resource.data.on == true);
+      }
 
       // 모임
       match /opinions/{id} {
-        allow read: if roomAlive(roomKey);
+        allow read: if canUse(roomKey);
         allow delete: if roomDeleted(roomKey) || expired();
-        allow create: if roomAlive(roomKey)
-          && request.resource.data.keys().hasOnly(['topic', 'text', 'play', 'date', 'slot', 'host', 'joins', 'maybes', 'nos', 'expireAt', 'createdAt'])
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['topic', 'text', 'play', 'date', 'slot', 'host', 'uid', 'expireAt', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.host == myNick(roomKey)
           && expireOk(request.resource.data)
           && request.resource.data.topic in ['habit', 'dev', 'meet', 'free']
           && request.resource.data.text is string
@@ -72,31 +134,33 @@ service cloud.firestore {
               || request.resource.data.slot in ['9시', '10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시'])
           && (!('host' in request.resource.data)
               || (request.resource.data.host is string && request.resource.data.host.size() > 0 && request.resource.data.host.size() <= 20))
-          && (!('joins' in request.resource.data) || request.resource.data.joins == 0)
-          && (!('maybes' in request.resource.data) || request.resource.data.maybes == 0)
-          && (!('nos' in request.resource.data) || request.resource.data.nos == 0)
           && request.resource.data.createdAt == request.time;
-        // 참석(joins)·미확정(maybes)·불참(nos): 하나를 1 올리기 / 1 내리기(취소, 0 아래 불가) / 하나 내리고 하나 올리기(바꾸기)
-        // 모임 취소: cancelled 를 true 로 한 번만 바꾸기 (되돌릴 수 없음)
-        function up(f) { return request.resource.data.get(f, 0) == resource.data.get(f, 0) + 1; }
-        function down(f) { return resource.data.get(f, 0) >= 1 && request.resource.data.get(f, 0) == resource.data.get(f, 0) - 1; }
-        function voteOk(keys) {
-          return (keys.hasOnly(['joins']) && (up('joins') || down('joins'))) || (keys.hasOnly(['maybes']) && (up('maybes') || down('maybes'))) || (keys.hasOnly(['nos']) && (up('nos') || down('nos')))
-            || (keys.hasOnly(['joins', 'maybes']) && keys.size() == 2 && ((up('joins') && down('maybes')) || (down('joins') && up('maybes'))))
-            || (keys.hasOnly(['joins', 'nos']) && keys.size() == 2 && ((up('joins') && down('nos')) || (down('joins') && up('nos'))))
-            || (keys.hasOnly(['maybes', 'nos']) && keys.size() == 2 && ((up('maybes') && down('nos')) || (down('maybes') && up('nos'))));
+        // 참석·미확정·불참: v 지도에서 내 칸(uid)만 넣기·바꾸기·빼기. 닉네임은 내 멤버 닉네임과 같아야 해요
+        //  (예전 숫자 칸 joins/maybes/nos 는 그대로 두고 더 이상 바꾸지 않아요)
+        // 모임 취소: 연 사람(uid) 또는 방장이 cancelled 를 true 로 한 번만 (예전 모임은 멤버 누구나)
+        function voteMine() {
+          let nv = request.resource.data.get('v', {});
+          let me = request.auth.uid;
+          return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['v'])
+            && nv.diff(resource.data.get('v', {})).affectedKeys().hasOnly([me])
+            && (!(me in nv)
+                || (nv[me] is map && nv[me].keys().hasOnly(['s', 'n'])
+                    && nv[me].s in ['join', 'maybe', 'no'] && nv[me].n == myNick(roomKey)));
         }
-        allow update: if roomAlive(roomKey) && (
+        allow update: if canUse(roomKey) && (
           (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cancelled'])
-            && request.resource.data.cancelled == true && resource.data.topic == 'meet')
-          || voteOk(request.resource.data.diff(resource.data).affectedKeys()));
+            && request.resource.data.cancelled == true && resource.data.topic == 'meet'
+            && (resource.data.get('uid', '') == '' || resource.data.uid == request.auth.uid || isOwner(roomKey)))
+          || voteMine());
 
         // 모임 댓글: 쓴 휴대폰만 고치거나 지울 수 있어요 (비밀값의 지문 kh 로 확인)
         match /comments/{cid} {
-          allow read: if roomAlive(roomKey);
+          allow read: if canUse(roomKey);
           allow delete: if roomDeleted(roomKey) || expired();
-          allow create: if roomAlive(roomKey)
-            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'expireAt'])
+          allow create: if canUse(roomKey)
+            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt'])
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.n == myNick(roomKey)
             && expireOk(request.resource.data)
             && request.resource.data.text is string
             && request.resource.data.text.size() > 0
@@ -104,7 +168,7 @@ service cloud.firestore {
             && (!('kh' in request.resource.data)
                 || (request.resource.data.kh is string && request.resource.data.kh.size() == 64))
             && request.resource.data.createdAt == request.time;
-          allow update: if roomAlive(roomKey)
+          allow update: if canUse(roomKey)
             && resource.data.get('kh', '') != ''
             && resource.data.get('deleted', false) == false
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt'])
@@ -121,44 +185,36 @@ service cloud.firestore {
         }
       }
 
-      // 🆘 SOS 예약: 날짜별 문서에 시간(h8~h20) 하나만 1씩 올리기(예약) 또는 내리기(취소, 0 아래로는 안 됨)
-      //  + 자동 삭제 시각(expireAt)은 함께 적어도 돼요
+      // 🆘 SOS 예약: 날짜별 문서의 p 지도에 내 칸(uid) = {h: [시간들], n: 닉네임} 만 넣기·바꾸기·빼기
+      //  + 자동 삭제 시각(expireAt)은 함께 적어도 돼요. 예전 숫자 칸(h8~h20)은 그대로 두고 더 이상 바꾸지 않아요
       match /sos/{day} {
-        function sosCreateOk(ks) {
-          return ks.size() >= 1 && ks.size() <= 2 && ((ks.hasOnly(['h8', 'expireAt']) && request.resource.data.h8 == 1) || (ks.hasOnly(['h9', 'expireAt']) && request.resource.data.h9 == 1) || (ks.hasOnly(['h10', 'expireAt']) && request.resource.data.h10 == 1) || (ks.hasOnly(['h11', 'expireAt']) && request.resource.data.h11 == 1) || (ks.hasOnly(['h12', 'expireAt']) && request.resource.data.h12 == 1) || (ks.hasOnly(['h13', 'expireAt']) && request.resource.data.h13 == 1) || (ks.hasOnly(['h14', 'expireAt']) && request.resource.data.h14 == 1) || (ks.hasOnly(['h15', 'expireAt']) && request.resource.data.h15 == 1) || (ks.hasOnly(['h16', 'expireAt']) && request.resource.data.h16 == 1) || (ks.hasOnly(['h17', 'expireAt']) && request.resource.data.h17 == 1) || (ks.hasOnly(['h18', 'expireAt']) && request.resource.data.h18 == 1) || (ks.hasOnly(['h19', 'expireAt']) && request.resource.data.h19 == 1) || (ks.hasOnly(['h20', 'expireAt']) && request.resource.data.h20 == 1));
+        function entryOk(e) {
+          return e is map && e.keys().hasOnly(['h', 'n'])
+            && e.h is list && e.h.size() >= 1 && e.h.size() <= 13
+            && e.h.hasOnly([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+            && e.n == myNick(roomKey);
         }
-        function sosUpdateOk(ch) {
-          return ch.size() == 1 && ((ch.hasOnly(['h8']) && (request.resource.data.h8 == resource.data.get('h8', 0) + 1 || (resource.data.get('h8', 0) >= 1 && request.resource.data.h8 == resource.data.get('h8', 0) - 1)))
-            || (ch.hasOnly(['h9']) && (request.resource.data.h9 == resource.data.get('h9', 0) + 1 || (resource.data.get('h9', 0) >= 1 && request.resource.data.h9 == resource.data.get('h9', 0) - 1)))
-            || (ch.hasOnly(['h10']) && (request.resource.data.h10 == resource.data.get('h10', 0) + 1 || (resource.data.get('h10', 0) >= 1 && request.resource.data.h10 == resource.data.get('h10', 0) - 1)))
-            || (ch.hasOnly(['h11']) && (request.resource.data.h11 == resource.data.get('h11', 0) + 1 || (resource.data.get('h11', 0) >= 1 && request.resource.data.h11 == resource.data.get('h11', 0) - 1)))
-            || (ch.hasOnly(['h12']) && (request.resource.data.h12 == resource.data.get('h12', 0) + 1 || (resource.data.get('h12', 0) >= 1 && request.resource.data.h12 == resource.data.get('h12', 0) - 1)))
-            || (ch.hasOnly(['h13']) && (request.resource.data.h13 == resource.data.get('h13', 0) + 1 || (resource.data.get('h13', 0) >= 1 && request.resource.data.h13 == resource.data.get('h13', 0) - 1)))
-            || (ch.hasOnly(['h14']) && (request.resource.data.h14 == resource.data.get('h14', 0) + 1 || (resource.data.get('h14', 0) >= 1 && request.resource.data.h14 == resource.data.get('h14', 0) - 1)))
-            || (ch.hasOnly(['h15']) && (request.resource.data.h15 == resource.data.get('h15', 0) + 1 || (resource.data.get('h15', 0) >= 1 && request.resource.data.h15 == resource.data.get('h15', 0) - 1)))
-            || (ch.hasOnly(['h16']) && (request.resource.data.h16 == resource.data.get('h16', 0) + 1 || (resource.data.get('h16', 0) >= 1 && request.resource.data.h16 == resource.data.get('h16', 0) - 1)))
-            || (ch.hasOnly(['h17']) && (request.resource.data.h17 == resource.data.get('h17', 0) + 1 || (resource.data.get('h17', 0) >= 1 && request.resource.data.h17 == resource.data.get('h17', 0) - 1)))
-            || (ch.hasOnly(['h18']) && (request.resource.data.h18 == resource.data.get('h18', 0) + 1 || (resource.data.get('h18', 0) >= 1 && request.resource.data.h18 == resource.data.get('h18', 0) - 1)))
-            || (ch.hasOnly(['h19']) && (request.resource.data.h19 == resource.data.get('h19', 0) + 1 || (resource.data.get('h19', 0) >= 1 && request.resource.data.h19 == resource.data.get('h19', 0) - 1)))
-            || (ch.hasOnly(['h20']) && (request.resource.data.h20 == resource.data.get('h20', 0) + 1 || (resource.data.get('h20', 0) >= 1 && request.resource.data.h20 == resource.data.get('h20', 0) - 1))));
-        }
-        allow read: if roomAlive(roomKey);
+        allow read: if canUse(roomKey);
         allow delete: if roomDeleted(roomKey) || expired();
-        allow create: if roomAlive(roomKey)
+        allow create: if canUse(roomKey)
           && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
           && expireOk(request.resource.data)
-          && sosCreateOk(request.resource.data.keys());
-        allow update: if roomAlive(roomKey)
+          && request.resource.data.keys().hasOnly(['p', 'expireAt'])
+          && request.resource.data.p.keys().hasOnly([request.auth.uid])
+          && entryOk(request.resource.data.p[request.auth.uid]);
+        allow update: if canUse(roomKey)
           && expireOk(request.resource.data)
-          && sosUpdateOk(request.resource.data.diff(resource.data).affectedKeys().difference(['expireAt'].toSet()));
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['p', 'expireAt'])
+          && request.resource.data.get('p', {}).diff(resource.data.get('p', {})).affectedKeys().hasOnly([request.auth.uid])
+          && (!(request.auth.uid in request.resource.data.get('p', {})) || entryOk(request.resource.data.p[request.auth.uid]));
       }
 
       // 놀이 추가: 누구나 올리기, 수정·삭제 불가
       match /plays/{id} {
-        allow read: if roomAlive(roomKey);
+        allow read: if canUse(roomKey);
         allow update: if false;
         allow delete: if roomDeleted(roomKey);
-        allow create: if roomAlive(roomKey)
+        allow create: if canUse(roomKey)
           && request.resource.data.keys().hasOnly(['name', 'kind', 'cat', 'say', 'how', 'items', 'createdAt'])
           && request.resource.data.name is string
           && request.resource.data.name.size() > 0

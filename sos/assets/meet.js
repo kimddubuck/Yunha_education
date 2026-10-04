@@ -1,12 +1,11 @@
-/* 모임 페이지 — 용기 낸 사람이 주최자 이름(별명)을 걸고 모임을 열고, '나도 갈래요'와 댓글을 남겨요.
+/* 모임 페이지 — 용기 낸 사람이 내 닉네임으로 모임을 열고, 참석·미확정·불참과 댓글을 남겨요 (모두 닉네임이 보여요).
    저장: rooms/{방 열쇠}/opinions 컬렉션의 topic 'meet' 글, 댓글은 그 글 아래 comments 컬렉션.
    common.js가 먼저 필요해요. 필요한 Firestore 규칙은 firestore.rules 참고 */
 const MEET_TEMPLATE = '장소: \n놀이: ';
 const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:''};   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
 
-// '참석' / '미확정' / '불참'은 이 기기에서 셋 중 하나만 (완벽한 막기는 아니에요). 다시 누르면 취소, 다른 걸 누르면 바꾸기
-function choices(){ try{ return JSON.parse(localStorage.getItem('copChoice')||'{}'); }catch(e){ return {}; } }
-function markChoice(id, v){ try{ const c = {...choices()}; if(v) c[id] = v; else delete c[id]; localStorage.setItem('copChoice', JSON.stringify(c)); }catch(e){} }
+// '참석' / '미확정' / '불참'은 한 사람(멤버)당 하나. 다시 누르면 취소, 다른 걸 누르면 바꾸기
+const myVote = o => ((o.v || {})[ME.uid] || {}).s || null;
 
 function meetInit(){
   meet.col = copCollection();
@@ -15,10 +14,14 @@ function meetInit(){
     $('#meetSend').disabled = true; return;
   }
   // 다가오는 모임 + 지난 30일 모임만 읽어요 (읽기 횟수 절약, 지난 모임은 최근 5개만 보여 줘요)
-  meet.col.where('date', '>=', dayStr(-30)).limit(300).onSnapshot(serverOnly(snap => {
-    meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
-    watchComments(); renderMeets();
-  }), err => { sosTrouble(err); $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
+  sosReady().then(ok => {
+    if(!ok){ $('#meetEmpty').textContent = '모임을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; return; }
+    $('#meetHost').textContent = ME.nick;
+    meet.col.where('date', '>=', dayStr(-30)).limit(300).onSnapshot(serverOnly(snap => {
+      meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
+      watchComments(); renderMeets();
+    }), err => { sosTrouble(err); $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
+  });
 }
 
 // 다가오는 요청마다 댓글을 실시간으로 받아요 (한 번만 구독)
@@ -32,9 +35,10 @@ function watchComments(){
   });
 }
 
-// 내가 연 모임 (이 휴대폰에서 연 것만 취소할 수 있어요)
+// 내가 연 모임 (연 사람과 방장이 취소할 수 있어요. 예전 모임은 이 휴대폰에서 연 것)
 function myMeets(){ try{ return JSON.parse(localStorage.getItem('copMyMeets')||'[]'); }catch(e){ return []; } }
 function addMyMeet(id){ try{ localStorage.setItem('copMyMeets', JSON.stringify([...myMeets(), id].slice(-100))); }catch(e){} }
+const isMine = o => o.uid ? o.uid === ME.uid : myMeets().includes(o.id);
 
 // 내 댓글 열쇠: 댓글을 쓸 때 이 휴대폰에서 비밀값을 만들어 두고, 서버에는 그 지문(sha256)만 저장해요.
 // 고치거나 지울 때 비밀값을 보내 확인하고, 매번 새 비밀값으로 바꿔요 (규칙은 의견게시판_설정.md)
@@ -61,8 +65,8 @@ function meetCard(o, past){
   meta.append(w, t);
   if(o.host){ const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = `👑 ${o.host} 주최`; meta.appendChild(hs); }
   const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
-  const tally = document.createElement('p'); tally.className = 'tally';
-  tally.innerHTML = `<span>참석 <b>${o.joins || 0}</b></span><span>미확정 <b>${o.maybes || 0}</b></span><span>불참 <b>${o.nos || 0}</b></span>`;
+  const tally = document.createElement('button'); tally.type = 'button'; tally.className = 'tally'; tally.dataset.voters = o.id;
+  tally.innerHTML = tallyHtml(o);   // 누르면 누가 참석·불참했는지 닉네임 팝업
   body.append(meta, p, tally);
   if(o.cancelled){
     li.classList.add('op-past');
@@ -72,7 +76,7 @@ function meetCard(o, past){
   if(past) return li;
 
   const row = document.createElement('div'); row.className = 'vote-row';
-  const mine = choices()[o.id];
+  const mine = {join: 'joins', maybe: 'maybes', no: 'nos'}[myVote(o)];
   const jb = document.createElement('button'); jb.type = 'button'; jb.className = 'join'; jb.dataset.vote = 'joins'; jb.dataset.id = o.id;
   jb.setAttribute('aria-pressed', mine==='joins');
   jb.textContent = mine==='joins' ? '🙋 참석했어요' : '🙋 참석';
@@ -89,10 +93,10 @@ function meetCard(o, past){
   row.append(jb, mb, nb); body.append(row);
   if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소, 다른 걸 누르면 바꿀 수 있어요'; body.append(h); }
   body.append(cb);
-  if(myMeets().includes(o.id)){
+  if(isMine(o) || ME.owner){
     const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet'; x.dataset.cancelMeet = o.id;
     x.textContent = meet.cancelErr && meet.cancelErr.id===o.id ? meet.cancelErr.msg
-      : meet.confirm===o.id ? '정말 취소할까요? 한 번 더 누르면 취소돼요' : '🗑 내가 연 모임 취소하기';
+      : meet.confirm===o.id ? '정말 취소할까요? 한 번 더 누르면 취소돼요' : isMine(o) ? '🗑 내가 연 모임 취소하기' : '🗑 모임 취소하기 (방장)';
     body.appendChild(x);
   }
 
@@ -108,6 +112,7 @@ function meetCard(o, past){
         ef.querySelector('input').value = meet.editDraft;
         ci.appendChild(ef); ul.appendChild(ci); return;
       }
+      if(c.n){ const cn = document.createElement('b'); cn.className = 'comment-nick'; cn.textContent = c.n; ci.appendChild(cn); }
       const ct = document.createElement('span'); ct.textContent = c.text;
       const cw = document.createElement('small'); cw.textContent = fmtTime(c.createdAt) + (c.editedAt ? ' · 수정됨' : '');
       ci.append(ct, cw);
@@ -159,18 +164,17 @@ function openMeetForm(date, slot){
 $('#meetText').addEventListener('input', () => { $('#meetCount').textContent = `${$('#meetText').value.length} / 500`; });
 $('#meetForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const text = $('#meetText').value.trim(), date = meetPicker.state.date, host = $('#meetHost').value.trim();
+  const text = $('#meetText').value.trim(), date = meetPicker.state.date, host = ME.nick;
   // 양식 칸(장소:/시간:/놀이:)만 남아 있으면 빈 글로 봐요
   if(!date || date < todayStr() || date > lastBookDay()){ $('#meetMsg').textContent = '오늘부터 1주일 안의 날짜를 골라 주세요.'; return; }
   if(!meetPicker.state.slot){ $('#meetMsg').textContent = '시간을 골라 주세요.'; return; }
-  if(!host){ $('#meetMsg').textContent = '주최자 이름을 적어 주세요. (예: 하늘맘)'; $('#meetHost').focus(); return; }
+  if(!host){ $('#meetMsg').textContent = '닉네임을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.'; return; }
   if(!text.replace(/^(장소|시간|놀이):/gm, '').trim()){ $('#meetMsg').textContent = '장소나 놀이를 적어 주세요.'; return; }
   if(!meet.col) return;
   $('#meetSend').disabled = true;
   try{
-    const ref = await meet.col.add({topic:'meet', text, date, slot:meetPicker.state.slot, host, joins:0, maybes:0, nos:0, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    const ref = await meet.col.add({topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
     $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
-    try{ localStorage.setItem('copHost', host); }catch(e){}
     if(ref && ref.id) addMyMeet(ref.id);
     if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetPicker.state.slot, host);   // 방에 새 모임 알림
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
@@ -207,16 +211,18 @@ $('#meetList').addEventListener('click', async e => {
   }
   const tg = e.target.closest('[data-toggle]');
   if(tg){ const id = tg.dataset.toggle; meet.open.has(id) ? meet.open.delete(id) : meet.open.add(id); renderMeets(); return; }
-  const b = e.target.closest('[data-vote]'); if(!b || !meet.col) return;
-  const id = b.dataset.id, v = b.dataset.vote, old = choices()[id], inc = firebase.firestore.FieldValue.increment;
-  // 같은 걸 다시 누르면 취소(-1), 다른 걸 누르면 바꾸기(예전 것 -1, 새 것 +1), 처음이면 +1
-  const change = old === v ? {[v]: inc(-1)} : old ? {[old]: inc(-1), [v]: inc(1)} : {[v]: inc(1)};
+  const vt = e.target.closest('[data-voters]');
+  if(vt){ const o = meet.items.find(x => x.id === vt.dataset.voters); if(o) showVoters(o); return; }
+  const b = e.target.closest('[data-vote]'); if(!b || !meet.col || !ME.uid) return;
+  const id = b.dataset.id, v = {joins: 'join', maybes: 'maybe', nos: 'no'}[b.dataset.vote], o = meet.items.find(x => x.id === id);
+  const old = o ? myVote(o) : null;
+  // 같은 걸 다시 누르면 취소, 다른 걸 누르면 바꾸기
+  const change = {['v.' + ME.uid]: old === v ? firebase.firestore.FieldValue.delete() : {s: v, n: ME.nick}};
   b.disabled = true;
   try{
-    await meet.col.doc(id).update(change); markChoice(id, old === v ? null : v); renderMeets();
+    await meet.col.doc(id).update(change);
     // 새로 참석했으면 모임 주최자에게 알림 (내가 연 모임이면 안 보냄)
-    const o = meet.items.find(x => x.id === id);
-    if(v === 'joins' && old !== 'joins' && o && !myMeets().includes(id) && typeof pushMeetJoin === 'function') pushMeetJoin(o, (o.joins || 0) + 1);
+    if(v === 'join' && old !== 'join' && o && !isMine(o) && typeof pushMeetJoin === 'function') pushMeetJoin(o, meetVotes(o).join.count + 1);
   }
   catch(err){ sosTrouble(err); b.disabled = false; $('#meetEmpty').textContent = '참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
 });
@@ -244,8 +250,8 @@ $('#meetList').addEventListener('submit', async e => {
     const k = newSecret(), ref = meet.col.doc(id).collection('comments').doc();
     setComKey(ref.id, k);
     const m = meet.items.find(o => o.id === id);   // 댓글도 모임과 같은 날 함께 지워져요
-    await ref.set({text, kh: await sha256hex(k), ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-    if(m && !myMeets().includes(id) && typeof pushMeetComment === 'function') pushMeetComment(m, text);   // 모임 주최자에게 댓글 알림
+    await ref.set({text, kh: await sha256hex(k), uid: ME.uid, n: ME.nick, ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    if(m && !isMine(m) && typeof pushMeetComment === 'function') pushMeetComment(m, text);   // 모임 주최자에게 댓글 알림
   }catch(err){
     meet.drafts[id] = text; renderMeets();
     $('#meetEmpty').textContent = '댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
@@ -253,7 +259,6 @@ $('#meetList').addEventListener('submit', async e => {
 });
 
 $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
-try{ $('#meetHost').value = localStorage.getItem('copHost') || ''; }catch(e){}   // 지난번 주최자 이름을 기억해 둬요
 $('#newToggle').addEventListener('click', () => { $('#meetForm').hidden = !$('#meetForm').hidden; if(!$('#meetForm').hidden) $('#meetText').focus(); });
 if(location.hash==='#new') $('#meetForm').hidden = false;
 if(location.hash==='#sos') setTimeout(() => $('[data-sos]').scrollIntoView({block:'start'}), 50);

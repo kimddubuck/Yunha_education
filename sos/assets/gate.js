@@ -60,8 +60,102 @@ function randomHex(){ return Array.from(crypto.getRandomValues(new Uint8Array(16
 async function sha256Hex(t){ const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return Array.from(new Uint8Array(h), b => b.toString(16).padStart(2,'0')).join(''); }
 const roomGone = snap => !snap.exists || snap.data().deleted === true;
 
+/* 👤 멤버(닉네임)
+   - 휴대폰마다 Firebase 익명 로그인으로 보이지 않는 번호(uid)가 생겨요. 이름·전화번호·이메일은 없어요.
+   - 방에 들어올 때 닉네임을 정하면 rooms/{방 열쇠}/members/{uid} 에 저장돼요. 방 안의 기록은 멤버만 읽고 써요.
+   - 방장은 멤버를 내보낼 수 있어요(on = false). 내보내진 휴대폰은 그 방에 다시 못 들어와요. */
+const NICK_MAX = 20;
+const ME = { uid: '', nick: '', owner: false, ou: '' };
+let sosAuthP = null;
+function sosAuth(){
+  if(sosAuthP) return sosAuthP;
+  sosAuthP = (async () => {
+    if(!sosDb() || !firebase.auth) return null;
+    const a = firebase.auth();
+    const u = await new Promise(res => { const off = a.onAuthStateChanged(x => { off(); res(x); }); });
+    if(u) return u;
+    return (await a.signInAnonymously()).user;
+  })().catch(e => { console.warn('익명 로그인 실패', e); sosAuthP = null; return null; });
+  return sosAuthP;
+}
+// 닉네임 묻기 (방에 처음 들어올 때 · 바꿀 때)
+function askNick(title, sub, init){
+  return new Promise(resolve => {
+    const box = document.createElement('div'); box.className = 'pop-back nick-pop';
+    box.innerHTML = `<form class="pop" role="dialog" aria-modal="true">
+        <p class="pop-icon" aria-hidden="true">🙋</p><p class="pop-t"></p><div class="pop-b"><p></p></div>
+        <input class="nick-in" maxlength="${NICK_MAX}" placeholder="예: 윤하아빠/2단지" autocomplete="off" aria-label="닉네임">
+        <p class="nick-msg" aria-live="polite"></p>
+        <div class="pop-btns">${init ? '<button type="button" class="btn" data-pop="0">취소</button>' : ''}<button type="submit" class="btn primary">확인</button></div>
+      </form>`;
+    box.querySelector('.pop-t').textContent = title; box.querySelector('.pop-b p').textContent = sub;
+    const inp = box.querySelector('.nick-in'); inp.value = init || lastNick();
+    box.addEventListener('click', e => { if(e.target.closest('[data-pop="0"]')){ box.remove(); resolve(null); } });
+    box.querySelector('form').addEventListener('submit', e => {
+      e.preventDefault(); const v = inp.value.trim();
+      if(!v){ box.querySelector('.nick-msg').textContent = '닉네임을 적어 주세요.'; return; }
+      box.remove(); resolve(v);
+    });
+    document.body.appendChild(box); inp.focus();
+  });
+}
+const lastNick = () => { try{ return localStorage.getItem('sosLastNick') || ''; }catch(e){ return ''; } };
+function saveNick(n){ try{ localStorage.setItem('sosLastNick', n); }catch(e){} if(ROOM){ ROOM.nick = n; rememberRoom(ROOM); } }
+
+// 방 안의 기록을 읽기 전에 꼭 거쳐요: 로그인 → 내 멤버 문서 확인 → 없으면 닉네임 정하고 들어가기
+let sosReadyP = null;
+function sosReady(){
+  if(sosReadyP) return sosReadyP;
+  sosReadyP = (async () => {
+    if(!ROOM) return false;
+    const user = await sosAuth();
+    if(!user){ if(typeof sosTrouble === 'function') sosTrouble({code: 'auth'}); return false; }
+    ME.uid = user.uid;
+    const room = roomRef(), mine = room.collection('members').doc(user.uid);
+    let snap;
+    try{ snap = await mine.get(); }catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
+    if(snap.exists && snap.data().on === false){
+      forgetRoom(ROOM.roomId);
+      alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n이 휴대폰에서는 다시 들어갈 수 없어요.`);
+      location.href = 'index.html'; return new Promise(() => {});
+    }
+    if(snap.exists){ ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick); }
+    else{
+      let nick = ROOM.nick;
+      while(!nick) nick = await askNick(`'${ROOM.name}' 방에서 쓸 닉네임`, '모임·SOS·댓글에 이 닉네임이 보여요. 단톡방 닉네임과 같게 하면 알아보기 쉬워요.');
+      nick = nick.slice(0, NICK_MAX);
+      try{ await mine.set({nick, on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); }
+      catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
+      ME.nick = nick; saveNick(nick);
+    }
+    // 방장인지: 새 방은 ou(방장 uid). 예전 방은 이 휴대폰의 방장 열쇠로 한 번 등록해요
+    try{
+      const r = (await room.get()).data() || {};
+      ME.ou = r.ou || '';
+      if(!r.ou && r.oh && ROOM.owner){
+        const b = sosDb().batch();
+        b.set(room.collection('private').doc('owner'), {k: ROOM.owner, uid: user.uid});
+        b.update(room, {ou: user.uid});
+        await b.commit(); ME.ou = user.uid;
+      }
+    }catch(e){}
+    ME.owner = !!ME.ou && ME.ou === user.uid;
+    return true;
+  })();
+  return sosReadyP;
+}
+// 방 멤버 목록 (한 번 읽고 기억). [{uid, nick, joinedAt}]
+let sosMembersP = null;
+function sosMembers(fresh){
+  if(sosMembersP && !fresh) return sosMembersP;
+  sosMembersP = sosReady().then(ok => ok ? roomRef().collection('members').where('on', '==', true).get() : null)
+    .then(q => q ? q.docs.map(d => ({uid: d.id, ...d.data()})).sort((a, b) => ((a.joinedAt && a.joinedAt.seconds) || 0) - ((b.joinedAt && b.joinedAt.seconds) || 0)) : [])
+    .catch(() => []);
+  return sosMembersP;
+}
+
 // 방 지우기 (방을 만든 휴대폰만)
-//  1) 방이 살아 있을 때 방 안의 기록(모임·댓글·SOS·놀이) 위치를 모두 모아 두고
+//  1) 방이 살아 있을 때 방 안의 기록(모임·댓글·SOS·멤버) 위치를 모두 모아 두고
 //  2) 방장 열쇠(owner)를 보내 '지워짐' 표시 + 방 이름 비우기 (서버의 지문 oh 와 맞아야 함)
 //  3) 모아 둔 기록을 서버에서 실제로 지워요 (서버 규칙: 지워진 방의 기록만 지울 수 있음)
 //  예전에 열쇠 없이 만든 방은 들어온 사람 누구나 지울 수 있어요.
@@ -73,7 +167,8 @@ async function deleteRoom(){
     refs.push(d.ref);
     (await d.ref.collection('comments').get()).docs.forEach(c => refs.push(c.ref));
   }
-  for(const name of ['sos', 'plays']) (await room.collection(name).get()).docs.forEach(d => refs.push(d.ref));
+  for(const name of ['sos', 'plays', 'members']) (await room.collection(name).get()).docs.forEach(d => refs.push(d.ref));
+  refs.push(room.collection('private').doc('owner'));
   await room.update({deleted: true, name: '', k: ROOM.owner || ''});
   forgetRoom(ROOM.roomId);
   for(let i = 0; i < refs.length; i += 400){
@@ -109,7 +204,7 @@ function roomError(err){
 const GATE_STORY = `        <div class="g-tool">
           <p class="g-tool-h">어떤 플랫폼에서 모이든,<br><b>🆘 공동육아의 모임을 도와드립니다.</b></p>
           <p class="g-tool-chips"><span>💬 카톡 오픈채팅</span><span>🥕 당근 모임</span><span>🟢 네이버 밴드</span><span>👥 소모임</span></p>
-          <p class="g-tool-sub">대화는 원래 모임에서 그대로,<br>링크 하나로 붙여 써요. 가입 없이 익명으로.</p>
+          <p class="g-tool-sub">대화는 원래 모임에서 그대로,<br>링크 하나로 붙여 써요. 가입 없이 닉네임만으로.</p>
         </div>
         <div class="g-story">
           <p class="g-q">"아… 오늘은 또 어떻게 버티지?"</p>
@@ -119,11 +214,11 @@ const GATE_STORY = `        <div class="g-tool">
           <p><b>그래서 만들었어요.</b><br>부담 없이, 되는 사람끼리, 되는 날에.<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
         </div>
         <ul class="g-how">
-          <li>🆘 <b>힘든 날</b>엔 이름 없이 SOS만 꾹</li>
+          <li>🆘 <b>힘든 날</b>엔 SOS만 꾹</li>
           <li>👀 SOS가 <b>몰린 시간</b>은 모두가 봐요</li>
           <li>🙌 <b>용기 낸 한 명</b>이 모임을 열어요</li>
           <li>💬 대화는 <b>원래 단톡방·밴드</b>에서 그대로</li>
-          <li>🙈 가입·프로필 없이 <b>링크 + 비밀번호</b>만</li>
+          <li>🙋 가입 없이 <b>링크 + 비밀번호 + 닉네임</b>만</li>
           <li>📲 다운로드 없이 <b>홈 화면 바로가기</b>로 앱처럼</li>
         </ul>`;
 
@@ -250,7 +345,7 @@ const GATE_HOW_CREATE = `      <div class="g-guide">
         <ol>
           <li>여기서 <b>방 이름과 비밀번호</b>를 정해 방을 만들어요.</li>
           <li>홈의 <b>🔗 친구 초대하기</b>를 눌러 나온 링크를<br>단톡방·밴드 공지에 올리고, <b>비밀번호도 알려 주세요.</b></li>
-          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹 (누가 눌렀는지 몰라요)</li>
+          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹</li>
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
         </ol>
         <p class="g-guide-tip">💡 비밀번호는 1234처럼 쉬운 것보다 우리끼리 아는 말로 정해 주세요.<br>비밀번호를 잊으면 되찾을 수 없어요.</p>
@@ -258,7 +353,7 @@ const GATE_HOW_CREATE = `      <div class="g-guide">
 const GATE_HOW_INVITE = `      <div class="g-guide">
         <p class="g-guide-h">📖 들어오면 이렇게 써요</p>
         <ol>
-          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹 (누가 눌렀는지 몰라요)</li>
+          <li>독박 예정인 날엔 <b>🆘 SOS 예약</b>만 꾹</li>
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
         </ol>
@@ -337,11 +432,13 @@ ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       ${invite ? `<p class="g-box-h">🔑 초대받은 모임 방이에요</p>
       <p>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
+      <input id="gateNick" aria-label="닉네임" placeholder="닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
       <button type="submit">들어가기</button>`
       : `<p class="g-box-h">🏠 새 모임 방 만들기</p>
       <p>방을 만들고 초대 링크를 단톡방에 올리면 끝!</p>
       <input id="gateName" aria-label="방 이름" placeholder="방 이름 (예: 래미안 3단지 공동육아)" maxlength="30">
       <input type="password" id="gatePw" aria-label="방 비밀번호" placeholder="비밀번호 (4자 이상)" maxlength="40">
+      <input id="gateNick" aria-label="내 닉네임" placeholder="내 닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
       <button type="submit">방 만들기</button>`}
       <p class="g-msg" id="gateMsg" aria-live="polite"></p>
       </div>`;
@@ -389,6 +486,7 @@ ${invite ? '' : GATE_PASTE}
     });
   });
   const msg = t => { box.querySelector('#gateMsg').textContent = t; };
+  const ni = box.querySelector('#gateNick'); if(ni) ni.value = lastNick();
   if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;
   const enter = room => { rememberRoom(room); markPicked(); location.href = 'index.html'; };
   box.addEventListener('click', async e => {
@@ -410,21 +508,26 @@ ${invite ? '' : GATE_PASTE}
   box.querySelector('form').addEventListener('submit', async e => {
     e.preventDefault();
     const pw = box.querySelector('#gatePw').value, btn = box.querySelector('button[type=submit]');
+    const nick = box.querySelector('#gateNick').value.trim();
     const db = sosDb(); if(!db){ msg('인터넷 연결을 확인하고 새로고침해 주세요.'); return; }
     btn.disabled = true;
     try{
       if(invite){
         const key = await roomKey(INVITE, pw), snap = await db.collection('rooms').doc(key).get();
         if(roomGone(snap)){ msg('비밀번호가 맞지 않거나, 방장이 지운 방이에요.'); box.querySelector('#gatePw').select(); return; }
-        enter({roomId: INVITE, key, name: snap.data().name});
+        if(!nick){ msg('닉네임을 적어 주세요. 방 사람들에게 보여요.'); box.querySelector('#gateNick').focus(); return; }
+        enter({roomId: INVITE, key, name: snap.data().name, nick});
       }else{
         const name = box.querySelector('#gateName').value.trim();
         if(!name){ msg('방 이름을 적어 주세요.'); return; }
         if(pw.trim().length < 4){ msg('비밀번호는 4자 이상으로 해 주세요.'); return; }
+        if(!nick){ msg('내 닉네임을 적어 주세요. 방 사람들에게 보여요.'); box.querySelector('#gateNick').focus(); return; }
+        const user = await sosAuth();
+        if(!user){ msg('로그인 준비가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); return; }
         const roomId = newRoomId(), key = await roomKey(roomId, pw);
         const owner = randomHex();   // 방장 열쇠: 이 휴대폰에만 두고, 서버에는 지문만
-        await db.collection('rooms').doc(key).set({name, oh: await sha256Hex(owner), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-        enter({roomId, key, name, owner});
+        await db.collection('rooms').doc(key).set({name, oh: await sha256Hex(owner), ou: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+        enter({roomId, key, name, owner, nick});
       }
     }catch(err){ msg(roomError(err)); }
     finally{ btn.disabled = false; }
@@ -439,13 +542,22 @@ async function roomCounts(room){
   try{
     const r = db.collection('rooms').doc(room.key);
     if(roomGone(await r.get())) return {gone: true};
+    if(!(await sosAuth())) return null;
     const id = firebase.firestore.FieldPath.documentId(), today = ymdAfter(0);
     const [sos, ops] = await Promise.all([
       r.collection('sos').where(id, '>=', today).where(id, '<=', ymdAfter(6)).get(),
       r.collection('opinions').where('date', '>=', today).limit(50).get()]);
-    let n = 0; sos.forEach(d => { const v = d.data(); Object.keys(v).forEach(k => { if(/^h\d+$/.test(k)) n += v[k] || 0; }); });
+    let n = 0; sos.forEach(d => { n += sosDayTotal(d.data()); });
     return {sos: n, meet: ops.docs.filter(d => { const o = d.data(); return o.topic === 'meet' && !o.cancelled; }).length};
-  }catch(e){ return null; }
+  }catch(e){ return null; }   // 아직 멤버가 아닌 방(닉네임 정하기 전)은 못 세요
+}
+// SOS 날짜 문서 v 의 숫자: 예전 숫자 칸(h9 등) + 닉네임 예약(p: {uid: {h:[시간], n}})
+function sosHourCount(v, h){ return v ? (v['h' + h] || 0) + Object.values(v.p || {}).filter(e => (e.h || []).includes(+h)).length : 0; }
+function sosHourNames(v, h){ return v ? Object.values(v.p || {}).filter(e => (e.h || []).includes(+h)).map(e => e.n) : []; }
+function sosDayTotal(v){
+  if(!v) return 0;
+  return Object.keys(v).filter(k => /^h\d+$/.test(k)).reduce((a, k) => a + (v[k] || 0), 0) + (v.count || 0)
+    + Object.values(v.p || {}).reduce((a, e) => a + (e.h || []).length, 0);
 }
 
 // 앱을 열 때 첫 화면은 '내 방 목록'이에요

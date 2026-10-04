@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610041349">
+<link rel="manifest" href="manifest.webmanifest?v=202610041413">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610041349">
-<script src="assets/gate.js?v=202610041349"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610041413">
+<script src="assets/gate.js?v=202610041413"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -25,8 +25,8 @@
       <h1>🙌 모임</h1>
       <div class="sos" data-sos></div>
       <div class="anon-box">
-        <p class="anon-h">🤫 SOS는 익명, 💪 모임은 용기</p>
-        <p>독박하는 날은 <b>SOS 예약</b>만 눌러 두세요.<br>누가 눌렀는지 아무도 몰라요.<br>SOS가 몰린 시간을 보고,<br>용기 낸 한 명이 이름을 걸고 <b>모임</b>을 열어요.</p>
+        <p class="anon-h">🆘 SOS는 솔직하게, 💪 모임은 용기</p>
+        <p>독박하는 날은 <b>SOS 예약</b>만 눌러 두세요.<br>시간 숫자를 누르면 누가 보냈는지 보여요.<br>SOS가 몰린 시간을 보고,<br>용기 낸 한 명이 <b>모임</b>을 열어요.</p>
       </div>
     </header>
 
@@ -45,9 +45,7 @@
         </div>
         <p class="label">📅 날짜와 시간을 골라 주세요</p>
         <div id="meetPicker"></div>
-        <label class="label" for="meetHost">👑 주최자 (단톡방에서 알아볼 이름)</label>
-        <input id="meetHost" class="host-input" maxlength="20" placeholder="예: 하늘맘, 203동 뱀띠맘" autocomplete="off">
-        <p class="hint">모임은 주최자 이름이 보여요. 아이 실명보다는 별명을 추천해요.</p>
+        <p class="label">👑 주최자: <b id="meetHost"></b> <small class="hint">(내 닉네임)</small></p>
         <label class="label" for="meetText">장소·놀이</label>
         <textarea id="meetText" maxlength="500"></textarea>
         <p class="hint">📍 장소는 '3단지 키즈룸'처럼 <b>공용 공간까지만</b> 적어 주세요.<br>집 주소(동·호수)는 적지 마세요.<span class="ttl-only"> 지난 모임은 7일 뒤 자동으로 지워져요.</span></p>
@@ -73,10 +71,11 @@
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610041349"></script>
-<script src="assets/push.js?v=202610041349"></script>
-<script src="assets/meet.js?v=202610041349"></script>
+<script src="assets/common.js?v=202610041413"></script>
+<script src="assets/push.js?v=202610041413"></script>
+<script src="assets/meet.js?v=202610041413"></script>
 </body>
 </html>
