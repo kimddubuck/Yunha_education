@@ -40,12 +40,12 @@ function withTimeout(p, ms, what){
 // 알림 주소(토큰) 받기. ask=true 면 허용 창을 띄워요
 async function pushToken(ask){
   if(!pushSupported()) return null;
-  if(Notification.permission === 'denied'){ pushLastError = '알림이 차단돼 있어요'; return null; }
+  if(Notification.permission === 'denied'){ pushLastError = '크롬에서 이 사이트 알림이 차단돼 있어요. 크롬에서 gongdong-sos.pages.dev 열기 → 주소창 왼쪽 자물쇠 → 권한 → 알림 → 허용'; return null; }
   if(Notification.permission !== 'granted'){
     if(!ask) return null;
     pushStep('① 알림 허용 창을 기다리는 중…');
     const perm = await withTimeout(Notification.requestPermission(), 60000, '알림 허용 창');
-    if(perm !== 'granted'){ pushLastError = '알림 허용을 누르지 않았어요 (' + perm + ')'; return null; }
+    if(perm !== 'granted'){ pushLastError = perm === 'denied' ? '크롬에서 이 사이트 알림이 차단돼 있어요. 크롬에서 gongdong-sos.pages.dev 열기 → 주소창 왼쪽 자물쇠 → 권한 → 알림 → 허용' : '알림 허용을 누르지 않았어요'; return null; }
   }
   sosDb();   // Firebase 앱 준비
   pushStep('② 알림 준비 중…');
@@ -126,7 +126,7 @@ const PUSH_HELP = `<details class="how-to push-help">
       <ol>
         <li><b>크롬 앱 알림 켜기</b><br>설정 → 애플리케이션 → Chrome → 알림 → <b>알림 허용</b></li>
         <li><b>공동육아 SOS 앱 알림 켜기</b><br>홈 화면 아이콘 길게 누르기 → ⓘ 앱 정보 → 알림 → <b>알림 허용</b></li>
-        <li><b>크롬 사이트 알림 확인</b><br>크롬 ⋮ → 설정 → 사이트 설정 → 알림 → 켜기<br>'차단됨'에 gongdong-sos.pages.dev가 있으면 눌러서 <b>허용</b></li>
+        <li><b>크롬에서 이 사이트 알림 허용</b> (휴대폰 알림이 다 켜져 있는데도 안 되면 대부분 이거예요)<br>크롬에서 gongdong-sos.pages.dev 열기 → 주소창 왼쪽 <b>자물쇠</b> → 권한 → 알림 → <b>허용</b><br>또는 크롬 ⋮ → 설정 → 사이트 설정 → 알림 → '차단됨'에서 gongdong-sos.pages.dev → <b>허용</b></li>
         <li><b>알림이 늦게 오면</b><br>설정 → 애플리케이션 → Chrome → 배터리 → <b>제한 없음</b></li>
         <li><b>방해 금지·절전 모드</b>가 켜져 있으면 알림이 조용히 와요.</li>
         <li>카카오톡 안에서 연 화면은 알림이 안 돼요. <b>크롬으로 열어서</b> 홈 화면에 설치해 주세요.</li>
@@ -160,7 +160,7 @@ const PUSH_HELP = `<details class="how-to push-help">
         ? '<p class="push-h">🔔 알림 받기</p><p class="push-sub">아이폰은 <b>사파리 → 공유 → 홈 화면에 추가</b>한 앱에서 알림을 켤 수 있어요.</p>'
         : '<p class="push-h">🔔 알림 받기</p><p class="push-sub">이 브라우저는 알림을 지원하지 않아요. 카카오톡에서 열었다면 <b>다른 브라우저(크롬)로 열기</b>를 눌러 주세요.</p>';
     }else if('Notification' in window && Notification.permission === 'denied'){
-      html = '<p class="push-h">🔕 알림이 막혀 있어요</p><p class="push-sub">휴대폰 설정 → 애플리케이션 → 크롬(또는 이 앱) → 알림에서 허용해 주세요.</p>';
+      html = '<p class="push-h">🔕 알림이 막혀 있어요</p><p class="push-sub">크롬에서 이 사이트 알림이 차단돼 있어요.<br><b>크롬</b>에서 gongdong-sos.pages.dev 열기 → 주소창 왼쪽 <b>자물쇠</b> → <b>권한 → 알림 → 허용</b><br>그다음 이 앱을 닫았다 다시 열어 주세요.</p>';
     }else if(on){
       html = '<p class="push-h">🔔 알림이 켜져 있어요</p><p class="push-sub">새 모임 · SOS 몰림 · 내 모임에 참석/댓글이 생기면 알려 드려요.</p><button type="button" class="btn block" data-push="off">알림 끄기</button>';
     }else{
