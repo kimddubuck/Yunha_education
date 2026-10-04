@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>보안 규칙 복사</title>
+<style>
+:root{--bg:#fff;--fg:#1f2a24;--line:#d9dfdb;--pick:#2a9095}
+@media (prefers-color-scheme: dark){:root{--bg:#16191b;--fg:#e8ecea;--line:#3a4044}}
+body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif}
+h1{font-size:20px;margin:0 0 6px} p{margin:0 0 12px;font-size:14px;line-height:1.6}
+button{width:100%;padding:16px;border:0;border-radius:14px;background:var(--pick);color:#fff;font-size:17px;font-weight:700}
+textarea{width:100%;box-sizing:border-box;height:55vh;margin-top:12px;font:12px/1.4 monospace;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);color:var(--fg)}
+#ok{text-align:center;font-weight:700;min-height:1.4em;margin-top:8px}
+</style></head><body>
+<h1>🔐 Firestore 보안 규칙 (운영자용)</h1>
+<p>아래 버튼을 누르면 규칙 <b>전체</b>가 복사돼요.<br>Firebase 콘솔 규칙 칸의 내용을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>마지막 줄이 <code>}</code> 로 끝나야 해요 (총 236줄).</p>
+<button id="copy">📋 규칙 전체 복사하기</button>
+<p id="ok" aria-live="polite"></p>
+<textarea id="t" readonly>rules_version = &#x27;2&#x27;;
+// 공동육아 SOS · Firestore 보안 규칙
+// Firebase 콘솔 &gt; Firestore Database &gt; 규칙 탭에 이 내용을 그대로 붙여넣고 &quot;게시&quot;하세요.
+//
+// 구조: rooms/{방 열쇠}                — 방 이름
+//       rooms/{방 열쇠}/opinions/{id}  — 모임 (topic &#x27;meet&#x27;), 아래 comments 에 댓글
+//       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20)
+//       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이 (지금은 앱에서 안 씀)
+//       rooms/{방 열쇠}/members/{uid}  — 방 멤버 닉네임 (uid = 휴대폰마다 생기는 익명 로그인 번호)
+//       rooms/{방 열쇠}/private/owner  — 예전 방의 방장 확인용 (아무도 읽을 수 없음)
+// 로그인: Firebase 익명 로그인(Anonymous). 이름·전화번호·이메일은 없어요.
+// 방 안의 기록은 &#x27;방 멤버&#x27;(members 에 내 uid 문서가 있고 on == true)만 읽고 쓸 수 있어요.
+// 멤버가 되려면 방 열쇠를 알아야 해요 (= 초대 링크 + 비밀번호). 방장(ou)은 멤버를 내보낼 수 있어요(on = false).
+// 방 열쇠 = SHA-256(&quot;방코드:비밀번호&quot;). 비밀번호를 모르면 열쇠를 모르고, 방 목록 보기(list)는 막혀 있어서
+// 다른 방을 찾을 수 없어요. 방 안의 규칙은 동래아 공동육아 사이트와 같아요.
+// 지난 모임·댓글·SOS는 expireAt(날짜+7일)이 지나면, 방 사람이 앱을 열 때 앱이 지워요 (무료 요금제라 TTL 정책 대신).
+// 방은 방장이 앱에서 지울 수 있어요: &#x27;지워짐&#x27; 표시 → 방 안의 기록을 실제로 삭제. 지워진 방은 아무도 읽거나 쓸 수 없어요.
+// 문제 글은 Firebase 콘솔에서 직접 지워요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 자동 삭제 시각(expireAt): 날짜 칸이어야 하고, 너무 먼 미래는 안 됨 (예약은 1주일까지라 20일이면 넉넉)
+    function expireOk(d) {
+      return !(&#x27;expireAt&#x27; in d) || (d.expireAt is timestamp &amp;&amp; d.expireAt &lt;= request.time + duration.value(20, &#x27;d&#x27;));
+    }
+    // 지울 날짜(expireAt)가 지난 기록인지 — 앱을 연 사람이 지난 기록을 정리할 때 씀
+    function expired() {
+      return resource.data.get(&#x27;expireAt&#x27;, null) is timestamp &amp;&amp; resource.data.expireAt &lt; request.time;
+    }
+    // 방장이 지운 방인지 (지운 방의 기록은 지울 수 있어요)
+    function roomDeleted(roomKey) {
+      return get(/databases/$(database)/documents/rooms/$(roomKey)).data.get(&#x27;deleted&#x27;, false) == true;
+    }
+    // 방이 있고, 방장이 지우지 않았는지
+    function roomAlive(roomKey) {
+      return exists(/databases/$(database)/documents/rooms/$(roomKey))
+        &amp;&amp; get(/databases/$(database)/documents/rooms/$(roomKey)).data.get(&#x27;deleted&#x27;, false) == false;
+    }
+
+    // 방 멤버인지 (내보내진 사람은 아님)
+    function meDoc(roomKey) { return /databases/$(database)/documents/rooms/$(roomKey)/members/$(request.auth.uid); }
+    function isMember(roomKey) {
+      return request.auth != null &amp;&amp; exists(meDoc(roomKey)) &amp;&amp; get(meDoc(roomKey)).data.get(&#x27;on&#x27;, false) == true;
+    }
+    function canUse(roomKey) { return roomAlive(roomKey) &amp;&amp; isMember(roomKey); }
+    function myNick(roomKey) { return get(meDoc(roomKey)).data.nick; }
+    function isOwner(roomKey) {
+      return request.auth != null &amp;&amp; get(/databases/$(database)/documents/rooms/$(roomKey)).data.get(&#x27;ou&#x27;, &#x27;&#x27;) == request.auth.uid;
+    }
+    function nickOk(n) { return n is string &amp;&amp; n.size() &gt;= 1 &amp;&amp; n.size() &lt;= 20; }
+
+    match /rooms/{roomKey} {
+      allow get: if true;
+      allow list, delete: if false;
+      allow create: if roomKey.matches(&#x27;^[0-9a-f]{64}$&#x27;)
+        &amp;&amp; request.resource.data.keys().hasOnly([&#x27;name&#x27;, &#x27;oh&#x27;, &#x27;ou&#x27;, &#x27;createdAt&#x27;])
+        &amp;&amp; (!(&#x27;ou&#x27; in request.resource.data) || (request.auth != null &amp;&amp; request.resource.data.ou == request.auth.uid))
+        &amp;&amp; (!(&#x27;oh&#x27; in request.resource.data)
+            || (request.resource.data.oh is string &amp;&amp; request.resource.data.oh.size() == 64))
+        &amp;&amp; request.resource.data.name is string
+        &amp;&amp; request.resource.data.name.size() &gt;= 1
+        &amp;&amp; request.resource.data.name.size() &lt;= 30
+        &amp;&amp; request.resource.data.createdAt == request.time;
+      // 방 지우기: 방장 열쇠(k)의 지문이 oh 와 맞으면 &#x27;지워짐&#x27; 표시 + 방 이름 비우기 (되돌릴 수 없음)
+      //  - 방장 열쇠(oh) 없이 만든 예전 방은 비밀번호를 아는 사람 누구나 지울 수 있어요
+      allow update: if (resource.data.get(&#x27;deleted&#x27;, false) == false
+        &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;deleted&#x27;, &#x27;name&#x27;, &#x27;k&#x27;])
+        &amp;&amp; request.resource.data.deleted == true
+        &amp;&amp; request.resource.data.name == &#x27;&#x27;
+        &amp;&amp; request.resource.data.k is string
+        &amp;&amp; (!(&#x27;oh&#x27; in resource.data)
+            || hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.oh))
+        // 예전 방(ou 없음)의 방장 등록: 같은 묶음 쓰기로 private/owner 에 방장 열쇠를 맞게 넣었을 때만 ou = 내 uid
+        || (resource.data.get(&#x27;deleted&#x27;, false) == false
+          &amp;&amp; !(&#x27;ou&#x27; in resource.data) &amp;&amp; (&#x27;oh&#x27; in resource.data)
+          &amp;&amp; request.auth != null
+          &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;ou&#x27;])
+          &amp;&amp; request.resource.data.ou == request.auth.uid
+          &amp;&amp; getAfter(/databases/$(database)/documents/rooms/$(roomKey)/private/owner).data.uid == request.auth.uid);
+
+      // 방장 확인용 열쇠 보관 (읽기 불가). 방장 열쇠의 지문이 oh 와 맞을 때만 한 번 만들 수 있어요
+      match /private/{doc} {
+        allow read, update: if false;
+        allow delete: if roomDeleted(roomKey);
+        allow create: if doc == &#x27;owner&#x27; &amp;&amp; roomAlive(roomKey)
+          &amp;&amp; request.auth != null
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;k&#x27;, &#x27;uid&#x27;])
+          &amp;&amp; request.resource.data.uid == request.auth.uid
+          &amp;&amp; request.resource.data.k is string
+          &amp;&amp; hashing.sha256(request.resource.data.k).toHexString().lower() == get(/databases/$(database)/documents/rooms/$(roomKey)).data.get(&#x27;oh&#x27;, &#x27;&#x27;);
+      }
+
+      // 멤버 (닉네임)
+      //  - 들어오기: 방 열쇠를 알면 내 uid 문서를 만들 수 있어요 (내보내진 사람은 문서가 남아 있어서 다시 못 만들어요)
+      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기
+      match /members/{uid} {
+        allow get: if request.auth != null &amp;&amp; request.auth.uid == uid;
+        allow read: if canUse(roomKey);
+        allow create: if roomAlive(roomKey)
+          &amp;&amp; request.auth != null &amp;&amp; request.auth.uid == uid
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;nick&#x27;, &#x27;on&#x27;, &#x27;joinedAt&#x27;])
+          &amp;&amp; nickOk(request.resource.data.nick)
+          &amp;&amp; request.resource.data.on == true
+          &amp;&amp; request.resource.data.joinedAt == request.time;
+        allow update: if roomAlive(roomKey) &amp;&amp; request.auth != null &amp;&amp; (
+          (request.auth.uid == uid &amp;&amp; resource.data.on == true
+            &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;nick&#x27;])
+            &amp;&amp; nickOk(request.resource.data.nick))
+          || (isOwner(roomKey) &amp;&amp; request.auth.uid != uid
+            &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;on&#x27;])
+            &amp;&amp; request.resource.data.on == false));
+        allow delete: if roomDeleted(roomKey)
+          || (request.auth != null &amp;&amp; request.auth.uid == uid &amp;&amp; resource.data.on == true);
+      }
+
+      // 모임
+      match /opinions/{id} {
+        allow read: if canUse(roomKey);
+        allow delete: if roomDeleted(roomKey) || expired();
+        allow create: if canUse(roomKey)
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;topic&#x27;, &#x27;text&#x27;, &#x27;play&#x27;, &#x27;date&#x27;, &#x27;slot&#x27;, &#x27;host&#x27;, &#x27;uid&#x27;, &#x27;expireAt&#x27;, &#x27;createdAt&#x27;])
+          &amp;&amp; request.resource.data.uid == request.auth.uid
+          &amp;&amp; request.resource.data.host == myNick(roomKey)
+          &amp;&amp; expireOk(request.resource.data)
+          &amp;&amp; request.resource.data.topic in [&#x27;habit&#x27;, &#x27;dev&#x27;, &#x27;meet&#x27;, &#x27;free&#x27;]
+          &amp;&amp; request.resource.data.text is string
+          &amp;&amp; request.resource.data.text.size() &gt; 0
+          &amp;&amp; request.resource.data.text.size() &lt;= 500
+          &amp;&amp; (!(&#x27;play&#x27; in request.resource.data)
+              || (request.resource.data.play is string &amp;&amp; request.resource.data.play.size() &lt;= 40))
+          &amp;&amp; (!(&#x27;date&#x27; in request.resource.data)
+              || (request.resource.data.date is string &amp;&amp; request.resource.data.date.matches(&#x27;^[0-9]{4}-[0-9]{2}-[0-9]{2}$&#x27;)))
+          &amp;&amp; (!(&#x27;slot&#x27; in request.resource.data)
+              || request.resource.data.slot in [&#x27;9시&#x27;, &#x27;10시&#x27;, &#x27;11시&#x27;, &#x27;12시&#x27;, &#x27;13시&#x27;, &#x27;14시&#x27;, &#x27;15시&#x27;, &#x27;16시&#x27;, &#x27;17시&#x27;, &#x27;18시&#x27;, &#x27;19시&#x27;, &#x27;20시&#x27;])
+          &amp;&amp; (!(&#x27;host&#x27; in request.resource.data)
+              || (request.resource.data.host is string &amp;&amp; request.resource.data.host.size() &gt; 0 &amp;&amp; request.resource.data.host.size() &lt;= 20))
+          &amp;&amp; request.resource.data.createdAt == request.time;
+        // 참석·미확정·불참: v 지도에서 내 칸(uid)만 넣기·바꾸기·빼기. 닉네임은 내 멤버 닉네임과 같아야 해요
+        //  (예전 숫자 칸 joins/maybes/nos 는 그대로 두고 더 이상 바꾸지 않아요)
+        // 모임 취소: 연 사람(uid) 또는 방장이 cancelled 를 true 로 한 번만 (예전 모임은 멤버 누구나)
+        function voteMine() {
+          let nv = request.resource.data.get(&#x27;v&#x27;, {});
+          let me = request.auth.uid;
+          return request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;v&#x27;])
+            &amp;&amp; nv.diff(resource.data.get(&#x27;v&#x27;, {})).affectedKeys().hasOnly([me])
+            &amp;&amp; (!(me in nv)
+                || (nv[me] is map &amp;&amp; nv[me].keys().hasOnly([&#x27;s&#x27;, &#x27;n&#x27;])
+                    &amp;&amp; nv[me].s in [&#x27;join&#x27;, &#x27;maybe&#x27;, &#x27;no&#x27;] &amp;&amp; nv[me].n == myNick(roomKey)));
+        }
+        allow update: if canUse(roomKey) &amp;&amp; (
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;cancelled&#x27;])
+            &amp;&amp; request.resource.data.cancelled == true &amp;&amp; resource.data.topic == &#x27;meet&#x27;
+            &amp;&amp; (resource.data.get(&#x27;uid&#x27;, &#x27;&#x27;) == &#x27;&#x27; || resource.data.uid == request.auth.uid || isOwner(roomKey)))
+          || voteMine());
+
+        // 모임 댓글: 쓴 휴대폰만 고치거나 지울 수 있어요 (비밀값의 지문 kh 로 확인)
+        match /comments/{cid} {
+          allow read: if canUse(roomKey);
+          allow delete: if roomDeleted(roomKey) || expired();
+          allow create: if canUse(roomKey)
+            &amp;&amp; request.resource.data.keys().hasOnly([&#x27;text&#x27;, &#x27;createdAt&#x27;, &#x27;kh&#x27;, &#x27;uid&#x27;, &#x27;n&#x27;, &#x27;expireAt&#x27;])
+            &amp;&amp; request.resource.data.uid == request.auth.uid
+            &amp;&amp; request.resource.data.n == myNick(roomKey)
+            &amp;&amp; expireOk(request.resource.data)
+            &amp;&amp; request.resource.data.text is string
+            &amp;&amp; request.resource.data.text.size() &gt; 0
+            &amp;&amp; request.resource.data.text.size() &lt;= 300
+            &amp;&amp; (!(&#x27;kh&#x27; in request.resource.data)
+                || (request.resource.data.kh is string &amp;&amp; request.resource.data.kh.size() == 64))
+            &amp;&amp; request.resource.data.createdAt == request.time;
+          allow update: if canUse(roomKey)
+            &amp;&amp; resource.data.get(&#x27;kh&#x27;, &#x27;&#x27;) != &#x27;&#x27;
+            &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
+            &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;text&#x27;, &#x27;k&#x27;, &#x27;kh&#x27;, &#x27;deleted&#x27;, &#x27;editedAt&#x27;])
+            &amp;&amp; request.resource.data.k is string
+            &amp;&amp; hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+            &amp;&amp; request.resource.data.kh is string
+            &amp;&amp; request.resource.data.kh.size() == 64
+            &amp;&amp; request.resource.data.kh != resource.data.kh
+            &amp;&amp; request.resource.data.text is string
+            &amp;&amp; request.resource.data.text.size() &lt;= 300
+            &amp;&amp; ((request.resource.data.get(&#x27;deleted&#x27;, false) == true &amp;&amp; request.resource.data.text == &#x27;&#x27;)
+                || (request.resource.data.get(&#x27;deleted&#x27;, false) == false &amp;&amp; request.resource.data.text.size() &gt; 0))
+            &amp;&amp; request.resource.data.editedAt == request.time;
+        }
+      }
+
+      // 🆘 SOS 예약: 날짜별 문서의 p 지도에 내 칸(uid) = {h: [시간들], n: 닉네임} 만 넣기·바꾸기·빼기
+      //  + 자동 삭제 시각(expireAt)은 함께 적어도 돼요. 예전 숫자 칸(h8~h20)은 그대로 두고 더 이상 바꾸지 않아요
+      match /sos/{day} {
+        function entryOk(e) {
+          return e is map &amp;&amp; e.keys().hasOnly([&#x27;h&#x27;, &#x27;n&#x27;])
+            &amp;&amp; e.h is list &amp;&amp; e.h.size() &gt;= 1 &amp;&amp; e.h.size() &lt;= 13
+            &amp;&amp; e.h.hasOnly([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+            &amp;&amp; e.n == myNick(roomKey);
+        }
+        allow read: if canUse(roomKey);
+        allow delete: if roomDeleted(roomKey) || expired();
+        allow create: if canUse(roomKey)
+          &amp;&amp; day.matches(&#x27;^[0-9]{4}-[0-9]{2}-[0-9]{2}$&#x27;)
+          &amp;&amp; expireOk(request.resource.data)
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;p&#x27;, &#x27;expireAt&#x27;])
+          &amp;&amp; request.resource.data.p.keys().hasOnly([request.auth.uid])
+          &amp;&amp; entryOk(request.resource.data.p[request.auth.uid]);
+        allow update: if canUse(roomKey)
+          &amp;&amp; expireOk(request.resource.data)
+          &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;p&#x27;, &#x27;expireAt&#x27;])
+          &amp;&amp; request.resource.data.get(&#x27;p&#x27;, {}).diff(resource.data.get(&#x27;p&#x27;, {})).affectedKeys().hasOnly([request.auth.uid])
+          &amp;&amp; (!(request.auth.uid in request.resource.data.get(&#x27;p&#x27;, {})) || entryOk(request.resource.data.p[request.auth.uid]));
+      }
+
+      // 놀이 추가: 누구나 올리기, 수정·삭제 불가
+      match /plays/{id} {
+        allow read: if canUse(roomKey);
+        allow update: if false;
+        allow delete: if roomDeleted(roomKey);
+        allow create: if canUse(roomKey)
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;name&#x27;, &#x27;kind&#x27;, &#x27;cat&#x27;, &#x27;say&#x27;, &#x27;how&#x27;, &#x27;items&#x27;, &#x27;createdAt&#x27;])
+          &amp;&amp; request.resource.data.name is string
+          &amp;&amp; request.resource.data.name.size() &gt; 0
+          &amp;&amp; request.resource.data.name.size() &lt;= 30
+          &amp;&amp; request.resource.data.kind in [&#x27;habit&#x27;, &#x27;dev&#x27;]
+          &amp;&amp; (!(&#x27;cat&#x27; in request.resource.data)
+              || (request.resource.data.cat is string &amp;&amp; request.resource.data.cat.size() &lt;= 20))
+          &amp;&amp; (!(&#x27;say&#x27; in request.resource.data)
+              || (request.resource.data.say is string &amp;&amp; request.resource.data.say.size() &lt;= 40))
+          &amp;&amp; request.resource.data.how is string
+          &amp;&amp; request.resource.data.how.size() &gt; 0
+          &amp;&amp; request.resource.data.how.size() &lt;= 200
+          &amp;&amp; request.resource.data.items is list
+          &amp;&amp; request.resource.data.items.size() &lt;= 10
+          &amp;&amp; request.resource.data.createdAt == request.time;
+      }
+    }
+  }
+}
+</textarea>
+<script>
+document.getElementById('copy').addEventListener('click', async () => {
+  const t = document.getElementById('t'), ok = document.getElementById('ok');
+  try{ await navigator.clipboard.writeText(t.value); }
+  catch(e){ t.focus(); t.select(); document.execCommand('copy'); }
+  ok.textContent = '✅ 복사했어요! 콘솔에 붙여넣고 게시하세요.';
+});
+</script>
+</body></html>
