@@ -660,3 +660,4 @@ body{padding-block:16px 120px}
 .seg-tabs a{text-align:center;padding:9px 6px;border-radius:10px;font-weight:700;font-size:14.5px;color:var(--muted);text-decoration:none}
 .seg-tabs a[aria-current]{background:var(--bg);color:var(--accent-ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .seg-tabs a:not([aria-current]){color:var(--muted)!important}
+@media (max-width:380px){.site-nav .brand{font-size:16px}}

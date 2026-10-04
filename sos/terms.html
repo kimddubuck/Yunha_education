@@ -8,21 +8,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610041628">
+<link rel="manifest" href="manifest.webmanifest?v=202610041630">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610041628">
-<script src="assets/gate.js?v=202610041628"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610041630">
+<script src="assets/gate.js?v=202610041630"></script>
 </head>
 <body>
 <div class="wrap single">
   <nav class="site-nav" id="siteNav" data-page="safety" aria-label="메뉴"></nav>
   <main class="safety safe2">
     <div class="seg-tabs" role="tablist">
-      <a href="safety.html">🔒 개인정보</a><a href="terms.html" aria-current="page">📜 이용약관</a>
+      <a href="terms.html" aria-current="page">📜 이용약관</a><a href="safety.html">🔒 개인정보</a>
     </div>
     <section class="safe-hero">
       <p class="safe-lock" aria-hidden="true">📜</p>
@@ -66,6 +66,19 @@
     </section>
 
     <section class="safe-card">
+      <h2>🔒 개인정보는 이렇게 다뤄요</h2>
+      <ul class="safe-short">
+        <li><b>실명·전화번호·이메일은 받지 않아요.</b><br>방에서 쓸 <b>닉네임</b>만 정해요.</li>
+        <li>서버에 남는 것: 방 이름, 닉네임,<br>SOS 요청 날짜·시간, 모임 글·참석·댓글</li>
+        <li>비밀번호는 저장하지 않아요.<br><b>우리 방 사람만</b> 기록을 볼 수 있어요.</li>
+        <li>SOS·모임·댓글은 날짜가 지나고<br><b>7일 뒤 자동으로 지워져요.</b></li>
+        <li>휴대폰마다 보이지 않는 로그인 번호가 하나 생겨요.<br>멤버인지 확인하는 데만 써요.</li>
+        <li>알림을 켜면 <b>알림 주소</b>만 Google 알림 서버에 등록돼요.</li>
+      </ul>
+      <p class="hint">자세한 내용은 <a href="safety.html">🔒 개인정보 안내</a>에 있어요.</p>
+    </section>
+
+    <section class="safe-card">
       <h2>🗑 그만 쓰고 싶을 때</h2>
       <ul class="safe-short">
         <li>방에서 나가기: 홈의 <b>🚪 방 빼기</b></li>
@@ -83,6 +96,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610041628"></script>
+<script src="assets/common.js?v=202610041630"></script>
 </body>
 </html>

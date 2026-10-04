@@ -67,7 +67,7 @@ function dateBadge(ymd){
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
-const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 달력'],['safety.html','safety','🔒','개인정보']];
+const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 달력'],['terms.html','safety','📜','이용약관']];
 (function renderNav(){
   const nav = document.getElementById('siteNav'); if(!nav) return;
   const cur = nav.dataset.page;
