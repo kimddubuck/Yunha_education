@@ -466,3 +466,30 @@ a.sos-btn{text-decoration:none;text-align:center}
 .push-help .how-to{margin-top:8px}
 .push-help ol{margin:6px 0;padding-left:20px;font-size:13.5px;line-height:1.65}
 .push-help li{margin:6px 0}
+
+/* 📖 알림 설정 방법: 번호 동그라미 + 큰 그림 문자, 한 단계 한 동작 */
+.push-help .ph-lead{margin:8px 0;font-size:13.5px;line-height:1.6}
+.push-help .ph-os{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.push-help .ph-os > summary{font-weight:800;font-size:15px;cursor:pointer;padding:2px 0}
+.push-help ol.ph-steps{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ph-step{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:var(--tag)}
+.ph-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--pick);color:var(--pick-fg);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.ph-icon{flex:none;font-size:24px;width:30px;text-align:center}
+.ph-text{display:flex;flex-direction:column;gap:2px;font-size:14px;line-height:1.45;min-width:0}
+.ph-text small{font-size:12.5px;color:var(--muted);line-height:1.5}
+.ph-stuck{margin-top:10px;padding:10px;border-radius:12px;border:2px dashed #e0a400}
+.ph-stuck .ph-num{background:#e0a400;color:#1d1a12}
+.ph-stuck-h{margin:0;font-weight:800;font-size:14px}
+.ph-tip{margin:8px 2px 0;font-size:12.5px;line-height:1.6;color:var(--muted)}
+
+/* 🔔 방별 알림 스위치 */
+.push-rooms{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;background:var(--tag)}
+.push-rooms-h{margin:0;font-weight:800;font-size:14px}
+.push-room{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:14.5px;font-weight:600;cursor:pointer}
+.push-room-name{flex:1;overflow-wrap:anywhere}
+.switch{appearance:none;-webkit-appearance:none;flex:none;width:46px;height:26px;border-radius:999px;background:#8a8f93;position:relative;cursor:pointer;transition:background .15s;margin:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.switch:checked{background:var(--pick)}
+.switch:checked::after{left:23px}
+.switch:disabled{opacity:.6}
+.push-saved{margin:0;font-size:12.5px;color:var(--muted);min-height:1em}
