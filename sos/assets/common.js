@@ -14,6 +14,11 @@ function dayStr(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${
 const lastBookDay = () => dayStr(BOOK_DAYS - 1);
 // 지난 모임·댓글·SOS 숫자는 그 날짜가 지나고 7일 뒤 서버에서 자동으로 지워져요 (Firestore TTL: expireAt 칸)
 const KEEP_DAYS = 7;
+// 자동 삭제 스위치: 서버 규칙 게시 + Firestore TTL 정책 설정이 끝나야 true 로 켜요.
+// (꺼져 있으면 expireAt 을 보내지 않고, '7일 뒤 자동 삭제' 안내 문구도 숨겨요 — 사실이 아닌 안내를 보이지 않게)
+const TTL_READY = false;
+const ttl = ymd => TTL_READY ? {expireAt: expireAt(ymd)} : {};
+document.addEventListener('DOMContentLoaded', () => { if(!TTL_READY) document.querySelectorAll('.ttl-only').forEach(el => { el.hidden = true; }); });
 function expireAt(ymd){ const [y,m,d] = ymd.split('-').map(Number); return firebase.firestore.Timestamp.fromDate(new Date(y, m-1, d + 1 + KEEP_DAYS)); }
 
 /* 서버에서 실제로 받은 데이터만 써요: 인터넷이 끊기면 Firebase가 '빈 임시 데이터(fromCache)'를 먼저 보내는데,
@@ -211,7 +216,7 @@ function sosInit(){
     for(const v of st.slots){
       const key = st.date + '-' + v; if(sent.includes(key)) continue;
       try{
-        await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1), expireAt: expireAt(st.date)}, {merge:true});
+        await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1), ...ttl(st.date)}, {merge:true});
         sent = [...sent, key].slice(-200); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(e){}
       }catch(err){ sosTrouble(err); broken = true; break; }
     }
