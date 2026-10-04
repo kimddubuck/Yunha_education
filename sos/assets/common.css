@@ -655,3 +655,8 @@ body{padding-block:16px 120px}
 .sos-brave .brave-btn{font-size:16px}
 [data-sos] .sos-btn,.sos-brave .brave-btn{min-height:60px}
 .sos-brave{padding-left:15px;padding-right:15px}
+/* 개인정보 탭 안의 [개인정보 | 이용약관] 전환 */
+.seg-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--tag)}
+.seg-tabs a{text-align:center;padding:9px 6px;border-radius:10px;font-weight:700;font-size:14.5px;color:var(--muted);text-decoration:none}
+.seg-tabs a[aria-current]{background:var(--bg);color:var(--accent-ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.seg-tabs a:not([aria-current]){color:var(--muted)!important}
