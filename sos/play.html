@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>놀이 고르기 · 공동육아 SOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest?v=202610040053">
+<meta name="theme-color" content="#2a9095">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="공동육아 SOS">
+<link rel="stylesheet" href="assets/common.css?v=202610040053">
+<script src="assets/gate.js?v=202610040053"></script>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav" id="siteNav" data-page="play" aria-label="메뉴"></nav>
+  <header class="page-h">
+    <h1>놀이 고르기</h1>
+    <p class="sub">오늘은 두 가지만 해 봐요</p>
+    <div class="message">
+      <p>많은 걸 바라지 않아요.<br>일단 시도는 해 보자구요.</p>
+      <p>아이가 <b>배웠으면 하는 놀이</b> 하나,<br><b>경험해 봤으면 하는 놀이</b> 하나.<br>딱 2개만 해요.</p>
+      <p>자주 보여 주다 보면<br>조금이라도 변화가 있을 거예요.</p>
+    </div>
+    <div class="props">
+      <span>추천 <b>걸음마 시기 (12개월 무렵부터)</b></span>
+      <span>장소 <b>아파트 커뮤니티 실내</b></span>
+      <span>규칙 <b>집 생활용품만 · 작은 물건 없이 · 물은 대야에 조금만</b></span>
+    </div>
+    <div class="add-wrap">
+      <button class="btn primary" type="button" id="addOpen">➕ 놀이 추가하기</button>
+      <span class="hint">해 보고 싶은 놀이가 있으면 누구나 추가할 수 있어요</span>
+    </div>
+    <div class="board-form" id="addPanel" hidden>
+      <form id="addForm" class="add-form">
+        <div class="meet-row">
+          <span class="label">어디에 넣을까요?</span>
+          <div class="toolbar" id="addKind" role="group" aria-label="놀이 종류">
+            <button type="button" class="chip" data-kind="habit" aria-pressed="true">① 혼자서도 할 수 있어요</button>
+            <button type="button" class="chip" data-kind="dev" aria-pressed="false">② 새로운 경험</button>
+          </div>
+        </div>
+        <div class="meet-row" id="addCatRow" hidden>
+          <label class="label" for="addCat">놀이 종류</label>
+          <select id="addCat"></select>
+        </div>
+        <div class="meet-row">
+          <label class="label" for="addName">놀이 이름</label>
+          <input id="addName" maxlength="30" placeholder="예: 양말 짝 맞추기">
+        </div>
+        <div class="meet-row" id="addSayRow">
+          <label class="label" for="addSay">아이에게 건네는 말 (선택)</label>
+          <input id="addSay" maxlength="40" placeholder="예: 양말 짝 찾아 줄래?">
+        </div>
+        <div class="meet-row">
+          <label class="label" for="addHow">하는 방법</label>
+          <textarea id="addHow" maxlength="200" placeholder="예: 엄마 아빠 양말을 섞어 두고 같은 색끼리 짝을 찾아요."></textarea>
+        </div>
+        <div class="meet-row">
+          <label class="label" for="addItems">준비물 (쉼표로 나눠 주세요)</label>
+          <input id="addItems" maxlength="120" placeholder="예: 양말, 빨래 바구니">
+        </div>
+        <p class="hint">⚠️ 집에 있는 생활용품으로만, 삼킬 수 있는 작은 물건은 빼 주세요. 이름 없이 올라가요.</p>
+        <div class="board-row">
+          <span class="toast" id="addMsg" aria-live="polite"></span>
+          <button class="btn primary" type="submit" id="addSend">추가하기</button>
+        </div>
+      </form>
+    </div>
+  </header>
+
+  <main>
+    <section class="slot" id="habitSlot">
+      <div class="slot-h"><h2>① 혼자서도 할 수 있어요</h2><span class="rule">하나 정해서 몇 주 반복해요</span></div>
+      <div class="intro">
+        <p class="intro-q">우리 아기가 배웠으면 하는 생활 속 행동</p>
+        <p>숟가락질, 손 씻기, 빨래 개기, 정리하기처럼 나중에 아이가 혼자서 하게 될 일들이에요. 지금은 "숟가락 해 볼래?", "이거 넣어 줄래?" 하고 엄마 아빠와 같이 해 봐요. 처음엔 관심이 없어도 같은 걸 몇 주 반복하면 아이가 먼저 손을 뻗어요.</p>
+      </div>
+      <p class="picked-line" id="habitPicked" hidden></p>
+      <button class="fold" type="button" data-fold="habit" aria-expanded="false" aria-controls="habitBody"></button>
+      <div class="fold-body" id="habitBody" hidden>
+        <div class="cards" id="habitCards"></div>
+      </div>
+    </section>
+
+    <section class="slot" id="devSlot">
+      <div class="slot-h"><h2>② 새로운 경험</h2><span class="rule">자주 바꿔 가며 새로 해요</span></div>
+      <div class="intro">
+        <p class="intro-q">우리 아기가 해 봤으면 하는 경험</p>
+        <p>상자 터널을 기어서 통과하고, 차가운 얼음을 만지고, 이불 위에서 양말 공을 튀기는 것처럼 집에서는 잘 못 해 본 경험이에요. 매번 새로운 걸 골라 아이가 여러 가지를 겪어 보게 해요.</p>
+      </div>
+      <p class="picked-line" id="devPicked" hidden></p>
+      <button class="fold" type="button" data-fold="dev" aria-expanded="false" aria-controls="devBody"></button>
+      <div class="fold-body" id="devBody" hidden>
+      <div class="match" id="match" hidden>
+        <p class="label" id="matchLabel"></p>
+        <div class="cards" id="matchCards"></div>
+      </div>
+      <div class="toolbar" id="cats" role="group" aria-label="새로운 경험 종류"></div>
+      <div class="toolbar">
+        <button class="chip" id="fresh" aria-pressed="true">안 해 본 것만</button>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="grid" id="grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside id="tray">
+    <button class="bar" id="bar" aria-expanded="false"><b id="barText">오늘 놀이</b><span class="hint">펼치기 ▲</span></button>
+    <h2>오늘 놀이</h2>
+    <div class="body">
+      <ul class="today" id="today"></ul>
+      <div id="stuffBox" hidden>
+        <p class="label">챙길 것</p>
+        <p class="stuff" id="stuff"></p>
+        <p class="hint" id="shared"></p>
+      </div>
+      <div class="btns">
+        <button class="btn primary" id="copy">공지용 글 복사</button>
+        <button class="btn" id="clear">비우기</button>
+      </div>
+      <p class="toast" id="toast" aria-live="polite"></p>
+      <textarea id="copyArea" aria-hidden="true" tabindex="-1"></textarea>
+    </div>
+  </aside>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="plays.js?v=202610040053"></script>
+<script src="assets/common.js?v=202610040053"></script>
+<script src="assets/play.js?v=202610040053"></script>
+</body>
+</html>

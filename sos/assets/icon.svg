@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" fill="#4E9C82"/>
+
+<!-- 깃대 두 개 (엄마 왼쪽, 아빠 오른쪽) -->
+<rect x="62" y="30" width="14" height="250" rx="7" fill="#6B4423"/>
+<rect x="436" y="30" width="14" height="250" rx="7" fill="#6B4423"/>
+<circle cx="69" cy="30" r="11" fill="#FFC83D"/>
+<circle cx="443" cy="30" r="11" fill="#FFC83D"/>
+
+<!-- 가운데 SOS 현수막 -->
+<rect x="76" y="44" width="360" height="112" rx="6" fill="#E8382F" stroke="#FFFFFF" stroke-width="8"/>
+<text x="256" y="134" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="86" fill="#FFFFFF">SOS</text>
+
+<!-- 엄마 (왼쪽): 긴 머리 + 삐져나온 머리카락 -->
+<path d="M82 372 q-8 -130 70 -150 q78 20 72 150z" fill="#5A3A22"/>
+<path d="M44 512 v-60 a104 92 0 0 1 208 0 v60z" fill="#F28B82"/>
+<path d="M78 420 L69 262" stroke="#F28B82" stroke-width="42" stroke-linecap="round"/>
+<circle cx="69" cy="250" r="25" fill="#FFD3A8" stroke="#E8B68A" stroke-width="3"/>
+
+  <circle cx="152" cy="302" r="64" fill="#FFD3A8" stroke="#E8B68A" stroke-width="3"/>
+  <path d="M118.08000000000001 306.28 q10.88 -14.144000000000002 21.76 0" stroke="#2E2018" stroke-width="5.12" fill="none" stroke-linecap="round"/><path d="M164.16 306.28 q10.88 -14.144000000000002 21.76 0" stroke="#2E2018" stroke-width="5.12" fill="none" stroke-linecap="round"/>
+  <path d="M119.168 316.08 q9.792000000000002 6.5280000000000005 19.584000000000003 0" stroke="#B88A6A" stroke-width="2.56" fill="none" stroke-linecap="round" opacity=".7"/><path d="M165.248 316.08 q9.792000000000002 6.5280000000000005 19.584000000000003 0" stroke="#B88A6A" stroke-width="2.56" fill="none" stroke-linecap="round" opacity=".7"/>
+  <path d="M132.8 327.6 q19.2 21.76 38.4 0 z" fill="#8A3B2E"/>
+  <path d="M116.08000000000001 308.4 q-8.96 14.08 0 19.2 q8.96 -5.12 0 -19.2z" fill="#7EC8F2" stroke="#4FA8DA" stroke-width="2"/><path d="M187.92 308.4 q8.96 14.08 0 19.2 q-8.96 -5.12 0 -19.2z" fill="#7EC8F2" stroke="#4FA8DA" stroke-width="2"/>
+<path d="M88 294 q4 -74 64 -76 q60 2 64 76 q-28 -42 -64 -38 q-38 -2 -64 38z" fill="#5A3A22"/>
+<path d="M150 220 q14 -24 30 -16" stroke="#5A3A22" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+<!-- 아빠 (오른쪽): 짧은 머리 + 까치집 -->
+<path d="M260 512 v-60 a104 92 0 0 1 208 0 v60z" fill="#5B8DEF"/>
+<path d="M434 420 L443 262" stroke="#5B8DEF" stroke-width="42" stroke-linecap="round"/>
+<circle cx="443" cy="250" r="25" fill="#FFD3A8" stroke="#E8B68A" stroke-width="3"/>
+
+  <circle cx="360" cy="302" r="64" fill="#FFD3A8" stroke="#E8B68A" stroke-width="3"/>
+  <path d="M326.08 306.28 q10.88 -14.144000000000002 21.76 0" stroke="#2E2018" stroke-width="5.12" fill="none" stroke-linecap="round"/><path d="M372.16 306.28 q10.88 -14.144000000000002 21.76 0" stroke="#2E2018" stroke-width="5.12" fill="none" stroke-linecap="round"/>
+  <path d="M327.168 316.08 q9.792000000000002 6.5280000000000005 19.584000000000003 0" stroke="#B88A6A" stroke-width="2.56" fill="none" stroke-linecap="round" opacity=".7"/><path d="M373.24800000000005 316.08 q9.792000000000002 6.5280000000000005 19.584000000000003 0" stroke="#B88A6A" stroke-width="2.56" fill="none" stroke-linecap="round" opacity=".7"/>
+  <path d="M340.8 327.6 q19.2 21.76 38.4 0 z" fill="#8A3B2E"/>
+  <path d="M324.08 308.4 q-8.96 14.08 0 19.2 q8.96 -5.12 0 -19.2z" fill="#7EC8F2" stroke="#4FA8DA" stroke-width="2"/><path d="M395.92 308.4 q8.96 14.08 0 19.2 q-8.96 -5.12 0 -19.2z" fill="#7EC8F2" stroke="#4FA8DA" stroke-width="2"/>
+<path d="M296 294 q-2 -76 64 -78 q66 2 64 78 q-6 -30 -22 -38 q-38 10 -84 0 q-16 8 -22 38z" fill="#2E2018"/>
+<path d="M352 220 l-8 -22 l18 14 l6 -22 l8 26" fill="#2E2018"/>
+
+<!-- 아기 (가운데 앞): 혼자 해맑음 -->
+<path d="M200 512 v-28 a56 50 0 0 1 112 0 v28z" fill="#FFE27A"/>
+
+  <circle cx="256" cy="410" r="48" fill="#FFD3A8" stroke="#E8B68A" stroke-width="3"/>
+  <ellipse cx="239.2" cy="410" rx="4.800000000000001" ry="6.720000000000001" fill="#2E2018"/>
+  <ellipse cx="272.8" cy="410" rx="4.800000000000001" ry="6.720000000000001" fill="#2E2018"/>
+  <circle cx="229.6" cy="425.36" r="6.24" fill="#F59C8B" opacity=".7"/>
+  <circle cx="282.4" cy="425.36" r="6.24" fill="#F59C8B" opacity=".7"/>
+  <path d="M244 426.8 q12 15.36 24 0 z" fill="#8A3B2E"/>
+<path d="M248 364 q10 -22 26 -10 q-14 -2 -16 14z" fill="#5A3A22"/>
+</svg>

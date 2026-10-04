@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>개인정보 · 공동육아 SOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest?v=202610040053">
+<meta name="theme-color" content="#2a9095">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="공동육아 SOS">
+<link rel="stylesheet" href="assets/common.css?v=202610040053">
+<script src="assets/gate.js?v=202610040053"></script>
+</head>
+<body>
+<div class="wrap single">
+  <nav class="site-nav" id="siteNav" data-page="safety" aria-label="메뉴"></nav>
+  <main class="safety">
+    <section class="slot">
+      <div class="slot-h"><h1>🔒 개인정보</h1></div>
+      <p class="hint">걱정되시는 분들을 위해, 이 사이트가 무엇을 저장하고 무엇을 저장하지 않는지 있는 그대로 적었어요. 쓰기 싫으시면 안 쓰셔도 괜찮아요 🙂</p>
+    </section>
+
+    <section class="slot">
+      <h2>✅ 모으지 않는 것</h2>
+      <ul class="safe-list">
+        <li>회원가입·로그인이 없어요. <b>이름, 전화번호, 카카오 계정, 이메일을 받지 않아요.</b></li>
+        <li>사진·위치·연락처·카메라 권한을 요청하지 않아요.</li>
+        <li>이 사이트 코드에는 광고, 방문 추적(애널리틱스), 쿠키 수집이 없어요.</li>
+        <li>글을 저장할 때 IP 주소나 기기 정보를 함께 적지 않아요. 저장되는 칸은 아래 표가 전부예요.</li>
+      </ul>
+    </section>
+
+    <section class="slot">
+      <h2>☁️ 서버(Google Firebase)에 저장되는 것 — 모두가 보는 내용</h2>
+      <table class="safe-table">
+        <tr><th>어디서</th><th>저장되는 것</th></tr>
+        <tr><td>🏠 모임 방</td><td><b>방 이름만</b>. 비밀번호는 저장하지 않아요. 비밀번호로 만든 암호화된 열쇠가 방 주소가 돼서, 비밀번호를 아는 사람만 방을 찾을 수 있어요.</td></tr>
+        <tr><td>🆘 SOS 예약</td><td>날짜·시간별 <b>숫자만</b> (예: 10월 3일 16시 = 2명). 누가 눌렀는지는 서버에 없어요.</td></tr>
+        <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 별명</b>(직접 적은 것), 참석·미확정·불참 숫자, 댓글 글</td></tr>
+        <tr><td>🧸 놀이 추가</td><td>놀이 이름·방법·준비물</td></tr>
+      </table>
+      <p class="hint">통신은 모두 암호화(HTTPS)돼요. 서버는 Google Firebase를 써요.</p>
+    </section>
+
+    <section class="slot">
+      <h2>📱 내 휴대폰(브라우저)에만 남는 것</h2>
+      <p>아래 기록은 <b>서버로 보내지 않고 내 휴대폰 브라우저 안에만</b> 저장돼요. 다른 사람은 볼 수 없어요.</p>
+      <ul class="safe-list">
+        <li>들어간 모임 방 목록과 방 열쇠 (비밀번호 자체가 아니라 암호화된 값)</li>
+        <li>내가 누른 SOS 예약 시간 — 그래서 '📌 내 SOS 예약'은 나한테만 보여요</li>
+        <li>내가 연 모임 목록 — 그래서 '모임 취소' 버튼은 연 휴대폰에만 보여요</li>
+        <li>내 댓글 열쇠 — 그래서 댓글 '수정'·'삭제'는 쓴 휴대폰에만 보여요 (서버에는 열쇠의 지문만 저장돼요)</li>
+        <li>내가 누른 참석·미확정·불참, 마지막으로 적은 주최자 별명, 놀이 고르기 화면 상태</li>
+      </ul>
+      <p class="hint">브라우저의 '인터넷 기록/사이트 데이터 삭제'를 하면 이 기록은 모두 지워져요. (서버에 올라간 글·숫자는 그대로예요)</p>
+    </section>
+
+    <section class="slot">
+      <h2>🗑 취소하고 지우기</h2>
+      <ul class="safe-list">
+        <li><b>SOS 예약</b>: '📌 내 SOS 예약'에서 언제든 취소 → 숫자가 바로 1 줄어요.</li>
+        <li><b>모임</b>: 연 휴대폰에서 '내가 연 모임 취소하기' → '취소된 모임'으로 표시돼요.</li>
+        <li><b>모임 댓글</b>: 쓴 휴대폰에서 댓글 옆 '수정'·'삭제'를 누르면 돼요.</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="assets/common.js?v=202610040053"></script>
+</body>
+</html>

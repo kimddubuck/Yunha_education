@@ -1,170 +1,137 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>공동육아 SOS 달력</title>
-  <meta name="description" content="급할 때 누가 아이를 봐줄 수 있는지, 달력에 체크만 하는 공동육아 모임 도구">
-  <meta name="theme-color" content="#F5F3EE">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>공동육아 SOS 🆘</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest?v=202610040053">
+<meta name="theme-color" content="#2a9095">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="공동육아 SOS">
+<link rel="stylesheet" href="assets/common.css?v=202610040053">
+<script src="assets/gate.js?v=202610040053"></script>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1><a href="#"><img src="icon-192.png" alt="" class="logo"> 공동육아 SOS 달력</a></h1>
-    <button class="help" type="button" id="helpBtn" aria-label="앱 소개 다시 보기">?</button>
-  </header>
+<div class="wrap single">
+  <nav class="site-nav" id="siteNav" data-page="home" aria-label="메뉴"></nav>
+  <main>
+    <section class="cover">
+      <img class="cover-icon" src="assets/icon.svg" alt="" width="64" height="64">
+      <p class="eyebrow" data-room-name></p>
+      <h1>공동육아 SOS 🆘</h1>
+      <p class="lead">공동육아하고 싶은 순간,<br><b>SOS 합시다! 🆘</b></p>
+      <p class="cover-sub">SOS 요청에 용기 있게 모임 만들어 보세요. 💪</p>
+      <div class="room-bar"><button type="button" class="btn" data-invite>🔗 친구 초대하기</button><button type="button" class="btn" data-rooms>🔁 방 바꾸기 · 새 방</button></div>
+    </section>
 
-  <div class="demo" id="demoBanner" hidden>
-    🧪 체험 모드예요. 기록이 이 기기에만 저장돼서 다른 사람과는 공유되지 않아요.
-  </div>
+    <div class="sos" data-sos-summary></div>
 
-  <!-- 첫 화면: 방 만들기 + 최근 방 -->
-  <section class="view" id="viewHome">
-    <div class="card" id="recentCard" hidden>
-      <h2>내 모임</h2>
-      <ul class="rooms" id="recentList"></ul>
-    </div>
+    <nav class="quick" aria-label="바로가기">
+      <a href="meet.html#new"><span aria-hidden="true">🙌</span>모임 만들기</a>
+      <a href="play.html"><span aria-hidden="true">🧸</span>놀이 고르기</a>
+    </nav>
 
-    <div class="card">
-      <h2>모임 방 만들기</h2>
-      <p class="hint">방을 만들고 초대 링크를 단톡방에 올리면 끝이에요. 회원가입은 없어요.</p>
-      <form id="createForm">
-        <label for="createName">방 이름</label>
-        <input type="text" id="createName" maxlength="30" placeholder="예: 래미안 3단지 품앗이" required>
-        <label for="createPw">비밀번호 (4자 이상)</label>
-        <input type="password" id="createPw" minlength="4" maxlength="40" autocomplete="new-password" required>
-        <label for="createNick">내 닉네임</label>
-        <input type="text" id="createNick" maxlength="12" placeholder="예: 윤하맘" required>
-        <button class="btn full" type="submit">방 만들기</button>
-        <p class="error" id="createErr"></p>
-      </form>
-    </div>
-  </section>
+    <a class="anon-box anon-link" href="meet.html#sos">
+      <p class="anon-h">🤫 SOS는 익명, 💪 모임은 용기</p>
+      <p>오늘도 독박으로 힘든 누군가의 SOS,<br>용기 낸 한 명이 모임으로 구출합니다. ›</p>
+    </a>
 
-  <!-- 초대 링크로 들어왔을 때: 비밀번호 입력 -->
-  <section class="view" id="viewEnter">
-    <div class="card">
-      <h2>모임 방 들어가기</h2>
-      <p class="hint">방장에게 받은 비밀번호와 내 닉네임을 넣어주세요.</p>
-      <form id="enterForm">
-        <label for="enterPw">비밀번호</label>
-        <input type="password" id="enterPw" maxlength="40" autocomplete="current-password" required>
-        <label for="enterNick">내 닉네임</label>
-        <input type="text" id="enterNick" maxlength="12" placeholder="예: 윤하맘" required>
-        <button class="btn full" type="submit">들어가기</button>
-        <p class="error" id="enterErr"></p>
-      </form>
-    </div>
-  </section>
+    <section class="sec">
+      <h2>다가오는 모임</h2>
+      <ul class="ops" id="next"></ul>
+      <p class="hint" id="nextEmpty"></p>
+      <p><a class="btn block" href="meet.html">모임 전체 보기</a></p>
+    </section>
 
-  <!-- 모임 방: 달력 -->
-  <section class="view" id="viewRoom">
-    <div class="card">
-      <div class="room-head">
-        <div>
-          <h2 id="roomName"></h2>
-          <div class="me">나: <span id="myNick"></span> · <button type="button" id="changeNick">닉네임 바꾸기</button></div>
-        </div>
-        <button class="btn small" type="button" id="inviteBtn">초대하기</button>
+    <section class="sec install" id="install">
+      <h2>📲 홈 화면에 앱으로 설치하기</h2>
+      <p class="hint">설치하면 홈 화면에 SOS 깃발 든 가족<br>아이콘이 생겨서 앱처럼 바로 열려요.</p>
+      <div class="webapp-note">
+        <p class="webapp-h">💡 웹앱이 뭐예요? 다운로드 아니에요!</p>
+        <p>이 웹사이트를<br><b>홈 화면에 바로가기로 추가</b>하는 거예요.<br>컴퓨터 바탕화면 바로가기와 같아요.</p>
+        <ul>
+          <li>앱스토어에서 받지 않아요</li>
+          <li>용량도 거의 차지하지 않아요</li>
+          <li>필요 없으면 아이콘만 지우면 끝이에요</li>
+        </ul>
       </div>
-    </div>
+      <button class="btn primary block" type="button" id="installBtn" hidden>📲 지금 설치하기</button>
+      <details class="how-to" id="howAndroid">
+        <summary>🤖 안드로이드 (크롬)</summary>
+        <ol>
+          <li>크롬으로 이 사이트를 열어요.</li>
+          <li>오른쪽 위 <b>⋮ (점 세 개)</b>를 눌러요.</li>
+          <li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 눌러요.</li>
+          <li><b>설치</b>를 누르면 끝! 홈 화면에 공동육아 SOS 아이콘이 생겨요.</li>
+        </ol>
+      </details>
+      <details class="how-to" id="howIos">
+        <summary>🍎 아이폰 (크롬 · 사파리)</summary>
+        <ol>
+          <li><b>크롬</b>: 주소창 오른쪽의 <b>공유 버튼 (⬆︎ 네모에 화살표)</b>을 눌러요.<br><b>사파리</b>: 아래쪽 가운데 <b>공유 버튼</b>을 눌러요.</li>
+          <li>목록을 아래로 내려 <b>홈 화면에 추가</b>를 눌러요.</li>
+          <li>오른쪽 위 <b>추가</b>를 누르면 끝! 홈 화면에 공동육아 SOS 아이콘이 생겨요.</li>
+        </ol>
+        <p class="hint">아이폰은 설치한 앱을 처음 열 때 입장 비밀번호를 한 번 더 물어볼 수 있어요.</p>
+      </details>
+      <p class="hint">카카오톡에서 링크를 열었다면, 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러 주세요.</p>
+    </section>
 
-    <div class="card">
-      <div class="month-nav">
-        <button type="button" id="prevMonth" aria-label="이전 달">‹</button>
-        <strong id="monthLabel"></strong>
-        <button type="button" id="nextMonth" aria-label="다음 달">›</button>
-      </div>
-      <div class="grid" id="calendar"></div>
-      <p class="legend">날짜를 누르면 🆘 도움 요청이나 ✋ 가능 표시를 할 수 있어요.</p>
-    </div>
-  </section>
-</div>
-
-<!-- 날짜를 눌렀을 때 아래에서 올라오는 창 -->
-<div class="backdrop" id="backdrop"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <h3 id="sheetTitle"></h3>
-  <ul class="marks" id="sheetMarks"></ul>
-  <p class="empty" id="sheetEmpty">아직 아무도 표시하지 않았어요.</p>
-
-  <div id="sheetActions">
-    <div class="two">
-      <button class="btn sos" type="button" data-type="sos">🆘 도움 필요</button>
-      <button class="btn" type="button" data-type="can">✋ 나 이날 가능</button>
-    </div>
-    <form class="form" id="markForm">
-      <label for="markTime">시간 (선택)</label>
-      <input type="text" id="markTime" maxlength="20" placeholder="예: 오후 2~6시">
-      <label for="markMemo">한 줄 메모 (선택)</label>
-      <input type="text" id="markMemo" maxlength="60" placeholder="예: 병원 진료 때문에요">
-      <button class="btn full" type="submit" id="markSubmit">올리기</button>
-    </form>
-  </div>
-  <p class="empty" id="sheetPast" hidden>지난 날짜는 볼 수만 있어요.</p>
-  <button class="btn ghost full" type="button" id="sheetClose">닫기</button>
-</div>
-
-<!-- 처음 열었을 때 보이는 앱 소개 -->
-<div class="intro" id="intro" hidden>
-  <div class="intro-box" role="dialog" aria-modal="true" aria-labelledby="introTitle">
-    <button class="intro-x" type="button" id="introClose" aria-label="닫기">×</button>
-
-    <div id="introMain">
-      <img src="icon-192.png" alt="" class="intro-icon">
-      <h2 id="introTitle">공동육아 SOS 달력</h2>
-      <div class="story">
-        <p class="q">"아… 오늘은 또 어떻게 버티지?"</p>
-        <p class="soft">갑자기 병원에 가야 하는 날,<br>출근은 해야 하는데 아이가 아픈 날.</p>
-        <p>단톡방에 "누가 좀 봐줄 수 있어요?"<br>올리기는 미안하고,<br>누가 되는지 한 명씩 묻기도 어렵죠.</p>
-        <p class="soft">그렇다고 매번 혼자<br>버틸 수도 없잖아요.</p>
-        <p><strong>그래서 만들었어요.</strong><br>급한 날엔 SOS만 꾹, 되는 사람은 손만 번쩍.<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
-      </div>
-      <ul class="points">
-        <li>🚨 <b>급한 날</b>엔 달력에 SOS만 꾹</li>
-        <li>✋ <b>도와줄 수 있는 날</b>엔 손만 번쩍</li>
-        <li>🔒 <b>비밀번호 아는 우리 모임</b>끼리만 봐요</li>
-        <li>📱 다운로드 없이 <b>홈 화면 바로가기</b>로 앱처럼</li>
+    <section class="sec" id="about">
+      <h2>이런 모임이에요</h2>
+      <ul class="list">
+        <li><b>무엇이든 함께해요.</b> 꼭 공동육아가 아니어도 돼요. 친목, 육아 이야기, 산책 등 자유롭게 모여요.</li>
+        <li><b>아기 컨디션에 따라 참석해요.</b> 오고 싶을 때 오고, 가고 싶을 때 가요.</li>
+        <li><b>부담 없이 와요.</b> 준비물 없이 몸만 와도 돼요.</li>
       </ul>
-      <button class="btn full" type="button" id="introStart">시작하기</button>
-      <button class="linkish" type="button" id="introHowTo">📱 홈 화면에 설치하는 방법 보기</button>
-    </div>
-
-    <div id="introInstall" hidden>
-      <h2>📱 홈 화면에 설치하기</h2>
-      <button class="btn full" type="button" id="installNow" hidden>지금 바로 설치하기</button>
-      <div class="howto">
-        <h3>갤럭시 · 안드로이드 (크롬)</h3>
-        <ol>
-          <li>크롬에서 이 페이지를 열어요.</li>
-          <li>오른쪽 위 <b>⋮</b> 메뉴를 눌러요.</li>
-          <li><b>홈 화면에 추가</b> (또는 <b>앱 설치</b>)를 눌러요.</li>
-        </ol>
-        <p class="tip">삼성 인터넷: 아래 <b>≡</b> 메뉴 → <b>현재 페이지 추가</b> → <b>홈 화면</b></p>
-        <h3>아이폰 (사파리)</h3>
-        <ol>
-          <li>사파리에서 이 페이지를 열어요.</li>
-          <li>아래쪽 <b>공유 버튼(□↑)</b>을 눌러요.</li>
-          <li><b>홈 화면에 추가</b>를 눌러요.</li>
-        </ol>
-        <p class="tip">카카오톡에서 링크를 열었다면, 오른쪽 아래 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러주세요.</p>
-      </div>
-      <button class="btn full" type="button" id="introBack">돌아가기</button>
-    </div>
-  </div>
+    </section>
+  </main>
 </div>
-
-<div class="toast" id="toast" role="status"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="config.js"></script>
-<script src="store.js"></script>
-<script src="app.js"></script>
+<script src="assets/common.js?v=202610040053"></script>
+<script>
+sosSummary();
+// 📲 설치 안내: 이미 앱으로 열었으면 숨기고, 내 휴대폰 종류의 안내를 먼저 펼쳐요
+(function installGuide(){
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if(standalone){ $('#install').hidden = true; return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  (ios ? $('#howIos') : $('#howAndroid')).open = true;
+  // 안드로이드 크롬은 버튼 하나로 바로 설치할 수 있을 때가 있어요
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; $('#installBtn').hidden = false; });
+  $('#installBtn').addEventListener('click', async () => {
+    if(!deferred) return;
+    deferred.prompt(); await deferred.userChoice.catch(() => {}); deferred = null; $('#installBtn').hidden = true;
+  });
+  window.addEventListener('appinstalled', () => { $('#install').hidden = true; });
+})();
+
+// 홈: 다가오는 모임 요청 3개
+watchMeets(list => {
+  const ul = $('#next'); ul.innerHTML = '';
+  if(list === null){ $('#nextEmpty').textContent = '모임을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'; return; }
+  list.slice(0,3).forEach(o => {
+    const li = document.createElement('li'); li.className = 'meet-card';
+    const body = document.createElement('div'); body.className = 'meet-body';
+    const w = document.createElement('span'); w.className = 'op-when';
+    w.textContent = `${dayLabel(o.date)} ${o.slot || ''}${o.date===todayStr() ? ' · 오늘' : ''}`;
+    const t = document.createElement('p'); t.className = 'op-text'; t.textContent = o.text;   // 글은 textContent로만
+    const n = document.createElement('a'); n.className = 'tally'; n.href = 'meet.html';
+    n.innerHTML = `<span>참석 <b>${o.joins || 0}</b></span><span>미확정 <b>${o.maybes || 0}</b></span><span>불참 <b>${o.nos || 0}</b></span>`;
+    const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
+    body.append(w, hs, t, n); li.append(dateBadge(o.date), body); ul.appendChild(li);
+  });
+  $('#nextEmpty').textContent = list.length ? '' : '아직 올라온 모임이 없어요. 같이 놀고 싶은 날을 올려 주세요.';
+});
+</script>
 </body>
 </html>
