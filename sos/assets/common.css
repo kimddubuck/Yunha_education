@@ -606,3 +606,13 @@ body{padding-block:16px 120px}
 [data-sos]{gap:8px}
 .cal-head b{font-size:16px}
 .time-btn{min-height:34px;padding:4px 0}
+/* 모든 탭 공통: 위 메뉴 ↔ 첫 칸 사이 여백 줄이기 (홈·SOS 달력·개인정보 같은 높이) */
+.wrap.single{gap:10px}
+.site-nav{padding-bottom:0}
+/* 달력은 다시 숨 쉬게: 세로 여백 늘리기 */
+.picker{gap:12px}
+.cal-grid{row-gap:6px}
+.cal-day{min-height:42px}
+.time-grid{gap:8px}
+.time-btn{min-height:40px;padding:6px 0}
+.cal-head b{font-size:18px}
