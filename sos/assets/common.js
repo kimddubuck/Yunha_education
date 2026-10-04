@@ -149,14 +149,19 @@ function createPicker(root, opts = {}){
     root.querySelector('.cal-title').textContent = `${y}.${String(m).padStart(2,'0')}`;
     root.querySelector('[data-nav="-1"]').disabled = idx <= 0;
     root.querySelector('[data-nav="1"]').disabled = idx >= months - 1 || lastBookDay().slice(0,7) <= `${y}-${String(m).padStart(2,'0')}`;
-    const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate();
+    // 예약할 수 있는 1주일이 들어 있는 주(1~2줄)만 보여 줘요 — 한 화면에 다 보이게
+    const t0 = new Date(ty, tm-1, +today.slice(8)), start = new Date(t0); start.setDate(t0.getDate() - t0.getDay());
+    const [ly, lm, ld] = lastBookDay().split('-').map(Number), end = new Date(ly, lm-1, ld); end.setDate(end.getDate() + (6 - end.getDay()));
     let html = '';
-    for(let i = 0; i < first; i++) html += '<span></span>';
-    for(let d = 1; d <= days; d++){
-      const v = ymd(y,m,d), dow = (first + d - 1) % 7, past = v < today || v > lastBookDay(), n = opts.dayBadge ? opts.dayBadge(v) : 0;
+    for(const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)){
+      const v = ymd(d.getFullYear(), d.getMonth()+1, d.getDate()), dow = d.getDay(), past = v < today || v > lastBookDay(), n = opts.dayBadge ? opts.dayBadge(v) : 0;
       const cls = ['cal-day', dow===0 ? 'sun' : dow===6 ? 'sat' : '', v===today ? 'today' : '', v===st.date ? 'on' : ''].join(' ');
-      html += `<button type="button" class="${cls}" data-date="${v}" ${past ? 'disabled' : ''} aria-pressed="${v===st.date}">${d}<small>${n ? n + '명' : v===today ? '오늘' : ''}</small></button>`;
+      const label = d.getDate() === 1 ? `${d.getMonth()+1}/1` : d.getDate();
+      html += `<button type="button" class="${cls}" data-date="${v}" ${past ? 'disabled' : ''} aria-pressed="${v===st.date}">${label}<small>${n ? n + '명' : v===today ? '오늘' : ''}</small></button>`;
     }
+    const sm = start.getMonth()+1, em = end.getMonth()+1;
+    root.querySelector('.cal-title').textContent = sm === em ? `${start.getFullYear()}.${String(sm).padStart(2,'0')}` : `${sm}월 ~ ${em}월`;
+    root.querySelectorAll('.cal-nav').forEach(b => { b.hidden = true; });
     root.querySelector('.cal-grid').innerHTML = html;
     root.querySelector('.time-grid').innerHTML = HOURS.map(h => {
       const n = opts.hourBadge ? opts.hourBadge(st.date, h + '시') : 0;
@@ -238,7 +243,7 @@ function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
   let data = {}, col = null, broken = false;
   root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count"></p></div>
-    <p class="sos-sub">혼자 독박하는 날,<br>미리 SOS를 요청해 두세요. <small>(오늘부터 1주일까지)</small><br>SOS가 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
+    <p class="sos-sub sos-sub-s">독박하는 날, 미리 SOS를 요청해 두세요.<br>SOS가 모이면 용기 있는 한 명이 모임을 열어요 💪</p>
     <div class="sos-picker"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>

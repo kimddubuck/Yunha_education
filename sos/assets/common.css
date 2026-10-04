@@ -590,3 +590,19 @@ button.sos-chip{font:inherit;border:0;cursor:pointer}
 .safe2 .sf-op{flex:none;font-size:13px}
 /* 개인정보 화면: 낱말 중간에서 줄이 안 끊기게 */
 .safe2 p,.safe2 li,.safe2 span,.safe2 td{word-break:keep-all;overflow-wrap:anywhere}
+/* SOS 달력 화면을 한 화면에: 시간 버튼·간격 줄이기 */
+.picker{gap:8px}
+.time-grid{gap:6px}
+.time-btn{padding:6px 0;font-size:14px;border-radius:10px;min-height:38px;justify-content:center}
+.cal-head{margin:0}
+.cal-week{font-size:12.5px}
+.sos-picker{padding:8px 10px}
+.cal-nav[hidden]{display:block!important;visibility:hidden}
+body{padding-block:16px 120px}
+.sos-sub-s{font-size:12.5px;line-height:1.5;margin:0}
+[data-sos] .sos-btn{padding:9px 14px;font-size:15.5px;gap:1px}
+[data-sos] .sos-btn small{font-size:11px}
+[data-sos] .sos-hint{line-height:1.5;font-size:12.5px}
+[data-sos]{gap:8px}
+.cal-head b{font-size:16px}
+.time-btn{min-height:34px;padding:4px 0}
