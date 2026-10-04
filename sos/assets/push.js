@@ -4,7 +4,7 @@
    - 채널 이름은 방 열쇠로 만든 해시라 방 사람만 알아요. 이름·전화번호는 다루지 않아요.
    - 잠금화면에 보일 수 있어서 알림 글은 간단히(방 이름만). 날짜·장소·별명·댓글 내용은 앱을 열어야 보여요.
    - PUSH_VAPID 가 비어 있으면 알림 기능 전체가 숨겨져요 (Firebase 설정 전). */
-const PUSH_VAPID = '';
+const PUSH_VAPID = 'BHXQsGT-8useRm_C08QgfQHbBlRVBErZpnz3ayOc84FV2lQZYn9p3kEE_EQ5qvycccEiaL7C385S30ffZlpdtpk';   // Firebase 웹 푸시 인증서(공개 키)
 const PUSH_API = 'api/push';
 const SOS_ALERT_AT = 3;   // 같은 날짜·시간에 SOS가 이만큼 모이면 방 사람들에게 알려요
 
