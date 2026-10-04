@@ -30,18 +30,29 @@ async function pushApi(body){
   return j;
 }
 
+// 단계별 진행 표시 + 시간 제한: 어디서 멈췄는지 화면에 보이게 해요
+let pushStepFn = () => {};
+function pushStep(t){ pushStepFn(t); }
+function withTimeout(p, ms, what){
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(what + ' 시간 초과')), ms))]);
+}
+
 // 알림 주소(토큰) 받기. ask=true 면 허용 창을 띄워요
 async function pushToken(ask){
   if(!pushSupported()) return null;
-  if(Notification.permission === 'denied') return null;
+  if(Notification.permission === 'denied'){ pushLastError = '알림이 차단돼 있어요'; return null; }
   if(Notification.permission !== 'granted'){
     if(!ask) return null;
-    if(await Notification.requestPermission() !== 'granted') return null;
+    pushStep('① 알림 허용 창을 기다리는 중…');
+    const perm = await withTimeout(Notification.requestPermission(), 60000, '알림 허용 창');
+    if(perm !== 'granted'){ pushLastError = '알림 허용을 누르지 않았어요 (' + perm + ')'; return null; }
   }
   sosDb();   // Firebase 앱 준비
-  const reg = await navigator.serviceWorker.register('sw.js');
-  await navigator.serviceWorker.ready;
-  const token = await firebase.messaging().getToken({ vapidKey: PUSH_VAPID, serviceWorkerRegistration: reg });
+  pushStep('② 알림 준비 중…');
+  const reg = await withTimeout(navigator.serviceWorker.register('sw.js'), 20000, '서비스 워커 등록');
+  await withTimeout(navigator.serviceWorker.ready, 20000, '서비스 워커 준비');
+  pushStep('③ 알림 주소 받는 중…');
+  const token = await withTimeout(firebase.messaging().getToken({ vapidKey: PUSH_VAPID, serviceWorkerRegistration: reg }), 30000, 'Firebase 알림 주소 받기');
   if(!token) return null;
   pushLS.set('sosPushToken', token);
   // 내가 보낸 알림을 내 화면에 또 띄우지 않으려고, 내 표시(토큰 해시)를 서비스 워커가 읽을 수 있게 둬요
@@ -59,7 +70,7 @@ async function pushSync(ask){
   const all = [...new Set([...want, ...mine])];
   const done = pushLS.get('sosPushTopics:' + token.slice(-12), []);
   const add = all.filter(t => !done.includes(t)), remove = done.filter(t => !all.includes(t));
-  if(add.length){ const r = await pushApi({ action: 'subscribe', token, topics: add.slice(0, 20) }); if(!r) return false; }
+  if(add.length){ pushStep('④ 우리 방 알림 채널에 가입 중…'); const r = await withTimeout(pushApi({ action: 'subscribe', token, topics: add.slice(0, 20) }), 30000, '알림 채널 가입'); if(!r) return false; }
   if(remove.length) await pushApi({ action: 'unsubscribe', token, topics: remove.slice(0, 20) });
   pushLS.set('sosPushTopics:' + token.slice(-12), all);
   pushLS.set('sosPushOn', true);
@@ -131,10 +142,15 @@ async function pushMeetComment(o, text){
   box.addEventListener('click', async e => {
     const b = e.target.closest('[data-push]'); if(!b) return;
     b.disabled = true; b.textContent = '잠시만요…';
+    pushStepFn = t => { b.textContent = t; };
     try{
       if(b.dataset.push === 'on'){ pushLastError = ''; if(!(await pushSync(true))) alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '')); }
       else await pushOff();
-    }catch(err){ alert('알림을 켜지 못했어요. 잠시 뒤 다시 해 주세요.\n(원인: ' + (err && (err.code || err.message) || err) + ')'); }
+    }catch(err){
+      const why = String(err && (err.code ? err.code + ' ' + (err.message || '') : err.message) || err);
+      alert('알림을 켜지 못했어요.\n(원인: ' + why.slice(0, 200) + ')' + (/허용 창/.test(why) ? '\n\n알림 허용 창이 안 보였다면: 크롬 주소창 왼쪽 자물쇠(또는 앱 정보) → 권한 → 알림 → 허용으로 바꾼 뒤 다시 눌러 주세요.' : ''));
+    }
+    pushStepFn = () => {};
     draw();
   });
   draw();
