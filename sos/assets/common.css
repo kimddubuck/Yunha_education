@@ -639,3 +639,19 @@ body{padding-block:16px 120px}
 .sos-brave .brave-btn{color:var(--pick-fg)!important}
 .sec > .sos-brave{margin-top:18px}
 .sec > .sos-brave{margin-top:0;margin-bottom:14px}
+/* 🚩 신고 · 방장 관리 */
+.report-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.report-btn{font:inherit;font-size:14.5px;font-weight:700;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--tag);color:var(--fg);cursor:pointer}
+.report-btn:disabled{opacity:.5}
+.mod-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.mod-btn{font:inherit;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.mod-btn.danger{border-color:#e8382f;color:#e8382f}
+.mod-flag{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(232,56,47,.15);color:#e8382f}
+.comment-mod{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}
+.comment-mod button{font:inherit;font-size:11.5px;padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.comment-mod .danger{border-color:#e8382f;color:#e8382f}
+/* SOS 요청하기 ↔ 모임 열기: 둥근 사각형, 같은 높이 */
+[data-sos] .sos-btn,.sos-brave .brave-btn{border-radius:12px;min-height:56px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-sizing:border-box}
+.sos-brave .brave-btn{font-size:16px}
+[data-sos] .sos-btn,.sos-brave .brave-btn{min-height:60px}
+.sos-brave{padding-left:15px;padding-right:15px}

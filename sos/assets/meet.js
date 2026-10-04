@@ -2,7 +2,7 @@
    저장: rooms/{방 열쇠}/opinions 컬렉션의 topic 'meet' 글, 댓글은 그 글 아래 comments 컬렉션.
    common.js가 먼저 필요해요. 필요한 Firestore 규칙은 firestore.rules 참고 */
 const MEET_TEMPLATE = '장소: \n놀이: ';
-const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:''};   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
+const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:'', reports:{}};   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
 
 // '참석' / '미확정' / '불참'은 한 사람(멤버)당 하나. 다시 누르면 취소, 다른 걸 누르면 바꾸기
 const myVote = o => ((o.v || {})[ME.uid] || {}).s || null;
@@ -17,6 +17,11 @@ function meetInit(){
   sosReady().then(ok => {
     if(!ok){ $('#upSec').hidden = false; $('#meetEmpty').textContent = '모임을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; return; }
     $('#meetHost').textContent = ME.nick;
+    // 방장: 받은 신고를 글마다 숫자로 보여 줘요
+    if(ME.owner) roomRef().collection('reports').onSnapshot(q => {
+      meet.reports = {}; q.docs.forEach(d => { const r = d.data(), k = r.cid || r.mid; meet.reports[k] = (meet.reports[k] || 0) + 1; });
+      renderMeets();
+    }, () => {});
     meet.col.where('date', '>=', dayStr(-30)).limit(300).onSnapshot(serverOnly(snap => {
       meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
       watchComments(); renderMeets();
@@ -100,6 +105,13 @@ function meetCard(o, past){
     body.appendChild(x);
   }
 
+  // 🚩 신고 (남의 글) · 🗑 방장 권한으로 내리기
+  const mod = document.createElement('div'); mod.className = 'mod-row';
+  if(ME.owner && meet.reports[o.id]) mod.insertAdjacentHTML('beforeend', `<span class="mod-flag">🚩 신고 ${meet.reports[o.id]}건</span>`);
+  if(!isMine(o)) mod.insertAdjacentHTML('beforeend', `<button type="button" class="mod-btn" data-report="${o.id}">🚩 신고</button>`);
+  if(ME.owner) mod.insertAdjacentHTML('beforeend', `<button type="button" class="mod-btn danger" data-owner-del="${o.id}">🗑 방장 권한으로 내리기</button>`);
+  if(mod.children.length) body.appendChild(mod);
+
   if(meet.open.has(o.id)){
     const box = document.createElement('div'); box.className = 'comments';
     const ul = document.createElement('ul'); ul.className = 'comment-list';
@@ -116,6 +128,13 @@ function meetCard(o, past){
       const ct = document.createElement('span'); ct.textContent = c.text;
       const cw = document.createElement('small'); cw.textContent = fmtTime(c.createdAt) + (c.editedAt ? ' · 수정됨' : '');
       ci.append(ct, cw);
+      if((c.uid && c.uid !== ME.uid) || ME.owner){   // 남의 댓글 신고 · 방장 지우기
+        const m = document.createElement('span'); m.className = 'comment-mod';
+        if(ME.owner && meet.reports[c.id]) m.insertAdjacentHTML('beforeend', `<span class="mod-flag">🚩 ${meet.reports[c.id]}</span>`);
+        if(c.uid && c.uid !== ME.uid) m.insertAdjacentHTML('beforeend', `<button type="button" data-report="${o.id}" data-cid="${c.id}" aria-label="댓글 신고">🚩</button>`);
+        if(ME.owner) m.insertAdjacentHTML('beforeend', `<button type="button" class="danger" data-owner-del="${o.id}" data-cid="${c.id}" aria-label="방장 권한으로 댓글 지우기">🗑</button>`);
+        ci.appendChild(m);
+      }
       if(keys[c.id]){   // 이 휴대폰에서 쓴 댓글만 고치기·지우기
         const act = document.createElement('span'); act.className = 'comment-act';
         act.innerHTML = `<button type="button" data-cedit="${c.id}">수정</button><button type="button" data-cdel="${c.id}" data-meet="${o.id}">삭제</button>`;
@@ -183,7 +202,29 @@ $('#meetForm').addEventListener('submit', async e => {
   finally{ $('#meetSend').disabled = false; }
 });
 
+// 방장 권한으로 글·댓글 지우기 (모임은 댓글과 신고도 함께)
+async function ownerDelete(mid, cid){
+  const yes = await sosConfirm({icon: '🗑', title: cid ? '이 댓글을 지울까요?' : '이 모임 글을 내릴까요?', danger: true, ok: '지우기',
+    body: `<p>방장 권한으로 ${cid ? '댓글을' : '모임 글과 댓글을'} 지워요.<br><b>되돌릴 수 없어요.</b></p>`});
+  if(!yes) return;
+  try{
+    const ref = meet.col.doc(mid), reps = roomRef().collection('reports');
+    if(cid){
+      await ref.collection('comments').doc(cid).delete();
+      (await reps.where('cid', '==', cid).get()).docs.forEach(d => d.ref.delete().catch(() => {}));
+    }else{
+      for(const c of (await ref.collection('comments').get()).docs) await c.ref.delete();
+      await ref.delete();
+      (await reps.where('mid', '==', mid).get()).docs.forEach(d => d.ref.delete().catch(() => {}));
+    }
+  }catch(err){ sosTrouble(err); sosConfirm({icon: '😢', title: '지우지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }
+}
+
 $('#meetList').addEventListener('click', async e => {
+  const rp = e.target.closest('[data-report]');
+  if(rp){ sosReport(rp.dataset.cid ? 'comment' : 'meet', rp.dataset.report, rp.dataset.cid); return; }
+  const od = e.target.closest('[data-owner-del]');
+  if(od){ ownerDelete(od.dataset.ownerDel, od.dataset.cid); return; }
   const cm = e.target.closest('[data-cancel-meet]');
   if(cm){
     const id = cm.dataset.cancelMeet;

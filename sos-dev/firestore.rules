@@ -116,7 +116,8 @@ service cloud.firestore {
       // 모임
       match /opinions/{id} {
         allow read: if canUse(roomKey);
-        allow delete: if roomDeleted(roomKey) || expired();
+        // 지우기: 지워진 방 정리, 지난 기록 정리, 방장이 문제 글 내리기
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
         allow create: if canUse(roomKey)
           && request.resource.data.keys().hasOnly(['topic', 'text', 'play', 'date', 'slot', 'host', 'uid', 'expireAt', 'createdAt'])
           && request.resource.data.uid == request.auth.uid
@@ -156,7 +157,7 @@ service cloud.firestore {
         // 모임 댓글: 쓴 휴대폰만 고치거나 지울 수 있어요 (비밀값의 지문 kh 로 확인)
         match /comments/{cid} {
           allow read: if canUse(roomKey);
-          allow delete: if roomDeleted(roomKey) || expired();
+          allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
           allow create: if canUse(roomKey)
             && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt'])
             && request.resource.data.uid == request.auth.uid
@@ -183,6 +184,22 @@ service cloud.firestore {
                 || (request.resource.data.get('deleted', false) == false && request.resource.data.text.size() > 0))
             && request.resource.data.editedAt == request.time;
         }
+      }
+
+      // 🚩 신고: 멤버 누구나 모임·댓글을 신고, 방장만 보고 지울 수 있어요
+      match /reports/{rid} {
+        allow read: if canUse(roomKey) && isOwner(roomKey);
+        allow delete: if roomDeleted(roomKey) || (canUse(roomKey) && isOwner(roomKey));
+        allow update: if false;
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['kind', 'mid', 'cid', 'reason', 'uid', 'n', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.n == myNick(roomKey)
+          && request.resource.data.kind in ['meet', 'comment']
+          && request.resource.data.mid is string && request.resource.data.mid.size() <= 40
+          && (!('cid' in request.resource.data) || (request.resource.data.cid is string && request.resource.data.cid.size() <= 40))
+          && request.resource.data.reason in ['욕설·비하', '광고·홍보', '개인정보 노출', '불쾌한 내용', '기타']
+          && request.resource.data.createdAt == request.time;
       }
 
       // 🆘 SOS 예약: 날짜별 문서의 p 지도에 내 칸(uid) = {h: [시간들], n: 닉네임} 만 넣기·바꾸기·빼기

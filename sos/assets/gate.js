@@ -13,6 +13,11 @@ const SOS_FIREBASE = {
   appId: "1:133710590792:web:1a4d163ac4679ed6d1397d"
 };
 const ROOMS_KEY = 'sosRooms', CUR_KEY = 'sosRoom';
+const SOS_CONTACT = '';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
+document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
+  if(SOS_CONTACT){ el.innerHTML = ''; const a = document.createElement('a'); a.href = 'mailto:' + SOS_CONTACT; a.textContent = SOS_CONTACT; el.appendChild(a); }
+  else el.textContent = '(운영자 이메일 준비 중)';
+}));
 
 // 이 기기에 기억된 방 목록 [{roomId, key, name}]
 function sosRooms(){ try{ return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); }catch(e){ return []; } }
@@ -144,6 +149,21 @@ function sosReady(){
   })();
   return sosReadyP;
 }
+// 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
+//  SOS 요청·참석 표시는 날짜가 지나고 7일 뒤 자동으로 지워져요
+async function sosDeleteMe(){
+  const user = await sosAuth(), db = sosDb();
+  if(user && db) for(const r of sosRooms()){ try{ await db.collection('rooms').doc(r.key).collection('members').doc(user.uid).delete(); }catch(e){} }
+  try{ if(typeof pushOff === 'function') await pushOff(); }catch(e){}
+  try{ if(user) await user.delete(); }catch(e){ try{ await firebase.auth().signOut(); }catch(err){} }
+  try{ localStorage.clear(); sessionStorage.clear(); }catch(e){}
+}
+// 이 방에서 나가기: 내 닉네임을 멤버에서 빼고 이 휴대폰 목록에서도 빼요
+async function sosLeaveRoom(){
+  try{ if(await sosReady()) await roomRef().collection('members').doc(ME.uid).delete(); }catch(e){}
+  forgetRoom(ROOM.roomId);
+}
+
 // 방 멤버 목록 (한 번 읽고 기억). [{uid, nick, joinedAt}]
 let sosMembersP = null;
 function sosMembers(fresh){
@@ -422,6 +442,7 @@ const GATE_EXTRA = `      <div class="g-extra">
           <p>카카오톡에서 링크를 열었다면, 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러 주세요.</p>
         </details>
         <a class="g-link g-safety" href="safety.html">🔒 무엇을 저장하나요? 개인정보 안내 보기</a>
+        <a class="g-link g-safety" href="terms.html">📜 이용약관 · 이용 규칙 보기</a>
       </div>`;
 const GATE_PASTE = `      <div class="g-extra">
         <details class="how-to g-paste">

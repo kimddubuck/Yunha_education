@@ -386,6 +386,22 @@ function sosInfo({icon = '', title, body = ''}){
   return box;
 }
 
+/* 🚩 신고: 모임 글·댓글을 방장에게 알려요 (rooms/{방 열쇠}/reports, 방장만 볼 수 있어요) */
+const REPORT_REASONS = ['욕설·비하', '광고·홍보', '개인정보 노출', '불쾌한 내용', '기타'];
+function sosReport(kind, mid, cid){
+  const box = sosInfo({icon: '🚩', title: kind === 'meet' ? '이 모임 글을 신고할까요?' : '이 댓글을 신고할까요?',
+    body: `<p class="who-tip">이유를 고르면 방장에게 전달돼요.<br>신고한 사람은 방장만 볼 수 있어요.</p><div class="report-list">${REPORT_REASONS.map(r => `<button type="button" class="report-btn" data-reason="${r}">${r}</button>`).join('')}</div>`});
+  box.addEventListener('click', async e => {
+    const b = e.target.closest('[data-reason]'); if(!b || b.disabled) return;
+    b.disabled = true;
+    try{
+      await roomRef().collection('reports').add({kind, mid, ...(cid ? {cid} : {}), reason: b.dataset.reason, uid: ME.uid, n: ME.nick, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      box.remove();
+      sosInfo({icon: '✅', title: '신고했어요', body: '<p>방장이 확인하고 필요하면 글을 내려요.<br>심각한 문제(아이 안전, 불법 내용)는<br>이용약관의 운영자 이메일로도 알려 주세요.</p>'});
+    }catch(err){ sosTrouble(err); b.disabled = false; }
+  });
+}
+
 /* 모임 방 이름 · 친구 초대 · 방 바꾸기 (홈 표지) */
 (function roomBar(){
   if(!ROOM) return;
@@ -409,9 +425,9 @@ function sosInfo({icon = '', title, body = ''}){
     lv.addEventListener('click', async () => {
       if(!canDelete){
         const yes = await sosConfirm({icon: '🚪', title: `이 휴대폰에서 '${ROOM.name}' 방을 뺄까요?`,
-          body: '<p>내 목록에서만 사라져요. 방과 기록은 그대로 있어요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>', ok: '방 빼기'});
+          body: '<p>멤버 목록에서 내 닉네임이 빠지고, 내 목록에서도 사라져요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>', ok: '방 빼기'});
         if(!yes) return;
-        forgetRoom(ROOM.roomId); location.href = 'index.html'; return;
+        await sosLeaveRoom(); location.href = 'index.html'; return;
       }
       const yes = await sosConfirm({icon: '⚠️', title: `'${ROOM.name}' 방을 지울까요?`, danger: true, ok: '네, 지울게요',
         body: '<p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 요청, 모임, 댓글이 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});

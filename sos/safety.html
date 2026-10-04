@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610041616">
+<link rel="manifest" href="manifest.webmanifest?v=202610041624">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610041616">
-<script src="assets/gate.js?v=202610041616"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610041624">
+<script src="assets/gate.js?v=202610041624"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -119,11 +119,31 @@
     </section>
 
     </details>
+
+    <section class="safe-card" id="delete-me">
+      <h2>🗑 내 정보 모두 지우기</h2>
+      <p>모든 방에서 내 닉네임을 빼고, 알림을 끄고,<br>이 휴대폰의 방 목록과 로그인 번호를 지워요.<br>SOS 요청·참석 표시는 날짜가 지나고 7일 뒤<br>자동으로 지워져요.</p>
+      <button type="button" class="btn danger block" id="deleteMe">🗑 내 정보 모두 지우기</button>
+    </section>
+    <p class="safe-tip">📜 <a href="terms.html">이용약관 · 이용 규칙 보기</a><br>✉️ 문의: <span data-contact></span></p>
   </main>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610041616"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+<script src="assets/common.js?v=202610041624"></script>
+<script src="assets/push.js?v=202610041624"></script>
+<script>
+document.getElementById('deleteMe').addEventListener('click', async e => {
+  const yes = await sosConfirm({icon: '🗑', title: '내 정보를 모두 지울까요?', danger: true, ok: '모두 지우기',
+    body: '<ul><li>모든 방의 멤버 목록에서 내 닉네임이 빠져요.</li><li>알림이 꺼지고, 이 휴대폰의 방 목록이 지워져요.</li><li>방에 다시 들어가려면 초대 링크와 비밀번호가 필요해요.</li></ul>'});
+  if(!yes) return;
+  e.target.disabled = true; e.target.textContent = '지우는 중…';
+  await sosDeleteMe();
+  await sosConfirm({icon: '✅', title: '모두 지웠어요.', body: '<p>그동안 함께해 줘서 고마워요.</p>', ok: '확인'});
+  location.href = 'index.html';
+});
+</script>
 </body>
 </html>

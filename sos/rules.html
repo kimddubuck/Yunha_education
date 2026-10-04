@@ -11,7 +11,7 @@ textarea{width:100%;box-sizing:border-box;height:55vh;margin-top:12px;font:12px/
 #ok{text-align:center;font-weight:700;min-height:1.4em;margin-top:8px}
 </style></head><body>
 <h1>🔐 Firestore 보안 규칙 (운영자용)</h1>
-<p>아래 버튼을 누르면 규칙 <b>전체</b>가 복사돼요.<br>Firebase 콘솔 규칙 칸의 내용을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>마지막 줄이 <code>}</code> 로 끝나야 해요 (총 236줄).</p>
+<p>아래 버튼을 누르면 규칙 <b>전체</b>가 복사돼요.<br>Firebase 콘솔 규칙 칸의 내용을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>마지막 줄이 <code>}</code> 로 끝나야 해요 (총 253줄).</p>
 <button id="copy">📋 규칙 전체 복사하기</button>
 <p id="ok" aria-live="polite"></p>
 <textarea id="t" readonly>rules_version = &#x27;2&#x27;;
@@ -132,7 +132,8 @@ service cloud.firestore {
       // 모임
       match /opinions/{id} {
         allow read: if canUse(roomKey);
-        allow delete: if roomDeleted(roomKey) || expired();
+        // 지우기: 지워진 방 정리, 지난 기록 정리, 방장이 문제 글 내리기
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
         allow create: if canUse(roomKey)
           &amp;&amp; request.resource.data.keys().hasOnly([&#x27;topic&#x27;, &#x27;text&#x27;, &#x27;play&#x27;, &#x27;date&#x27;, &#x27;slot&#x27;, &#x27;host&#x27;, &#x27;uid&#x27;, &#x27;expireAt&#x27;, &#x27;createdAt&#x27;])
           &amp;&amp; request.resource.data.uid == request.auth.uid
@@ -172,7 +173,7 @@ service cloud.firestore {
         // 모임 댓글: 쓴 휴대폰만 고치거나 지울 수 있어요 (비밀값의 지문 kh 로 확인)
         match /comments/{cid} {
           allow read: if canUse(roomKey);
-          allow delete: if roomDeleted(roomKey) || expired();
+          allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
           allow create: if canUse(roomKey)
             &amp;&amp; request.resource.data.keys().hasOnly([&#x27;text&#x27;, &#x27;createdAt&#x27;, &#x27;kh&#x27;, &#x27;uid&#x27;, &#x27;n&#x27;, &#x27;expireAt&#x27;])
             &amp;&amp; request.resource.data.uid == request.auth.uid
@@ -199,6 +200,22 @@ service cloud.firestore {
                 || (request.resource.data.get(&#x27;deleted&#x27;, false) == false &amp;&amp; request.resource.data.text.size() &gt; 0))
             &amp;&amp; request.resource.data.editedAt == request.time;
         }
+      }
+
+      // 🚩 신고: 멤버 누구나 모임·댓글을 신고, 방장만 보고 지울 수 있어요
+      match /reports/{rid} {
+        allow read: if canUse(roomKey) &amp;&amp; isOwner(roomKey);
+        allow delete: if roomDeleted(roomKey) || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
+        allow update: if false;
+        allow create: if canUse(roomKey)
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;kind&#x27;, &#x27;mid&#x27;, &#x27;cid&#x27;, &#x27;reason&#x27;, &#x27;uid&#x27;, &#x27;n&#x27;, &#x27;createdAt&#x27;])
+          &amp;&amp; request.resource.data.uid == request.auth.uid
+          &amp;&amp; request.resource.data.n == myNick(roomKey)
+          &amp;&amp; request.resource.data.kind in [&#x27;meet&#x27;, &#x27;comment&#x27;]
+          &amp;&amp; request.resource.data.mid is string &amp;&amp; request.resource.data.mid.size() &lt;= 40
+          &amp;&amp; (!(&#x27;cid&#x27; in request.resource.data) || (request.resource.data.cid is string &amp;&amp; request.resource.data.cid.size() &lt;= 40))
+          &amp;&amp; request.resource.data.reason in [&#x27;욕설·비하&#x27;, &#x27;광고·홍보&#x27;, &#x27;개인정보 노출&#x27;, &#x27;불쾌한 내용&#x27;, &#x27;기타&#x27;]
+          &amp;&amp; request.resource.data.createdAt == request.time;
       }
 
       // 🆘 SOS 예약: 날짜별 문서의 p 지도에 내 칸(uid) = {h: [시간들], n: 닉네임} 만 넣기·바꾸기·빼기
