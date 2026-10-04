@@ -406,8 +406,9 @@ function sosInfo({icon = '', title, body = ''}){
     const row = m => `<li data-uid="${m.uid}"><span class="mem-nick"></span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
       + (ME.owner && m.uid !== ME.uid ? `<button type="button" class="mem-kick" data-kick="${m.uid}">내보내기</button>` : '') + '</li>';
     const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
-      body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p><ul class="mem-list">${list.map(row).join('')}</ul>
-        <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>`});
+      body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>
+        <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
+        <ul class="mem-list">${list.map(row).join('')}</ul>`});
     box.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
     box.addEventListener('click', async e => {
       const k = e.target.closest('[data-kick]');
