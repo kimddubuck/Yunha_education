@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공동육아 SOS 달력</title>
+  <meta name="description" content="급할 때 누가 아이를 봐줄 수 있는지, 달력에 체크만 하는 공동육아 모임 도구">
+  <meta name="theme-color" content="#F5F3EE">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><a href="#">🆘 공동육아 SOS 달력</a></h1>
+  </header>
+
+  <div class="demo" id="demoBanner" hidden>
+    🧪 체험 모드예요. 기록이 이 기기에만 저장돼서 다른 사람과는 공유되지 않아요.
+  </div>
+
+  <!-- 첫 화면: 방 만들기 + 최근 방 -->
+  <section class="view" id="viewHome">
+    <div class="card" id="recentCard" hidden>
+      <h2>내 모임</h2>
+      <ul class="rooms" id="recentList"></ul>
+    </div>
+
+    <div class="card">
+      <h2>모임 방 만들기</h2>
+      <p class="hint">방을 만들고 초대 링크를 단톡방에 올리면 끝이에요. 회원가입은 없어요.</p>
+      <form id="createForm">
+        <label for="createName">방 이름</label>
+        <input type="text" id="createName" maxlength="30" placeholder="예: 래미안 3단지 품앗이" required>
+        <label for="createPw">비밀번호 (4자 이상)</label>
+        <input type="password" id="createPw" minlength="4" maxlength="40" autocomplete="new-password" required>
+        <label for="createNick">내 닉네임</label>
+        <input type="text" id="createNick" maxlength="12" placeholder="예: 윤하맘" required>
+        <button class="btn full" type="submit">방 만들기</button>
+        <p class="error" id="createErr"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 초대 링크로 들어왔을 때: 비밀번호 입력 -->
+  <section class="view" id="viewEnter">
+    <div class="card">
+      <h2>모임 방 들어가기</h2>
+      <p class="hint">방장에게 받은 비밀번호와 내 닉네임을 넣어주세요.</p>
+      <form id="enterForm">
+        <label for="enterPw">비밀번호</label>
+        <input type="password" id="enterPw" maxlength="40" autocomplete="current-password" required>
+        <label for="enterNick">내 닉네임</label>
+        <input type="text" id="enterNick" maxlength="12" placeholder="예: 윤하맘" required>
+        <button class="btn full" type="submit">들어가기</button>
+        <p class="error" id="enterErr"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 모임 방: 달력 -->
+  <section class="view" id="viewRoom">
+    <div class="card">
+      <div class="room-head">
+        <div>
+          <h2 id="roomName"></h2>
+          <div class="me">나: <span id="myNick"></span> · <button type="button" id="changeNick">닉네임 바꾸기</button></div>
+        </div>
+        <button class="btn small" type="button" id="inviteBtn">초대하기</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="month-nav">
+        <button type="button" id="prevMonth" aria-label="이전 달">‹</button>
+        <strong id="monthLabel"></strong>
+        <button type="button" id="nextMonth" aria-label="다음 달">›</button>
+      </div>
+      <div class="grid" id="calendar"></div>
+      <p class="legend">날짜를 누르면 🆘 도움 요청이나 ✋ 가능 표시를 할 수 있어요.</p>
+    </div>
+  </section>
+</div>
+
+<!-- 날짜를 눌렀을 때 아래에서 올라오는 창 -->
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <h3 id="sheetTitle"></h3>
+  <ul class="marks" id="sheetMarks"></ul>
+  <p class="empty" id="sheetEmpty">아직 아무도 표시하지 않았어요.</p>
+
+  <div id="sheetActions">
+    <div class="two">
+      <button class="btn sos" type="button" data-type="sos">🆘 도움 필요</button>
+      <button class="btn" type="button" data-type="can">✋ 나 이날 가능</button>
+    </div>
+    <form class="form" id="markForm">
+      <label for="markTime">시간 (선택)</label>
+      <input type="text" id="markTime" maxlength="20" placeholder="예: 오후 2~6시">
+      <label for="markMemo">한 줄 메모 (선택)</label>
+      <input type="text" id="markMemo" maxlength="60" placeholder="예: 병원 진료 때문에요">
+      <button class="btn full" type="submit" id="markSubmit">올리기</button>
+    </form>
+  </div>
+  <p class="empty" id="sheetPast" hidden>지난 날짜는 볼 수만 있어요.</p>
+  <button class="btn ghost full" type="button" id="sheetClose">닫기</button>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<script src="store.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
