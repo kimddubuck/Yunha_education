@@ -211,9 +211,10 @@ const GATE_STORY = `        <div class="g-tool">
             </div>
             <div class="g-farrow" aria-hidden="true"><span>🔗</span><i></i><small>링크<br>하나로</small></div>
             <div class="g-fbox g-fapp">
+              <span class="g-ding" aria-hidden="true">🔔 띵동!</span>
               <img src="assets/icon.svg" alt="" width="40" height="40">
               <p class="g-ft">공동육아 SOS</p>
-              <p class="g-fs">🆘 SOS 예약<br>🙌 모임 날짜<br><b>약속은 여기서</b></p>
+              <p class="g-fs">🆘 SOS 예약<br>🙌 모임 날짜<br>🔔 새 모임 알림<br><b>약속은 여기서</b></p>
             </div>
           </div>
           <p class="g-fnick">🙋 가입 없이 <b>닉네임</b>만 정하면 끝</p>
@@ -256,6 +257,10 @@ function gateCss(){
     #gate .g-flow{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;gap:4px}
     #gate .g-fbox{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border-radius:14px;background:var(--tag,#efefef);min-height:118px;justify-content:center}
     #gate .g-fapp{background:transparent;border:2px solid var(--pick,#2a9095)}
+    #gate .g-fapp{position:relative}
+    #gate .g-ding{position:absolute;top:-11px;right:-6px;font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:999px;background:#e8382f;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transform-origin:50% 0;animation:g-ding 2.4s ease-in-out infinite}
+    @keyframes g-ding{0%,60%,100%{transform:rotate(0)}66%{transform:rotate(-12deg)}74%{transform:rotate(10deg)}82%{transform:rotate(-6deg)}90%{transform:rotate(3deg)}}
+    @media (prefers-reduced-motion: reduce){#gate .g-ding{animation:none}}
     #gate .g-fapp img{width:40px;height:40px;border-radius:10px}
     #gate .g-fic{font-size:19px!important;line-height:1.25;letter-spacing:2px}
     #gate .g-ft{font-weight:800;font-size:14px!important;color:var(--fg,#22282a)!important}
