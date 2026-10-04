@@ -64,7 +64,7 @@ function dateBadge(ymd){
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
-const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🙌','모임'],['play.html','play','🧸','놀이'],['safety.html','safety','🔒','개인정보']];
+const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🙌','모임'],['safety.html','safety','🔒','개인정보']];
 (function renderNav(){
   const nav = document.getElementById('siteNav'); if(!nav) return;
   const cur = nav.dataset.page;
@@ -325,7 +325,7 @@ function sosConfirm({icon = '', title, body = '', ok = '확인', danger = false}
         forgetRoom(ROOM.roomId); location.href = 'index.html'; return;
       }
       const yes = await sosConfirm({icon: '⚠️', title: `'${ROOM.name}' 방을 지울까요?`, danger: true, ok: '네, 지울게요',
-        body: '<p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 예약, 모임, 댓글, 추가한 놀이가 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
+        body: '<p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 예약, 모임, 댓글이 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
       if(!yes) return;
       lv.disabled = true; lv.textContent = '지우는 중…';
       try{ await deleteRoom(); await sosConfirm({icon: '🗑', title: '방을 지웠어요.', body: '<p>기록도 모두 지웠어요.</p>', ok: '확인'}); location.href = 'index.html'; }

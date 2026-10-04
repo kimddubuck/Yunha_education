@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610041138">
+<link rel="manifest" href="manifest.webmanifest?v=202610041152">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610041138">
-<script src="assets/gate.js?v=202610041138"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610041152">
+<script src="assets/gate.js?v=202610041152"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -87,7 +87,6 @@
         <tr><td>🏠 모임 방</td><td><b>방 이름만</b>. 비밀번호는 저장하지 않아요. 비밀번호로 만든 암호화된 열쇠가 방 주소가 돼서, 비밀번호를 아는 사람만 방을 찾을 수 있어요.</td></tr>
         <tr><td>🆘 SOS 예약</td><td>날짜·시간별 <b>숫자만</b> (예: 10월 3일 16시 = 2명). 누가 눌렀는지는 서버에 없어요.</td></tr>
         <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 별명</b>(직접 적은 것), 참석·미확정·불참 숫자, 댓글 글</td></tr>
-        <tr><td>🧸 놀이 추가</td><td>놀이 이름·방법·준비물</td></tr>
       </table>
       <p class="hint">모임 방마다 따로 저장돼서, <b>방 비밀번호를 아는 사람만</b> 그 방의 SOS·모임·댓글을 볼 수 있어요. 다른 방 사람은 볼 수 없어요.<br>통신은 모두 암호화(HTTPS)돼요. 서버는 Google Firebase를 써요.</p>
     </section>
@@ -100,7 +99,7 @@
         <li>내가 누른 SOS 예약 시간 — 그래서 '📌 내 SOS 예약'은 나한테만 보여요</li>
         <li>내가 연 모임 목록 — 그래서 '모임 취소' 버튼은 연 휴대폰에만 보여요</li>
         <li>내 댓글 열쇠 — 그래서 댓글 '수정'·'삭제'는 쓴 휴대폰에만 보여요 (서버에는 열쇠의 지문만 저장돼요)</li>
-        <li>내가 누른 참석·미확정·불참, 마지막으로 적은 주최자 별명, 놀이 고르기 화면 상태</li>
+        <li>내가 누른 참석·미확정·불참, 마지막으로 적은 주최자 별명</li>
       </ul>
       <p class="hint">브라우저의 '인터넷 기록/사이트 데이터 삭제'를 하면 이 기록은 모두 지워져요. (서버에 올라간 글·숫자는 그대로예요)</p>
     </section>
@@ -113,7 +112,7 @@
         <li><b>모임 댓글</b>: 쓴 휴대폰에서 댓글 옆 '수정'·'삭제'를 누르면 돼요.</li>
         <li><b>알림</b>: 알림을 켜면 이 휴대폰의 알림 주소(토큰)가 Google 알림 서버(Firebase Cloud Messaging)에 우리 방 채널로 등록돼요. 잠금화면에 보일 수 있어서 알림에는 방 이름만 넣고(날짜·장소·별명·댓글 내용은 앱을 열어야 보여요), 홈의 '알림 끄기'로 언제든 빠질 수 있어요.</li>
         <li class="ttl-only"><b>자동 삭제</b>: 모임·댓글·SOS 예약 숫자는 그 날짜가 지나고 7일 뒤 서버에서 자동으로 지워져요. (방 사람이 앱을 열 때 정리돼요. 아무도 열지 않으면 조금 늦어질 수 있어요)</li>
-        <li><b>모임 방</b>: 방을 만든 휴대폰에서 홈의 '🗑 방 지우기'를 누르면 방과 그 안의 기록(SOS 예약·모임·댓글·놀이)이 서버에서 모두 지워져요. 초대받은 사람은 '🚪 이 휴대폰에서 방 빼기'로 내 목록에서만 뺄 수 있어요.</li>
+        <li><b>모임 방</b>: 방을 만든 휴대폰에서 홈의 '🗑 방 지우기'를 누르면 방과 그 안의 기록(SOS 예약·모임·댓글)이 서버에서 모두 지워져요. 초대받은 사람은 '🚪 이 휴대폰에서 방 빼기'로 내 목록에서만 뺄 수 있어요.</li>
       </ul>
     </section>
 
@@ -122,6 +121,6 @@
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610041138"></script>
+<script src="assets/common.js?v=202610041152"></script>
 </body>
 </html>
