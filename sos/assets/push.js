@@ -118,11 +118,40 @@ async function pushMeetComment(o, text){
   pushNotify(await meetTopic(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
 }
 
+// 알림이 안 될 때 미리 확인할 것 (안드로이드·아이폰 접기 카드)
+const PUSH_HELP = `<details class="how-to push-help">
+    <summary>🛠 알림이 안 올 때 · 미리 설정하기</summary>
+    <details class="how-to">
+      <summary>🤖 안드로이드 (갤럭시 등)</summary>
+      <ol>
+        <li><b>크롬 앱 알림 켜기</b><br>설정 → 애플리케이션 → Chrome → 알림 → <b>알림 허용</b></li>
+        <li><b>공동육아 SOS 앱 알림 켜기</b><br>홈 화면 아이콘 길게 누르기 → ⓘ 앱 정보 → 알림 → <b>알림 허용</b></li>
+        <li><b>크롬 사이트 알림 확인</b><br>크롬 ⋮ → 설정 → 사이트 설정 → 알림 → 켜기<br>'차단됨'에 gongdong-sos.pages.dev가 있으면 눌러서 <b>허용</b></li>
+        <li><b>알림이 늦게 오면</b><br>설정 → 애플리케이션 → Chrome → 배터리 → <b>제한 없음</b></li>
+        <li><b>방해 금지·절전 모드</b>가 켜져 있으면 알림이 조용히 와요.</li>
+        <li>카카오톡 안에서 연 화면은 알림이 안 돼요. <b>크롬으로 열어서</b> 홈 화면에 설치해 주세요.</li>
+      </ol>
+    </details>
+    <details class="how-to">
+      <summary>🍎 아이폰</summary>
+      <ol>
+        <li><b>iOS 16.4 이상</b>이어야 해요.<br>설정 → 일반 → 정보 → iOS 버전에서 확인</li>
+        <li><b>사파리</b>로 열기 → 아래 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b></li>
+        <li>홈 화면의 <b>공동육아 SOS 아이콘으로</b> 열기<br>(처음 열면 방을 다시 물어봐요. 초대 링크를 붙여넣고 비밀번호를 넣어 주세요)</li>
+        <li>홈의 <b>🔔 알림 켜기</b> → <b>허용</b></li>
+        <li>설정 → 알림 → <b>공동육아 SOS</b> → 알림 허용 · <b>잠금 화면</b> 켜기</li>
+        <li><b>집중 모드(방해 금지)</b>가 켜져 있으면 알림이 안 보일 수 있어요.</li>
+      </ol>
+    </details>
+    <p class="push-sub">그래도 안 되면: <b>알림 끄기 → 다시 켜기</b>, 또는 홈 화면 아이콘을 지우고 다시 설치해 주세요.</p>
+  </details>`;
+
 // --- 홈의 🔔 알림 카드 ---
 (function pushCard(){
   const box = document.getElementById('pushCard'); if(!box || !ROOM) return;
   if(navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});   // 앱을 열면 아이콘 숫자 지우기
   if(!PUSH_VAPID){ box.hidden = true; return; }
+  let openHelp = false;
   const draw = () => {
     const on = pushLS.get('sosPushOn', false) && 'Notification' in window && Notification.permission === 'granted';
     let html;
@@ -137,16 +166,18 @@ async function pushMeetComment(o, text){
     }else{
       html = '<p class="push-h">🔔 알림 받기</p><p class="push-sub">카카오톡처럼 잠금화면에서도 알려 드려요.<br>🙌 새 모임 · 🆘 SOS 몰림 · 💬 내 모임 참석/댓글</p><button type="button" class="btn primary block" data-push="on">🔔 알림 켜기</button>';
     }
-    box.innerHTML = html; box.hidden = false;
+    box.innerHTML = html + PUSH_HELP; box.hidden = false;
+    if(openHelp) box.querySelector('.push-help').open = true;
   };
   box.addEventListener('click', async e => {
     const b = e.target.closest('[data-push]'); if(!b) return;
     b.disabled = true; b.textContent = '잠시만요…';
     pushStepFn = t => { b.textContent = t; };
     try{
-      if(b.dataset.push === 'on'){ pushLastError = ''; if(!(await pushSync(true))) alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '')); }
+      if(b.dataset.push === 'on'){ pushLastError = ''; if(!(await pushSync(true))){ openHelp = true; alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '') + '\n\n아래 「🛠 알림이 안 올 때」를 확인해 주세요.'); }}
       else await pushOff();
     }catch(err){
+      openHelp = true;
       const why = String(err && (err.code ? err.code + ' ' + (err.message || '') : err.message) || err);
       alert('알림을 켜지 못했어요.\n(원인: ' + why.slice(0, 200) + ')' + (/허용 창/.test(why) ? '\n\n알림 허용 창이 안 보였다면: 크롬 주소창 왼쪽 자물쇠(또는 앱 정보) → 권한 → 알림 → 허용으로 바꾼 뒤 다시 눌러 주세요.' : ''));
     }
