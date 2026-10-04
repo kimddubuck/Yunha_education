@@ -203,8 +203,20 @@ function roomError(err){
 // 첫 화면 이야기(이 앱을 만든 이유) + 3줄 사용법 — 입장 화면과 '소개 다시 보기'가 같이 써요
 const GATE_STORY = `        <div class="g-tool">
           <p class="g-tool-h">어떤 플랫폼에서 모이든,<br><b>🆘 공동육아의 모임을 도와드립니다.</b></p>
-          <p class="g-tool-chips"><span>💬 카톡 오픈채팅</span><span>🥕 당근 모임</span><span>🟢 네이버 밴드</span><span>👥 소모임</span></p>
-          <p class="g-tool-sub">대화는 원래 모임에서 그대로,<br>링크 하나로 붙여 써요. 가입 없이 닉네임만으로.</p>
+          <div class="g-flow" aria-label="대화는 원래 모임에서, SOS와 모임 날짜는 공동육아 SOS에서. 링크 하나로 연결">
+            <div class="g-fbox">
+              <p class="g-fic" aria-hidden="true">💬🥕<br>🟢👥</p>
+              <p class="g-ft">우리 모임</p>
+              <p class="g-fs">카톡 · 당근<br>밴드 · 소모임<br><b>대화는 여기서</b></p>
+            </div>
+            <div class="g-farrow" aria-hidden="true"><span>🔗</span><i></i><small>링크<br>하나로</small></div>
+            <div class="g-fbox g-fapp">
+              <img src="assets/icon.svg" alt="" width="40" height="40">
+              <p class="g-ft">공동육아 SOS</p>
+              <p class="g-fs">🆘 SOS 예약<br>🙌 모임 날짜<br><b>약속은 여기서</b></p>
+            </div>
+          </div>
+          <p class="g-fnick">🙋 가입 없이 <b>닉네임</b>만 정하면 끝</p>
         </div>
         <div class="g-story">
           <p class="g-q">"아… 오늘은 또 어떻게 버티지?"</p>
@@ -241,6 +253,20 @@ function gateCss(){
     #gate .g-tool-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
     #gate .g-tool-chips span{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--tag,#efefef);color:var(--fg,#22282a)}
     #gate .g-tool-sub{font-size:13px!important;line-height:1.6}
+    #gate .g-flow{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;gap:4px}
+    #gate .g-fbox{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border-radius:14px;background:var(--tag,#efefef);min-height:118px;justify-content:center}
+    #gate .g-fapp{background:transparent;border:2px solid var(--pick,#2a9095)}
+    #gate .g-fapp img{width:40px;height:40px;border-radius:10px}
+    #gate .g-fic{font-size:19px!important;line-height:1.25;letter-spacing:2px}
+    #gate .g-ft{font-weight:800;font-size:14px!important;color:var(--fg,#22282a)!important}
+    #gate .g-fs{font-size:11.5px!important;line-height:1.45;word-break:keep-all}
+    #gate .g-fs b{color:var(--accent-ink,#1c7276)}
+    #gate .g-farrow{display:flex;flex-direction:column;align-items:center;gap:2px}
+    #gate .g-farrow span{font-size:18px}
+    #gate .g-farrow i{display:block;width:100%;height:3px;border-radius:2px;background:var(--pick,#2a9095);position:relative}
+    #gate .g-farrow i::after{content:"";position:absolute;right:-2px;top:-5px;border:6.5px solid transparent;border-left:9px solid var(--pick,#2a9095);border-right:0}
+    #gate .g-farrow small{font-size:10.5px;font-weight:700;color:var(--accent-ink,#1c7276);line-height:1.2;text-align:center}
+    #gate .g-fnick{font-size:13px!important;padding:6px 10px;border-radius:999px;background:var(--tag,#efefef);align-self:center}
     #gate .g-story{text-align:left;display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
