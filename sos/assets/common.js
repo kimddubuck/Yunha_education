@@ -12,6 +12,9 @@ const BOOK_DAYS = 7;
 // 오늘에서 n일 뒤 날짜를 YYYY-MM-DD로 (기기 시간 기준)
 function dayStr(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 const lastBookDay = () => dayStr(BOOK_DAYS - 1);
+// 지난 모임·댓글·SOS 숫자는 그 날짜가 지나고 7일 뒤 서버에서 자동으로 지워져요 (Firestore TTL: expireAt 칸)
+const KEEP_DAYS = 7;
+function expireAt(ymd){ const [y,m,d] = ymd.split('-').map(Number); return firebase.firestore.Timestamp.fromDate(new Date(y, m-1, d + 1 + KEEP_DAYS)); }
 
 /* 서버에서 실제로 받은 데이터만 써요: 인터넷이 끊기면 Firebase가 '빈 임시 데이터(fromCache)'를 먼저 보내는데,
    그걸 그대로 그리면 'SOS 0명'처럼 보여서 오해할 수 있어요. 8초 안에 서버 답이 없으면 연결 안내를 띄워요. */
@@ -208,7 +211,7 @@ function sosInit(){
     for(const v of st.slots){
       const key = st.date + '-' + v; if(sent.includes(key)) continue;
       try{
-        await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1)}, {merge:true});
+        await col.doc(st.date).set({['h' + parseInt(v)]: firebase.firestore.FieldValue.increment(1), expireAt: expireAt(st.date)}, {merge:true});
         sent = [...sent, key].slice(-200); try{ localStorage.setItem(sosSentKey(), JSON.stringify(sent)); }catch(e){}
       }catch(err){ sosTrouble(err); broken = true; break; }
     }

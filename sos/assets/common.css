@@ -452,3 +452,4 @@ a.sos-btn{text-decoration:none;text-align:center}
 .safe2 .safe-lock{font-size:44px;line-height:1.1}
 .safe2 .safe-flow{gap:4px;flex-wrap:nowrap}
 .safe2 .sf-item{padding:7px 8px;font-size:13px;white-space:nowrap}
+.safe2 .safe-auto{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);color:var(--fg);font-size:13.5px;line-height:1.6}

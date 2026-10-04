@@ -168,7 +168,7 @@ $('#meetForm').addEventListener('submit', async e => {
   if(!meet.col) return;
   $('#meetSend').disabled = true;
   try{
-    const ref = await meet.col.add({topic:'meet', text, date, slot:meetPicker.state.slot, host, joins:0, maybes:0, nos:0, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    const ref = await meet.col.add({topic:'meet', text, date, slot:meetPicker.state.slot, host, joins:0, maybes:0, nos:0, expireAt: expireAt(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
     $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
     try{ localStorage.setItem('copHost', host); }catch(e){}
     if(ref && ref.id) addMyMeet(ref.id);
@@ -237,7 +237,8 @@ $('#meetList').addEventListener('submit', async e => {
     // 화면에 댓글이 먼저 뜨기 전에 열쇠부터 저장해 둬요 (그래야 바로 수정·삭제 버튼이 보여요)
     const k = newSecret(), ref = meet.col.doc(id).collection('comments').doc();
     setComKey(ref.id, k);
-    await ref.set({text, kh: await sha256hex(k), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    const m = meet.items.find(o => o.id === id);   // 댓글도 모임과 같은 날 함께 지워져요
+    await ref.set({text, kh: await sha256hex(k), ...(m ? {expireAt: expireAt(m.date)} : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
   }catch(err){
     meet.drafts[id] = text; renderMeets();
     $('#meetEmpty').textContent = '댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
