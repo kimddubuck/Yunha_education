@@ -181,7 +181,7 @@ function createPicker(root, opts = {}){
   return {state: st, render};
 }
 
-/* 🆘 공동육아 SOS 도우미(🆘 SOS 요청): 혼자 독박하는 날짜와 시간(9~20시)을 골라 "이때 나 힘들어요"를 보내요.
+/* 🆘 SOS 달력(🆘 SOS 요청): 혼자 독박하는 날짜와 시간(9~20시)을 골라 "이때 나 힘들어요"를 보내요.
    저장: rooms/{방 열쇠}/sos/YYYY-MM-DD 문서의 p 지도 — {내 uid: {h: [시간들], n: 닉네임}} (예전 숫자 칸 h9 등도 함께 세요)
    시간 숫자를 누르면 누가 보냈는지 닉네임이 보여요.
    달력에는 날짜별 SOS 수, 시간 버튼에는 그 날 시간별 SOS 수가 보여요 → 보고 눈치게임으로 모임 만들기.
@@ -212,7 +212,7 @@ function showSosNames(day, h, v){
 function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
   let data = {}, col = null, broken = false;
-  root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 SOS 도우미</p><p class="sos-count"></p></div>
+  root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count"></p></div>
     <p class="sos-sub">혼자 독박하는 날,<br>미리 SOS를 요청해 두세요. <small>(오늘부터 1주일까지)</small><br>SOS가 모이면, 용기 있는 한 명이<br>모임을 만들어 보는 거예요 💪</p>
     <div class="sos-picker"></div>
     <div class="sos-who"></div>
@@ -300,7 +300,7 @@ function sosSummary(){
       const hs = HOURS.filter(h => sosHourCount(data[d], h)).map(h => `<button type="button" class="sos-chip" data-sos-hour="${h}" data-sos-date="${d}">${h}시 ${sosHourCount(data[d], h)}명</button>`);
       return hs.length ? `<div class="sos-day"><b>${dayLabel(d)}</b><div>${hs.join('')}</div></div>` : '';
     }).filter(Boolean).slice(0,5) : [];
-    box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 공동육아 SOS 도우미</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
+    box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 요청</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
       <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>숫자를 누르면 누가 보냈는지 보여요.</b></p>
