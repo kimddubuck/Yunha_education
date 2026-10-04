@@ -588,3 +588,5 @@ button.sos-chip{font:inherit;border:0;cursor:pointer}
 .safe2 .sf-item{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;font-size:12px;white-space:nowrap;text-align:center}
 .safe2 .sf-item i{font-style:normal;font-size:18px;line-height:1}
 .safe2 .sf-op{flex:none;font-size:13px}
+/* 개인정보 화면: 낱말 중간에서 줄이 안 끊기게 */
+.safe2 p,.safe2 li,.safe2 span,.safe2 td{word-break:keep-all;overflow-wrap:anywhere}
