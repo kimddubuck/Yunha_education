@@ -107,7 +107,7 @@ function roomError(err){
 
 // 첫 화면 이야기(이 앱을 만든 이유) + 3줄 사용법 — 입장 화면과 '소개 다시 보기'가 같이 써요
 const GATE_STORY = `        <div class="g-tool">
-          <p class="g-tool-h">어디서 모이든,<br><b>🆘 공동육아 모임 도구</b></p>
+          <p class="g-tool-h">어떤 플랫폼에서 모이든,<br><b>🆘 공동육아의 모임 도우미</b></p>
           <p class="g-tool-chips"><span>💬 카톡 오픈채팅</span><span>🥕 당근 모임</span><span>🟢 네이버 밴드</span><span>👥 소모임</span></p>
           <p class="g-tool-sub">대화는 원래 모임에서 그대로,<br>링크 하나로 붙여 써요. 가입 없이 익명으로.</p>
         </div>
