@@ -220,7 +220,7 @@ function showSosNames(day, h, v){
     : `<button type="button" class="sos-pop-btn${mine ? ' on' : ''}" data-sos-toggle>${mine
       ? '✅ SOS 요청했어요<small>다시 누르면 취소돼요</small>'
       : `🆘 이 시간 SOS 요청하기<small>${esc(ME.nick)}</small>`}</button>`;
-  const body = (names.length ? `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>` : '')
+  const body = (names.length ? `<div class="who-list">${names.map(n => `<span class="who-chip sos">${esc(n)}</span>`).join('')}</div>` : '')
     + (old ? `<p class="who-none">+ 예전 기록 ${old}명 (닉네임 없음)</p>` : '')
     + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
     + btn
