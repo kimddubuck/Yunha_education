@@ -157,6 +157,14 @@ function gateCss(){
     #gate .g-list-h{margin:0;font-weight:800;font-size:15px!important;color:var(--fg,#22282a)!important}
     #gate .g-list-h small{font-weight:500;color:var(--muted,#736e75);font-size:12px;margin-left:4px}
     #gate .g-room{padding:12px!important}
+    #gate .g-row{display:flex;gap:6px;align-items:stretch}
+    #gate .g-row .g-room{flex:1;min-width:0}
+    #gate .bell{flex:none;width:48px;padding:0!important;font-size:21px!important;background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important}
+    #gate .bell.on{background:var(--bg,#fff)!important;box-shadow:inset 0 0 0 2px var(--pick,#2a9095)}
+    #gate .g-pushhelp .push-help{margin:0;text-align:left}
+    #gate .g-pushhelp .push-help > summary{font-size:13px;font-weight:600;color:var(--muted,#736e75);text-align:center;padding:4px}
+    #gate .g-pushhelp .push-help:not([open]){border:none!important;background:transparent!important;padding:0!important}
+    #gate .g-pushhelp p, #gate .g-pushhelp small{font-size:13px}
     #gate .g-now{flex:none;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px;border:1px solid var(--pick,#2a9095);color:var(--accent-ink,#1c7276)}
     #gate .g-go-arrow{flex:none;font-size:20px;line-height:1;color:var(--muted,#736e75)}
     #gate .g-more > summary{padding:12px;border-radius:14px;border:2px solid var(--pick,#2a9095);color:var(--accent-ink,#1c7276);font-weight:800;text-align:center;list-style:none}
@@ -295,9 +303,10 @@ function showRooms(closable){
   if(document.getElementById('gate')) return;
   const pick = closable === 'pick';
   const rooms = sosRooms(), invite = INVITE && !ROOM;
+  const bells = typeof pushBell === 'function' && !!PUSH_VAPID;   // 🔔 방별 알림 (push.js 있는 화면에서만)
   const box = document.createElement('div'); box.id = 'gate'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '모임 방');
   const list = rooms.length && !invite ? `<div class="g-listbox"><p class="g-list-h">${pick ? '🏠 어느 방으로 갈까요?' : '🏠 내 방 목록'} <small>눌러서 이동</small></p><div class="g-rooms">` +
-    rooms.map(r => `<button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}><span class="g-rname"></span>${ROOM && r.roomId === ROOM.roomId ? '<span class="g-now">지금 방</span>' : ''}<span class="g-chips"></span><span class="g-go-arrow" aria-hidden="true">›</span></button>`).join('') + '</div></div>' : '';
+    rooms.map(r => `<div class="g-row"><button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}><span class="g-rname"></span>${ROOM && r.roomId === ROOM.roomId ? '<span class="g-now">지금 방</span>' : ''}<span class="g-chips"></span><span class="g-go-arrow" aria-hidden="true">›</span></button>${bells ? pushBell(r.roomId) : ''}</div>`).join('') + '</div></div>' : '';
   const formHtml = `
 ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       ${list}
@@ -319,11 +328,12 @@ ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
       ${list}
-      <p class="g-legend">🆘 = 1주일 안의 SOS 예약 · 🙌 = 다가오는 모임</p>
+      <p class="g-legend">🆘 = 1주일 안의 SOS 예약 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
 ${formHtml.replace(list, '')}
 ${GATE_PASTE}
       </details>
+      ${bells ? `<div class="g-pushhelp">${pushHelp()}</div>` : ''}
     </form>` : closable ? `<form class="g-card" autocomplete="off">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">

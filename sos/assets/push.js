@@ -139,7 +139,7 @@ function pushHelp(){
         ${step(1, '🌐', '크롬으로 열기', '카카오톡 안에서 열었다면 오른쪽 위 ⋮ → <b>다른 브라우저로 열기</b>')}
         ${step(2, '📲', '홈 화면에 설치', '크롬 오른쪽 위 ⋮ → <b>홈 화면에 추가</b> (또는 <b>앱 설치</b>)')}
         ${step(3, '👆', '설치된 아이콘으로 열기', '홈 화면의 공동육아 SOS 아이콘')}
-        ${step(4, '🔔', '알림 켜기 → 허용', '위의 <b>🔔 알림 켜기</b>를 누르고, 뜨는 창에서 <b>허용</b>')}
+        ${step(4, '🔔', '알림 켜기 → 허용', '방 목록에서 방 이름 옆 <b>🔕</b>를 누르고, 뜨는 창에서 <b>허용</b>')}
       </ol>
       <div class="ph-stuck">
         <p class="ph-stuck-h">😥 허용 창이 안 뜨거나 '막혀 있어요'가 나오면</p>
@@ -159,7 +159,7 @@ function pushHelp(){
         ${step(1, '🧭', '사파리로 열기', 'iOS 16.4 이상이어야 해요 (설정 → 일반 → 정보)')}
         ${step(2, '⬆️', '공유 → 홈 화면에 추가', '아래 가운데 <b>공유 버튼(□↑)</b> → 목록에서 <b>홈 화면에 추가</b>')}
         ${step(3, '👆', '설치된 아이콘으로 열기', '처음엔 방을 다시 물어봐요 → <b>초대 링크 붙여넣기</b> + 비밀번호')}
-        ${step(4, '🔔', '알림 켜기 → 허용', '위의 <b>🔔 알림 켜기</b>를 누르고 <b>허용</b>')}
+        ${step(4, '🔔', '알림 켜기 → 허용', '방 목록에서 방 이름 옆 <b>🔕</b>를 누르고 <b>허용</b>')}
       </ol>
       <div class="ph-stuck">
         <p class="ph-stuck-h">😥 알림이 안 오면</p>
@@ -171,64 +171,80 @@ function pushHelp(){
     </details>`;
   return `<details class="how-to push-help">
     <summary>📖 알림 설정 방법 · 안 될 때</summary>
-    <p class="ph-lead">딱 4단계예요. <b>홈 화면에 설치한 앱</b>에서 켜야 잘 와요.</p>
+    <p class="ph-lead">방 이름 옆 <b>🔔 = 알림 켜짐</b>, <b>🔕 = 꺼짐</b>. 눌러서 방마다 켜고 꺼요.<br>딱 4단계예요. <b>홈 화면에 설치한 앱</b>에서 켜야 잘 와요.</p>
     ${pushIsIOS() ? ios + android : android + ios}
   </details>`;
 }
 
-// --- 홈의 🔔 알림 카드 ---
-(function pushCard(){
-  const box = document.getElementById('pushCard'); if(!box || !ROOM) return;
-  if(navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});   // 앱을 열면 아이콘 숫자 지우기
-  if(!PUSH_VAPID){ box.hidden = true; return; }
-  let openHelp = false;
-  const draw = () => {
-    const on = pushLS.get('sosPushOn', false) && 'Notification' in window && Notification.permission === 'granted';
-    let html;
-    if(!pushSupported()){
-      html = pushIsIOS() && !pushStandalone()
-        ? '<p class="push-h">🔔 알림 받기</p><p class="push-sub">아이폰은 <b>사파리 → 공유 → 홈 화면에 추가</b>한 앱에서 알림을 켤 수 있어요.</p>'
-        : '<p class="push-h">🔔 알림 받기</p><p class="push-sub">이 브라우저는 알림을 지원하지 않아요. 카카오톡에서 열었다면 <b>다른 브라우저(크롬)로 열기</b>를 눌러 주세요.</p>';
-    }else if('Notification' in window && Notification.permission === 'denied'){
-      html = '<p class="push-h">🔕 알림이 막혀 있어요</p><p class="push-sub">크롬에서 이 사이트 알림이 차단돼 있어요.<br><b>크롬</b>에서 gongdong-sos.pages.dev 열기 → 주소창 왼쪽 <b>자물쇠</b> → <b>권한 → 알림 → 허용</b><br>그다음 이 앱을 닫았다 다시 열어 주세요.</p>';
-    }else if(on){
-      html = '<p class="push-h">🔔 알림이 켜져 있어요</p><p class="push-sub">새 모임 · SOS 몰림 · 내 모임에 참석/댓글이 생기면 알려 드려요.</p>'
-        + '<div class="push-rooms"><p class="push-rooms-h">🏠 방별 알림</p>'
-        + sosRooms().map(r => `<label class="push-room"><span class="push-room-name" data-rid="${r.roomId}"></span><input type="checkbox" class="switch" data-room-push="${r.roomId}"${pushRoomOn(r.roomId) ? ' checked' : ''}></label>`).join('')
-        + '<p class="push-saved" aria-live="polite"></p></div>'
-        + '<button type="button" class="btn block" data-push="off">모든 알림 끄기</button>';
+// --- 방 이름 옆 🔔 종: 눌러서 그 방 알림 켜기/끄기 ---
+// 켜짐 = 알림 허용 + 이 휴대폰 알림 켜짐 + 이 방을 끄지 않음
+function pushBellOn(roomId){
+  return pushSupported() && Notification.permission === 'granted' && pushLS.get('sosPushOn', false) && pushRoomOn(roomId);
+}
+function pushBell(roomId){
+  if(!PUSH_VAPID) return '';
+  const on = pushBellOn(roomId);
+  return `<button type="button" class="bell${on ? ' on' : ''}" data-bell="${roomId}" aria-pressed="${on}" aria-label="${on ? '이 방 알림 켜짐 (누르면 끄기)' : '이 방 알림 꺼짐 (누르면 켜기)'}">${on ? '🔔' : '🔕'}</button>`;
+}
+function pushBellsRedraw(){
+  document.querySelectorAll('[data-bell]').forEach(b => { b.outerHTML = pushBell(b.dataset.bell); });
+}
+// 잠깐 떠 있다 사라지는 안내 글
+function pushToast(t){
+  let el = document.getElementById('pushToast');
+  if(!el){ el = document.createElement('p'); el.id = 'pushToast'; el.className = 'push-toast'; el.setAttribute('aria-live', 'polite'); document.body.appendChild(el); }
+  el.textContent = t; el.hidden = false;
+  clearTimeout(pushToast.t); pushToast.t = setTimeout(() => { el.hidden = true; }, 2600);
+}
+// 안 될 때: 가까운 「📖 알림 설정 방법」을 펼쳐서 보여 줘요
+function pushOpenHelp(from){
+  let h = (from && from.closest('#gate') || document).querySelector('.push-help');
+  if(!h && typeof showRooms === 'function'){ showRooms(true); h = document.querySelector('#gate .push-help'); }   // 홈 제목 종이면 방 목록의 안내를 열어요
+  if(h){ h.open = true; const more = h.closest('details.g-more'); if(more) more.open = true; h.scrollIntoView({block: 'center'}); }
+}
+async function pushBellClick(btn){
+  const id = btn.dataset.bell;
+  if(!pushSupported()){
+    alert(pushIsIOS() && !pushStandalone()
+      ? '아이폰은 사파리 → 공유 → 「홈 화면에 추가」로 설치한 앱에서 알림을 켤 수 있어요.'
+      : '이 브라우저는 알림을 지원하지 않아요. 카카오톡에서 열었다면 「다른 브라우저(크롬)로 열기」를 눌러 주세요.');
+    pushOpenHelp(btn); return;
+  }
+  const wasOn = pushBellOn(id), allOff = !(pushLS.get('sosPushOn', false) && Notification.permission === 'granted');
+  btn.disabled = true; btn.classList.add('busy');
+  pushStepFn = t => pushToast(t);
+  pushLastError = '';
+  try{
+    if(wasOn){
+      pushSetRoom(id, false);
+      pushToast((await pushSync(false)) ? '🔕 이 방 알림을 껐어요' : '저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
     }else{
-      html = '<p class="push-h">🔔 알림 받기</p><p class="push-sub">카카오톡처럼 잠금화면에서도 알려 드려요.<br>🙌 새 모임 · 🆘 SOS 몰림 · 💬 내 모임 참석/댓글</p><button type="button" class="btn primary block" data-push="on">🔔 알림 켜기</button>';
+      // 처음 켤 때는 누른 방만 켜요 (다른 방은 각자 🔕 를 눌러 켜요)
+      if(allOff) pushLS.set('sosPushMuted', sosRooms().map(r => r.roomId).filter(x => x !== id));
+      else pushSetRoom(id, true);
+      if(await pushSync(true)) pushToast('🔔 이 방 알림을 켰어요');
+      else{
+        if(allOff) pushLS.set('sosPushOn', false);
+        alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '') + '\n\n「📖 알림 설정 방법 · 안 될 때」를 확인해 주세요.');
+        pushOpenHelp(btn);
+      }
     }
-    box.innerHTML = html + pushHelp(); box.hidden = false;
-    box.querySelectorAll('.push-room-name').forEach(el => { const r = sosRooms().find(x => x.roomId === el.dataset.rid); el.textContent = r ? r.name : ''; });   // 방 이름은 글자로만
-    if(openHelp) box.querySelector('.push-help').open = true;
-  };
-  // 방별 스위치: 바꾸면 그 방 채널에서 빠지거나 다시 들어가요
-  box.addEventListener('change', async e => {
-    const sw = e.target.closest('[data-room-push]'); if(!sw) return;
-    const msg = box.querySelector('.push-saved');
-    pushSetRoom(sw.dataset.roomPush, sw.checked);
-    sw.disabled = true; msg.textContent = '저장 중…';
-    try{ msg.textContent = (await pushSync(false)) ? (sw.checked ? '✅ 이 방 알림을 켰어요' : '🔕 이 방 알림을 껐어요') : '저장하지 못했어요. 잠시 뒤 다시 해 주세요.'; }
-    catch(err){ msg.textContent = '저장하지 못했어요. 잠시 뒤 다시 해 주세요.'; }
-    sw.disabled = false;
-  });
-  box.addEventListener('click', async e => {
-    const b = e.target.closest('[data-push]'); if(!b) return;
-    b.disabled = true; b.textContent = '잠시만요…';
-    pushStepFn = t => { b.textContent = t; };
-    try{
-      if(b.dataset.push === 'on'){ pushLastError = ''; if(!(await pushSync(true))){ openHelp = true; alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '') + '\n\n아래 「📖 알림 설정 방법 · 안 될 때」를 확인해 주세요.'); }}
-      else await pushOff();
-    }catch(err){
-      openHelp = true;
-      const why = String(err && (err.code ? err.code + ' ' + (err.message || '') : err.message) || err);
-      alert('알림을 켜지 못했어요.\n(원인: ' + why.slice(0, 200) + ')' + (/허용 창/.test(why) ? '\n\n알림 허용 창이 안 보였다면: 크롬 주소창 왼쪽 자물쇠(또는 앱 정보) → 권한 → 알림 → 허용으로 바꾼 뒤 다시 눌러 주세요.' : ''));
-    }
-    pushStepFn = () => {};
-    draw();
-  });
-  draw();
+  }catch(err){
+    const why = String(err && (err.code ? err.code + ' ' + (err.message || '') : err.message) || err);
+    alert('알림을 켜지 못했어요.\n(원인: ' + why.slice(0, 200) + ')' + (/허용 창/.test(why) ? '\n\n알림 허용 창이 안 보였다면: 크롬 주소창 왼쪽 자물쇠(또는 앱 정보) → 권한 → 알림 → 허용으로 바꾼 뒤 다시 눌러 주세요.' : ''));
+    pushOpenHelp(btn);
+  }
+  pushStepFn = () => {};
+  pushBellsRedraw();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-bell]'); if(b && !b.disabled) pushBellClick(b);
+});
+
+// 홈 제목 옆 종 + 앱을 열 때 할 일
+(function pushOnLoad(){
+  if(!ROOM) return;
+  if(navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});   // 앱을 열면 아이콘 숫자 지우기
+  const slot = document.getElementById('titleBell'); if(slot) slot.innerHTML = pushBell(ROOM.roomId);
   if(pushLS.get('sosPushOn', false)) pushSync(false).catch(() => {});   // 새로 들어간 방이 있으면 채널 맞추기
 })();

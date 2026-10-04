@@ -503,3 +503,11 @@ a.sos-btn{text-decoration:none;text-align:center}
 .rooms-btn{border:1.5px solid var(--pick);background:var(--bg);color:var(--accent-ink);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .rooms-btn:hover{background:var(--hover)}
 @media (max-width:820px){ .rooms-btn{position:absolute;left:0;top:50%;transform:translateY(-50%);margin:0} }
+
+/* 🔔 방 이름 옆 알림 종 */
+.cover .title-row{display:flex;align-items:center;gap:10px}
+.cover .title-row h1{margin:2px 0 4px}
+.bell{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--tag);font-size:20px;line-height:1;padding:0;cursor:pointer;color:var(--fg)}
+.bell.on{border-color:var(--pick);background:var(--bg)}
+.bell.busy{opacity:.55}
+.push-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 32px);margin:0;padding:10px 16px;border-radius:999px;background:#22282a;color:#fff;font-size:14px;font-weight:600;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2);text-align:center}
