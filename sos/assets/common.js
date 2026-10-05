@@ -447,7 +447,8 @@ function sosReport(kind, mid, cid){
     lv.addEventListener('click', async () => {
       if(!canDelete){
         const yes = await sosConfirm({icon: '🚪', title: `이 휴대폰에서 '${ROOM.name}' 방을 뺄까요?`,
-          body: '<p>멤버 목록에서 내 닉네임이 빠지고, 내 목록에서도 사라져요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>', ok: '방 빼기'});
+          body: '<p>멤버 목록에서 내 닉네임이 빠지고, 내 목록에서도 사라져요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>'
+            + (ME.owner ? '<p class="pop-warn">지금 방장이에요. 나가면 멤버 누구나 방장을 이어받을 수 있어요.<br>먼저 👥 멤버에서 방장을 넘기는 게 좋아요.</p>' : ''), ok: '방 빼기'});
         if(!yes) return;
         await sosLeaveRoom(); location.href = 'index.html'; return;
       }

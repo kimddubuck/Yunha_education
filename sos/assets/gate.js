@@ -126,13 +126,7 @@ function sosReady(){
     const room = roomRef(), mine = room.collection('members').doc(user.uid);
     let snap;
     try{ snap = await mine.get(); }catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
-    if(snap.exists && snap.data().on === false){
-      rememberKicked(ROOM);   // '내 정보 모두 지우기' 때 이 방의 닉네임도 지울 수 있게 기억해 둬요
-      try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
-      forgetRoom(ROOM.roomId);
-      alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n\n다시 들어가려면 방장에게 '다시 들어올 수 있게 허용'을 부탁해 주세요.\n허용되면 초대 링크로 다시 들어올 수 있어요.`);
-      location.href = 'index.html'; return new Promise(() => {});
-    }
+    if(snap.exists && snap.data().on === false) return sosKickedOut();
     if(snap.exists){
       ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick);
       // 마지막 접속(seen): 하루에 두 번 정도만 남겨요. 방장이 오래 안 온 멤버를 알아보고, 방장이 떠났는지 판단할 때 써요
@@ -164,9 +158,41 @@ function sosReady(){
       }
     }catch(e){}
     ME.owner = !!ME.ou && ME.ou === user.uid;
+    sosWatchMe(mine);
     return true;
   })();
   return sosReadyP;
+}
+// 내보내졌을 때: 이 휴대폰 목록에서 빼고 알려 줘요 (닉네임 지우기용으로 방은 기억해 둬요)
+let sosLeaving = false;   // 내가 스스로 나가는 중이면 아래 감시가 끼어들지 않아요
+async function sosKickedOut(){
+  if(sosLeaving) return new Promise(() => {});
+  sosLeaving = true;
+  rememberKicked(ROOM);   // '내 정보 모두 지우기' 때 이 방의 닉네임도 지울 수 있게 기억해 둬요
+  try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
+  forgetRoom(ROOM.roomId);
+  alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n\n다시 들어가려면 방장에게 '다시 들어올 수 있게 허용'을 부탁해 주세요.\n허용되면 초대 링크로 다시 들어올 수 있어요.`);
+  location.href = 'index.html'; return new Promise(() => {});
+}
+// 내 멤버 문서를 계속 지켜봐요: 앱을 켜 둔 사이에 내보내지거나 방이 지워지면 바로 알려 주고,
+//  다른 탭·기기에서 닉네임을 바꿨으면 여기서도 맞춰요 (안 맞으면 서버가 글쓰기를 거절해요)
+function sosWatchMe(mine){
+  mine.onSnapshot(async s => {
+    if(sosLeaving || s.metadata.fromCache) return;
+    if(s.exists){
+      const d = s.data();
+      if(d.on === false) return sosKickedOut();
+      if(d.nick && d.nick !== ME.nick){ ME.nick = d.nick; saveNick(d.nick); }
+      return;
+    }
+    // 내 문서가 사라졌어요: 방이 지워졌거나, 방장이 멤버 목록에서 뺐어요
+    sosLeaving = true;
+    let gone = true; try{ gone = roomGone(await roomRef().get()); }catch(e){}
+    try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}
+    forgetRoom(ROOM.roomId);
+    alert(gone ? `'${ROOM.name}' 방은 방장이 지웠어요.` : `'${ROOM.name}' 방의 멤버 목록에서 빠졌어요.\n\n초대 링크와 비밀번호로 다시 들어올 수 있어요.`);
+    location.href = 'index.html';
+  }, () => {});
 }
 // 👑 방장 되기: 지목받아 수락하거나, 방장이 떠난 방을 이어받을 때. 이 휴대폰에서 새 방장 열쇠를 만들어
 //  서버엔 지문(oh)만 올리고 열쇠는 이 휴대폰에만 둬요 (방 지우기에 씀). 예전 방장 열쇠는 더 이상 안 맞아요
@@ -202,6 +228,7 @@ const KICKED_KEY = 'sosKicked';
 function rememberKicked(room){ try{ localStorage.setItem(KICKED_KEY, JSON.stringify([{roomId: room.roomId, key: room.key}, ...sosKicked().filter(r => r.roomId !== room.roomId)].slice(0, 20))); }catch(e){} }
 function sosKicked(){ try{ return JSON.parse(localStorage.getItem(KICKED_KEY) || '[]'); }catch(e){ return []; } }
 async function sosDeleteMe(){
+  sosLeaving = true;
   const user = await sosAuth(), db = sosDb();
   if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
     const me = db.collection('rooms').doc(r.key).collection('members').doc(user.uid);
@@ -214,6 +241,7 @@ async function sosDeleteMe(){
 }
 // 이 방에서 나가기: 내 닉네임을 멤버에서 빼고 이 휴대폰 목록에서도 빼요
 async function sosLeaveRoom(){
+  sosLeaving = true;
   try{ if(await sosReady()) await roomRef().collection('members').doc(ME.uid).delete(); }catch(e){}
   try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
   forgetRoom(ROOM.roomId);
@@ -241,6 +269,7 @@ const pendingDeletes = () => { try{ return JSON.parse(localStorage.getItem(DEL_K
 function setPendingDelete(roomId, job){ try{ localStorage.setItem(DEL_KEY, JSON.stringify([...pendingDeletes().filter(j => j.roomId !== roomId), ...(job ? [job] : [])])); }catch(e){} }
 async function deleteRoom(){
   const db = sosDb(); if(!db || !ROOM) throw new Error('offline');
+  sosLeaving = true;
   const room = db.collection('rooms').doc(ROOM.key);
   let job = pendingDeletes().find(j => j.roomId === ROOM.roomId);
   if(!job){
@@ -275,7 +304,10 @@ async function runPendingDelete(db, job){
 // 지난번에 다 못 지운 방이 있으면, 앱을 열 때 조용히 이어서 지워요
 window.addEventListener('load', () => {
   const jobs = pendingDeletes(); if(!jobs.length) return;
-  setTimeout(async () => { const db = sosDb(); if(!db) return; for(const j of jobs){ try{ await runPendingDelete(db, j); }catch(e){} } }, 5000);
+  setTimeout(async () => { const db = sosDb(); if(!db) return; for(const j of jobs){
+    try{ await runPendingDelete(db, j); }
+    catch(e){ if(e && e.code === 'permission-denied') setPendingDelete(j.roomId, null); }   // 그 사이 방장이 바뀌어 못 지우는 일이면 버려요
+  } }, 5000);
 });
 
 // 들어와 있는 방이 지워졌으면 이 휴대폰에서도 빼고 알려 줘요
