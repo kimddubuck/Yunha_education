@@ -210,7 +210,7 @@ async function sosToggleHour(day, h, v){
   const hours = on ? mine.filter(x => x !== h) : [...mine, h].sort((x, y) => x - y);
   if(hours.length) await col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true});
   else await col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
-  if(!on && typeof pushSosCrowd === 'function') pushSosCrowd(day, h + '시', sosHourCount(v, h) + 1);   // 같은 시간 3명이 되는 순간 알림
+  if(!on && typeof pushSosCrowd === 'function') pushSosCrowd(day, h + '시', sosHourCount(v, h) + 1);   // 방 사람들에게 SOS 알림 (3명부터는 '몰렸어요')
   const nv = {...(v || {}), p: {...((v && v.p) || {})}};
   if(hours.length) nv.p[ME.uid] = {h: hours, n: ME.nick}; else delete nv.p[ME.uid];
   return nv;
@@ -300,7 +300,7 @@ function sosInit(){
     try{
       await put(st.date, [...mine, ...add].sort((x, y) => x - y));
       // 같은 시간 SOS가 3명이 되는 순간 방에 알림
-      if(typeof pushSosCrowd === 'function') add.forEach(h => pushSosCrowd(st.date, h + '시', sosHourCount(before, h) + 1));
+      if(typeof pushSosCrowd === 'function' && add.length){ const h = add.reduce((m, x) => sosHourCount(before, x) > sosHourCount(before, m) ? x : m, add[0]); pushSosCrowd(st.date, h + '시', sosHourCount(before, h) + 1); }   // 여러 시간을 골라도 알림은 한 번
     }catch(err){ sosTrouble(err); broken = true; }
     draw();
   });

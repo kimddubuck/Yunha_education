@@ -1,12 +1,12 @@
 /* 공동육아 SOS · 알림 (gate.js, common.js 다음에 불러와요)
    - 알림 켜기: 브라우저 알림 허용 → Firebase 알림 주소(토큰) 받기 → 내 방들의 알림 채널에 가입 (/api/push)
-   - 알림 보내기: 새 모임 → 방 채널, SOS 몰림(같은 시간 3명) → 방 채널, 내 모임에 참석·댓글 → 모임 주최자 채널
+   - 알림 보내기: 새 모임 → 방 채널, SOS 요청(1명부터, 3명이면 '몰렸어요') → 방 채널, 내 모임에 참석·댓글 → 모임 주최자 채널
    - 채널 이름은 방 열쇠로 만든 해시라 방 사람만 알아요. 이름·전화번호는 다루지 않아요.
    - 잠금화면에 보일 수 있어서 알림 글은 간단히(방 이름만). 날짜·장소·별명·댓글 내용은 앱을 열어야 보여요.
    - PUSH_VAPID 가 비어 있으면 알림 기능 전체가 숨겨져요 (Firebase 설정 전). */
 const PUSH_VAPID = 'BHXQsGT-8useRm_C08QgfQHbBlRVBErZpnz3ayOc84FV2lQZYn9p3kEE_EQ5qvycccEiaL7C385S30ffZlpdtpk';   // Firebase 웹 푸시 인증서(공개 키)
 const PUSH_API = 'api/push';
-const SOS_ALERT_AT = 3;   // 같은 날짜·시간에 SOS가 이만큼 모이면 방 사람들에게 알려요
+const SOS_CROWD_AT = 3;   // 같은 날짜·시간에 SOS가 이만큼 모이면 '몰렸어요'로 알려요 (1명부터 알림은 가요)
 
 const pushLS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
@@ -116,9 +116,12 @@ async function pushNewMeet(meetId, date, slot, host){
   }
   pushNotify(await roomTopic(ROOM), '🙌 새 모임이 열렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'meet-' + meetId);
 }
+// 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){
-  if(!pushSupported() || !ROOM || count !== SOS_ALERT_AT) return;
-  pushNotify(await roomTopic(ROOM), '🆘 SOS가 몰렸어요', `${ROOM.name} · 용기 내서 모임을 열어 볼까요?`, pushLink('meet.html'), 'sos-' + date + slot);
+  if(!pushSupported() || !ROOM || !(count >= 1)) return;
+  const crowd = count >= SOS_CROWD_AT;
+  pushNotify(await roomTopic(ROOM), crowd ? `🆘 SOS가 몰렸어요 (${count}명)` : '🆘 SOS 요청이 왔어요',
+    `${ROOM.name} · ${crowd ? '용기 내서 모임을 열어 볼까요?' : '누가 도움이 필요해요. 눌러서 확인해 보세요'}`, pushLink('meet.html'), 'sos-' + date + slot);
 }
 async function pushMeetJoin(o, joins){
   if(!pushSupported() || !ROOM) return;
