@@ -35,5 +35,46 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "SOS 달력",
+      "short_name": "SOS 달력",
+      "description": "SOS 요청하고 모임 열기",
+      "url": "./meet.html",
+      "icons": [
+        {
+          "src": "assets/icon-sos-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "내 방 목록",
+      "short_name": "방 목록",
+      "description": "내 방 골라 들어가기",
+      "url": "./index.html?pick=1",
+      "icons": [
+        {
+          "src": "assets/icon-sos-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "그림 사용법",
+      "short_name": "사용법",
+      "description": "그림으로 보는 사용법 17장",
+      "url": "./guide.html",
+      "icons": [
+        {
+          "src": "assets/icon-sos-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
