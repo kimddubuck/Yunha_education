@@ -20,7 +20,7 @@ self.addEventListener('push', e => {
     await self.registration.showNotification(d.title || '공동육아 SOS', {
       body: d.body || '',
       icon: 'assets/icon-sos-192.png',
-      badge: 'assets/icon-sos-192.png',
+      badge: 'assets/badge-96.png',   // 상태표시줄 아이콘: 흰 실루엣 + 투명 배경이어야 해요
       tag: d.tag || 'sos',
       renotify: true,
       data: { link: d.link || 'index.html' }
