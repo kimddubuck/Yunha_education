@@ -124,8 +124,14 @@ function sosReady(){
     if(!user){ if(typeof sosTrouble === 'function') sosTrouble({code: 'auth'}); return false; }
     ME.uid = user.uid;
     const room = roomRef(), mine = room.collection('members').doc(user.uid);
-    let snap;
-    try{ snap = await mine.get(); }catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
+    let snap, rs;
+    try{ [snap, rs] = await Promise.all([mine.get(), room.get()]); }catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
+    // 방장이 지운 방이면(같은 브라우저 세션에서 처음 알아챘더라도) 바로 정리해요
+    if(roomGone(rs)){
+      sosLeaving = true;
+      try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}
+      forgetRoom(ROOM.roomId); alert(`'${ROOM.name}' 방은 방장이 지웠어요.`); location.href = 'index.html'; return new Promise(() => {});
+    }
     if(snap.exists && snap.data().on === false) return sosKickedOut();
     if(snap.exists){
       ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick);
@@ -138,7 +144,12 @@ function sosReady(){
       while(!nick) nick = await askNick(`'${ROOM.name}' 방에서 쓸 닉네임`, '모임·SOS·댓글에 이 닉네임이 보여요. 단톡방 닉네임과 같게 하면 알아보기 쉬워요.');
       nick = nick.slice(0, NICK_MAX);
       try{ await mine.set({nick, on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); }
-      catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
+      catch(e){
+        // 다른 탭이 같은 순간에 먼저 들어왔으면 그 문서를 그대로 써요
+        let again = null; try{ again = await mine.get(); }catch(err){}
+        if(!(again && again.exists && again.data().on !== false)){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
+        nick = again.data().nick;
+      }
       ME.nick = nick; saveNick(nick);
       // 같은 닉네임이 이미 있으면 (다른 브라우저·앱으로 들어왔던 기록일 수 있어요) 알려 줘요
       try{
@@ -148,7 +159,7 @@ function sosReady(){
     }
     // 방장인지: 새 방은 ou(방장 uid). 예전 방은 이 휴대폰의 방장 열쇠로 한 번 등록해요
     try{
-      const r = (await room.get()).data() || {};
+      const r = rs.data() || {};
       ME.ou = r.ou || ''; ME.po = r.po || '';
       if(!r.ou && r.oh && ROOM.owner){
         const b = sosDb().batch();
@@ -271,7 +282,7 @@ async function deleteRoom(){
   const db = sosDb(); if(!db || !ROOM) throw new Error('offline');
   sosLeaving = true;
   const room = db.collection('rooms').doc(ROOM.key);
-  let job = pendingDeletes().find(j => j.roomId === ROOM.roomId);
+  let job = pendingDeletes().find(j => j.roomId === ROOM.roomId && j.marked);   // '지워짐' 표시 전 작업은 다시 모아요 (열쇠·목록이 바뀌었을 수 있어요)
   if(!job){
     const paths = [];
     const ops = await room.collection('opinions').get();
@@ -292,7 +303,8 @@ async function runPendingDelete(db, job){
   if(!job.marked){
     // 이미 '지워짐' 표시가 됐으면(지난번에 표시 직후 끊김) 건너뛰어요
     const snap = await room.get();
-    if(!(snap.exists && snap.data().deleted === true)) await room.update({deleted: true, name: '', k: job.k});
+    try{ if(!(snap.exists && snap.data().deleted === true)) await room.update({deleted: true, name: '', k: job.k}); }
+    catch(e){ if(e && e.code === 'permission-denied') setPendingDelete(job.roomId, null); throw e; }   // 방장이 아니면(바뀌었으면) 작업을 버려요
     job.marked = true; setPendingDelete(job.roomId, job);
   }
   while(job.paths.length){
@@ -303,11 +315,8 @@ async function runPendingDelete(db, job){
 }
 // 지난번에 다 못 지운 방이 있으면, 앱을 열 때 조용히 이어서 지워요
 window.addEventListener('load', () => {
-  const jobs = pendingDeletes(); if(!jobs.length) return;
-  setTimeout(async () => { const db = sosDb(); if(!db) return; for(const j of jobs){
-    try{ await runPendingDelete(db, j); }
-    catch(e){ if(e && e.code === 'permission-denied') setPendingDelete(j.roomId, null); }   // 그 사이 방장이 바뀌어 못 지우는 일이면 버려요
-  } }, 5000);
+  const jobs = pendingDeletes().filter(j => j.marked); if(!jobs.length) return;   // 표시까지 된 작업만 이어서 해요
+  setTimeout(async () => { const db = sosDb(); if(!db) return; for(const j of jobs){ try{ await runPendingDelete(db, j); }catch(e){} } }, 5000);
 });
 
 // 들어와 있는 방이 지워졌으면 이 휴대폰에서도 빼고 알려 줘요

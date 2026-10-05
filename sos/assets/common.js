@@ -55,7 +55,8 @@ function todayStr(){ const d = new Date(); return `${d.getFullYear()}-${String(d
    글을 쓰는 중이면 방해하지 않고, 화면을 다시 볼 때(앱으로 돌아올 때) 새로고침해요. */
 (function dayRollover(){
   const day0 = todayStr();
-  const typing = () => { const a = document.activeElement; return !!(a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.value); };
+  // 글을 쓰는 중이거나 팝업(확인 창·저장 중)이 떠 있으면 기다려요
+  const typing = () => { const a = document.activeElement; return !!(a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.value) || !!document.querySelector('.pop-back'); };
   const check = () => { if(todayStr() === day0) return; if(!typing() && !document.hidden) location.reload(); else setTimeout(check, 60000); };
   const midnight = () => { const d = new Date(); d.setHours(24, 0, 1, 0); setTimeout(check, Math.min(d - Date.now(), 2 ** 31 - 1)); };
   midnight();
@@ -212,7 +213,7 @@ function createPicker(root, opts = {}){
    기기당 같은 날짜·시간에는 한 번만. 홈에는 요약(sosSummary)만 보여 줘요. */
 function sosWatch(cb){
   const r = roomRef(), col = r && r.collection('sos');
-  if(!col){ cb(null, null); return null; }
+  if(!col){ cb(null, null, {code: 'unavailable'}); return null; }
   // 예약할 수 있는 오늘~1주일치만 읽어요 (읽기 횟수 절약)
   sosReady().then(ok => { if(!ok){ cb(null, col, {code: 'auth'}); return; }
   col.where(firebase.firestore.FieldPath.documentId(), '>=', todayStr())
@@ -320,7 +321,7 @@ function sosInit(){
       await put(st.date, [...mine, ...add].sort((x, y) => x - y));
       // 같은 시간 SOS가 3명이 되는 순간 방에 알림
       if(typeof pushSosCrowd === 'function' && add.length){ const h = add.reduce((m, x) => sosHourCount(before, x) > sosHourCount(before, m) ? x : m, add[0]); pushSosCrowd(st.date, h + '시', sosHourCount(before, h) + 1); }   // 여러 시간을 골라도 알림은 한 번
-    }catch(err){ sosTrouble(err); broken = true; }
+    }catch(err){ sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 저장하지 못했어요. 다시 눌러 주세요'); }   // 쓰기 실패는 다시 누를 수 있게 둬요
     draw();
   });
   // 고른 날짜·시간을 그대로 모임 만들기에 넘겨요
@@ -439,7 +440,13 @@ function sosReport(kind, mid, cid){
     //  (이 휴대폰에 방장 열쇠가 남아 있어도, 방장을 넘겼으면 더 이상 못 지워요 → '방 빼기'로 바뀌어요)
     let canDelete = !!ROOM.owner, noKey = false;
     const label = () => { lv.textContent = canDelete ? '🗑 방 지우기' : '🚪 이 휴대폰에서 방 빼기'; };
-    const decide = () => { canDelete = noKey || (ME.owner && !!ROOM.owner); label(); };
+    const decide = async () => {
+      // 방장인데 이 휴대폰에 방장 열쇠가 없으면(기록이 지워졌을 때) 새 열쇠를 만들어 서버 지문(oh)을 바꿔요
+      if(ME.owner && !ROOM.owner && !noKey){
+        try{ const k = randomHex(); await roomRef().update({oh: await sha256Hex(k)}); ROOM.owner = k; rememberRoom(ROOM); }catch(e){}
+      }
+      canDelete = noKey || (ME.owner && !!ROOM.owner); label();
+    };
     label();
     const r = roomRef();
     if(r) r.get().then(d => { noKey = d.exists && !d.data().oh; }).catch(() => {}).then(() => sosReady()).then(decide).catch(() => {});
@@ -501,12 +508,17 @@ function sosReport(kind, mid, cid){
       body: '<p><b class="mem-n"></b> 님이<br>나에게 방장을 넘기려고 해요.</p><ul><li>멤버 관리·방 지우기를 내가 해요.</li><li>다른 멤버에게 다시 넘길 수 있어요.</li></ul>'}, nickOf(list, ME.ou) || '방장');
     if(yes) return becomeOwner(list, 'accept');
     const no = await sosConfirm({icon: '🙅', title: '거절할까요?', body: '<p>거절하면 방장은 그대로예요. 나중에 다시 받으려면 방장에게 다시 넘겨 달라고 해 주세요.</p>', ok: '거절하기'});
-    if(no){ try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; }catch(e){} }
+    if(no){ try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; }catch(e){ await refreshOwner(); } }
+  }
+  // 넘기기 취소·거절이 거부되면(그 사이 수락됐거나 방장이 바뀜) 서버 기준으로 다시 맞춰요
+  async function refreshOwner(){
+    try{ const r = (await roomRef().get()).data() || {}; ME.ou = r.ou || ''; ME.po = r.po || ''; ME.owner = !!ME.ou && ME.ou === ME.uid; document.dispatchEvent(new Event('sos:owner')); }catch(e){}
+    sosConfirm({icon: '👑', title: '방장 정보가 바뀌었어요.', body: '<p>그 사이 방장이 바뀌었거나 이미 처리됐어요. 멤버 목록을 다시 열어 확인해 주세요.</p>', ok: '확인'});
   }
   // 👑 방장 칸: 방장은 넘기기(또는 넘기는 중 취소), 지목받은 사람은 받기, 방장이 떠난 방이면 이어받기
   function ownerBox(list){
     if(ME.owner){
-      if(ME.po) return `<div class="mem-own-box"><p><b>👑 방장 넘기는 중</b><br><small><b class="mem-n" data-n="${ME.po}"></b> 님이 앱을 열면 받을지 물어봐요.<br>받기 전까지는 내가 방장이에요.</small></p><button type="button" class="mem-kick" data-po-cancel>넘기기 취소</button></div>`;
+      if(ME.po) return `<div class="mem-own-box"><p><b>👑 방장 넘기는 중</b><br><small>${list.some(m => m.uid === ME.po) ? '<b class="mem-n" data-n="' + ME.po + '"></b> 님이 앱을 열면 받을지 물어봐요.<br>받기 전까지는 내가 방장이에요.' : '넘기려던 사람이 방에서 나갔어요.<br>취소하고 다른 사람에게 넘겨 주세요.'}</small></p><button type="button" class="mem-kick" data-po-cancel>넘기기 취소</button></div>`;
       return list.length > 1 ? '<button type="button" class="btn block mem-renick" data-handoff>👑 방장 넘기기</button>' : '';
     }
     if(ME.po && ME.po === ME.uid) return '<div class="mem-own-box"><p><b>👑 방장을 넘겨받을 차례예요</b><br><small>방장이 나를 다음 방장으로 골랐어요.</small></p><button type="button" class="mem-kick mem-allow" data-accept>방장 받기</button></div>';
@@ -550,7 +562,11 @@ function sosReport(kind, mid, cid){
         const yes = await sosConfirm({icon: '🚫', title: `'${m.nick}' 님을 내보낼까요?`, danger: true, ok: '내보내기',
           body: '<ul><li>이 사람은 이 방의 SOS·모임을 더 이상 볼 수 없어요.</li><li>방장이 <b>다시 허용</b>하기 전까지는 같은 휴대폰으로 다시 들어올 수 없어요.</li><li>앱을 지우고 다시 깔면 들어올 수 있으니, 꼭 막아야 하면 <b>새 방을 만들어 새 비밀번호</b>로 옮겨 주세요.</li></ul>'});
         if(!yes){ open(list); return; }
-        try{ await roomRef().collection('members').doc(m.uid).update({on: false}); open(await load(true)); }
+        try{
+          await roomRef().collection('members').doc(m.uid).update({on: false});
+          if(ME.po === m.uid){ try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; }catch(err){} }   // 넘기려던 사람을 내보냈으면 넘기기도 취소
+          open(await load(true));
+        }
         catch(err){ sosConfirm({icon: '😢', title: '내보내지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }
         return;
       }
@@ -572,7 +588,8 @@ function sosReport(kind, mid, cid){
         return;
       }
       if(e.target.closest('[data-po-cancel]')){
-        try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; box.remove(); open(list); }catch(err){}
+        try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; box.remove(); open(list); }
+        catch(err){ box.remove(); await refreshOwner(); }
         return;
       }
       if(e.target.closest('[data-accept]')){ box.remove(); return becomeOwner(list, 'accept'); }

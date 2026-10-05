@@ -22,7 +22,7 @@ function meetInit(){
       meet.reports = {}; q.docs.forEach(d => { const r = d.data(), k = r.cid || r.mid; meet.reports[k] = (meet.reports[k] || 0) + 1; });
       renderMeets();
     }, () => {});
-    meet.col.where('date', '>=', dayStr(-30)).limit(300).onSnapshot(serverOnly(snap => {
+    meet.col.where('date', '>=', dayStr(-30)).orderBy('date', 'desc').limit(300).onSnapshot(serverOnly(snap => {   // 많아도 최신 300개
       meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
       watchComments(); renderMeets();
     }), err => { sosTrouble(err); $('#upSec').hidden = false; $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
@@ -154,7 +154,8 @@ function meetCard(o, past){
 function renderMeets(){
   // 쓰는 중인 댓글과 커서 위치는 다시 그려도 지켜요
   const focused = document.activeElement && document.activeElement.closest && document.activeElement.closest('.comment-form');
-  const focusId = focused ? focused.dataset.comment : null;
+  const focusId = focused ? (focused.dataset.comment || null) : null;   // 수정 폼은 data-comment 가 없어요
+  const editSel = focused && focused.dataset.editComment ? [focused.querySelector('input').selectionStart, focused.querySelector('input').selectionEnd] : null;
 
   const today = todayStr();
   const up = meet.items.filter(o => o.date >= today)
@@ -166,9 +167,9 @@ function renderMeets(){
   const pl = $('#pastList'); pl.innerHTML = ''; past.forEach(o => pl.appendChild(meetCard(o, true)));
   $('#pastSec').hidden = !past.length;
 
-  document.querySelectorAll('.comment-form').forEach(f => { f.querySelector('input').value = meet.drafts[f.dataset.comment] || ''; });
+  document.querySelectorAll('.comment-form[data-comment]').forEach(f => { f.querySelector('input').value = meet.drafts[f.dataset.comment] || ''; });   // 수정 폼은 건드리지 않아요
   if(focusId){ const f = document.querySelector(`.comment-form[data-comment="${focusId}"]`); if(f) f.querySelector('input').focus(); }
-  if(meet.editing){ const ef = document.querySelector(`[data-edit-comment="${meet.editing}"] input`); if(ef && (focusId === null)) ef.focus(); }
+  if(meet.editing && !focusId){ const ef = document.querySelector(`[data-edit-comment="${meet.editing}"] input`); if(ef){ ef.focus(); if(editSel) try{ ef.setSelectionRange(editSel[0], editSel[1]); }catch(e){} } }
 }
 
 /* ---------- 달력 + 시간 고르기 (common.js의 createPicker) ---------- */
@@ -203,6 +204,8 @@ $('#meetForm').addEventListener('submit', async e => {
   finally{ $('#meetSend').disabled = false; }
 });
 
+// 실패 안내: 목록 아래 문구는 다시 그릴 때 지워져서, 잠깐 뜨는 안내로 보여 줘요
+const meetSay = t => { if(typeof pushToast === 'function') pushToast('⚠️ ' + t); else $('#meetEmpty').textContent = t; };
 // 방장 권한으로 글·댓글 지우기 (모임은 댓글과 신고도 함께)
 async function ownerDelete(mid, cid){
   const yes = await sosConfirm({icon: '🗑', title: cid ? '이 댓글을 지울까요?' : '이 모임 글을 내릴까요?', danger: true, ok: '지우기',
@@ -267,7 +270,7 @@ $('#meetList').addEventListener('click', async e => {
     // 새로 참석했으면 모임 주최자에게 알림 (내가 연 모임이면 안 보냄)
     if(v === 'join' && old !== 'join' && o && !isMine(o) && typeof pushMeetJoin === 'function') pushMeetJoin(o, meetVotes(o).join.count + 1);
   }
-  catch(err){ sosTrouble(err); b.disabled = false; $('#meetEmpty').textContent = '참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
+  catch(err){ sosTrouble(err); b.disabled = false; meetSay('참석·불참을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }
 });
 $('#meetList').addEventListener('input', e => {
   const f = e.target.closest('[data-comment]'); if(f) meet.drafts[f.dataset.comment] = e.target.value;
@@ -297,7 +300,7 @@ $('#meetList').addEventListener('submit', async e => {
     if(m && !isMine(m) && typeof pushMeetComment === 'function') pushMeetComment(m, text);   // 모임 주최자에게 댓글 알림
   }catch(err){
     meet.drafts[id] = text; renderMeets();
-    $('#meetEmpty').textContent = '댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+    meetSay('댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
   }
 });
 

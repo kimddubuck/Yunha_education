@@ -38,7 +38,7 @@ export async function onRequestPost({ request, env }) {
         });
         const j = await r.json().catch(() => ({}));
         const err = !r.ok ? `iid_${r.status}` : (j.results && j.results[0] && j.results[0].error) || '';
-        if(err) return json({ error: 'subscribe_failed', detail: `${err} ${JSON.stringify(j.error || '').slice(0, 120)}` }, 502);
+        if(err) return json({ error: 'subscribe_failed', detail: `${err} ${JSON.stringify(j.error || '').slice(0, 120)}`, topics: out }, 502);   // 여기까지 된 채널(out)도 알려 줘요
         out[t] = true;
       }
       return json({ ok: true, topics: out });

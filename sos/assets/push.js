@@ -22,10 +22,11 @@ const pushStandalone = () => matchMedia('(display-mode: standalone)').matches ||
 async function roomTopic(room){ return 'r' + (await sha256Hex('push:' + room.key)).slice(0, 40); }
 async function meetTopic(meetId){ return 'm' + (await sha256Hex('push:' + ROOM.key + ':' + meetId)).slice(0, 40); }
 
-let pushLastError = '';
+let pushLastError = '', pushLastBody = null;   // 실패 응답도 남겨요 (채널 가입이 반쯤 됐을 때 어디까지 됐는지)
 async function pushApi(body){
   const r = await fetch(PUSH_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const j = await r.json().catch(() => ({}));
+  pushLastBody = j;
   if(!r.ok){ pushLastError = `${r.status} ${j.error || ''} ${j.detail || ''}`.trim(); return null; }
   return j;
 }
@@ -87,12 +88,12 @@ async function pushSync(ask){
   if(add.length) pushStep('④ 우리 방 알림 채널에 가입 중…');
   for(const part of chunks(add, 20)){
     const r = await withTimeout(pushApi({ action: 'subscribe', token, topics: part }), 30000, '알림 채널 가입');
-    if(!r){ ok = false; break; }
+    if(!r){ Object.keys((pushLastBody && pushLastBody.topics) || {}).forEach(t => now.add(t)); ok = false; break; }   // 반쯤 됐으면 된 것은 장부에 적어요
     part.forEach(t => now.add(t));
   }
   for(const part of chunks(remove, 20)){
     const r = await pushApi({ action: 'unsubscribe', token, topics: part }).catch(() => null);
-    if(!r){ ok = false; continue; }   // 해지 못한 채널은 장부에 남겨 두고 다음에 다시 해지해요
+    if(!r){ Object.keys((pushLastBody && pushLastBody.topics) || {}).forEach(t => now.delete(t)); ok = false; continue; }   // 해지 못한 채널은 장부에 남겨 두고 다음에 다시 해지해요
     part.forEach(t => now.delete(t));
   }
   pushLS.set(doneKey, [...now]);
@@ -114,9 +115,9 @@ async function pushOff(){
 //  (gate.js 가 방을 목록에서 빼기 전에 불러요. 마지막 방이라 ROOM 이 없어져도 알림이 계속 오지 않게)
 async function pushDropRoom(room){
   if(!PUSH_VAPID || !room) return;
-  const token = pushLS.get('sosPushToken', ''); if(!token) return;
   const meets = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x);
-  pushLS.set('sosPushMeetTopics', meets.filter(x => x.room !== room.roomId));
+  pushLS.set('sosPushMeetTopics', meets.filter(x => x.room !== room.roomId));   // 토큰이 없어도 이 방의 모임 채널 기록은 지워요
+  const token = pushLS.get('sosPushToken', ''); if(!token) return;
   const drop = [await roomTopic(room), ...meets.filter(x => x.room === room.roomId).map(x => x.t)];
   const doneKey = 'sosPushTopics:' + token.slice(-12), now = new Set(pushLS.get(doneKey, []));
   const topics = drop.filter(t => now.has(t)); if(!topics.length) return;
