@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610051125">
-<script src="assets/gate.js?v=202610051125"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051126">
+<script src="assets/gate.js?v=202610051126"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -120,8 +120,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
     <span class="live off" id="live"><i></i><span>연결 중…</span></span>
     <button type="button" class="btn" id="refresh" aria-label="새로고침">🔄<span class="rf-t"> 새로고침</span></button>
   </div>
-  <p class="install-tip" id="installTip">📲 크롬 ⋮ → <b>홈 화면에 추가</b><br>(이미 설치됨이 뜨면 <b>바로가기 만들기</b>)</p>
-  <p class="ad-sub">방 목록은 실시간으로 바뀌어요.<br>방 안의 숫자는 열 때와 새로고침 때 읽어요.<br>이 화면은 숫자만 보여 주고 아무것도 바꾸지 않아요.</p>
+  <p class="ad-sub">이 화면은 숫자만 보여 주고 아무것도 바꾸지 않아요.</p>
 
   <div class="setup" id="setup" hidden>
     <h2>🔑 처음 한 번만<br>이 브라우저를 운영자로 등록</h2>
@@ -312,7 +311,6 @@ $('#showGone').addEventListener('change', () => render());
 document.querySelector('#rooms thead').addEventListener('click', e => { const th = e.target.closest('th'); if(!th) return; if(sortK === th.dataset.k) sortDir *= -1; else { sortK = th.dataset.k; sortDir = th.dataset.k === 'name' ? 1 : -1; } render(); });
 $('#refresh').addEventListener('click', () => { details = {}; loadDetails(sosDb()); });
 $('#copyUid').addEventListener('click', async () => { try{ await navigator.clipboard.writeText($('#myUid').textContent); $('#copyUid').textContent = '✅ 복사됨'; }catch(e){ prompt('이 번호를 복사해 주세요', $('#myUid').textContent); } });
-if(matchMedia('(display-mode: standalone)').matches || navigator.standalone) $('#installTip').hidden = true;
 start();
 </script>
 </body>
