@@ -99,15 +99,19 @@ async function pushOff(){
 }
 
 // 알림 보내기 (실패해도 앱 동작에는 영향 없음)
+// 보내는 쪽은 알림 지원이 없어도 돼요 (카카오톡 안 브라우저 등에서도 방 사람들에게는 보내요)
 async function pushNotify(topic, title, body, link, tag){
-  if(!pushSupported()) return;
-  try{ await pushApi({ action: 'notify', topic, title, body, link, tag, from: await pushMe() }); }catch(e){}
+  if(!PUSH_VAPID) return;
+  try{
+    const r = await pushApi({ action: 'notify', topic, title, body, link, tag, from: await pushMe() });
+    if(!r && pushLastError && !/429/.test(pushLastError)) pushToast('⚠️ 방 사람들에게 알림을 보내지 못했어요 (' + pushLastError.slice(0, 60) + ')');   // 베타: 원인을 화면에 보여 줘요
+  }catch(e){ pushToast('⚠️ 알림을 보내지 못했어요 (인터넷 연결 확인)'); }
 }
 const pushLink = page => `${page}?r=${ROOM.roomId}`;
 
 // --- 앱 곳곳에서 부르는 알림 ---
 async function pushNewMeet(meetId, date, slot, host){
-  if(!pushSupported() || !ROOM) return;
+  if(!PUSH_VAPID || !ROOM) return;
   // 내가 연 모임의 참석·댓글 알림을 받으려고 주최자 채널에 가입
   if(pushLS.get('sosPushOn', false)){
     const t = await meetTopic(meetId);
@@ -118,17 +122,17 @@ async function pushNewMeet(meetId, date, slot, host){
 }
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){
-  if(!pushSupported() || !ROOM || !(count >= 1)) return;
+  if(!PUSH_VAPID || !ROOM || !(count >= 1)) return;
   const crowd = count >= SOS_CROWD_AT;
   pushNotify(await roomTopic(ROOM), crowd ? `🆘 SOS가 몰렸어요 (${count}명)` : '🆘 SOS 요청이 왔어요',
     `${ROOM.name} · ${crowd ? '용기 내서 모임을 열어 볼까요?' : '누가 도움이 필요해요. 눌러서 확인해 보세요'}`, pushLink('meet.html'), 'sos-' + date + slot);
 }
 async function pushMeetJoin(o, joins){
-  if(!pushSupported() || !ROOM) return;
+  if(!PUSH_VAPID || !ROOM) return;
   pushNotify(await meetTopic(o.id), '🙋 내 모임에 참석이 늘었어요', `${ROOM.name} · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);
 }
 async function pushMeetComment(o, text){
-  if(!pushSupported() || !ROOM) return;
+  if(!PUSH_VAPID || !ROOM) return;
   pushNotify(await meetTopic(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
 }
 
