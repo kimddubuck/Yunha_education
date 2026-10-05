@@ -367,6 +367,8 @@ function gateCss(){
     #gate .g-extra details p, #gate .g-extra ol, #gate .g-extra ul{font-size:13.5px;line-height:1.6;margin:6px 0}
     #gate .g-extra input{width:100%;box-sizing:border-box;margin:6px 0}
     #gate .g-extra .g-go, #gate .g-extra .g-install{width:100%}
+    #gate .g-howto{display:block;margin:10px 0 0;padding:12px;border:2px solid var(--accent-ink,#1c7276);border-radius:14px;text-align:center;font-weight:700;color:var(--accent-ink,#1c7276);text-decoration:none}
+    #gate .g-howto small{font-weight:500;opacity:.8}
     #gate .g-guide{text-align:left;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-guide p, #gate .g-guide ol{font-size:13.5px;line-height:1.65;color:var(--fg,#22282a);margin:0 0 6px}
     #gate .g-guide ol{padding-left:20px}
@@ -429,6 +431,7 @@ const GATE_HOW_INVITE = `      <div class="g-guide">
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
         </ol>
+        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(14장)</small></a>
       </div>`;
 
 // 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
@@ -547,6 +550,7 @@ ${GATE_PASTE}
       <h1>공동육아 SOS 🆘</h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(14장)</small></a>
 ${GATE_EXTRA}
     </div>
     <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>
