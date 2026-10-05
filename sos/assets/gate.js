@@ -468,8 +468,8 @@ const GATE_EXTRA = `      <div class="g-extra">
 const GATE_PASTE = `      <div class="g-extra">
         <details class="how-to g-paste">
           <summary>🔗 초대 링크를 받았어요</summary>
-          <p>단톡방에서 받은 초대 링크를 길게 눌러 복사한 뒤 여기에 붙여넣어 주세요.<br>(아이폰에서 홈 화면 앱으로 처음 열었을 때도 여기서 들어가요)</p>
-          <input id="gateLink" aria-label="초대 링크" placeholder="초대 링크 붙여넣기" autocomplete="off">
+          <p>단톡방의 <b>초대 글을 통째로</b> 복사해서 붙여넣어도 돼요.<br>링크만 알아서 골라 바로 그 방으로 가요.<br>(아이폰에서 홈 화면 앱으로 처음 열었을 때도 여기서 들어가요)</p>
+          <input id="gateLink" aria-label="초대 링크" placeholder="초대 글이나 링크 붙여넣기" autocomplete="off">
           <button type="button" class="g-go">이 방으로 가기</button>
         </details>
       </div>`;
@@ -481,11 +481,17 @@ window.addEventListener('beforeinstallprompt', e => {
   const b = document.querySelector('#gate .g-install'); if(b) b.hidden = false;
 });
 
-// 초대 링크(또는 방 코드만)에서 방 코드를 꺼내요
+// 초대 링크(또는 방 코드만)에서 방 코드를 꺼내요. 카톡 초대 글을 통째로 붙여넣어도 링크만 골라내요
 function inviteCode(text){
   const t = String(text || '').trim();
   const m = /[?&]r=([a-z0-9]{6,20})/i.exec(t) || /^([a-z0-9]{6,20})$/i.exec(t);
   return m ? m[1].toLowerCase() : null;
+}
+// 방 코드 + (있으면) 방 이름·초대한 사람 i= 까지 → 이동할 주소
+function inviteHref(text){
+  const t = String(text || ''), code = inviteCode(t); if(!code) return null;
+  const i = /[?&]i=([A-Za-z0-9_-]{4,400})/.exec(t);
+  return 'index.html?r=' + code + (i ? '&i=' + i[1] : '');
 }
 
 // 방 고르기 화면: 초대 링크로 왔으면 비밀번호, 아니면 방 만들기 (+ 이 기기에 기억된 방 목록)
@@ -562,6 +568,9 @@ ${invite ? '' : GATE_PASTE}
   });
   const msg = t => { box.querySelector('#gateMsg').textContent = t; };
   const ni = box.querySelector('#gateNick'); if(ni) ni.value = lastNick();
+  // 붙여넣으면 링크를 찾아 바로 그 방으로 가요
+  const gl = box.querySelector('#gateLink');
+  if(gl) gl.addEventListener('paste', () => setTimeout(() => { const href = inviteHref(gl.value); if(href) location.href = href; }, 50));
   const iv = box.querySelector('.g-inv');   // 방 이름·초대한 사람은 글자로만
   if(iv){ iv.querySelector('.g-inv-name').textContent = '🏠 ' + INVITE_INFO.name; const by = iv.querySelector('.g-inv-by b'); if(by) by.textContent = INVITE_INFO.by; }
   if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;
@@ -571,9 +580,9 @@ ${invite ? '' : GATE_PASTE}
     if(e.target.closest('.g-start')){ step(2); return; }
     if(e.target.closest('.g-back')){ step(1); return; }
     if(e.target.closest('.g-go')){
-      const code = inviteCode(box.querySelector('#gateLink').value);
-      if(!code){ msg('초대 링크를 확인해 주세요. 링크 전체를 붙여넣어 주세요.'); return; }
-      location.href = 'index.html?r=' + code; return;
+      const href = inviteHref(box.querySelector('#gateLink').value);
+      if(!href){ msg('초대 링크를 찾지 못했어요. 카톡 초대 글을 통째로 붙여넣어도 돼요.'); return; }
+      location.href = href; return;
     }
     if(e.target.closest('.g-install') && gateInstall){
       gateInstall.prompt(); await gateInstall.userChoice.catch(() => {}); gateInstall = null; e.target.closest('.g-install').hidden = true; return;
