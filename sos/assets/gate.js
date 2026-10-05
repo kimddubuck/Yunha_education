@@ -127,6 +127,8 @@ function sosReady(){
     let snap;
     try{ snap = await mine.get(); }catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
     if(snap.exists && snap.data().on === false){
+      rememberKicked(ROOM);   // '내 정보 모두 지우기' 때 이 방의 닉네임도 지울 수 있게 기억해 둬요
+      try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
       forgetRoom(ROOM.roomId);
       alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n\n다시 들어가려면 방장에게 '다시 들어올 수 있게 허용'을 부탁해 주세요.\n허용되면 초대 링크로 다시 들어올 수 있어요.`);
       location.href = 'index.html'; return new Promise(() => {});
@@ -174,6 +176,7 @@ async function sosBecomeOwner(){
   await roomRef().update({ou: ME.uid, oh: await sha256Hex(k), po: firebase.firestore.FieldValue.delete()});
   ROOM.owner = k; rememberRoom(ROOM);
   ME.ou = ME.uid; ME.po = ''; ME.owner = true;
+  document.dispatchEvent(new Event('sos:owner'));   // 홈의 '방 지우기 / 방 빼기' 버튼이 다시 계산해요
 }
 // 방장이 떠났는지 (멤버에서 나갔거나 60일 넘게 안 들어옴). 서버 규칙(ownerGone)과 같은 기준
 const OWNER_GONE_DAYS = 60;
@@ -194,9 +197,17 @@ async function sosShareApp(){
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-share')){ e.preventDefault(); e.stopPropagation(); sosShareApp(); } }, true);
 // 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
 //  SOS 요청·참석 표시는 날짜가 지나고 7일 뒤 자동으로 지워져요
+//  내보내진 방은 문서를 지울 수 없어서(다시 들어오는 걸 막으려고 남겨 둬요) 닉네임만 '(정보 지움)'으로 바꿔요
+const KICKED_KEY = 'sosKicked';
+function rememberKicked(room){ try{ localStorage.setItem(KICKED_KEY, JSON.stringify([{roomId: room.roomId, key: room.key}, ...sosKicked().filter(r => r.roomId !== room.roomId)].slice(0, 20))); }catch(e){} }
+function sosKicked(){ try{ return JSON.parse(localStorage.getItem(KICKED_KEY) || '[]'); }catch(e){ return []; } }
 async function sosDeleteMe(){
   const user = await sosAuth(), db = sosDb();
-  if(user && db) for(const r of sosRooms()){ try{ await db.collection('rooms').doc(r.key).collection('members').doc(user.uid).delete(); }catch(e){} }
+  if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
+    const me = db.collection('rooms').doc(r.key).collection('members').doc(user.uid);
+    try{ await me.delete(); }
+    catch(e){ try{ await me.update({nick: '(정보 지움)'}); }catch(err){} }
+  }
   try{ if(typeof pushOff === 'function') await pushOff(); }catch(e){}
   try{ if(user) await user.delete(); }catch(e){ try{ await firebase.auth().signOut(); }catch(err){} }
   try{ localStorage.clear(); sessionStorage.clear(); }catch(e){}
@@ -204,6 +215,7 @@ async function sosDeleteMe(){
 // 이 방에서 나가기: 내 닉네임을 멤버에서 빼고 이 휴대폰 목록에서도 빼요
 async function sosLeaveRoom(){
   try{ if(await sosReady()) await roomRef().collection('members').doc(ME.uid).delete(); }catch(e){}
+  try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
   forgetRoom(ROOM.roomId);
 }
 
@@ -222,22 +234,49 @@ function sosMembers(fresh){
 //  2) 방장 열쇠(owner)를 보내 '지워짐' 표시 + 방 이름 비우기 (서버의 지문 oh 와 맞아야 함)
 //  3) 모아 둔 기록을 서버에서 실제로 지워요 (서버 규칙: 지워진 방의 기록만 지울 수 있음)
 //  예전에 열쇠 없이 만든 방은 들어온 사람 누구나 지울 수 있어요.
+//  중간에 인터넷이 끊겨도 괜찮아요: 지울 목록을 이 휴대폰에 적어 두고, 다시 누르거나 다음에 앱을 열 때 이어서 지워요
+//  ('지워짐' 표시 뒤에는 방 안을 다시 읽을 수 없어서, 목록은 표시 전에 모아 둬요)
+const DEL_KEY = 'sosDelPending';
+const pendingDeletes = () => { try{ return JSON.parse(localStorage.getItem(DEL_KEY) || '[]'); }catch(e){ return []; } };
+function setPendingDelete(roomId, job){ try{ localStorage.setItem(DEL_KEY, JSON.stringify([...pendingDeletes().filter(j => j.roomId !== roomId), ...(job ? [job] : [])])); }catch(e){} }
 async function deleteRoom(){
   const db = sosDb(); if(!db || !ROOM) throw new Error('offline');
-  const room = db.collection('rooms').doc(ROOM.key), refs = [];
-  const ops = await room.collection('opinions').get();
-  for(const d of ops.docs){
-    refs.push(d.ref);
-    (await d.ref.collection('comments').get()).docs.forEach(c => refs.push(c.ref));
+  const room = db.collection('rooms').doc(ROOM.key);
+  let job = pendingDeletes().find(j => j.roomId === ROOM.roomId);
+  if(!job){
+    const paths = [];
+    const ops = await room.collection('opinions').get();
+    for(const d of ops.docs){
+      paths.push(d.ref.path);
+      (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path));
+    }
+    for(const name of ['sos', 'plays', 'reports', 'members']) (await room.collection(name).get()).docs.forEach(d => paths.push(d.ref.path));
+    paths.push(room.collection('private').doc('owner').path);
+    job = {roomId: ROOM.roomId, key: ROOM.key, k: ROOM.owner || '', paths, marked: false};
+    setPendingDelete(ROOM.roomId, job);
   }
-  for(const name of ['sos', 'plays', 'members']) (await room.collection(name).get()).docs.forEach(d => refs.push(d.ref));
-  refs.push(room.collection('private').doc('owner'));
-  await room.update({deleted: true, name: '', k: ROOM.owner || ''});
+  await runPendingDelete(db, job);
   forgetRoom(ROOM.roomId);
-  for(let i = 0; i < refs.length; i += 400){
-    const batch = db.batch(); refs.slice(i, i + 400).forEach(r => batch.delete(r)); await batch.commit();
-  }
 }
+async function runPendingDelete(db, job){
+  const room = db.collection('rooms').doc(job.key);
+  if(!job.marked){
+    // 이미 '지워짐' 표시가 됐으면(지난번에 표시 직후 끊김) 건너뛰어요
+    const snap = await room.get();
+    if(!(snap.exists && snap.data().deleted === true)) await room.update({deleted: true, name: '', k: job.k});
+    job.marked = true; setPendingDelete(job.roomId, job);
+  }
+  while(job.paths.length){
+    const batch = db.batch(); job.paths.slice(0, 400).forEach(p => batch.delete(db.doc(p))); await batch.commit();
+    job.paths = job.paths.slice(400); setPendingDelete(job.roomId, job);
+  }
+  setPendingDelete(job.roomId, null);
+}
+// 지난번에 다 못 지운 방이 있으면, 앱을 열 때 조용히 이어서 지워요
+window.addEventListener('load', () => {
+  const jobs = pendingDeletes(); if(!jobs.length) return;
+  setTimeout(async () => { const db = sosDb(); if(!db) return; for(const j of jobs){ try{ await runPendingDelete(db, j); }catch(e){} } }, 5000);
+});
 
 // 들어와 있는 방이 지워졌으면 이 휴대폰에서도 빼고 알려 줘요
 window.addEventListener('load', async () => {
@@ -246,7 +285,10 @@ window.addEventListener('load', async () => {
   try{ if(sessionStorage.getItem(checked)) return; sessionStorage.setItem(checked, '1'); }catch(e){}
   try{
     const snap = await db.collection('rooms').doc(ROOM.key).get();
-    if(roomGone(snap)){ forgetRoom(ROOM.roomId); alert(`'${ROOM.name}' 방은 방장이 지웠어요.`); location.href = 'index.html'; }
+    if(roomGone(snap)){
+      try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}
+      forgetRoom(ROOM.roomId); alert(`'${ROOM.name}' 방은 방장이 지웠어요.`); location.href = 'index.html';
+    }
   }catch(e){ /* 인터넷 문제: 그냥 둬요 */ }
 });
 
@@ -603,16 +645,22 @@ ${invite ? '' : GATE_PASTE}
     roomCounts(room).then(c => {
       const chips = b.querySelector('.g-chips');
       if(!c) return;
-      if(c.gone){ chips.innerHTML = '<span class="g-chip gone">지워진 방</span>'; forgetRoom(room.roomId); b.disabled = true; return; }
+      if(c.gone){ chips.innerHTML = '<span class="g-chip gone">지워진 방</span>'; forgetRoom(room.roomId); b.disabled = true; if(typeof pushDropRoom === 'function') pushDropRoom(room).catch(() => {}); return; }
       chips.innerHTML = (c.sos ? `<span class="g-chip sos">🆘 ${c.sos}</span>` : '') + (c.meet ? `<span class="g-chip meet">🙌 ${c.meet}</span>` : '')
         || '<span class="g-chip quiet">조용해요</span>';
     });
   });
   const msg = t => { box.querySelector('#gateMsg').textContent = t; };
   const ni = box.querySelector('#gateNick'); if(ni) ni.value = lastNick();
-  // 붙여넣으면 링크를 찾아 바로 그 방으로 가요
+  // 붙여넣으면 링크를 찾아 바로 그 방으로 가요 (키보드의 클립보드 칩으로 넣어도 input 이벤트로 잡아요)
+  //  엔터(이동 키)를 누르면 '방 만들기'가 아니라 '이 방으로 가기'예요
   const gl = box.querySelector('#gateLink');
-  if(gl) gl.addEventListener('paste', () => setTimeout(() => { const href = inviteHref(gl.value); if(href) location.href = href; }, 50));
+  if(gl){
+    const jump = () => { const href = inviteHref(gl.value); if(href) location.href = href; };
+    gl.addEventListener('paste', () => setTimeout(jump, 50));
+    gl.addEventListener('input', () => { if(/[?&]r=/.test(gl.value)) jump(); });
+    gl.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); box.querySelector('.g-go').click(); } });
+  }
   const iv = box.querySelector('.g-inv');   // 방 이름·초대한 사람은 글자로만
   if(iv){ iv.querySelector('.g-inv-name').textContent = '🏠 ' + INVITE_INFO.name; const by = iv.querySelector('.g-inv-by b'); if(by) by.textContent = INVITE_INFO.by; }
   if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;

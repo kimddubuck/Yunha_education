@@ -39,8 +39,12 @@ self.addEventListener('notificationclick', e => {
   e.notification.close();
   const url = new URL(e.notification.data && e.notification.data.link || 'index.html', self.registration.scope).href;
   e.waitUntil((async () => {
+    // 앱 화면(홈·SOS 달력)이 열려 있으면 그 창을 옮겨서 보여 주고, 다른 페이지(사용법 등)만 열려 있으면 새 창으로 열어요
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const w of wins) { if ('focus' in w) { await w.navigate(url).catch(() => {}); return w.focus(); } }
+    const app = wins.filter(w => 'focus' in w && /(\/|index\.html|meet\.html)(\?.*)?$/.test(new URL(w.url).pathname + new URL(w.url).search));
+    for (const w of app) {
+      try { const moved = await w.navigate(url); if (moved) return moved.focus(); } catch (err) { /* 이 창은 못 옮겨요 → 다음 창 */ }
+    }
     return self.clients.openWindow(url);
   })());
 });

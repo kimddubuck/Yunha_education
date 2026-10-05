@@ -51,6 +51,17 @@ function sosTrouble(err){
 
 // 오늘 날짜를 YYYY-MM-DD로 (기기 시간 기준)
 function todayStr(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+/* 자정이 지나면 '오늘'이 바뀌어요: 켜 둔 화면은 어제 기준이라, 날짜가 바뀌면 새로고침해요.
+   글을 쓰는 중이면 방해하지 않고, 화면을 다시 볼 때(앱으로 돌아올 때) 새로고침해요. */
+(function dayRollover(){
+  const day0 = todayStr();
+  const typing = () => { const a = document.activeElement; return !!(a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.value); };
+  const check = () => { if(todayStr() === day0) return; if(!typing() && !document.hidden) location.reload(); else setTimeout(check, 60000); };
+  const midnight = () => { const d = new Date(); d.setHours(24, 0, 1, 0); setTimeout(check, Math.min(d - Date.now(), 2 ** 31 - 1)); };
+  midnight();
+  document.addEventListener('visibilitychange', check);
+  window.addEventListener('focus', check);
+})();
 // 글 올린 시각 (아직 서버 시각이 안 붙었으면 '방금')
 function fmtTime(ts){
   if(!ts || !ts.toDate) return '방금';
@@ -163,9 +174,16 @@ function createPicker(root, opts = {}){
     root.querySelector('.cal-title').textContent = sm === em ? `${start.getFullYear()}.${String(sm).padStart(2,'0')}` : `${sm}월 ~ ${em}월`;
     root.querySelectorAll('.cal-nav').forEach(b => { b.hidden = true; });
     root.querySelector('.cal-grid').innerHTML = html;
+    // 오늘의 지난 시간은 고를 수 없어요 (골라 뒀던 게 지나가면 자동으로 빠져요)
+    if(st.date === today){
+      const gone = h => parseInt(h) < new Date().getHours();
+      if(opts.multi && st.slots.some(gone)){ st.slots = st.slots.filter(h => !gone(h)); st.slot = st.slots[0] || null; }
+      else if(!opts.multi && st.slot && gone(st.slot)) st.slot = null;
+    }
     root.querySelector('.time-grid').innerHTML = HOURS.map(h => {
       const n = opts.hourBadge ? opts.hourBadge(st.date, h + '시') : 0;
-      return `<button type="button" class="time-btn" data-slot="${h}시" aria-pressed="${opts.multi ? st.slots.includes(h+'시') : st.slot===h+'시'}">${h}:00${n ? `<small>${n}명</small>` : ''}</button>`;
+      const gone = st.date === today && h < new Date().getHours();
+      return `<button type="button" class="time-btn" data-slot="${h}시" ${gone ? 'disabled' : ''} aria-pressed="${opts.multi ? st.slots.includes(h+'시') : st.slot===h+'시'}">${h}:00${n ? `<small>${n}명</small>` : ''}</button>`;
     }).join('');
     root.querySelector('.picked-when').textContent = st.date ? (opts.whenText ? opts.whenText(st) : `${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''}`) : '';
   }
@@ -175,6 +193,7 @@ function createPicker(root, opts = {}){
     const d = e.target.closest('[data-date]');
     if(d && !d.disabled){ st.date = d.dataset.date; if(opts.multi){ st.slots = []; st.slot = null; } render(); opts.onChange && opts.onChange(st); return; }
     const t = e.target.closest('[data-slot]');
+    if(t && t.disabled) return;
     if(t && opts.multi){   // 누를 때마다 넣었다 뺐다
       const v = t.dataset.slot;
       st.slots = st.slots.includes(v) ? st.slots.filter(x => x !== v) : [...st.slots, v].sort((a,b) => parseInt(a) - parseInt(b));
@@ -416,12 +435,15 @@ function sosReport(kind, mid, cid){
   // 🗑 방 지우기(방장) / 이 휴대폰에서 방 빼기(초대받은 사람)
   const lv = document.querySelector('[data-leave]');
   if(lv){
-    // 방장(이 휴대폰에서 만든 방)이거나, 방장 열쇠 없이 만든 예전 방이면 지울 수 있어요
-    let canDelete = !!ROOM.owner;
+    // 서버가 아는 방장(ME.owner)만 지울 수 있어요. 방장 열쇠 없이 만든 예전 방은 들어온 사람 누구나.
+    //  (이 휴대폰에 방장 열쇠가 남아 있어도, 방장을 넘겼으면 더 이상 못 지워요 → '방 빼기'로 바뀌어요)
+    let canDelete = !!ROOM.owner, noKey = false;
     const label = () => { lv.textContent = canDelete ? '🗑 방 지우기' : '🚪 이 휴대폰에서 방 빼기'; };
+    const decide = () => { canDelete = noKey || (ME.owner && !!ROOM.owner); label(); };
     label();
     const r = roomRef();
-    if(r && !canDelete) r.get().then(d => { if(d.exists && !d.data().oh){ canDelete = true; label(); } }).catch(() => {});
+    if(r) r.get().then(d => { noKey = d.exists && !d.data().oh; }).catch(() => {}).then(() => sosReady()).then(decide).catch(() => {});
+    document.addEventListener('sos:owner', decide);   // 방장을 넘겨받은 직후
     lv.addEventListener('click', async () => {
       if(!canDelete){
         const yes = await sosConfirm({icon: '🚪', title: `이 휴대폰에서 '${ROOM.name}' 방을 뺄까요?`,
@@ -434,7 +456,15 @@ function sosReport(kind, mid, cid){
       if(!yes) return;
       lv.disabled = true; lv.textContent = '지우는 중…';
       try{ await deleteRoom(); await sosConfirm({icon: '🗑', title: '방을 지웠어요.', body: '<p>기록도 모두 지웠어요.</p>', ok: '확인'}); location.href = 'index.html'; }
-      catch(e){ lv.disabled = false; lv.textContent = '🗑 방 지우기'; sosConfirm({icon: '😢', title: '지우지 못했어요.', body: '<p>인터넷 연결을 확인하고 다시 눌러 주세요.</p>', ok: '확인'}); }
+      catch(e){
+        lv.disabled = false; label();
+        // 서버가 거절했으면 그 사이 방장이 바뀐 것: 이 휴대폰의 방장 열쇠는 더 이상 안 맞아요
+        if(e && e.code === 'permission-denied'){
+          try{ const d = await roomRef().get(); if(d.exists && d.data().ou && d.data().ou !== ME.uid){ ROOM.owner = ''; rememberRoom(ROOM); ME.owner = false; decide(); } }catch(err){}
+          sosConfirm({icon: '👑', title: '방장이 바뀌어서 지울 수 없어요.', body: '<p>방장을 다른 멤버에게 넘겼어요. 지우려면 새 방장에게 부탁해 주세요.</p>', ok: '확인'});
+        }
+        else sosConfirm({icon: '😢', title: '지우지 못했어요.', body: '<p>인터넷 연결을 확인하고 다시 눌러 주세요.<br>다시 누르면 지우던 데서 이어서 지워요.</p>', ok: '확인'});
+      }
     });
   }
   const sw = document.querySelector('[data-rooms]');

@@ -79,34 +79,66 @@ async function pushSync(ask){
   const mine = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x)
     .filter(x => !x.room || pushRoomOn(x.room)).map(x => x.t);
   const all = [...new Set([...want, ...mine])];
-  const done = pushLS.get('sosPushTopics:' + token.slice(-12), []);
+  const doneKey = 'sosPushTopics:' + token.slice(-12), done = pushLS.get(doneKey, []);
   const add = all.filter(t => !done.includes(t)), remove = done.filter(t => !all.includes(t));
-  if(add.length){ pushStep('④ 우리 방 알림 채널에 가입 중…'); const r = await withTimeout(pushApi({ action: 'subscribe', token, topics: add.slice(0, 20) }), 30000, '알림 채널 가입'); if(!r) return false; }
-  if(remove.length) await pushApi({ action: 'unsubscribe', token, topics: remove.slice(0, 20) });
-  pushLS.set('sosPushTopics:' + token.slice(-12), all);
-  pushLS.set('sosPushOn', true);
-  return true;
+  // 장부(done)에는 서버가 실제로 받아 준 채널만 적어요. 실패한 건 다음에 다시 해요 (20개씩 나눠 보내요)
+  const now = new Set(done);
+  let ok = true;
+  if(add.length) pushStep('④ 우리 방 알림 채널에 가입 중…');
+  for(const part of chunks(add, 20)){
+    const r = await withTimeout(pushApi({ action: 'subscribe', token, topics: part }), 30000, '알림 채널 가입');
+    if(!r){ ok = false; break; }
+    part.forEach(t => now.add(t));
+  }
+  for(const part of chunks(remove, 20)){
+    const r = await pushApi({ action: 'unsubscribe', token, topics: part }).catch(() => null);
+    if(!r){ ok = false; continue; }   // 해지 못한 채널은 장부에 남겨 두고 다음에 다시 해지해요
+    part.forEach(t => now.delete(t));
+  }
+  pushLS.set(doneKey, [...now]);
+  if(ok) pushLS.set('sosPushOn', true);
+  return ok;
 }
+const chunks = (a, n) => { const out = []; for(let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n)); return out; };
 async function pushOff(){
   const token = pushLS.get('sosPushToken', '');
   if(token){
     const done = pushLS.get('sosPushTopics:' + token.slice(-12), []);
-    if(done.length) await pushApi({ action: 'unsubscribe', token, topics: done.slice(0, 20) }).catch(() => {});
-    try{ sosDb(); await firebase.messaging().deleteToken(); }catch(e){}
+    for(const part of chunks(done, 20)) await pushApi({ action: 'unsubscribe', token, topics: part }).catch(() => {});
+    try{ sosDb(); await firebase.messaging().deleteToken(); }catch(e){}   // 토큰을 지우면 남은 채널로도 알림이 안 와요
     pushLS.set('sosPushTopics:' + token.slice(-12), []);
   }
   pushLS.set('sosPushToken', ''); pushLS.set('sosPushOn', false);
 }
+// 방에서 나가거나(방 빼기), 내보내졌거나, 방이 지워졌을 때: 그 방의 채널(방 전체 + 내가 연 모임)에서 바로 빠져요
+//  (gate.js 가 방을 목록에서 빼기 전에 불러요. 마지막 방이라 ROOM 이 없어져도 알림이 계속 오지 않게)
+async function pushDropRoom(room){
+  if(!PUSH_VAPID || !room) return;
+  const token = pushLS.get('sosPushToken', ''); if(!token) return;
+  const meets = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x);
+  pushLS.set('sosPushMeetTopics', meets.filter(x => x.room !== room.roomId));
+  const drop = [await roomTopic(room), ...meets.filter(x => x.room === room.roomId).map(x => x.t)];
+  const doneKey = 'sosPushTopics:' + token.slice(-12), now = new Set(pushLS.get(doneKey, []));
+  const topics = drop.filter(t => now.has(t)); if(!topics.length) return;
+  const r = await withTimeout(pushApi({ action: 'unsubscribe', token, topics }), 15000, '알림 채널 해지').catch(() => null);
+  if(r){ topics.forEach(t => now.delete(t)); pushLS.set(doneKey, [...now]); }
+}
 
 // 알림 보내기 (실패해도 앱 동작에는 영향 없음)
 // 보내는 쪽은 알림 지원이 없어도 돼요 (카카오톡 안 브라우저 등에서도 방 사람들에게는 보내요)
-async function pushNotify(topic, title, body, link, tag){
-  if(!PUSH_VAPID) return;
+//  - 서버가 '이 방의 멤버가 맞는지' 확인해요: 내 로그인 증표(idToken)와 방 열쇠를 함께 보내고, 채널 이름은 서버가 만들어요
+//    (방에서 내보내진 사람은 방 열쇠를 알아도 알림을 보낼 수 없어요)
+//  - to: {kind: 'room'} = 방 전체 채널, {kind: 'meet', meetId} = 모임 주최자 채널
+async function pushNotify(to, title, body, link, tag){
+  if(!PUSH_VAPID || !ROOM) return;
   try{
-    const r = await pushApi({ action: 'notify', topic, title, body, link, tag, from: await pushMe() });
+    const user = await sosAuth(); if(!user) return;
+    const idToken = await user.getIdToken();
+    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', title, body, link, tag, from: await pushMe() });
     if(!r && pushLastError && !/429/.test(pushLastError)) pushToast('⚠️ 방 사람들에게 알림을 보내지 못했어요 (' + pushLastError.slice(0, 60) + ')');   // 베타: 원인을 화면에 보여 줘요
   }catch(e){ pushToast('⚠️ 알림을 보내지 못했어요 (인터넷 연결 확인)'); }
 }
+const TO_ROOM = {kind: 'room'}, toMeet = meetId => ({kind: 'meet', meetId});
 const pushLink = page => `${page}?r=${ROOM.roomId}`;
 
 // --- 앱 곳곳에서 부르는 알림 ---
@@ -118,22 +150,22 @@ async function pushNewMeet(meetId, date, slot, host){
     pushLS.set('sosPushMeetTopics', [...pushLS.get('sosPushMeetTopics', []), {t, room: ROOM.roomId}].slice(-30));
     pushSync(false).catch(() => {});
   }
-  pushNotify(await roomTopic(ROOM), '🙌 새 모임이 열렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'meet-' + meetId);
+  pushNotify(TO_ROOM, '🙌 새 모임이 열렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'meet-' + meetId);
 }
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){
   if(!PUSH_VAPID || !ROOM || !(count >= 1)) return;
   const crowd = count >= SOS_CROWD_AT;
-  pushNotify(await roomTopic(ROOM), crowd ? `🆘 SOS가 몰렸어요 (${count}명)` : '🆘 SOS 요청이 왔어요',
+  pushNotify(TO_ROOM, crowd ? `🆘 SOS가 몰렸어요 (${count}명)` : '🆘 SOS 요청이 왔어요',
     `${ROOM.name} · ${crowd ? '용기 내서 모임을 열어 볼까요?' : '누가 도움이 필요해요. 눌러서 확인해 보세요'}`, pushLink('meet.html'), 'sos-' + date + slot);
 }
 async function pushMeetJoin(o, joins){
   if(!PUSH_VAPID || !ROOM) return;
-  pushNotify(await meetTopic(o.id), '🙋 내 모임에 참석이 늘었어요', `${ROOM.name} · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);
+  pushNotify(toMeet(o.id), '🙋 내 모임에 참석이 늘었어요', `${ROOM.name} · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);
 }
 async function pushMeetComment(o, text){
   if(!PUSH_VAPID || !ROOM) return;
-  pushNotify(await meetTopic(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
+  pushNotify(toMeet(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
 }
 
 // 🔔 테스트 알림: 이 휴대폰에만 서버를 거쳐 알림을 보내 봐요 (휴대폰 → 우리 서버 → Google → 휴대폰, 전체 길 확인)
@@ -243,7 +275,8 @@ async function pushBellClick(btn){
   try{
     if(wasOn){
       pushSetRoom(id, false);
-      pushToast((await pushSync(false)) ? '🔕 이 방 알림을 껐어요' : '저장하지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if(await pushSync(false)) pushToast('🔕 이 방 알림을 껐어요');
+      else{ pushSetRoom(id, true); pushToast('끄지 못했어요. 잠시 뒤 다시 해 주세요.'); }   // 서버가 못 받았으면 켜진 상태로 되돌려요
     }else{
       // 처음 켤 때는 누른 방만 켜요 (다른 방은 각자 🔕 를 눌러 켜요)
       if(allOff) pushLS.set('sosPushMuted', sosRooms().map(r => r.roomId).filter(x => x !== id));
@@ -269,8 +302,8 @@ document.addEventListener('click', e => {
 
 // 홈 제목 옆 종 + 앱을 열 때 할 일
 (function pushOnLoad(){
-  if(!ROOM) return;
   if(navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});   // 앱을 열면 아이콘 숫자 지우기
-  const slot = document.getElementById('titleBell'); if(slot) slot.innerHTML = pushBell(ROOM.roomId);
-  if(pushLS.get('sosPushOn', false)) pushSync(false).catch(() => {});   // 새로 들어간 방이 있으면 채널 맞추기
+  const slot = ROOM && document.getElementById('titleBell'); if(slot) slot.innerHTML = pushBell(ROOM.roomId);
+  // 새로 들어간 방이 있으면 채널 맞추기. 방을 다 나가서 ROOM 이 없어도, 남은 채널은 여기서 해지돼요
+  if(pushLS.get('sosPushOn', false)) pushSync(false).catch(() => {});
 })();

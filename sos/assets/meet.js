@@ -188,6 +188,7 @@ $('#meetForm').addEventListener('submit', async e => {
   // 양식 칸(장소:/시간:/놀이:)만 남아 있으면 빈 글로 봐요
   if(!date || date < todayStr() || date > lastBookDay()){ $('#meetMsg').textContent = '오늘부터 1주일 안의 날짜를 골라 주세요.'; return; }
   if(!meetPicker.state.slot){ $('#meetMsg').textContent = '시간을 골라 주세요.'; return; }
+  if(date === todayStr() && parseInt(meetPicker.state.slot) < new Date().getHours()){ meetPicker.render(); $('#meetMsg').textContent = '지난 시간이에요. 시간을 다시 골라 주세요.'; return; }
   if(!host){ $('#meetMsg').textContent = '닉네임을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.'; return; }
   if(!text.replace(/^(장소|시간|놀이):/gm, '').trim()){ $('#meetMsg').textContent = '장소나 놀이를 적어 주세요.'; return; }
   if(!meet.col) return;

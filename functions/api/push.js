@@ -3,11 +3,13 @@
    - 채널(topic) 이름은 방 열쇠로 만든 해시라서, 방 비밀번호를 아는 사람만 알 수 있어요.
      r + 40자 = 방 전체 채널, m + 40자 = 모임 주최자 채널
    - 비밀 열쇠(서비스 계정 JSON)는 Cloudflare 설정의 비밀 변수 GOOGLE_SA 에만 있어요. 코드·저장소에는 없어요.
-   - 이름·전화번호는 받지도 보내지도 않아요. 알림 문구와 휴대폰 알림 주소(토큰)만 다뤄요. */
+   - 이름·전화번호는 받지도 보내지도 않아요. 알림 문구와 휴대폰 알림 주소(토큰)만 다뤄요.
+   - 알림 보내기(notify)는 그 방의 멤버만: 앱이 보낸 로그인 증표로 Firestore 멤버 문서를 확인해요 (isMember). */
 
 const TOPIC = /^[rm][0-9a-f]{40}$/;
 const TOKEN = /^[A-Za-z0-9_:\-.]{100,4096}$/;
 const LINK = /^(index|meet)\.html\?r=[a-z0-9]{6,20}$/;
+const KEY = /^[0-9a-f]{64}$/, UID = /^[A-Za-z0-9]{10,128}$/, IDTOKEN = /^[A-Za-z0-9_\-.]{100,4096}$/, MEET_ID = /^[A-Za-z0-9]{1,40}$/;
 const LIMIT = 6, WINDOW_MIN = 10;   // 채널마다 10분에 6번까지만 (알림 폭탄 방지)
 
 let cached = null;   // Google 출입증(access token)은 50분 동안 다시 써요
@@ -58,16 +60,26 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: true });
     }
 
+    // 📣 방 사람들에게 알림: 보내는 사람이 '그 방의 멤버'인지 먼저 확인해요
+    //  - 앱이 보낸 로그인 증표(idToken)로 Firestore 에서 rooms/{방 열쇠}/members/{uid} 를 읽어 봐요 (보안 규칙이 본인 것만 허용)
+    //  - 문서가 있고 on == true 여야 멤버. 내보내진 사람(on == false)이나 방 열쇠만 아는 사람은 보낼 수 없어요
+    //  - 채널 이름은 서버가 방 열쇠로 만들어요 (앱이 아무 채널이나 고를 수 없게)
     if (b.action === 'notify') {
       const title = String(b.title || '').slice(0, 40), body = String(b.body || '').slice(0, 120);
-      if (!TOPIC.test(b.topic || '') || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
-      if (!(await allow(b.topic))) return json({ error: 'rate_limited' }, 429);
+      const kind = b.kind === 'meet' ? 'meet' : b.kind === 'room' ? 'room' : '';
+      if (!KEY.test(b.key || '') || !UID.test(b.uid || '') || !IDTOKEN.test(b.idToken || '') || !kind
+        || (kind === 'meet' && !MEET_ID.test(b.meetId || '')) || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
+      if (!(await isMember(sa.project_id, b.key, b.uid, b.idToken))) return json({ error: 'not_member' }, 403);
+      const topic = kind === 'room' ? 'r' + (await sha256(`push:${b.key}`)).slice(0, 40) : 'm' + (await sha256(`push:${b.key}:${b.meetId}`)).slice(0, 40);
+      const tag = String(b.tag || 'sos').slice(0, 60);
+      // SOS 요청 알림과 그 밖의 알림(새 모임 등)은 횟수를 따로 세요 — SOS를 여러 번 눌러도 '새 모임' 알림이 밀리지 않게
+      if (!(await allow(topic + (tag.startsWith('sos-') ? ':sos' : '')))) return json({ error: 'rate_limited' }, 429);
       const at = await accessToken(sa);
-      const data = { title, body, link: b.link, tag: String(b.tag || 'sos').slice(0, 60), sender: String(b.from || '').slice(0, 32) };
+      const data = { title, body, link: b.link, tag, sender: String(b.from || '').slice(0, 32) };
       const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: { topic: b.topic, webpush: { headers: { Urgency: 'high', TTL: '86400' }, data } } })
+        body: JSON.stringify({ message: { topic, webpush: { headers: { Urgency: 'high', TTL: '86400' }, data } } })
       });
       if(!r.ok){ const j = await r.json().catch(() => ({})); return json({ error: 'send_failed', detail: `fcm_${r.status} ${JSON.stringify(j.error && j.error.message || '').slice(0, 120)}` }, 502); }
       return json({ ok: true });
@@ -76,6 +88,19 @@ export async function onRequestPost({ request, env }) {
   } catch (e) {
     return json({ error: 'server', detail: String(e && e.message || e).slice(0, 200) }, 500);
   }
+}
+
+// 보내는 사람이 그 방의 멤버인지: 본인의 로그인 증표로 본인 멤버 문서를 읽어요 (Firestore 보안 규칙이 남의 증표·남의 문서는 막아요)
+async function isMember(project, key, uid, idToken) {
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/rooms/${key}/members/${uid}`, {
+    headers: { Authorization: `Bearer ${idToken}` }
+  });
+  if (!r.ok) return false;
+  const j = await r.json().catch(() => ({}));
+  return !!(j.fields && j.fields.on && j.fields.on.booleanValue === true);
+}
+async function sha256(t) {
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
 function json(o, status = 200) {
