@@ -445,15 +445,52 @@ function sosReport(kind, mid, cid){
 (function membersButton(){
   const btn = document.querySelector('[data-members]'); if(!btn || !ROOM) return;
   const load = fresh => sosMembers(fresh).then(list => { btn.querySelector('b').textContent = list.length || '…'; return list; });
-  load(false);
+  // 방장이 나를 지목했으면, 앱을 열 때 한 번 물어봐요
+  load(false).then(list => { if(ME.po && ME.po === ME.uid) askAccept(list); });
   btn.addEventListener('click', async () => open(await load(false)));
+  const nickOf = (list, uid) => (list.find(m => m.uid === uid) || {}).nick || '';
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ago = m => {
+    const t = m.seen || m.joinedAt; if(!t || !t.toMillis) return '';
+    const d = Math.floor((Date.now() - t.toMillis()) / 864e5);
+    return d < 1 ? '오늘' : d < 2 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d / 30)}달 전` : '1년 넘게 전';
+  };
+  const sleepy = m => { const t = m.seen || m.joinedAt; return !!(t && t.toMillis && Date.now() - t.toMillis() > OWNER_GONE_DAYS * 864e5); };
+  async function becomeOwner(list, how){
+    try{
+      await sosBecomeOwner();
+      typeof pushToast === 'function' && pushToast('👑 이제 내가 방장이에요');
+      open(await load(true));
+    }catch(err){ sosConfirm({icon: '😢', title: '방장이 되지 못했어요.', body: `<p>${how === 'take' ? '방장이 그 사이 다시 들어왔을 수 있어요. ' : ''}보안 규칙을 새로 게시했는지도 확인해 주세요.</p>`, ok: '확인'}); }
+  }
+  // 확인 창 안의 <b class="mem-n"> 에 닉네임을 글자로만 넣어요
+  const confirmNick = (opts, nick) => { const p = sosConfirm(opts); document.querySelectorAll('.pop-back .mem-n').forEach(el => { el.textContent = nick; }); return p; };
+  async function askAccept(list){
+    const yes = await confirmNick({icon: '👑', title: '방장을 넘겨받을까요?', ok: '받기',
+      body: '<p><b class="mem-n"></b> 님이<br>나에게 방장을 넘기려고 해요.</p><ul><li>멤버 관리·방 지우기를 내가 해요.</li><li>다른 멤버에게 다시 넘길 수 있어요.</li></ul>'}, nickOf(list, ME.ou) || '방장');
+    if(yes) return becomeOwner(list, 'accept');
+    const no = await sosConfirm({icon: '🙅', title: '거절할까요?', body: '<p>거절하면 방장은 그대로예요. 나중에 다시 받으려면 방장에게 다시 넘겨 달라고 해 주세요.</p>', ok: '거절하기'});
+    if(no){ try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; }catch(e){} }
+  }
+  // 👑 방장 칸: 방장은 넘기기(또는 넘기는 중 취소), 지목받은 사람은 받기, 방장이 떠난 방이면 이어받기
+  function ownerBox(list){
+    if(ME.owner){
+      if(ME.po) return `<div class="mem-own-box"><p><b>👑 방장 넘기는 중</b><br><small><b class="mem-n" data-n="${ME.po}"></b> 님이 앱을 열면 받을지 물어봐요.<br>받기 전까지는 내가 방장이에요.</small></p><button type="button" class="mem-kick" data-po-cancel>넘기기 취소</button></div>`;
+      return list.length > 1 ? '<button type="button" class="btn block mem-renick" data-handoff>👑 방장 넘기기</button>' : '';
+    }
+    if(ME.po && ME.po === ME.uid) return '<div class="mem-own-box"><p><b>👑 방장을 넘겨받을 차례예요</b><br><small>방장이 나를 다음 방장으로 골랐어요.</small></p><button type="button" class="mem-kick mem-allow" data-accept>방장 받기</button></div>';
+    if(sosOwnerGone(list)) return `<div class="mem-own-box"><p>${list.some(m => m.uid === ME.ou) ? `<b>👑 방장이 오래 안 들어왔어요</b><br><small>${OWNER_GONE_DAYS}일 넘게 접속이 없어서<br>멤버 누구나 방장을 이어받을 수 있어요.</small>` : '<b>👑 방장이 방에서 나갔어요</b><br><small>멤버 누구나 방장을 이어받을 수 있어요.</small>'}</p><button type="button" class="mem-kick mem-allow" data-take>내가 방장 이어받기</button></div>`;
+    return '';
+  }
   function open(list){
     const cnt = {}; list.forEach(m => { cnt[m.nick] = (cnt[m.nick] || 0) + 1; });
     const joined = m => { const t = m.joinedAt && m.joinedAt.toDate ? m.joinedAt.toDate() : null; return t ? `${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} 들어옴` : ''; };
-    const row = m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick"></span>${cnt[m.nick] > 1 ? `<small class="mem-dup">⚠️ 중복 · ${joined(m)}</small>` : ''}</span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
+    const seenLine = m => ME.owner && m.uid !== ME.uid && ago(m) ? `<small class="mem-seen${sleepy(m) ? ' old' : ''}">${sleepy(m) ? '😴 ' : ''}마지막 접속 ${ago(m)}</small>` : '';
+    const row = m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick"></span>${cnt[m.nick] > 1 ? `<small class="mem-dup">⚠️ 중복 · ${joined(m)}</small>` : ''}${seenLine(m)}</span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.po ? '<span class="mem-tag po">👑 넘기는 중</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
       + (ME.owner && m.uid !== ME.uid ? `<button type="button" class="mem-kick" data-kick="${m.uid}">내보내기</button>` : '') + '</li>';
     const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
       body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>${Object.values(cnt).some(n => n > 1) ? `<p class="who-tip mem-dup-tip">⚠️ <b>중복</b>은 같은 사람이 다른 브라우저·앱으로 다시 들어온 기록일 수 있어요.${ME.owner ? ' 안 쓰는 쪽(보통 먼저 들어온 쪽)을 내보내기 해 주세요.' : ' 방장에게 정리를 부탁해 주세요.'}</p>` : ''}
+        ${ownerBox(list)}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
         <ul class="mem-list">${list.map(row).join('')}</ul>
         ${ME.owner ? '<div class="mem-out"></div>' : ''}`});
@@ -467,6 +504,7 @@ function sosReport(kind, mid, cid){
         li.append(n, b); out.querySelector('ul').appendChild(li); });
     }).catch(() => {});
     box.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
+    box.querySelectorAll('.mem-n[data-n]').forEach(el => { el.textContent = nickOf(list, el.dataset.n); });
     box.addEventListener('click', async e => {
       const al = e.target.closest('[data-allow]');
       if(al){
@@ -484,6 +522,35 @@ function sosReport(kind, mid, cid){
         try{ await roomRef().collection('members').doc(m.uid).update({on: false}); open(await load(true)); }
         catch(err){ sosConfirm({icon: '😢', title: '내보내지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }
         return;
+      }
+      if(e.target.closest('[data-handoff]')){
+        box.remove();
+        const others = list.filter(m => m.uid !== ME.uid);
+        const pick = sosInfo({icon: '👑', title: '누구에게 넘길까요?',
+          body: `<p class="who-tip">고른 사람이 앱에서 <b>받기</b>를 누르면 넘어가요.<br>공동육아를 졸업하기 전에 꼭 넘겨 주세요.</p><ul class="mem-list">${others.map(m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick"></span>${ago(m) ? `<small class="mem-seen">마지막 접속 ${ago(m)}</small>` : ''}</span><button type="button" class="mem-kick mem-allow" data-pick="${m.uid}">넘기기</button></li>`).join('')}</ul>`});
+        pick.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = nickOf(list, li.dataset.uid); });
+        pick.addEventListener('click', async ev => {
+          const p = ev.target.closest('[data-pick]'); if(!p) return;
+          const m = others.find(x => x.uid === p.dataset.pick); pick.remove();
+          const yes = await confirmNick({icon: '👑', title: '방장을 넘길까요?', ok: '넘기기',
+            body: '<p><b class="mem-n"></b> 님이<br>앱을 열면 받을지 물어봐요.</p><ul><li>받으면 그때부터 그 사람이 방장이에요.</li><li>받기 전에는 언제든 취소할 수 있어요.</li></ul>'}, m.nick);
+          if(!yes){ open(list); return; }
+          try{ await roomRef().update({po: m.uid}); ME.po = m.uid; open(await load(true)); }
+          catch(err){ sosConfirm({icon: '😢', title: '넘기지 못했어요.', body: '<p>보안 규칙을 새로 게시했는지 확인해 주세요.</p>', ok: '확인'}); }
+        });
+        return;
+      }
+      if(e.target.closest('[data-po-cancel]')){
+        try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; box.remove(); open(list); }catch(err){}
+        return;
+      }
+      if(e.target.closest('[data-accept]')){ box.remove(); return becomeOwner(list, 'accept'); }
+      if(e.target.closest('[data-take]')){
+        box.remove();
+        const yes = await sosConfirm({icon: '👑', title: '내가 방장을 이어받을까요?', ok: '이어받기',
+          body: '<ul><li>멤버 관리·방 지우기를 내가 해요.</li><li>예전 방장이 돌아와도 방장은 나예요.</li><li>필요하면 다시 넘겨 줄 수 있어요.</li></ul>'});
+        if(yes) return becomeOwner(list, 'take');
+        open(list); return;
       }
       if(e.target.closest('[data-renick]')){
         box.remove();

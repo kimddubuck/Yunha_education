@@ -77,7 +77,7 @@ const roomGone = snap => !snap.exists || snap.data().deleted === true;
    - 방에 들어올 때 닉네임을 정하면 rooms/{방 열쇠}/members/{uid} 에 저장돼요. 방 안의 기록은 멤버만 읽고 써요.
    - 방장은 멤버를 내보낼 수 있어요(on = false). 내보내진 휴대폰은 그 방에 다시 못 들어와요. */
 const NICK_MAX = 20;
-const ME = { uid: '', nick: '', owner: false, ou: '' };
+const ME = { uid: '', nick: '', owner: false, ou: '', po: '' };
 let sosAuthP = null;
 function sosAuth(){
   if(sosAuthP) return sosAuthP;
@@ -131,7 +131,12 @@ function sosReady(){
       alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n\n다시 들어가려면 방장에게 '다시 들어올 수 있게 허용'을 부탁해 주세요.\n허용되면 초대 링크로 다시 들어올 수 있어요.`);
       location.href = 'index.html'; return new Promise(() => {});
     }
-    if(snap.exists){ ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick); }
+    if(snap.exists){
+      ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick);
+      // 마지막 접속(seen): 하루에 두 번 정도만 남겨요. 방장이 오래 안 온 멤버를 알아보고, 방장이 떠났는지 판단할 때 써요
+      const last = snap.data().seen || snap.data().joinedAt;
+      if(!last || !last.toMillis || Date.now() - last.toMillis() > 12 * 3600e3) mine.update({seen: firebase.firestore.FieldValue.serverTimestamp()}).catch(() => {});
+    }
     else{
       let nick = ROOM.nick;
       while(!nick) nick = await askNick(`'${ROOM.name}' 방에서 쓸 닉네임`, '모임·SOS·댓글에 이 닉네임이 보여요. 단톡방 닉네임과 같게 하면 알아보기 쉬워요.');
@@ -148,7 +153,7 @@ function sosReady(){
     // 방장인지: 새 방은 ou(방장 uid). 예전 방은 이 휴대폰의 방장 열쇠로 한 번 등록해요
     try{
       const r = (await room.get()).data() || {};
-      ME.ou = r.ou || '';
+      ME.ou = r.ou || ''; ME.po = r.po || '';
       if(!r.ou && r.oh && ROOM.owner){
         const b = sosDb().batch();
         b.set(room.collection('private').doc('owner'), {k: ROOM.owner, uid: user.uid});
@@ -160,6 +165,23 @@ function sosReady(){
     return true;
   })();
   return sosReadyP;
+}
+// 👑 방장 되기: 지목받아 수락하거나, 방장이 떠난 방을 이어받을 때. 이 휴대폰에서 새 방장 열쇠를 만들어
+//  서버엔 지문(oh)만 올리고 열쇠는 이 휴대폰에만 둬요 (방 지우기에 씀). 예전 방장 열쇠는 더 이상 안 맞아요
+async function sosBecomeOwner(){
+  if(!(await sosReady())) throw new Error('not ready');
+  const k = randomHex();
+  await roomRef().update({ou: ME.uid, oh: await sha256Hex(k), po: firebase.firestore.FieldValue.delete()});
+  ROOM.owner = k; rememberRoom(ROOM);
+  ME.ou = ME.uid; ME.po = ''; ME.owner = true;
+}
+// 방장이 떠났는지 (멤버에서 나갔거나 60일 넘게 안 들어옴). 서버 규칙(ownerGone)과 같은 기준
+const OWNER_GONE_DAYS = 60;
+function sosOwnerGone(list){
+  if(!ME.ou) return false;
+  const o = list.find(m => m.uid === ME.ou); if(!o) return true;
+  const last = o.seen || o.joinedAt;
+  return !!(last && last.toMillis && Date.now() - last.toMillis() > OWNER_GONE_DAYS * 864e5);
 }
 // 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
 //  SOS 요청·참석 표시는 날짜가 지나고 7일 뒤 자동으로 지워져요
@@ -432,7 +454,7 @@ const GATE_HOW_INVITE = `      <div class="g-guide">
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
         </ol>
-        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(14장)</small></a>
+        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
       </div>`;
 
 // 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
@@ -551,7 +573,7 @@ ${GATE_PASTE}
       <h1>공동육아 SOS 🆘</h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(14장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
 ${GATE_EXTRA}
     </div>
     <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>

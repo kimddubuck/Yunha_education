@@ -6,7 +6,7 @@ rules_version = '2';
 //       rooms/{방 열쇠}/opinions/{id}  — 모임 (topic 'meet'), 아래 comments 에 댓글
 //       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20)
 //       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이 (지금은 앱에서 안 씀)
-//       rooms/{방 열쇠}/members/{uid}  — 방 멤버 닉네임 (uid = 휴대폰마다 생기는 익명 로그인 번호)
+//       rooms/{방 열쇠}/members/{uid}  — 방 멤버 닉네임·마지막 접속 날 (uid = 휴대폰마다 생기는 익명 로그인 번호)
 //       rooms/{방 열쇠}/private/owner  — 예전 방의 방장 확인용 (아무도 읽을 수 없음)
 // 로그인: Firebase 익명 로그인(Anonymous). 이름·전화번호·이메일은 없어요.
 // 방 안의 기록은 '방 멤버'(members 에 내 uid 문서가 있고 on == true)만 읽고 쓸 수 있어요.
@@ -48,6 +48,12 @@ service cloud.firestore {
       return request.auth != null && get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('ou', '') == request.auth.uid;
     }
     function nickOk(n) { return n is string && n.size() >= 1 && n.size() <= 20; }
+    // 방장이 떠났는지: 멤버에서 나갔거나, 60일 넘게 앱을 안 열었으면 (seen 없으면 들어온 날 기준) 다른 멤버가 이어받을 수 있어요
+    function ownerGone(roomKey, ou) {
+      let p = /databases/$(database)/documents/rooms/$(roomKey)/members/$(ou);
+      return !exists(p) || get(p).data.get('on', false) == false
+        || get(p).data.get('seen', get(p).data.joinedAt) < request.time - duration.value(60, 'd');
+    }
 
     match /rooms/{roomKey} {
       allow get: if true;
@@ -76,7 +82,26 @@ service cloud.firestore {
           && request.auth != null
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ou'])
           && request.resource.data.ou == request.auth.uid
-          && getAfter(/databases/$(database)/documents/rooms/$(roomKey)/private/owner).data.uid == request.auth.uid);
+          && getAfter(/databases/$(database)/documents/rooms/$(roomKey)/private/owner).data.uid == request.auth.uid)
+        // 👑 방장 넘기기 1단계: 방장이 받을 사람(po, 방 멤버)을 정하거나 취소
+        || (resource.data.get('deleted', false) == false && isMember(roomKey) && isOwner(roomKey)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['po'])
+          && (!('po' in request.resource.data)
+              || (request.resource.data.po is string && request.resource.data.po != request.auth.uid
+                && get(/databases/$(database)/documents/rooms/$(roomKey)/members/$(request.resource.data.po)).data.get('on', false) == true)))
+        // 받을 사람이 거절: po 만 지우기
+        || (resource.data.get('po', '') == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['po'])
+          && !('po' in request.resource.data))
+        // 2단계: 방장 되기 — 지목받은 사람(po)이 수락하거나, 방장이 떠났을 때(ownerGone) 멤버가 이어받기.
+        //  새 방장은 자기 휴대폰에서 만든 새 방장 열쇠의 지문(oh)으로 바꿔요 (예전 방장 열쇠로는 방을 못 지워요)
+        || (resource.data.get('deleted', false) == false && isMember(roomKey)
+          && ('ou' in resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ou', 'oh', 'po'])
+          && request.resource.data.ou == request.auth.uid
+          && request.resource.data.oh is string && request.resource.data.oh.size() == 64
+          && !('po' in request.resource.data)
+          && (resource.data.get('po', '') == request.auth.uid || ownerGone(roomKey, resource.data.ou)));
 
       // 방장 확인용 열쇠 보관 (읽기 불가). 방장 열쇠의 지문이 oh 와 맞을 때만 한 번 만들 수 있어요
       match /private/{doc} {
@@ -92,7 +117,7 @@ service cloud.firestore {
 
       // 멤버 (닉네임)
       //  - 들어오기: 방 열쇠를 알면 내 uid 문서를 만들 수 있어요 (내보내진 사람은 문서가 남아 있어서 다시 못 만들어요)
-      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기 / 다시 허용: 방장이 문서 지우기
+      //  - 닉네임 바꾸기·마지막 접속(seen) 남기기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기 / 다시 허용: 방장이 문서 지우기
       match /members/{uid} {
         allow get: if request.auth != null && request.auth.uid == uid;
         allow read: if canUse(roomKey);
@@ -104,8 +129,9 @@ service cloud.firestore {
           && request.resource.data.joinedAt == request.time;
         allow update: if roomAlive(roomKey) && request.auth != null && (
           (request.auth.uid == uid && resource.data.on == true
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick'])
-            && nickOk(request.resource.data.nick))
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick', 'seen'])
+            && nickOk(request.resource.data.nick)
+            && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['seen']) || request.resource.data.seen == request.time))
           || (isOwner(roomKey) && request.auth.uid != uid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['on'])
             && request.resource.data.on == false));
