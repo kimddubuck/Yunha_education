@@ -535,14 +535,14 @@ ${GATE_PASTE}
       <h1>공동육아 SOS 🆘</h1>
 ${formHtml}
 ${GATE_PASTE}
-    </form>` : `<div class="g-card g-step1">
+    </form>` : `<div class="g-card g-step1"${invite ? ' hidden' : ''}>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
 ${GATE_EXTRA}
     </div>
-    <form class="g-card g-step2" autocomplete="off" hidden>
+    <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
 ${formHtml}
