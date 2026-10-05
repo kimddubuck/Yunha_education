@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko" data-public>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>운영 현황 · 공동육아 SOS</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2a9095">
+<link rel="stylesheet" href="assets/common.css?v=202610051034">
+<script src="assets/gate.js?v=202610051034"></script>
+<style>
+/* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
+body{padding-block:20px 60px}
+.wrap.admin{display:flex;flex-direction:column;gap:18px;max-width:980px}
+.ad-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ad-head h1{margin:0;font-size:22px;white-space:nowrap}
+.ad-head .btn{margin-left:auto}
+.ad-head .btn{padding:8px 12px;font-size:14px}
+.ad-sub{margin:0;font-size:13px;color:var(--muted)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.live i{width:8px;height:8px;border-radius:50%;background:#2e8b57;display:inline-block}
+.live.off i{background:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile b{font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--fg)}
+.tile span{font-size:13px;color:var(--muted)}
+.tile small{font-size:12px;color:var(--accent-ink)}
+.tile.warn{border-color:#e0a800}
+.tile.warn small{color:#b88600}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:16px}
+.card p{margin:0;font-size:13.5px;color:var(--muted)}
+.bars{display:flex;gap:4px;align-items:flex-end;height:118px;padding-top:18px;box-sizing:border-box}
+.wbar{flex:1;min-width:0;position:relative;background:var(--pick);border-radius:4px 4px 0 0;min-height:2px}
+.wbar::after{content:attr(data-v);position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--fg);font-variant-numeric:tabular-nums}
+.wbar[data-v="0"]::after{content:""}
+.wbar:hover{filter:brightness(1.15)}
+.bar-x{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;font-size:10.5px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
+th[aria-sort]::after{content:" ▾";color:var(--accent-ink)}
+th[aria-sort="ascending"]::after{content:" ▴"}
+td.n{text-align:right}
+td .rn{display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+.flag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;background:#fff3cd;color:#7a5c00;margin-left:4px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .flag{background:#3a3218;color:#ffd54a}}
+:root[data-theme="dark"] .flag{background:#3a3218;color:#ffd54a}
+.flag.bad{background:var(--ipark-soft);color:var(--ipark-ink)}
+.flag.gone{background:var(--tag);color:var(--muted)}
+tr.gone td{color:var(--muted)}
+.quota{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.q{display:flex;flex-direction:column;gap:6px}
+.q b{font-size:13.5px}
+.meter{height:10px;border-radius:999px;background:var(--tag);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--pick);border-radius:999px}
+.meter i.hot{background:#e0a800}.meter i.over{background:var(--ipark)}
+.q small{font-size:12px;color:var(--muted)}
+.setup{background:var(--bg);border:2px solid #e0a800;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.setup h2{margin:0;font-size:17px}
+.setup ol{margin:0;padding-left:20px;font-size:14px;line-height:1.7}
+.uid{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.uid code{font-size:13px;padding:6px 10px;border-radius:8px;background:var(--tag);user-select:all;word-break:break-all}
+pre{margin:0;background:var(--tag);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+.empty{text-align:center;padding:20px;color:var(--muted);font-size:14px}
+.err{background:var(--ipark-soft);color:var(--ipark-ink);border-radius:12px;padding:10px 12px;font-size:13.5px}
+details.dorm{font-size:13px}
+details.dorm summary{cursor:pointer;color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chips span{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--tag)}
+</style>
+</head>
+<body>
+<div class="wrap admin">
+  <div class="ad-head">
+    <h1>🛠 운영 현황</h1>
+    <span class="live off" id="live"><i></i><span>연결 중…</span></span>
+    <button type="button" class="btn" id="refresh">🔄 새로고침</button>
+  </div>
+  <p class="ad-sub">방 목록은 실시간으로, 방 안의 숫자(멤버·SOS·모임)는 열 때와 새로고침 때 읽어요. 이 화면은 숫자만 보여 주고 아무것도 바꾸지 않아요.</p>
+
+  <div class="setup" id="setup" hidden>
+    <h2>🔑 처음 한 번: 이 휴대폰(브라우저)을 운영자로 등록</h2>
+    <ol>
+      <li>아래 <b>내 번호</b>를 복사해요. <small>(이 브라우저의 익명 로그인 번호예요. 브라우저가 바뀌면 번호도 바뀌어요)</small></li>
+      <li>Firebase 콘솔 → Firestore → 규칙에서 <code>isAdmin()</code> 함수를 찾아 목록에 넣고 <b>게시</b>해요.</li>
+      <li>이 화면을 새로고침해요.</li>
+    </ol>
+    <div class="uid"><code id="myUid">…</code><button type="button" class="btn" id="copyUid">복사</button></div>
+    <p class="ad-sub">규칙에 이렇게 들어가 있어야 해요 (여러 브라우저면 쉼표로 이어요):</p>
+    <pre id="ruleSnip">function isAdmin() {
+  return request.auth != null && request.auth.uid in ['여기에 내 번호'];
+}</pre>
+    <p class="ad-sub" id="setupMsg"></p>
+  </div>
+
+  <div id="dash" hidden>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="two">
+      <div class="card"><h2>🙋 주별 신규 가입</h2><p>최근 12주 · 멤버가 방에 처음 들어온 날 기준</p><div class="bars" id="joinBars"></div><div class="bar-x" id="joinX"></div></div>
+      <div class="card"><h2>🏠 주별 새 방</h2><p>최근 12주 · 방이 만들어진 날 기준</p><div class="bars" id="roomBars"></div><div class="bar-x" id="roomX"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>📊 무료 한도</h2>
+      <p>실제 사용량은 Firebase가 외부에 바로 알려 주지 않아요. 아래는 <b>이 화면이 방금 쓴 읽기 수</b>와 한도이고, 전체 사용량은 콘솔에서 확인해요.</p>
+      <div class="quota" id="quota"></div>
+      <p><a href="https://console.firebase.google.com/project/sos-calendar-f6bf7/usage" target="_blank" rel="noopener">Firebase 콘솔 → 사용량 보기 ›</a> · <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare 알림 함수 사용량 ›</a></p>
+    </div>
+
+    <div class="card">
+      <h2>🏠 방별 현황</h2>
+      <p>제목을 누르면 정렬돼요. <span class="flag">방장 부재</span> = 방장이 60일 넘게 안 들어옴 · <span class="flag bad">조용</span> = 30일 넘게 아무도 안 들어옴</p>
+      <div class="tbl"><table id="rooms"><thead><tr>
+        <th data-k="name">방</th><th data-k="members" aria-sort="descending">멤버</th><th data-k="new7">신규 7일</th><th data-k="active7">활성 7일</th><th data-k="dormant">60일+ 미사용</th><th data-k="sos">이번 주 SOS</th><th data-k="meets">모임</th><th data-k="last">마지막 활동</th><th data-k="created">만든 날</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div id="roomsEmpty" class="empty" hidden>아직 방이 없어요.</div>
+    </div>
+    <div class="err" id="err" hidden></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+/* 운영자 화면 — 서버 규칙 isAdmin() 에 등록된 번호(uid)로만 읽혀요. 이 화면은 어떤 데이터도 쓰지 않아요. */
+const $ = s => document.querySelector(s);
+const DAY = 864e5, now = Date.now();
+const ms = t => (t && t.toMillis) ? t.toMillis() : 0;
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today = ymd(new Date()), week = ymd(new Date(now + 6 * DAY));
+const ago = t => { if(!t) return '—'; const d = Math.floor((now - t) / DAY); return d < 1 ? '오늘' : d < 2 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d/30)}달 전` : '1년+'; };
+const fmtDay = t => t ? new Date(t).toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric'}) : '—';
+// 주 시작(월요일) 12칸
+const weekStarts = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return Array.from({length: 12}, (_, i) => d.getTime() - (11 - i) * 7 * DAY); })();
+const weekIdx = t => { const i = Math.floor((t - weekStarts[0]) / (7 * DAY)); return i >= 0 && i < 12 ? i : -1; };
+let reads = 0;   // 이 화면이 쓴 문서 읽기 수 (대략)
+let rooms = [], details = {}, sortK = 'members', sortDir = -1, unsub = null;
+
+async function start(){
+  const db = sosDb(); if(!db){ showErr('Firebase를 불러오지 못했어요. 인터넷을 확인해 주세요.'); return; }
+  const user = await sosAuth(); if(!user){ showErr('로그인 준비가 안 됐어요. 새로고침해 주세요.'); return; }
+  $('#myUid').textContent = user.uid;
+  $('#ruleSnip').textContent = `function isAdmin() {\n  return request.auth != null && request.auth.uid in ['${user.uid}'];\n}`;
+  // 방 목록: 실시간 (운영자가 아니면 permission-denied → 설정 안내)
+  unsub = db.collection('rooms').onSnapshot(snap => {
+    reads += snap.docChanges().length;
+    rooms = snap.docs.map(d => ({key: d.id, ...d.data()}));
+    $('#setup').hidden = true; $('#dash').hidden = false; $('#live').classList.remove('off'); $('#live').querySelector('span').textContent = '실시간 · 방 ' + rooms.length;
+    loadDetails(db);
+  }, err => {
+    if(err.code === 'permission-denied'){ $('#setup').hidden = false; $('#dash').hidden = true; $('#setupMsg').textContent = '아직 운영자로 등록되지 않았어요. 위 순서대로 규칙에 번호를 넣고 게시해 주세요.'; }
+    else showErr('방 목록을 읽지 못했어요: ' + (err.code || err.message));
+    $('#live').querySelector('span').textContent = '연결 안 됨';
+  });
+}
+function showErr(t){ const e = $('#err'); e.hidden = false; e.textContent = t; }
+
+// 방마다: 멤버 전체(들어온 날·마지막 접속), 이번 주 SOS, 다가오는 모임 수
+let loading = false;
+async function loadDetails(db){
+  if(loading) return; loading = true;
+  try{
+    await Promise.all(rooms.filter(r => !r.deleted).map(async r => {
+      const ref = db.collection('rooms').doc(r.key);
+      const [mem, sos, meets] = await Promise.all([
+        ref.collection('members').get(),
+        ref.collection('sos').where(firebase.firestore.FieldPath.documentId(), '>=', today).where(firebase.firestore.FieldPath.documentId(), '<=', week).get(),
+        ref.collection('opinions').where('date', '>=', today).get()
+      ]);
+      reads += mem.size + sos.size + meets.size + 3;
+      const members = mem.docs.map(d => ({uid: d.id, ...d.data()})).filter(m => m.on !== false);
+      const kicked = mem.size - members.length;
+      const lastOf = m => Math.max(ms(m.seen), ms(m.joinedAt));
+      const people = new Set(); sos.forEach(d => Object.entries(d.data().p || {}).forEach(([u, e]) => { if((e.h || []).length) people.add(u); }));
+      const owner = members.find(m => m.uid === r.ou);
+      const last = Math.max(0, ...members.map(lastOf), ms(r.createdAt));
+      details[r.key] = {
+        members: members.length, kicked,
+        new7: members.filter(m => now - ms(m.joinedAt) < 7 * DAY).length,
+        new30: members.filter(m => now - ms(m.joinedAt) < 30 * DAY).length,
+        active7: members.filter(m => now - lastOf(m) < 7 * DAY).length,
+        dormant: members.filter(m => now - lastOf(m) > 60 * DAY),
+        sos: people.size, meets: meets.docs.filter(d => d.data().topic === 'meet' && !d.data().cancelled).length,
+        last, ownerGone: !owner || now - lastOf(owner) > 60 * DAY,
+        joins: members.map(m => ms(m.joinedAt))
+      };
+    }));
+  }catch(e){ showErr('방 안의 숫자를 읽지 못했어요: ' + (e.code || e.message)); }
+  loading = false; render();
+}
+
+function render(){
+  const alive = rooms.filter(r => !r.deleted), gone = rooms.length - alive.length;
+  const D = alive.map(r => details[r.key]).filter(Boolean);
+  const sum = k => D.reduce((a, d) => a + (typeof d[k] === 'number' ? d[k] : d[k].length), 0);
+  const members = sum('members'), new7 = sum('new7'), new30 = sum('new30'), active7 = sum('active7'), dormant = sum('dormant'), sos = sum('sos'), meets = sum('meets');
+  const quiet = alive.filter(r => details[r.key] && now - details[r.key].last > 30 * DAY).length;
+  const noOwner = alive.filter(r => details[r.key] && details[r.key].ownerGone).length;
+  const tile = (b, s, sm, warn) => `<div class="tile${warn ? ' warn' : ''}"><b>${b}</b><span>${s}</span>${sm ? `<small>${sm}</small>` : ''}</div>`;
+  $('#tiles').innerHTML = tile(alive.length, '살아 있는 방', gone ? `지워진 방 ${gone}` : '')
+    + tile(members, '전체 멤버', `활성 7일 ${active7}명`)
+    + tile(new7, '신규 가입 7일', `30일 ${new30}명`)
+    + tile(dormant, '60일+ 미사용', members ? `${Math.round(dormant / members * 100)}%` : '', dormant > 0 && dormant / Math.max(1, members) > 0.3)
+    + tile(sos, '이번 주 SOS 인원', '7일 안, 사람 기준')
+    + tile(meets, '다가오는 모임', '')
+    + tile(quiet, '조용한 방', '30일 넘게 활동 없음', quiet > 0)
+    + tile(noOwner, '방장 부재', '60일+ 또는 나감', noOwner > 0);
+  // 주별 막대
+  const jw = Array(12).fill(0); D.forEach(d => d.joins.forEach(t => { const i = weekIdx(t); if(i >= 0) jw[i]++; }));
+  const rw = Array(12).fill(0); rooms.forEach(r => { const i = weekIdx(ms(r.createdAt)); if(i >= 0) rw[i]++; });
+  bars('#joinBars', '#joinX', jw); bars('#roomBars', '#roomX', rw);
+  // 한도
+  const q = (label, used, limit, unit, note) => { const p = Math.min(100, used / limit * 100); return `<div class="q"><b>${label}</b><div class="meter"><i class="${p > 90 ? 'over' : p > 60 ? 'hot' : ''}" style="width:${p}%"></i></div><small>${used.toLocaleString()} / ${limit.toLocaleString()}${unit} · ${note}</small></div>`; };
+  const est = members * 3 * 25;   // 멤버마다 하루 3번 열고, 한 번에 25문서쯤 읽는다고 넉넉히 추정
+  $('#quota').innerHTML = q('이 화면이 방금 읽은 문서', reads, 50000, '/일', 'Firestore 무료 읽기 한도')
+    + q('하루 읽기 추정치 (멤버 × 3번 × 25문서)', est, 50000, '/일', '넘으면 오후 5시까지 멈춤')
+    + q('알림 함수 호출 추정 (SOS+모임 ×2)', (sos + meets) * 2, 100000, '/일', 'Cloudflare 무료 한도')
+    + q('저장 공간 추정 (방 10KB)', alive.length * 10, 1048576, 'KB', '무료 1GB');
+  // 표
+  const rows = rooms.map(r => ({r, d: details[r.key]}));
+  const val = ({r, d}) => sortK === 'name' ? (r.name || '') : sortK === 'created' ? ms(r.createdAt) : sortK === 'last' ? (d ? d.last : 0) : d ? (typeof d[sortK] === 'number' ? d[sortK] : d[sortK].length) : -1;
+  rows.sort((a, b) => { const x = val(a), y = val(b); return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sortDir; });
+  const tb = $('#rooms tbody'); tb.innerHTML = '';
+  rows.forEach(({r, d}) => {
+    const tr = document.createElement('tr'); if(r.deleted) tr.className = 'gone';
+    const name = document.createElement('td'); const rn = document.createElement('span'); rn.className = 'rn'; rn.textContent = r.deleted ? '(지워진 방)' : (r.name || '(이름 없음)'); name.appendChild(rn);
+    if(d && d.ownerGone && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag">방장 부재</span>');
+    if(d && now - d.last > 30 * DAY && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag bad">조용</span>');
+    if(d && d.kicked) name.insertAdjacentHTML('beforeend', `<span class="flag gone">내보냄 ${d.kicked}</span>`);
+    tr.appendChild(name);
+    const n = v => { const td = document.createElement('td'); td.className = 'n'; td.textContent = v; return td; };
+    if(d){
+      tr.append(n(d.members), n(d.new7), n(d.active7));
+      const dm = n(d.dormant.length);
+      if(d.dormant.length){ const det = document.createElement('details'); det.className = 'dorm'; det.innerHTML = `<summary>${d.dormant.length}명</summary>`; const ch = document.createElement('div'); ch.className = 'chips';
+        d.dormant.forEach(m => { const s = document.createElement('span'); s.textContent = `${m.nick} · ${ago(Math.max(ms(m.seen), ms(m.joinedAt)))}`; ch.appendChild(s); }); det.appendChild(ch); dm.textContent = ''; dm.appendChild(det); }
+      tr.append(dm, n(d.sos), n(d.meets), n(ago(d.last)));
+    } else tr.insertAdjacentHTML('beforeend', '<td class="n">—</td>'.repeat(7));
+    tr.appendChild(n(fmtDay(ms(r.createdAt))));
+    tb.appendChild(tr);
+  });
+  $('#roomsEmpty').hidden = rooms.length > 0;
+  document.querySelectorAll('#rooms th').forEach(th => { if(th.dataset.k === sortK) th.setAttribute('aria-sort', sortDir < 0 ? 'descending' : 'ascending'); else th.removeAttribute('aria-sort'); });
+}
+function bars(sel, xsel, arr){
+  const max = Math.max(1, ...arr);
+  $(sel).innerHTML = arr.map((v, i) => `<div class="wbar" data-v="${v}" style="height:${Math.round(v / max * 100)}px" title="${fmtDay(weekStarts[i])} 주 · ${v}"></div>`).join('');
+  $(xsel).innerHTML = weekStarts.map((t, i) => `<span>${i % 2 ? '' : fmtDay(t)}</span>`).join('');
+}
+document.querySelector('#rooms thead').addEventListener('click', e => { const th = e.target.closest('th'); if(!th) return; if(sortK === th.dataset.k) sortDir *= -1; else { sortK = th.dataset.k; sortDir = th.dataset.k === 'name' ? 1 : -1; } render(); });
+$('#refresh').addEventListener('click', () => { details = {}; loadDetails(sosDb()); });
+$('#copyUid').addEventListener('click', async () => { try{ await navigator.clipboard.writeText($('#myUid').textContent); $('#copyUid').textContent = '✅ 복사됨'; }catch(e){ prompt('이 번호를 복사해 주세요', $('#myUid').textContent); } });
+start();
+</script>
+</body>
+</html>
