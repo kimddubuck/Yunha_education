@@ -7,8 +7,8 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#2a9095">
-<link rel="stylesheet" href="assets/common.css?v=202610051108">
-<script src="assets/gate.js?v=202610051108"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051115">
+<script src="assets/gate.js?v=202610051115"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -233,6 +233,8 @@ function render(){
   rows.forEach(({r, d}) => {
     const tr = document.createElement('tr'); if(r.deleted) tr.className = 'gone';
     const name = document.createElement('td'); const rn = document.createElement('span'); rn.className = 'rn'; rn.textContent = r.deleted ? '(지워진 방)' : (r.name || '(이름 없음)'); name.appendChild(rn);
+    // 콘솔에서 찾을 때 쓰라고 문서 번호 앞부분을 작게 보여 줘요 (이름 없는 방·지워진 방은 이것밖에 단서가 없어요)
+    const kid = document.createElement('small'); kid.style.cssText = 'display:block;font-size:11px;color:var(--muted);font-family:monospace'; kid.textContent = r.key.slice(0, 10) + '…'; kid.title = r.key; name.appendChild(kid);
     if(d && !d.members && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag gone">빈 방</span>');
     else if(d && d.ownerGone && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag">방장 부재</span>');
     if(d && now - d.last > 30 * DAY && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag bad">조용</span>');
