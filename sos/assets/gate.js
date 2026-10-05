@@ -523,7 +523,7 @@ ${invite && !closable ? GATE_HOW_INVITE : ''}`;
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
       ${list}
-      <p class="g-legend">🆘 = 1주일 안의 SOS 요청 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
+      <p class="g-legend">🆘 = 1주일 안에 SOS 보낸 사람 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
 ${formHtml.replace(list, '')}
 ${GATE_PASTE}
@@ -624,7 +624,11 @@ async function roomCounts(room){
     const [sos, ops] = await Promise.all([
       r.collection('sos').where(id, '>=', today).where(id, '<=', ymdAfter(6)).get(),
       r.collection('opinions').where('date', '>=', today).limit(50).get()]);
-    let n = 0; sos.forEach(d => { n += sosDayTotal(d.data()); });
+    // 1주일 동안 SOS를 보낸 '사람 수' (여러 날·여러 시간을 골라도 1명). 닉네임 없는 예전 기록은 날마다 가장 큰 값
+    const people = new Set(); let old = 0;
+    sos.forEach(d => { const v = d.data(); Object.entries(v.p || {}).forEach(([uid, e]) => { if((e.h || []).length) people.add(uid); });
+      old = Math.max(old, sosDayTotal({...v, p: {}})); });
+    const n = people.size + old;
     return {sos: n, meet: ops.docs.filter(d => { const o = d.data(); return o.topic === 'meet' && !o.cancelled; }).length};
   }catch(e){ return null; }   // 아직 멤버가 아닌 방(닉네임 정하기 전)은 못 세요
 }
