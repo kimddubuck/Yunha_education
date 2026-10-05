@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>사용법 · 공동육아 SOS</title>
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610050742">
+<link rel="manifest" href="manifest.webmanifest?v=202610050804">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <style>
@@ -50,7 +50,7 @@ const N = 17, pad = i => String(i).padStart(2, '0');
 const track = document.getElementById('track'), dots = document.getElementById('dots');
 const LINK = location.origin + location.pathname;
 for(let i = 1; i <= N; i++){
-  track.insertAdjacentHTML('beforeend', `<div class="slide"><img src="guide/${pad(i)}.jpg" alt="사용법 ${i} / ${N}" ${i > 2 ? 'loading="lazy"' : ''}></div>`);
+  track.insertAdjacentHTML('beforeend', `<div class="slide"><img src="guide/${pad(i)}.webp" alt="사용법 ${i} / ${N}" ${i > 2 ? 'loading="lazy"' : ''}></div>`);
   dots.insertAdjacentHTML('beforeend', '<i></i>');
 }
 let cur = 0;
