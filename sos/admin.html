@@ -12,12 +12,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610051126">
-<script src="assets/gate.js?v=202610051126"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051129">
+<script src="assets/gate.js?v=202610051129"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
 .wrap.admin{display:flex;flex-direction:column;gap:18px;max-width:980px}
+#dash:not([hidden]){display:flex;flex-direction:column;gap:12px}
 .ad-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ad-head h1{margin:0;font-size:22px;white-space:nowrap}
 .ad-head .btn{margin-left:auto}
@@ -48,7 +49,7 @@ body{word-break:keep-all}
 .wbar::after{content:attr(data-v);position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--fg);font-variant-numeric:tabular-nums}
 .wbar[data-v="0"]::after{content:""}
 .wbar:hover{filter:brightness(1.15)}
-.bar-x{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;font-size:10.5px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.bar-x{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;font-size:10.5px;white-space:nowrap;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:700px){.two{grid-template-columns:1fr}}
 .tbl{overflow-x:auto}
@@ -106,8 +107,11 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
   .rf-t{display:none}
   td{white-space:nowrap}
   td:first-child{white-space:normal}
-  .tiles{grid-template-columns:repeat(2,1fr)}
-  .tile b{font-size:24px}
+  .tiles{grid-template-columns:repeat(3,1fr);gap:6px}
+  .tile{padding:8px 10px;border-radius:12px;gap:0}
+  .tile b{font-size:20px}
+  .tile span{font-size:12px;white-space:nowrap}
+  .tile small{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .setup li{word-break:keep-all}
 }
 .install-tip{font-size:12.5px;color:var(--muted);margin:0}
@@ -120,7 +124,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
     <span class="live off" id="live"><i></i><span>연결 중…</span></span>
     <button type="button" class="btn" id="refresh" aria-label="새로고침">🔄<span class="rf-t"> 새로고침</span></button>
   </div>
-  <p class="ad-sub">이 화면은 숫자만 보여 주고 아무것도 바꾸지 않아요.</p>
+  <p class="ad-sub">숫자만 보여 주고 아무것도 바꾸지 않아요.</p>
 
   <div class="setup" id="setup" hidden>
     <h2>🔑 처음 한 번만<br>이 브라우저를 운영자로 등록</h2>
@@ -250,14 +254,14 @@ function render(){
   const noOwner = alive.filter(r => details[r.key] && details[r.key].members && details[r.key].ownerGone).length;
   const empty = alive.filter(r => details[r.key] && !details[r.key].members).length;
   const tile = (b, s, sm, warn) => `<div class="tile${warn ? ' warn' : ''}"><b>${b}</b><span>${s}</span>${sm ? `<small>${sm}</small>` : ''}</div>`;
-  $('#tiles').innerHTML = tile(alive.length, '살아 있는 방', gone ? `지워진 방 ${gone}` : '')
-    + tile(members, '전체 멤버', `활성 7일 ${active7}명`)
-    + tile(new7, '신규 가입 7일', `30일 ${new30}명`)
-    + tile(dormant, '60일+ 미사용', members ? `${Math.round(dormant / members * 100)}%` : '', dormant > 0 && dormant / Math.max(1, members) > 0.3)
-    + tile(sos, '이번 주 SOS 인원', '7일 안 · 사람 수')
-    + tile(meets, '다가오는 모임', '')
-    + tile(quiet, '조용한 방', '30일+ 활동 없음', quiet > 0)
-    + tile(noOwner, '방장 부재', '60일+ 또는 나감', noOwner > 0)
+  $('#tiles').innerHTML = tile(alive.length, '방', gone ? `지워진 ${gone}` : '')
+    + tile(members, '멤버', `활성 ${active7}명`)
+    + tile(new7, '신규 7일', `30일 ${new30}명`)
+    + tile(dormant, '장기 미사용', members ? `60일+ · ${Math.round(dormant / members * 100)}%` : '60일+', dormant > 0 && dormant / Math.max(1, members) > 0.3)
+    + tile(sos, 'SOS 인원', '이번 주')
+    + tile(meets, '모임', '다가오는')
+    + tile(quiet, '조용한 방', '30일+ 활동 0', quiet > 0)
+    + tile(noOwner, '방장 부재', '60일+', noOwner > 0)
     + tile(empty, '빈 방', '멤버 0명', false);
   // 주별 막대
   const jw = Array(12).fill(0); D.forEach(d => d.joins.forEach(t => { const i = weekIdx(t); if(i >= 0) jw[i]++; }));
@@ -305,7 +309,7 @@ function render(){
 function bars(sel, xsel, arr){
   const max = Math.max(1, ...arr);
   $(sel).innerHTML = arr.map((v, i) => `<div class="wbar" data-v="${v}" style="height:${Math.round(v / max * 100)}px" title="${fmtDay(weekStarts[i])} 주 · ${v}"></div>`).join('');
-  $(xsel).innerHTML = weekStarts.map((t, i) => `<span>${i % 2 ? '' : fmtDay(t)}</span>`).join('');
+  $(xsel).innerHTML = weekStarts.map((t, i) => { const d = new Date(t); return `<span>${i % 2 ? '' : (d.getMonth() + 1) + '/' + d.getDate()}</span>`; }).join('');
 }
 $('#showGone').addEventListener('change', () => render());
 document.querySelector('#rooms thead').addEventListener('click', e => { const th = e.target.closest('th'); if(!th) return; if(sortK === th.dataset.k) sortDir *= -1; else { sortK = th.dataset.k; sortDir = th.dataset.k === 'name' ? 1 : -1; } render(); });
