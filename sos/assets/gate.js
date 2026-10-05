@@ -139,6 +139,11 @@ function sosReady(){
       try{ await mine.set({nick, on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); }
       catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
       ME.nick = nick; saveNick(nick);
+      // 같은 닉네임이 이미 있으면 (다른 브라우저·앱으로 들어왔던 기록일 수 있어요) 알려 줘요
+      try{
+        const dup = (await room.collection('members').where('nick', '==', nick).get()).docs.filter(d => d.id !== user.uid && d.data().on !== false);
+        if(dup.length) setTimeout(() => alert(`'${nick}' 닉네임이 이 방에 이미 있어요.\n\n다른 브라우저(카카오톡 안 브라우저 등)나 앱으로 들어왔던 기록일 수 있어요. 브라우저마다 따로 로그인되기 때문이에요.\n\n• 같은 사람이면: 방장에게 예전 것 '내보내기'를 부탁해 주세요 (👥 멤버)\n• 다른 사람이면: 👥 멤버 → ✏️ 내 닉네임 바꾸기`), 300);
+      }catch(e){}
     }
     // 방장인지: 새 방은 ou(방장 uid). 예전 방은 이 휴대폰의 방장 열쇠로 한 번 등록해요
     try{

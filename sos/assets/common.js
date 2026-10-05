@@ -448,10 +448,12 @@ function sosReport(kind, mid, cid){
   load(false);
   btn.addEventListener('click', async () => open(await load(false)));
   function open(list){
-    const row = m => `<li data-uid="${m.uid}"><span class="mem-nick"></span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
+    const cnt = {}; list.forEach(m => { cnt[m.nick] = (cnt[m.nick] || 0) + 1; });
+    const joined = m => { const t = m.joinedAt && m.joinedAt.toDate ? m.joinedAt.toDate() : null; return t ? `${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} 들어옴` : ''; };
+    const row = m => `<li data-uid="${m.uid}"><span class="mem-nick"></span>${cnt[m.nick] > 1 ? `<span class="mem-tag dup" title="같은 닉네임">중복 · ${joined(m)}</span>` : ''}${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
       + (ME.owner && m.uid !== ME.uid ? `<button type="button" class="mem-kick" data-kick="${m.uid}">내보내기</button>` : '') + '</li>';
     const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
-      body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>
+      body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>${Object.values(cnt).some(n => n > 1) ? `<p class="who-tip mem-dup-tip">⚠️ <b>중복</b>은 같은 사람이 다른 브라우저·앱으로 다시 들어온 기록일 수 있어요.${ME.owner ? ' 안 쓰는 쪽(보통 먼저 들어온 쪽)을 내보내기 해 주세요.' : ' 방장에게 정리를 부탁해 주세요.'}</p>` : ''}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
         <ul class="mem-list">${list.map(row).join('')}</ul>`});
     box.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
