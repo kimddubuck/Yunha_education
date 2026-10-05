@@ -42,6 +42,22 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: true, topics: out });
     }
 
+    // 🔔 테스트 알림: 이 휴대폰 한 대에만 보내요 (휴대폰마다 10분에 6번까지)
+    if (b.action === 'test') {
+      if (!TOKEN.test(b.token || '')) return json({ error: 'bad_input' }, 400);
+      const id = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(b.token)))].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join('');
+      if (!(await allow('t' + id))) return json({ error: 'rate_limited' }, 429);
+      const at = await accessToken(sa);
+      const data = { title: '🔔 공동육아 SOS 테스트 알림', body: '알림이 잘 와요! 이렇게 새 모임·SOS 소식을 알려 드려요', link: 'index.html', tag: 'test', from: '' };
+      const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: { token: b.token, webpush: { headers: { Urgency: 'high', TTL: '600' }, data } } })
+      });
+      if(!r.ok){ const j = await r.json().catch(() => ({})); return json({ error: 'send_failed', detail: `fcm_${r.status} ${JSON.stringify(j.error && j.error.message || '').slice(0, 120)}` }, 502); }
+      return json({ ok: true });
+    }
+
     if (b.action === 'notify') {
       const title = String(b.title || '').slice(0, 40), body = String(b.body || '').slice(0, 120);
       if (!TOPIC.test(b.topic || '') || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);

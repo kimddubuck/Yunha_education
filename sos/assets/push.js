@@ -129,6 +129,23 @@ async function pushMeetComment(o, text){
   pushNotify(await meetTopic(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
 }
 
+// 🔔 테스트 알림: 이 휴대폰에만 서버를 거쳐 알림을 보내 봐요 (휴대폰 → 우리 서버 → Google → 휴대폰, 전체 길 확인)
+async function pushTest(btn){
+  const say = t => { if(btn) btn.textContent = t; };
+  pushLastError = '';
+  if(!pushSupported()){ alert('이 브라우저는 알림을 지원하지 않아요. 아래 「알림 설정 방법」을 봐 주세요.'); return; }
+  say('보내는 중…');
+  try{
+    const token = await pushToken(true);
+    if(!token){ alert('알림이 꺼져 있어요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '') + '\n\n방 이름 옆 🔕를 눌러 먼저 알림을 켜 주세요.'); say('🔔 테스트 알림 받기'); return; }
+    const r = await pushApi({ action: 'test', token });
+    if(r){ say('✅ 보냈어요! 몇 초 안에 와요'); pushToast('📨 보냈어요. 화면을 꺼 두면 잠금화면에서도 확인할 수 있어요'); }
+    else{ alert('테스트 알림을 보내지 못했어요.\n(원인: ' + (pushLastError || '알 수 없음') + ')\n\n이 화면을 캡처해서 운영자에게 보내 주세요.'); say('🔔 테스트 알림 받기'); }
+  }catch(err){ alert('테스트 알림을 보내지 못했어요.\n(원인: ' + String(err && err.message || err).slice(0, 150) + ')'); say('🔔 테스트 알림 받기'); }
+  setTimeout(() => say('🔔 테스트 알림 받기'), 8000);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-push-test]'); if(b) pushTest(b); });
+
 // 알림 설정 안내: 내 휴대폰 종류를 알아서 골라 먼저 펼쳐 보여 줘요. 한 단계 = 한 동작
 const pushIsAndroid = () => /android/i.test(navigator.userAgent);
 const step = (n, icon, title, sub) => `<li class="ph-step"><span class="ph-num">${n}</span><span class="ph-icon" aria-hidden="true">${icon}</span><span class="ph-text"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</span></li>`;
@@ -171,6 +188,8 @@ function pushHelp(){
     </details>`;
   return `<details class="how-to push-help">
     <summary>📖 알림 설정 방법 · 안 될 때</summary>
+    <button type="button" class="btn primary block ph-test" data-push-test>🔔 테스트 알림 받기</button>
+    <p class="ph-tip">이 휴대폰에만 알림이 와요. 안 오면 아래 순서대로 확인해 주세요.</p>
     <p class="ph-lead">방 이름 옆 <b>🔔 = 알림 켜짐</b>, <b>🔕 = 꺼짐</b>. 눌러서 방마다 켜고 꺼요.<br>딱 4단계예요. <b>홈 화면에 설치한 앱</b>에서 켜야 잘 와요.</p>
     ${pushIsIOS() ? ios + android : android + ios}
   </details>`;
