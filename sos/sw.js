@@ -18,7 +18,7 @@ self.addEventListener('push', e => {
         const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
         if (wins.some(w => w.visibilityState === 'visible')) return;
         // 앱이 꺼져 있을 때는 크롬 규칙상 알림을 하나 띄워야 해서, 소리 없이 띄우고 바로 닫아요
-        await self.registration.showNotification(d.title || '공동육아 SOS', { tag: 'self-quiet', silent: true, badge: 'assets/badge-96.png' });
+        await self.registration.showNotification(d.title || '공동육아 SOS', { tag: 'self-quiet', silent: true, badge: 'assets/badge-96.png?v=2' });
         (await self.registration.getNotifications({ tag: 'self-quiet' })).forEach(n => n.close());
         return;
       }
@@ -26,7 +26,7 @@ self.addEventListener('push', e => {
     await self.registration.showNotification(d.title || '공동육아 SOS', {
       body: d.body || '',
       icon: 'assets/icon-sos-192.png',
-      badge: 'assets/badge-96.png',   // 상태표시줄 아이콘: 흰 실루엣 + 투명 배경이어야 해요
+      badge: 'assets/badge-96.png?v=2',   // 상태표시줄 아이콘: 흰 실루엣 + 투명 배경이어야 해요
       tag: d.tag || 'sos',
       renotify: true,
       data: { link: d.link || 'index.html' }
