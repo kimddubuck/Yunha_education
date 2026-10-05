@@ -12,13 +12,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610051138">
-<script src="assets/gate.js?v=202610051138"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051143">
+<script src="assets/gate.js?v=202610051143"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
 .wrap.admin{display:flex;flex-direction:column;gap:18px;max-width:980px}
 #dash:not([hidden]){display:flex;flex-direction:column;gap:12px}
+/* 휴대폰 글자 크기를 키운 설정에서도 글자가 칸 밖으로 넘쳐 페이지가 넓어지지 않게: 넘치면 칸 안에서 자르고(…) 화면 폭은 그대로 */
+.wrap.admin{width:100%;box-sizing:border-box;overflow-x:clip}
+.tile,.card{overflow:hidden}
+.tile span,.tile small{overflow:hidden;text-overflow:ellipsis}
 .ad-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ad-head h1{margin:0;font-size:22px;white-space:nowrap}
 .ad-head .btn{margin-left:auto}
@@ -113,7 +117,8 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
   .ad-head h1{font-size:19px}
   .ad-head{flex-wrap:nowrap}
   .rf-t{display:none}
-  td{white-space:nowrap}
+  td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  td::before{overflow:hidden;text-overflow:ellipsis}
   td:first-child{white-space:normal}
   .tiles{grid-template-columns:repeat(3,1fr);gap:6px}
   .tile{padding:8px 10px;border-radius:12px;gap:0}
@@ -356,6 +361,15 @@ function cumulative(sel, sumSel, times, unit){
   svg.onpointermove = show; svg.onpointerdown = show;
   svg.onpointerleave = () => { tip.hidden = true; hl.setAttribute('visibility', 'hidden'); };
 }
+// 점검 모드 (주소 끝에 #dbg): 화면보다 넓은 요소를 찾아 맨 아래에 보여 줘요
+function dbg(){
+  if(location.hash !== '#dbg') return;
+  const vw = document.documentElement.clientWidth, out = [];
+  document.querySelectorAll('body *').forEach(el => { const r = el.getBoundingClientRect(); if(r.width && (r.right > vw - 8 || r.left < 8)) out.push(`${el.tagName.toLowerCase()}.${String(el.className).split(' ')[0]} ${Math.round(r.left)}~${Math.round(r.right)}`); });
+  let box = document.getElementById('dbgBox'); if(!box){ box = document.createElement('pre'); box.id = 'dbgBox'; box.style.cssText = 'white-space:pre-wrap;font-size:11px;background:#300;color:#fcc;padding:8px;border-radius:8px'; document.querySelector('.wrap.admin').appendChild(box); }
+  box.textContent = `vw ${vw} · inner ${innerWidth} · scroll ${document.documentElement.scrollWidth} · dpr ${devicePixelRatio} · vv ${visualViewport ? Math.round(visualViewport.width) + '@' + visualViewport.scale.toFixed(2) : '-'}\n` + out.slice(0, 15).join('\n');
+}
+setInterval(dbg, 2000);
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => rooms.length && render(), 150); });
 $('#showGone').addEventListener('change', () => render());
 document.querySelector('#rooms thead').addEventListener('click', e => { const th = e.target.closest('th'); if(!th) return; if(sortK === th.dataset.k) sortDir *= -1; else { sortK = th.dataset.k; sortDir = th.dataset.k === 'name' ? 1 : -1; } render(); });
