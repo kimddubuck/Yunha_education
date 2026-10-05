@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610051134">
-<script src="assets/gate.js?v=202610051134"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051138">
+<script src="assets/gate.js?v=202610051138"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -44,7 +44,8 @@ body{word-break:keep-all}
 .card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card h2{margin:0;font-size:16px}
 .card p{margin:0;font-size:13.5px;color:var(--muted)}
-.cum{position:relative;height:170px;touch-action:pan-y}
+.cum{position:relative;height:170px;touch-action:pan-y;overflow:hidden}
+html,body{overflow-x:hidden}
 .cum svg{display:block;width:100%;height:100%;overflow:visible}
 .cum .grid{stroke:var(--line);stroke-width:1}
 .cum .ax{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
@@ -348,8 +349,9 @@ function cumulative(sel, sumSel, times, unit){
     const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width);
     const i = Math.max(0, Math.min(li, Math.round((px - L) / Math.max(1, W - L - R) * (days.length - 1))));
     hl.setAttribute('x1', x(i)); hl.setAttribute('x2', x(i)); hl.setAttribute('visibility', 'visible');
-    tip.hidden = false; tip.style.left = Math.max(48, Math.min(r.width - 48, x(i) * r.width / W)) + 'px';
-    tip.textContent = `${md(days[i])} · 누적 ${cum[i]}${unit}${daily[i] ? ` (+${daily[i]})` : ''}`;
+    tip.hidden = false; tip.textContent = `${md(days[i])} · 누적 ${cum[i]}${unit}${daily[i] ? ` (+${daily[i]})` : ''}`;
+    const half = tip.offsetWidth / 2 + 2;   // 말풍선이 그래프 밖(화면 밖)으로 나가지 않게
+    tip.style.left = Math.max(half, Math.min(r.width - half, x(i) * r.width / W)) + 'px';
   };
   svg.onpointermove = show; svg.onpointerdown = show;
   svg.onpointerleave = () => { tip.hidden = true; hl.setAttribute('visibility', 'hidden'); };
