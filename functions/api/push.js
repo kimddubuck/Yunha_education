@@ -48,7 +48,7 @@ export async function onRequestPost({ request, env }) {
       const id = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(b.token)))].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join('');
       if (!(await allow('t' + id))) return json({ error: 'rate_limited' }, 429);
       const at = await accessToken(sa);
-      const data = { title: '🔔 공동육아 SOS 테스트 알림', body: '알림이 잘 와요! 이렇게 새 모임·SOS 소식을 알려 드려요', link: 'index.html', tag: 'test', from: '' };
+      const data = { title: '🔔 공동육아 SOS 테스트 알림', body: '알림이 잘 와요! 이렇게 새 모임·SOS 소식을 알려 드려요', link: 'index.html', tag: 'test', sender: '' };
       const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
@@ -63,7 +63,7 @@ export async function onRequestPost({ request, env }) {
       if (!TOPIC.test(b.topic || '') || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
       if (!(await allow(b.topic))) return json({ error: 'rate_limited' }, 429);
       const at = await accessToken(sa);
-      const data = { title, body, link: b.link, tag: String(b.tag || 'sos').slice(0, 60), from: String(b.from || '').slice(0, 32) };
+      const data = { title, body, link: b.link, tag: String(b.tag || 'sos').slice(0, 60), sender: String(b.from || '').slice(0, 32) };
       const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
