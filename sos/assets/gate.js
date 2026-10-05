@@ -261,7 +261,7 @@ const GATE_STORY = `        <div class="g-tool">
           <p class="g-sub">아기랑 하루 종일 붙어 있는데<br>의미 없이 시간만 흘러가는 것 같은 날.</p>
           <p>같이 육아하면 서로 의지도 되고<br>아이에게도 좋은 에너지를<br>줄 수 있을 것 같은데…</p>
           <p class="g-sub">단톡방에 "모임 해요!" 글쓰긴 쑥스러울 때,<br>조용히 <b>SOS</b>를 보내 보세요.</p>
-          <p>SOS가 모이면,<br><b>용기 있는 누군가가 손을 내밀어 줄 거예요</b> 🙌<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
+          <p>SOS가 모이면,<br><b>용기 있는 누군가가<br>손을 내밀어 줄 거예요</b> 🙌<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
         </div>
         <ul class="g-how">
           <li>🆘 <b>힘든 날</b>엔 SOS만 꾹</li>
@@ -313,6 +313,7 @@ function gateCss(){
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
     #gate .g-story .g-sub{color:var(--muted,#736e75)}
+    @media (max-width:359px){ #gate .g-how li{font-size:13px!important;white-space:nowrap;letter-spacing:-.2px} #gate .g-story p{font-size:13px!important;letter-spacing:-.2px} }
     #gate .g-how{text-align:left;margin:0;padding:0 4px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.55}
     #gate .g-how b{color:var(--accent-ink,#1c7276)}
     #gate .g-close{position:absolute;top:10px;right:10px;width:36px;height:36px;padding:0!important;border-radius:50%!important;background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important;font-size:18px!important}
@@ -367,7 +368,7 @@ function gateCss(){
     #gate .g-extra details p, #gate .g-extra ol, #gate .g-extra ul{font-size:13.5px;line-height:1.6;margin:6px 0}
     #gate .g-extra input{width:100%;box-sizing:border-box;margin:6px 0}
     #gate .g-extra .g-go, #gate .g-extra .g-install{width:100%}
-    #gate .g-howto{display:block;margin:10px 0 0;padding:12px;border:2px solid var(--accent-ink,#1c7276);border-radius:14px;text-align:center;font-weight:700;color:var(--accent-ink,#1c7276);text-decoration:none}
+    #gate .g-howto{display:block;margin:10px 0 0;padding:12px;border:2px solid var(--accent-ink,#1c7276);border-radius:14px;text-align:center;font-weight:700;color:var(--accent-ink,#1c7276);text-decoration:none;white-space:nowrap;font-size:15px}
     #gate .g-howto small{font-weight:500;opacity:.8}
     #gate .g-guide{text-align:left;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-guide p, #gate .g-guide ol{font-size:13.5px;line-height:1.65;color:var(--fg,#22282a);margin:0 0 6px}
