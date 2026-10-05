@@ -36,8 +36,12 @@ function rememberRoom(room){
 // 지금 들어와 있는 방. 초대 링크(?r=)로 왔는데 처음 보는 방이면 null (비밀번호를 물어요)
 const INVITE = new URLSearchParams(location.search).get('r');
 // 초대 링크에 함께 실려 온 방 이름·초대한 사람 닉네임 (비밀번호 전에 '어느 방인지' 보여 주는 용도, 글자로만 써요)
+//  짧게 i = base64url(JSON [방 이름, 닉네임]) 로 실어요 (예전 링크의 n·by 도 읽어요)
 const INVITE_INFO = (() => { const q = new URLSearchParams(location.search);
-  return {name: (q.get('n') || '').slice(0, 30), by: (q.get('by') || '').slice(0, 20)}; })();
+  let name = q.get('n') || '', by = q.get('by') || '';
+  try{ const i = q.get('i'); if(i){ const b = atob(i.replace(/-/g, '+').replace(/_/g, '/'));
+    [name, by] = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); } }catch(e){}
+  return {name: String(name || '').slice(0, 30), by: String(by || '').slice(0, 20)}; })();
 const ROOM = (() => {
   const rooms = sosRooms();
   if(INVITE){
@@ -213,7 +217,8 @@ window.addEventListener('load', async () => {
 function inviteUrl(){
   const base = location.href.split(/[?#]/)[0].replace(/[^/]*$/, '') + 'index.html?r=' + ROOM.roomId;
   const nick = (typeof ME !== 'undefined' && ME.nick) || ROOM.nick || '';
-  return base + '&n=' + encodeURIComponent(ROOM.name) + (nick ? '&by=' + encodeURIComponent(nick) : '');
+  const bytes = new TextEncoder().encode(JSON.stringify([ROOM.name, nick]));
+  return base + '&i=' + btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 function newRoomId(){
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';   // 헷갈리는 글자(0,o,1,l,i) 빼고
