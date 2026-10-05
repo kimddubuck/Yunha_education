@@ -10,12 +10,18 @@ self.addEventListener('push', e => {
   try { p = e.data ? e.data.json() : {}; } catch (err) { p = {}; }
   const d = p.data || p;   // FCM 데이터 알림은 { data: {...} } 모양으로 와요
   e.waitUntil((async () => {
-    // 내가 방금 한 일(내가 연 모임 등)의 알림은, 내가 앱을 보고 있으면 띄우지 않아요
+    // 내가 올린 것(내 SOS·내가 연 모임 등)의 알림은 나에게 띄우지 않아요
     const from = d.sender || d.from;   // 'from' 은 FCM 예약어라 sender 로 받아요
     if (from) {
       const me = await caches.open('sos-self').then(c => c.match('/me')).then(r => (r ? r.text() : '')).catch(() => '');
-      const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      if (me && me === from && wins.some(w => w.visibilityState === 'visible')) return;
+      if (me && me === from) {
+        const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        if (wins.some(w => w.visibilityState === 'visible')) return;
+        // 앱이 꺼져 있을 때는 크롬 규칙상 알림을 하나 띄워야 해서, 소리 없이 띄우고 바로 닫아요
+        await self.registration.showNotification(d.title || '공동육아 SOS', { tag: 'self-quiet', silent: true, badge: 'assets/badge-96.png' });
+        (await self.registration.getNotifications({ tag: 'self-quiet' })).forEach(n => n.close());
+        return;
+      }
     }
     await self.registration.showNotification(d.title || '공동육아 SOS', {
       body: d.body || '',
