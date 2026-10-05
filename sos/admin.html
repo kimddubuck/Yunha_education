@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610051143">
-<script src="assets/gate.js?v=202610051143"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051147">
+<script src="assets/gate.js?v=202610051147"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -59,7 +59,9 @@ html,body{overflow-x:hidden}
 .cum .endv{fill:var(--fg);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .cum .hl{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
 .cum .tip{position:absolute;top:0;transform:translateX(-50%);background:var(--fg);color:var(--bg);font-size:12px;line-height:1.4;padding:4px 8px;border-radius:8px;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
-.cum-sum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cum-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cum-h h2{white-space:nowrap}
+.cum-sum{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
 .cum-sum b{font-size:24px;font-variant-numeric:tabular-nums}
 .cum-sum span{font-size:13px;color:var(--accent-ink)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -120,9 +122,18 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
   td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   td::before{overflow:hidden;text-overflow:ellipsis}
   td:first-child{white-space:normal}
+  body{padding-block:12px 60px}
+  .wrap.admin{gap:10px}
+  #dash:not([hidden]){gap:8px}
+  .two{gap:8px}
+  .card{padding:10px 12px;gap:4px;border-radius:14px}
+  .card h2{font-size:14.5px}
+  .cum{height:min(19vh,140px)}
+  .cum-sum b{font-size:18px}
+  .cum-sum span{font-size:12px}
   .tiles{grid-template-columns:repeat(3,1fr);gap:6px}
-  .tile{padding:8px 10px;border-radius:12px;gap:0}
-  .tile b{font-size:20px}
+  .tile{padding:6px 9px;border-radius:11px;gap:0}
+  .tile b{font-size:18px}
   .tile span{font-size:12px;white-space:nowrap}
   .tile small{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .setup li{word-break:keep-all}
@@ -137,7 +148,6 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
     <span class="live off" id="live"><i></i><span>연결 중…</span></span>
     <button type="button" class="btn" id="refresh" aria-label="새로고침">🔄<span class="rf-t"> 새로고침</span></button>
   </div>
-  <p class="ad-sub">숫자만 보여 주고 아무것도 바꾸지 않아요.</p>
 
   <div class="setup" id="setup" hidden>
     <h2>🔑 처음 한 번만<br>이 브라우저를 운영자로 등록</h2>
@@ -158,8 +168,8 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
     <div class="tiles" id="tiles"></div>
 
     <div class="two">
-      <div class="card"><h2>🙋 누적 신규 가입</h2><div class="cum-sum" id="joinSum"></div><div class="cum" id="joinCum"></div></div>
-      <div class="card"><h2>🏠 누적 모임방</h2><div class="cum-sum" id="roomSum"></div><div class="cum" id="roomCum"></div></div>
+      <div class="card"><div class="cum-h"><h2>🙋 누적 신규 가입</h2><div class="cum-sum" id="joinSum"></div></div><div class="cum" id="joinCum"></div></div>
+      <div class="card"><div class="cum-h"><h2>🏠 누적 모임방</h2><div class="cum-sum" id="roomSum"></div></div><div class="cum" id="roomCum"></div></div>
     </div>
 
     <div class="card">
@@ -333,7 +343,7 @@ function cumulative(sel, sumSel, times, unit){
   let run = before; const cum = daily.map(v => run += v);
   const total = cum[cum.length - 1] || 0, week = cum[cum.length - 1] - (cum[cum.length - 8] ?? before);
   $(sumSel).innerHTML = `<b>${total}${unit}</b><span>최근 7일 +${week}</span>`;
-  const W = box.clientWidth || 320, H = 170, L = 26, R = 30, T = 14, B = 22;
+  const W = box.clientWidth || 320, H = box.clientHeight || 170, L = 26, R = 30, T = 14, B = 22;
   const max = Math.max(1, ...cum), step = max <= 4 ? 1 : Math.ceil(max / 4);
   const top = Math.ceil(max / step) * step;
   const x = i => L + (days.length > 1 ? i / (days.length - 1) : 0.5) * (W - L - R), y = v => T + (1 - v / top) * (H - T - B);
