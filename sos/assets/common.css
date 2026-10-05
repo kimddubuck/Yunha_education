@@ -665,3 +665,4 @@ body{padding-block:16px 120px}
 .ph-test{margin:8px 0 4px}
 .mem-tag.dup{border-color:#e0a800;color:#b8860b;font-weight:600}
 .mem-dup-tip{background:rgba(242,181,49,.14);padding:8px 10px;border-radius:10px;text-align:left}
+.mem-allow{border-color:var(--pick)!important;color:var(--accent-ink)!important}

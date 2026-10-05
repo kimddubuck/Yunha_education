@@ -128,7 +128,7 @@ function sosReady(){
     try{ snap = await mine.get(); }catch(e){ if(typeof sosTrouble === 'function') sosTrouble(e); return false; }
     if(snap.exists && snap.data().on === false){
       forgetRoom(ROOM.roomId);
-      alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n이 휴대폰에서는 다시 들어갈 수 없어요.`);
+      alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n\n다시 들어가려면 방장에게 '다시 들어올 수 있게 허용'을 부탁해 주세요.\n허용되면 초대 링크로 다시 들어올 수 있어요.`);
       location.href = 'index.html'; return new Promise(() => {});
     }
     if(snap.exists){ ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick); }

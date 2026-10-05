@@ -455,14 +455,31 @@ function sosReport(kind, mid, cid){
     const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
       body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>${Object.values(cnt).some(n => n > 1) ? `<p class="who-tip mem-dup-tip">⚠️ <b>중복</b>은 같은 사람이 다른 브라우저·앱으로 다시 들어온 기록일 수 있어요.${ME.owner ? ' 안 쓰는 쪽(보통 먼저 들어온 쪽)을 내보내기 해 주세요.' : ' 방장에게 정리를 부탁해 주세요.'}</p>` : ''}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
-        <ul class="mem-list">${list.map(row).join('')}</ul>`});
+        <ul class="mem-list">${list.map(row).join('')}</ul>
+        ${ME.owner ? '<div class="mem-out"></div>' : ''}`});
+    // 방장: 내보낸 사람 목록 + 다시 들어올 수 있게 허용
+    if(ME.owner) roomRef().collection('members').where('on', '==', false).get().then(q => {
+      const out = box.querySelector('.mem-out'); if(!out || !q.size) return;
+      out.innerHTML = '<p class="who-h">🚫 내보낸 사람 <small>(허용하면 초대 링크로 다시 들어올 수 있어요)</small></p><ul class="mem-list"></ul>';
+      q.docs.forEach(d => { const li = document.createElement('li'); li.dataset.uid = d.id;
+        const n = document.createElement('span'); n.className = 'mem-nick'; n.textContent = d.data().nick;   // 글자로만
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'mem-kick mem-allow'; b.dataset.allow = d.id; b.textContent = '다시 허용';
+        li.append(n, b); out.querySelector('ul').appendChild(li); });
+    }).catch(() => {});
     box.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
     box.addEventListener('click', async e => {
+      const al = e.target.closest('[data-allow]');
+      if(al){
+        al.disabled = true;
+        try{ await roomRef().collection('members').doc(al.dataset.allow).delete(); al.closest('li').remove(); pushToast && typeof pushToast === 'function' && pushToast('✅ 다시 들어올 수 있게 했어요. 초대 링크를 보내 주세요'); }
+        catch(err){ al.disabled = false; sosConfirm({icon: '😢', title: '허용하지 못했어요.', body: '<p>보안 규칙을 새로 게시했는지 확인해 주세요.</p>', ok: '확인'}); }
+        return;
+      }
       const k = e.target.closest('[data-kick]');
       if(k){
         const m = list.find(x => x.uid === k.dataset.kick); box.remove();
         const yes = await sosConfirm({icon: '🚫', title: `'${m.nick}' 님을 내보낼까요?`, danger: true, ok: '내보내기',
-          body: '<ul><li>이 사람은 이 방의 SOS·모임을 더 이상 볼 수 없어요.</li><li>같은 휴대폰으로는 다시 들어올 수 없어요.</li><li>앱을 지우고 다시 깔면 들어올 수 있으니, 꼭 막아야 하면 <b>새 방을 만들어 새 비밀번호</b>로 옮겨 주세요.</li></ul>'});
+          body: '<ul><li>이 사람은 이 방의 SOS·모임을 더 이상 볼 수 없어요.</li><li>방장이 <b>다시 허용</b>하기 전까지는 같은 휴대폰으로 다시 들어올 수 없어요.</li><li>앱을 지우고 다시 깔면 들어올 수 있으니, 꼭 막아야 하면 <b>새 방을 만들어 새 비밀번호</b>로 옮겨 주세요.</li></ul>'});
         if(!yes){ open(list); return; }
         try{ await roomRef().collection('members').doc(m.uid).update({on: false}); open(await load(true)); }
         catch(err){ sosConfirm({icon: '😢', title: '내보내지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }

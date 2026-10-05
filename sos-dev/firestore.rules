@@ -92,7 +92,7 @@ service cloud.firestore {
 
       // 멤버 (닉네임)
       //  - 들어오기: 방 열쇠를 알면 내 uid 문서를 만들 수 있어요 (내보내진 사람은 문서가 남아 있어서 다시 못 만들어요)
-      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기
+      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기 / 다시 허용: 방장이 문서 지우기
       match /members/{uid} {
         allow get: if request.auth != null && request.auth.uid == uid;
         allow read: if canUse(roomKey);
@@ -109,8 +109,10 @@ service cloud.firestore {
           || (isOwner(roomKey) && request.auth.uid != uid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['on'])
             && request.resource.data.on == false));
+        // 지우기: 지워진 방 정리 / 스스로 나가기 / 방장이 내보낸 사람을 '다시 들어올 수 있게' 풀어 주기
         allow delete: if roomDeleted(roomKey)
-          || (request.auth != null && request.auth.uid == uid && resource.data.on == true);
+          || (request.auth != null && request.auth.uid == uid && resource.data.on == true)
+          || (canUse(roomKey) && isOwner(roomKey) && request.auth.uid != uid);
       }
 
       // 모임

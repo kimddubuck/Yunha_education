@@ -11,7 +11,7 @@ textarea{width:100%;box-sizing:border-box;height:55vh;margin-top:12px;font:12px/
 #ok{text-align:center;font-weight:700;min-height:1.4em;margin-top:8px}
 </style></head><body>
 <h1>🔐 Firestore 보안 규칙 (운영자용)</h1>
-<p>아래 버튼을 누르면 규칙 <b>전체</b>가 복사돼요.<br>Firebase 콘솔 규칙 칸의 내용을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>마지막 줄이 <code>}</code> 로 끝나야 해요 (총 253줄).</p>
+<p>아래 버튼을 누르면 규칙 <b>전체</b>가 복사돼요.<br>Firebase 콘솔 규칙 칸의 내용을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>마지막 줄이 <code>}</code> 로 끝나야 해요 (총 255줄).</p>
 <button id="copy">📋 규칙 전체 복사하기</button>
 <p id="ok" aria-live="polite"></p>
 <textarea id="t" readonly>rules_version = &#x27;2&#x27;;
@@ -108,7 +108,7 @@ service cloud.firestore {
 
       // 멤버 (닉네임)
       //  - 들어오기: 방 열쇠를 알면 내 uid 문서를 만들 수 있어요 (내보내진 사람은 문서가 남아 있어서 다시 못 만들어요)
-      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기
+      //  - 닉네임 바꾸기: 나만 / 내보내기: 방장만 (on = false) / 스스로 나가기: 내 문서 지우기 / 다시 허용: 방장이 문서 지우기
       match /members/{uid} {
         allow get: if request.auth != null &amp;&amp; request.auth.uid == uid;
         allow read: if canUse(roomKey);
@@ -125,8 +125,10 @@ service cloud.firestore {
           || (isOwner(roomKey) &amp;&amp; request.auth.uid != uid
             &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;on&#x27;])
             &amp;&amp; request.resource.data.on == false));
+        // 지우기: 지워진 방 정리 / 스스로 나가기 / 방장이 내보낸 사람을 &#x27;다시 들어올 수 있게&#x27; 풀어 주기
         allow delete: if roomDeleted(roomKey)
-          || (request.auth != null &amp;&amp; request.auth.uid == uid &amp;&amp; resource.data.on == true);
+          || (request.auth != null &amp;&amp; request.auth.uid == uid &amp;&amp; resource.data.on == true)
+          || (canUse(roomKey) &amp;&amp; isOwner(roomKey) &amp;&amp; request.auth.uid != uid);
       }
 
       // 모임
