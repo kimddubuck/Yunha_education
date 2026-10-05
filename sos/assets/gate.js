@@ -425,6 +425,7 @@ function showIntro(){
       <h1>공동육아 SOS 🆘</h1>
 ${GATE_STORY}
       <button type="button" class="g-ok">시작하기</button>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
       <a class="g-link" href="index.html#install">📲 홈 화면에 설치하는 방법 보기</a>
     </div>`;
   const close = () => { box.remove(); document.removeEventListener('keydown', esc); };
