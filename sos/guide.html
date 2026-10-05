@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>사용법 · 공동육아 SOS</title>
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610050605">
+<link rel="manifest" href="manifest.webmanifest?v=202610050608">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <style>
@@ -29,7 +29,6 @@
   .share{display:flex;gap:8px;padding:6px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
   .share button{flex:1;border:0;border-radius:14px;padding:13px 8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
   .share .main{background:#ffd54a;color:#222}
-  .share .sub{background:rgba(255,255,255,.18);color:#fff;flex:0 0 auto;padding:13px 16px}
   #toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
   #toast.on{opacity:.95}
 </style>
@@ -47,8 +46,7 @@
   <button type="button" id="next" aria-label="다음">›</button>
 </div>
 <div class="share">
-  <button type="button" class="main" id="shareImgs">📤 사용법 14장 보내기</button>
-  <button type="button" class="sub" id="shareLink">🔗 링크</button>
+  <button type="button" class="main" id="shareLink">🔗 링크로 공유하기</button>
 </div>
 <div id="toast"></div>
 <script>
@@ -85,23 +83,6 @@ async function copyLink(){
   try{ await navigator.clipboard.writeText(LINK); toast('링크를 복사했어요'); }
   catch(e){ prompt('이 링크를 복사해 주세요', LINK); }
 }
-// 그림 14장을 파일로 공유 (카톡에서 사진 14장으로 보내져요). 안 되는 브라우저면 링크로 보내요
-document.getElementById('shareImgs').onclick = async e => {
-  const btn = e.currentTarget, label = btn.textContent;
-  try{
-    btn.disabled = true; btn.textContent = '그림 준비 중…';
-    const files = await Promise.all(Array.from({ length: N }, (_, k) =>
-      fetch(`guide/${pad(k + 1)}.jpg`).then(r => r.blob()).then(b => new File([b], `공동육아SOS_사용법_${pad(k + 1)}.jpg`, { type: 'image/jpeg' }))));
-    if(navigator.canShare && navigator.canShare({ files })){
-      await navigator.share({ files, title: '공동육아 SOS 사용법' });
-      return;
-    }
-    if(navigator.share){ await navigator.share({ title: '공동육아 SOS 사용법', text: '공동육아 SOS 사용법 (그림 14장)', url: LINK }); return; }
-    await copyLink();
-  }catch(err){
-    if(err && err.name !== 'AbortError') copyLink();
-  }finally{ btn.disabled = false; btn.textContent = label; }
-};
 document.getElementById('shareLink').onclick = async () => {
   if(navigator.share){ try{ await navigator.share({ title: '공동육아 SOS 사용법', text: '공동육아 SOS 사용법 (그림 14장)', url: LINK }); }catch(e){ if(e.name !== 'AbortError') copyLink(); } }
   else copyLink();
