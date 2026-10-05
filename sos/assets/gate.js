@@ -35,6 +35,9 @@ function rememberRoom(room){
 }
 // 지금 들어와 있는 방. 초대 링크(?r=)로 왔는데 처음 보는 방이면 null (비밀번호를 물어요)
 const INVITE = new URLSearchParams(location.search).get('r');
+// 초대 링크에 함께 실려 온 방 이름·초대한 사람 닉네임 (비밀번호 전에 '어느 방인지' 보여 주는 용도, 글자로만 써요)
+const INVITE_INFO = (() => { const q = new URLSearchParams(location.search);
+  return {name: (q.get('n') || '').slice(0, 30), by: (q.get('by') || '').slice(0, 20)}; })();
 const ROOM = (() => {
   const rooms = sosRooms();
   if(INVITE){
@@ -207,7 +210,11 @@ window.addEventListener('load', async () => {
   }catch(e){ /* 인터넷 문제: 그냥 둬요 */ }
 });
 
-function inviteUrl(){ return location.href.split(/[?#]/)[0].replace(/[^/]*$/, '') + 'index.html?r=' + ROOM.roomId; }
+function inviteUrl(){
+  const base = location.href.split(/[?#]/)[0].replace(/[^/]*$/, '') + 'index.html?r=' + ROOM.roomId;
+  const nick = (typeof ME !== 'undefined' && ME.nick) || ROOM.nick || '';
+  return base + '&n=' + encodeURIComponent(ROOM.name) + (nick ? '&by=' + encodeURIComponent(nick) : '');
+}
 function newRoomId(){
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';   // 헷갈리는 글자(0,o,1,l,i) 빼고
   return Array.from(crypto.getRandomValues(new Uint8Array(10)), b => chars[b % chars.length]).join('');
@@ -316,6 +323,10 @@ function gateCss(){
     #gate .g-list-h{margin:0;font-weight:800;font-size:15px!important;color:var(--fg,#22282a)!important}
     #gate .g-list-h small{font-weight:500;color:var(--muted,#736e75);font-size:12px;margin-left:4px}
     #gate .g-room{padding:12px!important}
+    #gate .g-inv{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:12px;background:var(--bg,#fff);border:1.5px solid var(--pick,#2a9095)}
+    #gate .g-inv-name{font-size:19px!important;font-weight:800;color:var(--fg,#22282a)!important;word-break:keep-all;overflow-wrap:anywhere}
+    #gate .g-inv-by{font-size:14px!important}
+    #gate .g-inv-by b{color:var(--accent-ink,#1c7276)}
     #gate .g-row{display:flex;gap:6px;align-items:stretch}
     #gate .g-row .g-room{flex:1;min-width:0}
     #gate .bell{flex:none;width:30px;padding:0!important;font-size:13px!important;border-radius:9px!important;background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important}
@@ -478,10 +489,11 @@ function showRooms(closable){
   const list = rooms.length && !invite ? `<div class="g-listbox"><p class="g-list-h">${pick ? '🏠 어느 방으로 갈까요?' : '🏠 내 방 목록'} <small>눌러서 이동</small></p><div class="g-rooms">` +
     rooms.map(r => `<div class="g-row"><button type="button" class="g-room" data-room="${r.roomId}"${ROOM && r.roomId === ROOM.roomId ? ' aria-current="true"' : ''}><span class="g-rname"></span>${ROOM && r.roomId === ROOM.roomId ? '<span class="g-now">지금 방</span>' : ''}<span class="g-chips"></span><span class="g-go-arrow" aria-hidden="true">›</span></button>${bells ? pushBell(r.roomId) : ''}</div>`).join('') + '</div></div>' : '';
   const formHtml = `
-${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
+${closable || invite ? '' : GATE_HOW_CREATE}
       ${list}
       <div class="g-box">
       ${invite ? `<p class="g-box-h">🔑 초대받은 모임 방이에요</p>
+      ${INVITE_INFO.name ? '<div class="g-inv"><p class="g-inv-name"></p>' + (INVITE_INFO.by ? '<p class="g-inv-by">👑 <b></b> 님이 초대했어요</p>' : '') + '</div>' : ''}
       <p>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
       <input id="gateNick" aria-label="닉네임" placeholder="닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
@@ -493,7 +505,8 @@ ${closable ? '' : (invite ? GATE_HOW_INVITE : GATE_HOW_CREATE)}
       <input id="gateNick" aria-label="내 닉네임" placeholder="내 닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
       <button type="submit">방 만들기</button>`}
       <p class="g-msg" id="gateMsg" aria-live="polite"></p>
-      </div>`;
+      </div>
+${invite && !closable ? GATE_HOW_INVITE : ''}`;
   // 처음 열 때: ① 앱 소개(이야기 · 설치 안내 · 개인정보) → [시작하기] → ② 비밀번호 / 방 만들기
   box.innerHTML = (pick || (closable && rooms.length)) ? `<form class="g-card" autocomplete="off">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
@@ -539,6 +552,8 @@ ${invite ? '' : GATE_PASTE}
   });
   const msg = t => { box.querySelector('#gateMsg').textContent = t; };
   const ni = box.querySelector('#gateNick'); if(ni) ni.value = lastNick();
+  const iv = box.querySelector('.g-inv');   // 방 이름·초대한 사람은 글자로만
+  if(iv){ iv.querySelector('.g-inv-name').textContent = '🏠 ' + INVITE_INFO.name; const by = iv.querySelector('.g-inv-by b'); if(by) by.textContent = INVITE_INFO.by; }
   if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;
   const enter = room => { rememberRoom(room); markPicked(); location.href = 'index.html'; };
   box.addEventListener('click', async e => {
