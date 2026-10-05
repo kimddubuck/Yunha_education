@@ -655,6 +655,8 @@ ${invite ? '' : GATE_PASTE}
         const roomId = newRoomId(), key = await roomKey(roomId, pw);
         const owner = randomHex();   // 방장 열쇠: 이 휴대폰에만 두고, 서버에는 지문만
         await db.collection('rooms').doc(key).set({name, oh: await sha256Hex(owner), ou: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+        // 방장을 바로 멤버로 넣어요 (홈으로 넘어가기 전에 닫아도 '멤버 없는 빈 방'이 남지 않게)
+        try{ await db.collection('rooms').doc(key).collection('members').doc(user.uid).set({nick: nick.slice(0, NICK_MAX), on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); }catch(e){}
         enter({roomId, key, name, owner, nick});
       }
     }catch(err){ msg(roomError(err)); }
