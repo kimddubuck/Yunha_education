@@ -7,8 +7,8 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#2a9095">
-<link rel="stylesheet" href="assets/common.css?v=202610051034">
-<script src="assets/gate.js?v=202610051034"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051103">
+<script src="assets/gate.js?v=202610051103"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -115,7 +115,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
 
     <div class="card">
       <h2>🏠 방별 현황</h2>
-      <p>제목을 누르면 정렬돼요. <span class="flag">방장 부재</span> = 방장이 60일 넘게 안 들어옴 · <span class="flag bad">조용</span> = 30일 넘게 아무도 안 들어옴</p>
+      <p>제목을 누르면 정렬돼요. <span class="flag">방장 부재</span> = 방장이 60일 넘게 안 들어옴 · <span class="flag bad">조용</span> = 30일 넘게 아무도 안 들어옴 · <span class="flag gone">빈 방</span> = 멤버 0명 (만들다 만 방·테스트 방)</p>
       <div class="tbl"><table id="rooms"><thead><tr>
         <th data-k="name">방</th><th data-k="members" aria-sort="descending">멤버</th><th data-k="new7">신규 7일</th><th data-k="active7">활성 7일</th><th data-k="dormant">60일+ 미사용</th><th data-k="sos">이번 주 SOS</th><th data-k="meets">모임</th><th data-k="last">마지막 활동</th><th data-k="created">만든 날</th>
       </tr></thead><tbody></tbody></table></div>
@@ -202,7 +202,8 @@ function render(){
   const sum = k => D.reduce((a, d) => a + (typeof d[k] === 'number' ? d[k] : d[k].length), 0);
   const members = sum('members'), new7 = sum('new7'), new30 = sum('new30'), active7 = sum('active7'), dormant = sum('dormant'), sos = sum('sos'), meets = sum('meets');
   const quiet = alive.filter(r => details[r.key] && now - details[r.key].last > 30 * DAY).length;
-  const noOwner = alive.filter(r => details[r.key] && details[r.key].ownerGone).length;
+  const noOwner = alive.filter(r => details[r.key] && details[r.key].members && details[r.key].ownerGone).length;
+  const empty = alive.filter(r => details[r.key] && !details[r.key].members).length;
   const tile = (b, s, sm, warn) => `<div class="tile${warn ? ' warn' : ''}"><b>${b}</b><span>${s}</span>${sm ? `<small>${sm}</small>` : ''}</div>`;
   $('#tiles').innerHTML = tile(alive.length, '살아 있는 방', gone ? `지워진 방 ${gone}` : '')
     + tile(members, '전체 멤버', `활성 7일 ${active7}명`)
@@ -211,7 +212,8 @@ function render(){
     + tile(sos, '이번 주 SOS 인원', '7일 안, 사람 기준')
     + tile(meets, '다가오는 모임', '')
     + tile(quiet, '조용한 방', '30일 넘게 활동 없음', quiet > 0)
-    + tile(noOwner, '방장 부재', '60일+ 또는 나감', noOwner > 0);
+    + tile(noOwner, '방장 부재', '60일+ 또는 나감', noOwner > 0)
+    + tile(empty, '빈 방', '멤버 0명 · 만들고 안 들어옴', false);
   // 주별 막대
   const jw = Array(12).fill(0); D.forEach(d => d.joins.forEach(t => { const i = weekIdx(t); if(i >= 0) jw[i]++; }));
   const rw = Array(12).fill(0); rooms.forEach(r => { const i = weekIdx(ms(r.createdAt)); if(i >= 0) rw[i]++; });
@@ -231,7 +233,8 @@ function render(){
   rows.forEach(({r, d}) => {
     const tr = document.createElement('tr'); if(r.deleted) tr.className = 'gone';
     const name = document.createElement('td'); const rn = document.createElement('span'); rn.className = 'rn'; rn.textContent = r.deleted ? '(지워진 방)' : (r.name || '(이름 없음)'); name.appendChild(rn);
-    if(d && d.ownerGone && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag">방장 부재</span>');
+    if(d && !d.members && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag gone">빈 방</span>');
+    else if(d && d.ownerGone && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag">방장 부재</span>');
     if(d && now - d.last > 30 * DAY && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag bad">조용</span>');
     if(d && d.kicked) name.insertAdjacentHTML('beforeend', `<span class="flag gone">내보냄 ${d.kicked}</span>`);
     tr.appendChild(name);
