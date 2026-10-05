@@ -666,3 +666,6 @@ body{padding-block:16px 120px}
 .mem-tag.dup{border-color:#e0a800;color:#b8860b;font-weight:600}
 .mem-dup-tip{background:rgba(242,181,49,.14);padding:8px 10px;border-radius:10px;text-align:left}
 .mem-allow{border-color:var(--pick)!important;color:var(--accent-ink)!important}
+.mem-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mem-who .mem-nick{flex:none}
+.mem-dup{font-size:12px;font-weight:700;color:#b8860b}
