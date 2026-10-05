@@ -631,10 +631,11 @@ async function roomCounts(room){
 // SOS 날짜 문서 v 의 숫자: 예전 숫자 칸(h9 등) + 닉네임 예약(p: {uid: {h:[시간], n}})
 function sosHourCount(v, h){ return v ? (v['h' + h] || 0) + Object.values(v.p || {}).filter(e => (e.h || []).includes(+h)).length : 0; }
 function sosHourNames(v, h){ return v ? Object.values(v.p || {}).filter(e => (e.h || []).includes(+h)).map(e => e.n) : []; }
+// 그 날 SOS를 보낸 '사람 수' (한 사람이 여러 시간을 골라도 1명). 닉네임 없는 예전 기록은 시간별 숫자 중 가장 큰 값으로 세요
 function sosDayTotal(v){
   if(!v) return 0;
-  return Object.keys(v).filter(k => /^h\d+$/.test(k)).reduce((a, k) => a + (v[k] || 0), 0) + (v.count || 0)
-    + Object.values(v.p || {}).reduce((a, e) => a + (e.h || []).length, 0);
+  const old = Math.max(0, ...Object.keys(v).filter(k => /^h\d+$/.test(k)).map(k => v[k] || 0)) + (v.count || 0);
+  return Object.values(v.p || {}).filter(e => (e.h || []).length).length + old;
 }
 
 // 앱을 열 때 첫 화면은 '내 방 목록'이에요
