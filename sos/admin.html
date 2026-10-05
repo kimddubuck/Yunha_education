@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610051147">
-<script src="assets/gate.js?v=202610051147"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610051152">
+<script src="assets/gate.js?v=202610051152"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -128,7 +128,10 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
   .two{gap:8px}
   .card{padding:10px 12px;gap:4px;border-radius:14px}
   .card h2{font-size:14.5px}
-  .cum{height:min(19vh,140px)}
+  /* 타일 아래 남은 화면 높이를 그래프 2개가 반씩 나눠 써요 (JS가 --fold 에 남은 높이를 넣어요) */
+  .two{display:grid;grid-template-rows:1fr 1fr;height:var(--fold,360px);min-height:240px}
+  .two .card{display:flex;flex-direction:column;min-height:0}
+  .two .cum{flex:1;height:auto;min-height:60px}
   .cum-sum b{font-size:18px}
   .cum-sum span{font-size:12px}
   .tiles{grid-template-columns:repeat(3,1fr);gap:6px}
@@ -289,6 +292,7 @@ function render(){
   // 날짜별 누적: 가입(지금 멤버의 들어온 날) · 모임방(살아 있는 방의 만든 날)
   const joinTimes = D.flatMap(d => d.joins).filter(Boolean);
   const roomTimes = alive.map(r => ms(r.createdAt)).filter(Boolean);
+  fitFold();
   cumulative('#joinCum', '#joinSum', joinTimes, '명');
   cumulative('#roomCum', '#roomSum', roomTimes, '개');
   // 한도
@@ -380,6 +384,13 @@ function dbg(){
   box.textContent = `vw ${vw} · inner ${innerWidth} · scroll ${document.documentElement.scrollWidth} · dpr ${devicePixelRatio} · vv ${visualViewport ? Math.round(visualViewport.width) + '@' + visualViewport.scale.toFixed(2) : '-'}\n` + out.slice(0, 15).join('\n');
 }
 setInterval(dbg, 2000);
+// 폰에서 타일 + 그래프 2개가 한 화면에 딱 들어오게: 그래프 칸 높이 = 화면 높이 - 그래프 칸 위치 - 아래 여백
+function fitFold(){
+  const two = document.querySelector('.two'); if(!two) return;
+  if(!matchMedia('(max-width:700px)').matches){ two.style.removeProperty('--fold'); return; }
+  const top = two.getBoundingClientRect().top + scrollY;
+  two.style.setProperty('--fold', Math.max(240, Math.floor(innerHeight - top - 10)) + 'px');
+}
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => rooms.length && render(), 150); });
 $('#showGone').addEventListener('change', () => render());
 document.querySelector('#rooms thead').addEventListener('click', e => { const th = e.target.closest('th'); if(!th) return; if(sortK === th.dataset.k) sortDir *= -1; else { sortK = th.dataset.k; sortDir = th.dataset.k === 'name' ? 1 : -1; } render(); });
