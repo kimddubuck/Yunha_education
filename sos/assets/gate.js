@@ -183,6 +183,15 @@ function sosOwnerGone(list){
   const last = o.seen || o.joinedAt;
   return !!(last && last.toMillis && Date.now() - last.toMillis() > OWNER_GONE_DAYS * 864e5);
 }
+// 📤 앱 공유: 앱 첫 화면 주소를 공유해요 (방 초대가 아니라 앱 소개용). 공유가 안 되면 주소를 복사해요
+async function sosShareApp(){
+  const url = new URL('index.html', location.href).href;
+  const text = '공동육아 SOS 🆘\n어떤 플랫폼에서 모이든, 공동육아의 모임을 도와드려요.\n가입 없이 링크 + 비밀번호 + 닉네임이면 끝.';
+  if(navigator.share){ try{ await navigator.share({title: '공동육아 SOS', text, url}); return; }catch(e){ if(e.name === 'AbortError') return; } }
+  try{ await navigator.clipboard.writeText(text + '\n' + url); alert('앱 주소를 복사했어요.\n단톡방에 붙여넣어 주세요.'); }
+  catch(e){ prompt('이 주소를 복사해 주세요', url); }
+}
+document.addEventListener('click', e => { if(e.target.closest('#gate .g-share')){ e.preventDefault(); e.stopPropagation(); sosShareApp(); } }, true);
 // 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
 //  SOS 요청·참석 표시는 날짜가 지나고 7일 뒤 자동으로 지워져요
 async function sosDeleteMe(){
@@ -340,6 +349,8 @@ function gateCss(){
     #gate .g-how b{color:var(--accent-ink,#1c7276)}
     #gate .g-close{position:absolute;top:10px;right:10px;width:36px;height:36px;padding:0!important;border-radius:50%!important;background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important;font-size:18px!important}
     #gate .g-card{position:relative}
+    #gate .g-share{position:absolute;top:12px;right:12px;width:auto!important;padding:6px 12px!important;border-radius:999px!important;border:1.5px solid var(--accent-ink,#1c7276)!important;background:transparent!important;color:var(--accent-ink,#1c7276)!important;font-size:13px!important;font-weight:700;white-space:nowrap}
+    #gate .g-share.left{right:auto;left:12px}
     #gate .g-link{color:var(--accent-ink,#1c7276);font-size:14px;font-weight:600}
     #gate .g-rooms{display:flex;flex-direction:column;gap:6px}
     #gate .g-room{background:var(--tag,#efefef)!important;color:var(--fg,#22282a)!important;font-weight:600}
@@ -421,6 +432,7 @@ function showIntro(){
   const box = document.createElement('div'); box.id = 'gate'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', '공동육아 SOS 소개');
   box.innerHTML = `<div class="g-card">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
+      <button type="button" class="g-share left">📤 앱 공유</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
 ${GATE_STORY}
@@ -570,6 +582,7 @@ ${GATE_PASTE}
 ${formHtml}
 ${GATE_PASTE}
     </form>` : `<div class="g-card g-step1"${invite ? ' hidden' : ''}>
+      <button type="button" class="g-share">📤 앱 공유</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘</h1>
 ${GATE_STORY}
