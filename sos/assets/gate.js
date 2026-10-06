@@ -396,6 +396,7 @@ function gateCss(){
     #gate .g-card{width:100%;max-width:380px;margin:auto 0;padding:24px 16px!important;display:flex;flex-direction:column;gap:12px;background:var(--bg,#fff);border:1px solid var(--line,#e2e6e1);border-radius:20px;padding:28px 22px;box-shadow:0 2px 14px rgba(20,40,30,.08);text-align:center}
     #gate .g-icon{width:72px;height:72px;margin:0 auto;border-radius:18px;display:block}
     #gate h1{margin:0;font-size:22px}
+    #gate .g-demo{display:inline-block;vertical-align:middle;margin-left:6px;padding:2px 7px;border-radius:999px;border:1px solid var(--muted,#736e75);color:var(--muted,#736e75);font-size:11px;font-weight:600;letter-spacing:-.2px;white-space:nowrap;position:relative;top:-2px}
     #gate p{margin:0;color:var(--muted,#6b7570);font-size:14px}
     #gate input{font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line,#e2e6e1);background:var(--bg,#fff);color:var(--fg,#1f2a24);text-align:center}
     #gate button{font:inherit;font-weight:700;font-size:15px;padding:12px;border-radius:12px;border:0;background:var(--pick,#2a9095);color:var(--pick-fg,#fff);cursor:pointer}
@@ -531,7 +532,7 @@ function showIntro(){
       <button type="button" class="g-close" aria-label="닫기">✕</button>
       <button type="button" class="g-share left">📤 앱 공유</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
-      <h1>공동육아 SOS 🆘</h1>
+      <h1>공동육아 SOS 🆘<span class="g-demo">데모 버전</span></h1>
 ${GATE_STORY}
       <button type="button" class="g-ok">시작하기</button>
       <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
@@ -664,7 +665,7 @@ ${invite && !closable ? GATE_HOW_INVITE : ''}`;
   box.innerHTML = (pick || (closable && rooms.length)) ? `<form class="g-card" autocomplete="off">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
-      <h1>공동육아 SOS 🆘</h1>
+      <h1>공동육아 SOS 🆘<span class="g-demo">데모 버전</span></h1>
       ${list}
       <p class="g-legend">🆘 = 1주일 안에 SOS 보낸 사람 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
@@ -675,13 +676,13 @@ ${GATE_PASTE}
     </form>` : closable ? `<form class="g-card" autocomplete="off">
       <button type="button" class="g-close" aria-label="닫기">✕</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
-      <h1>공동육아 SOS 🆘</h1>
+      <h1>공동육아 SOS 🆘<span class="g-demo">데모 버전</span></h1>
 ${formHtml}
 ${GATE_PASTE}
     </form>` : `<div class="g-card g-step1"${invite ? ' hidden' : ''}>
       <button type="button" class="g-share">📤 앱 공유</button>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
-      <h1>공동육아 SOS 🆘</h1>
+      <h1>공동육아 SOS 🆘<span class="g-demo">데모 버전</span></h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
       <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
@@ -689,7 +690,7 @@ ${GATE_EXTRA}
     </div>
     <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
-      <h1>공동육아 SOS 🆘</h1>
+      <h1>공동육아 SOS 🆘<span class="g-demo">데모 버전</span></h1>
 ${formHtml}
 ${invite ? '' : GATE_PASTE}
       <button type="button" class="g-back">← 앱 소개 다시 보기</button>
