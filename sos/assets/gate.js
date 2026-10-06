@@ -233,12 +233,20 @@ async function sosShareApp(){
 }
 // 🧪 '베타' 표시를 누르면 지금이 어떤 단계인지 알려 줘요
 function sosBetaInfo(){
-  const mail = SOS_CONTACT ? `<a href="mailto:${SOS_CONTACT}">${SOS_CONTACT}</a>` : '운영자';
-  const body = `<p>정식 출시 전,<br>실제로 써 보며 다듬는 단계예요.</p>
-    <ul><li>기능과 화면이 바뀔 수 있어요.</li><li>방과 기록은 그대로 저장돼요.</li><li>지난 SOS·모임은 7일 뒤 지워져요.</li></ul>
-    <p class="who-tip">불편한 점이나 바라는 기능은<br>${mail}로 알려 주세요 🙏</p>`;
-  if(typeof sosInfo === 'function') sosInfo({icon: '🧪', title: '지금은 베타 버전이에요', body});
-  else alert('지금은 베타 버전이에요.\n정식 출시 전, 실제로 써 보며 다듬는 단계예요.');
+  if(document.querySelector('.pop-beta')) return;
+  const box = document.createElement('div'); box.className = 'pop-back pop-beta-back';
+  box.innerHTML = `<div class="pop-beta" role="dialog" aria-modal="true" aria-label="베타 버전 안내">
+      <p class="pb-t">🧪 베타 버전이에요</p>
+      <p class="pb-s">정식 출시 전,<br>실제로 써 보며 다듬는 중이에요.</p>
+      <ul class="pb-l"><li>기능과 화면이 바뀔 수 있어요</li><li>방과 기록은 그대로 저장돼요</li></ul>
+      ${SOS_CONTACT ? `<p class="pb-m">의견은 <a href="mailto:${SOS_CONTACT}">${SOS_CONTACT}</a></p>` : ''}
+      <button type="button" class="pb-ok">확인</button>
+    </div>`;
+  const close = () => { box.remove(); document.removeEventListener('keydown', key); };
+  const key = e => { if(e.key === 'Escape') close(); };
+  box.addEventListener('click', e => { if(e.target === box || e.target.closest('.pb-ok')) close(); });
+  document.addEventListener('keydown', key);
+  document.body.appendChild(box); box.querySelector('.pb-ok').focus();
 }
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-demo')){ e.preventDefault(); e.stopPropagation(); sosBetaInfo(); } }, true);
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-share')){ e.preventDefault(); e.stopPropagation(); sosShareApp(); } }, true);
@@ -406,6 +414,16 @@ function gateCss(){
     #gate .g-card{width:100%;max-width:380px;margin:auto 0;padding:24px 16px!important;display:flex;flex-direction:column;gap:12px;background:var(--bg,#fff);border:1px solid var(--line,#e2e6e1);border-radius:20px;padding:28px 22px;box-shadow:0 2px 14px rgba(20,40,30,.08);text-align:center}
     #gate .g-icon{width:72px;height:72px;margin:0 auto;border-radius:18px;display:block}
     #gate h1{margin:0;font-size:22px}
+    .pop-beta-back{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(8,12,12,.45)}
+    .pop-beta{width:min(272px,100%);box-sizing:border-box;padding:16px 16px 12px;border-radius:16px;border:1px solid var(--line,#e3e3e5);background:var(--bg,#fff);color:var(--fg,#22282a);box-shadow:0 8px 28px rgba(0,0,0,.28);text-align:left;font-size:13px;line-height:1.55;word-break:keep-all}
+    .pop-beta p{margin:0}
+    .pop-beta .pb-t{font-size:15px;font-weight:800;margin-bottom:6px}
+    .pop-beta .pb-s{color:var(--muted,#736e75);white-space:nowrap}
+    .pop-beta .pb-l{margin:8px 0 0;padding-left:16px;white-space:nowrap}
+    .pop-beta .pb-l li{margin:1px 0}
+    .pop-beta .pb-m{margin-top:8px;font-size:12px;color:var(--muted,#736e75);white-space:nowrap}
+    .pop-beta .pb-m a{color:var(--accent-ink,#1c7276)}
+    .pop-beta .pb-ok{display:block;width:100%;margin-top:12px;padding:8px;border:0;border-radius:10px;background:var(--tag,#efefef);color:var(--fg,#22282a);font:inherit;font-weight:700;font-size:13px;cursor:pointer}
     #gate .g-demo{display:inline-block;vertical-align:middle;margin-left:6px;padding:2px 8px!important;border-radius:999px!important;border:1px solid var(--muted,#736e75)!important;background:transparent!important;color:var(--muted,#736e75)!important;font-size:11.5px!important;font-weight:700!important;letter-spacing:-.2px;white-space:nowrap;position:relative;top:-2px;cursor:pointer}
     #gate p{margin:0;color:var(--muted,#6b7570);font-size:14px}
     #gate input{font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line,#e2e6e1);background:var(--bg,#fff);color:var(--fg,#1f2a24);text-align:center}
