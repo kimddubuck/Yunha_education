@@ -434,10 +434,9 @@ function gateCss(){
       #gate .g-ft{font-size:13px!important;letter-spacing:-.4px;white-space:nowrap}
       #gate .g-fs{font-size:11px!important;letter-spacing:-.4px;white-space:nowrap} }
     #gate .g-story .g-sub{color:var(--muted,#736e75)}
-    #gate .g-story .g-shy{font-weight:700;font-size:15px!important;color:var(--fg,#22282a);padding:10px 12px;border-radius:12px;background:var(--accent-soft,#e1f2f1);border-left:4px solid var(--pick,#2a9095);letter-spacing:-.2px}
+    #gate .g-story .g-shy{font-weight:700;font-size:15px!important;color:var(--fg,#22282a);letter-spacing:-.2px}
     #gate .g-story .g-shy b{color:#e8382f}
-    @media (prefers-color-scheme: dark){ #gate .g-story .g-shy{background:rgba(42,144,149,.18)} #gate .g-story .g-shy b{color:#ff6b62} }
-    @media (max-width:340px){ #gate .g-story .g-shy{font-size:13.5px!important;padding:9px 9px;letter-spacing:-.4px} }
+    @media (prefers-color-scheme: dark){ #gate .g-story .g-shy b{color:#ff6b62} }
     @media (max-width:359px){ #gate .g-how li{font-size:13px!important;white-space:nowrap;letter-spacing:-.2px} #gate .g-story p{font-size:13px!important;letter-spacing:-.2px} }
     #gate .g-how{text-align:left;margin:0;padding:0 4px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.55}
     #gate .g-how b{color:var(--accent-ink,#1c7276)}
