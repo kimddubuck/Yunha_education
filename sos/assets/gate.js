@@ -371,7 +371,7 @@ const GATE_STORY = `        <div class="g-tool">
           <p class="g-fnick">🙋 가입 없이 <b>닉네임</b>만 정하면 끝</p>
         </div>
         <div class="g-story">
-          <p class="g-kick">오늘도 독박육아… 😂</p>
+          <p class="g-kick"><span>오늘도 독박육아…</span> 😂</p>
           <p class="g-q">"아… 오늘은 또 어떻게 버티지?"</p>
           <p class="g-sub">아기랑 하루 종일 붙어 있는데<br>의미 없이 시간만 흘러가는 것 같은 날.</p>
           <p>같이 육아하면 서로 의지도 되고<br>아이에게도 좋은 에너지를<br>줄 수 있을 것 같은데…</p>
@@ -429,6 +429,9 @@ function gateCss(){
     #gate .g-story .g-q{font-weight:700;font-size:16px}
     #gate .g-story .g-kick{font-weight:800;font-size:21px!important;line-height:1.35;letter-spacing:-.3px;color:#e8382f;white-space:nowrap;margin-bottom:-2px}
     @media (prefers-color-scheme: dark){ #gate .g-story .g-kick{color:#ff6b62} }
+    /* 검정 글자 테두리 (이모티콘은 빼고 글자만) — 테두리를 글자 뒤에 그려서 글자가 가늘어지지 않게 */
+    #gate .g-story .g-kick span{-webkit-text-stroke:3.5px #111;paint-order:stroke fill;letter-spacing:.2px}
+    @supports not (paint-order:stroke fill){ #gate .g-story .g-kick span{-webkit-text-stroke:0;text-shadow:-1.5px -1.5px 0 #111,1.5px -1.5px 0 #111,-1.5px 1.5px 0 #111,1.5px 1.5px 0 #111,0 -1.5px 0 #111,0 1.5px 0 #111,-1.5px 0 0 #111,1.5px 0 0 #111} }
     @media (max-width:340px){ #gate .g-story .g-kick{font-size:19px!important}
       #gate .g-flow{grid-template-columns:1fr 34px 1fr;gap:3px}
       #gate .g-fbox{padding:10px 3px}
