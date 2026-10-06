@@ -13,6 +13,13 @@ const SOS_FIREBASE = {
   appId: "1:133710590792:web:1a4d163ac4679ed6d1397d"
 };
 const ROOMS_KEY = 'sosRooms', CUR_KEY = 'sosRoom';
+// 📲 카톡 등 앱 안 브라우저: 저장 공간이 따로라 같은 사람이 브라우저마다 따로 생겨요(중복 멤버).
+//  그래서 방에 들어가기 전에 안드로이드는 크롬, 아이폰은 사파리로 넘겨요 (sosEscapeInApp, 아래)
+const SOS_UA = navigator.userAgent || '';
+const SOS_IOS = /iphone|ipad|ipod/i.test(SOS_UA);
+const SOS_KAKAO = /KAKAOTALK/i.test(SOS_UA);
+const SOS_INAPP = (SOS_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|DaumApps|BAND\/|everytimeApp/i.test(SOS_UA))
+  && !document.documentElement.hasAttribute('data-public');
 const SOS_CONTACT = 'ifb1321@gmail.com';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
   if(SOS_CONTACT){ el.innerHTML = ''; const a = document.createElement('a'); a.href = 'mailto:' + SOS_CONTACT; a.textContent = SOS_CONTACT; el.appendChild(a); }
@@ -626,7 +633,7 @@ const GATE_EXTRA = `      <div class="g-extra">
             <li>오른쪽 위 <b>추가</b>를 누르면 끝! 홈 화면에 공동육아 SOS 아이콘이 생겨요.</li>
           </ol>
           <p>아이폰은 설치한 앱을 처음 열 때 방을 한 번 더 물어봐요. <b>시작하기</b>를 누르고 <b>🔗 초대 링크를 받았어요</b>에 링크를 붙여넣고 비밀번호를 넣어 주세요.</p>
-          <p>카카오톡에서 링크를 열었다면, 오른쪽 위 메뉴에서 <b>다른 브라우저로 열기</b>를 먼저 눌러 주세요.</p>
+          <p>카카오톡에서 링크를 누르면 안드로이드는 크롬, 아이폰은 사파리로 자동으로 열려요.</p>
         </details>
         <a class="g-link g-safety" href="safety.html">🔒 무엇을 저장하나요? 개인정보 안내 보기</a>
         <a class="g-link g-safety" href="terms.html">📜 이용약관 · 이용 규칙 보기</a>
@@ -834,7 +841,7 @@ function markPicked(){ try{ sessionStorage.setItem('sosPicked', '1'); }catch(e){
 (function pickOnOpen(){
   const q = new URLSearchParams(location.search), forced = q.has('pick');
   if(forced){ q.delete('pick'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); }
-  if(!ROOM || INVITE || !sosRooms().length) return;
+  if(SOS_INAPP || !ROOM || INVITE || !sosRooms().length) return;
   if(!/(^|\/)(index\.html)?$/.test(location.pathname)) return;   // 홈에서만
   if(!forced){ try{ if(sessionStorage.getItem('sosPicked')) return; }catch(e){ return; } }
   const go = () => showRooms('pick');
@@ -842,7 +849,70 @@ function markPicked(){ try{ sessionStorage.setItem('sosPicked', '1'); }catch(e){
 })();
 
 (function gate(){
-  if(ROOM || document.documentElement.hasAttribute('data-public')) return;
+  if(SOS_INAPP || ROOM || document.documentElement.hasAttribute('data-public')) return;
   document.documentElement.classList.add('gate-locked');
   if(document.body) showRooms(false); else document.addEventListener('DOMContentLoaded', () => showRooms(false));
 })();
+
+// 📲 앱 안 브라우저 → 크롬(안드로이드) / 사파리(아이폰)로 넘기기. 자동으로 한 번 시도하고, 안 되면 버튼으로
+function sosEscapeTarget(){
+  // 이미 방이 있는 사람은 그 방 초대 링크로 넘겨요 (크롬·사파리에서 방 이름이 보이고 비밀번호만 넣으면 돼요)
+  let url = location.href;
+  if(ROOM){ try{ url = inviteUrl(); }catch(e){} }   // (주소창의 ?r= 은 이미 지워졌을 수 있어서 초대 링크를 새로 만들어요)
+  return url;
+}
+function sosEscapeLinks(url){
+  const u = new URL(url);
+  return {
+    chrome: `intent://${u.host}${u.pathname}${u.search}${u.hash}#Intent;scheme=https;package=com.android.chrome;end`,
+    safari: 'x-safari-' + url,
+    kakaoOut: 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url)
+  };
+}
+const sosGo = u => (window.__sosGo || (x => { location.href = x; }))(u);
+function sosEscapeInApp(){
+  const url = sosEscapeTarget(), L = sosEscapeLinks(url);
+  const main = SOS_IOS ? L.safari : L.chrome, name = SOS_IOS ? '사파리' : '크롬';
+  const ro = SOS_IOS ? '사파리로' : '크롬으로', ga = SOS_IOS ? '사파리가' : '크롬이';
+  const css = document.createElement('style');
+  css.textContent = `
+    html.sos-inapp body > *:not(#inappEsc){display:none!important}
+    #inappEsc{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--page,#f3f5f2);font-family:inherit;word-break:keep-all}
+    #inappEsc .ie{width:min(300px,100%);text-align:center}
+    #inappEsc img{width:64px;height:64px;border-radius:16px}
+    #inappEsc h1{margin:12px 0 6px;font-size:19px;color:var(--fg,#22282a);white-space:nowrap}
+    #inappEsc p{margin:0;font-size:14px;line-height:1.6;color:var(--muted,#736e75);white-space:nowrap}
+    #inappEsc .ie-go{display:block;width:100%;margin-top:18px;padding:14px;border:0;border-radius:14px;background:var(--pick,#2a9095);color:var(--pick-fg,#fff);font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+    #inappEsc .ie-sub{display:block;width:100%;margin-top:8px;padding:10px;border:1px solid var(--line,#e3e3e5);border-radius:12px;background:transparent;color:var(--fg,#22282a);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+    #inappEsc .ie-stay{margin-top:14px;background:none;border:0;color:var(--muted,#736e75);font:inherit;font-size:12.5px;text-decoration:underline;cursor:pointer}
+    #inappEsc .ie-msg{min-height:1.4em;margin-top:8px;font-size:12.5px;color:var(--accent-ink,#1c7276)}`;
+  document.head.appendChild(css);
+  document.documentElement.classList.add('sos-inapp');
+  const box = document.createElement('div'); box.id = 'inappEsc'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', name + '에서 열기');
+  box.innerHTML = `<div class="ie">
+      <img src="assets/icon.svg" alt="" width="64" height="64">
+      <h1>📲 ${name}에서 열어 주세요</h1>
+      <p>카톡 안에서는</p><p>앱 설치·알림이 안 돼요.</p>
+      <button type="button" class="ie-go">${ro} 열기</button>
+      ${SOS_KAKAO ? '<button type="button" class="ie-sub" data-out>다른 브라우저로 열기</button>' : ''}
+      <button type="button" class="ie-sub" data-copy>주소 복사하기</button>
+      <p class="ie-msg" aria-live="polite"></p>
+      ${ROOM ? '<button type="button" class="ie-stay">이번만 카톡 안에서 계속하기</button>' : ''}
+    </div>`;
+  const msg = t => { box.querySelector('.ie-msg').textContent = t; };
+  box.addEventListener('click', async e => {
+    if(e.target.closest('.ie-go')){ sosGo(main); msg(`${ga} 열리면 이 창은 닫아도 돼요.`); return; }
+    if(e.target.closest('[data-out]')){ sosGo(L.kakaoOut); return; }
+    if(e.target.closest('[data-copy]')){
+      try{ await navigator.clipboard.writeText(url); msg(`복사했어요. ${name} 주소창에 붙여넣어 주세요.`); }
+      catch(err){ prompt('이 주소를 복사해 주세요', url); }
+      return;
+    }
+    if(e.target.closest('.ie-stay')){ document.documentElement.classList.remove('sos-inapp'); box.remove(); }
+  });
+  document.body.appendChild(box);
+  // 처음 한 번은 자동으로 넘겨 봐요 (아이폰은 '사파리에서 열까요?'를 한 번 물을 수 있어요)
+  let tried = false; try{ tried = !!sessionStorage.getItem('sosEscTried'); sessionStorage.setItem('sosEscTried', '1'); }catch(e){}
+  if(!tried) setTimeout(() => sosGo(SOS_KAKAO && SOS_IOS ? L.kakaoOut : main), 300);
+}
+if(SOS_INAPP){ if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sosEscapeInApp); else sosEscapeInApp(); }
