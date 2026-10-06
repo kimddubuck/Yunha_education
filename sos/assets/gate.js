@@ -427,7 +427,8 @@ function gateCss(){
     #gate .g-story{text-align:left;display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
-    #gate .g-story .g-kick{font-weight:800;font-size:21px!important;line-height:1.35;letter-spacing:-.3px;color:var(--accent-ink,#1c7276);white-space:nowrap;margin-bottom:-2px}
+    #gate .g-story .g-kick{font-weight:800;font-size:21px!important;line-height:1.35;letter-spacing:-.3px;color:#e8382f;white-space:nowrap;margin-bottom:-2px}
+    @media (prefers-color-scheme: dark){ #gate .g-story .g-kick{color:#ff6b62} }
     @media (max-width:340px){ #gate .g-story .g-kick{font-size:19px!important}
       #gate .g-flow{grid-template-columns:1fr 34px 1fr;gap:3px}
       #gate .g-fbox{padding:10px 3px}
