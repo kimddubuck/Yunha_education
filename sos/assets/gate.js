@@ -371,6 +371,7 @@ const GATE_STORY = `        <div class="g-tool">
           <p class="g-fnick">🙋 가입 없이 <b>닉네임</b>만 정하면 끝</p>
         </div>
         <div class="g-story">
+          <p class="g-kick">오늘도 독박육아… 😂</p>
           <p class="g-q">"아… 오늘은 또 어떻게 버티지?"</p>
           <p class="g-sub">아기랑 하루 종일 붙어 있는데<br>의미 없이 시간만 흘러가는 것 같은 날.</p>
           <p>같이 육아하면 서로 의지도 되고<br>아이에게도 좋은 에너지를<br>줄 수 있을 것 같은데…</p>
@@ -426,6 +427,7 @@ function gateCss(){
     #gate .g-story{text-align:left;display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
+    #gate .g-story .g-kick{font-weight:700;font-size:14px;color:var(--accent-ink,#1c7276);margin-bottom:-6px}
     #gate .g-story .g-sub{color:var(--muted,#736e75)}
     @media (max-width:359px){ #gate .g-how li{font-size:13px!important;white-space:nowrap;letter-spacing:-.2px} #gate .g-story p{font-size:13px!important;letter-spacing:-.2px} }
     #gate .g-how{text-align:left;margin:0;padding:0 4px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.55}
