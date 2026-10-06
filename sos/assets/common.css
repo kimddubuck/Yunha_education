@@ -411,7 +411,8 @@ a.sos-btn{text-decoration:none;text-align:center}
 .next-card h2{display:flex;align-items:center;gap:8px;color:var(--accent-ink)}
 .next-count{font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--pick);color:var(--pick-fg)}
 .next-card #nextEmpty{white-space:pre-line;margin:0;font-size:14px;color:var(--fg)}
-.next-card .ops > li{margin-bottom:8px}
+.next-card .ops > li{margin-bottom:8px;background:var(--accent-soft);border-color:color-mix(in srgb, var(--pick) 35%, var(--line))}
+.next-card .ops > li .date-badge,.next-card .ops > li .host-tag{background:var(--bg)}
 .next-card p{margin:0}
 
 /* 참석·미확정·불참: 다시 누르면 취소 안내 */
