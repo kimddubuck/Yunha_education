@@ -355,7 +355,7 @@ function sosSummary(){
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 요청</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
-      <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>시간을 누르면 누가 보냈는지 보이고, 바로 요청할 수 있어요.</b></p>
+      <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>시간을 누르면 누가 보냈는지 보이고,<br>바로 요청할 수 있어요.</b></p>
       <div class="sos-today">${cells}</div>
       ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 요청</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
