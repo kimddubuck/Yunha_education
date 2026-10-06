@@ -375,7 +375,7 @@ const GATE_STORY = `        <div class="g-tool">
           <p class="g-q">"아… 오늘은 또 어떻게 버티지?"</p>
           <p class="g-sub">아기랑 하루 종일 붙어 있는데<br>의미 없이 시간만 흘러가는 것 같은 날.</p>
           <p>같이 육아하면 서로 의지도 되고<br>아이에게도 좋은 에너지를<br>줄 수 있을 것 같은데…</p>
-          <p class="g-sub">단톡방에 "모임 해요!" 글쓰긴 쑥스러울 때,<br>조용히 <b>SOS</b>를 보내 보세요.</p>
+          <p class="g-shy">단톡방에 "모임 해요!"<br>글쓰긴 쑥스러울 때 🙈<br>조용히 <b>SOS</b>를 보내 보세요.</p>
           <p>SOS가 모이면,<br><b>용기 있는 누군가가<br>손을 내밀어 줄 거예요</b> 🙌<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
         </div>
         <ul class="g-how">
@@ -434,6 +434,10 @@ function gateCss(){
       #gate .g-ft{font-size:13px!important;letter-spacing:-.4px;white-space:nowrap}
       #gate .g-fs{font-size:11px!important;letter-spacing:-.4px;white-space:nowrap} }
     #gate .g-story .g-sub{color:var(--muted,#736e75)}
+    #gate .g-story .g-shy{font-weight:700;font-size:15px!important;color:var(--fg,#22282a);padding:10px 12px;border-radius:12px;background:var(--accent-soft,#e1f2f1);border-left:4px solid var(--pick,#2a9095);letter-spacing:-.2px}
+    #gate .g-story .g-shy b{color:#e8382f}
+    @media (prefers-color-scheme: dark){ #gate .g-story .g-shy{background:rgba(42,144,149,.18)} #gate .g-story .g-shy b{color:#ff6b62} }
+    @media (max-width:340px){ #gate .g-story .g-shy{font-size:13.5px!important;padding:9px 9px;letter-spacing:-.4px} }
     @media (max-width:359px){ #gate .g-how li{font-size:13px!important;white-space:nowrap;letter-spacing:-.2px} #gate .g-story p{font-size:13px!important;letter-spacing:-.2px} }
     #gate .g-how{text-align:left;margin:0;padding:0 4px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.55}
     #gate .g-how b{color:var(--accent-ink,#1c7276)}
