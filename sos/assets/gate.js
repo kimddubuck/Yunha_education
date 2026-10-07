@@ -15,10 +15,11 @@ const SOS_FIREBASE = {
 const ROOMS_KEY = 'sosRooms', CUR_KEY = 'sosRoom';
 // 📲 카톡 등 앱 안 브라우저: 저장 공간이 따로라 같은 사람이 브라우저마다 따로 생겨요(중복 멤버).
 //  그래서 방에 들어가기 전에 안드로이드는 크롬, 아이폰은 사파리로 넘겨요 (sosEscapeInApp, 아래)
+//  (Barcelona = 스레드 앱 안 브라우저, Instagram·FB = 인스타그램·페이스북)
 const SOS_UA = navigator.userAgent || '';
 const SOS_IOS = /iphone|ipad|ipod/i.test(SOS_UA);
 const SOS_KAKAO = /KAKAOTALK/i.test(SOS_UA);
-const SOS_INAPP = (SOS_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|DaumApps|BAND\/|everytimeApp/i.test(SOS_UA))
+const SOS_INAPP = (SOS_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Barcelona|Line\/|DaumApps|BAND\/|everytimeApp/i.test(SOS_UA))
   && !document.documentElement.hasAttribute('data-public');
 const SOS_CONTACT = 'ifb1321@gmail.com';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
@@ -892,7 +893,7 @@ function sosEscapeInApp(){
   box.innerHTML = `<div class="ie">
       <img src="assets/icon.svg" alt="" width="64" height="64">
       <h1>📲 ${name}에서 열어 주세요</h1>
-      <p>카톡 안에서는</p><p>앱 설치·알림이 안 돼요.</p>
+      <p>${SOS_KAKAO ? '카톡 안에서는' : /Barcelona/i.test(SOS_UA) ? '스레드 안에서는' : /Instagram/i.test(SOS_UA) ? '인스타 안에서는' : '이 화면에서는'}</p><p>앱 설치·알림이 안 돼요.</p>
       <button type="button" class="ie-go">${ro} 열기</button>
       ${SOS_KAKAO ? '<button type="button" class="ie-sub" data-out>다른 브라우저로 열기</button>' : ''}
       <button type="button" class="ie-sub" data-copy>주소 복사하기</button>
