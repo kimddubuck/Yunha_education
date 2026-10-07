@@ -425,6 +425,18 @@ a.sos-btn{text-decoration:none;text-align:center}
 
 /* 다가오는 모임 카드 테두리 꾸미기: 빨간 SOS 스티커 + 반짝이는 별 */
 .next-card{position:relative;margin-top:10px}
+/* 🙌 '나 여기 있어요': 테두리를 따라 노란 빛이 돌고, 카드가 숨 쉬듯 빛나요 */
+@property --nc-a{syntax:'<angle>';initial-value:0deg;inherits:false}
+.next-card{animation:nc-breathe 2.6s ease-in-out infinite}
+.next-card::before{content:"";position:absolute;inset:-2px;border-radius:16px;padding:3px;pointer-events:none;z-index:0;
+  background:conic-gradient(from var(--nc-a),transparent 0deg 250deg,#ffd54a 290deg,#fff6c4 315deg,#ffd54a 335deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:nc-spin 3.2s linear infinite}
+.next-card > *{position:relative;z-index:1}
+.next-card > .next-star,.next-card > .next-sos{position:absolute}
+@keyframes nc-spin{to{--nc-a:360deg}}
+@keyframes nc-breathe{0%,100%{box-shadow:var(--shadow),0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:var(--shadow),0 0 18px 2px rgba(255,213,74,.45)}}
+@media (prefers-reduced-motion: reduce){.next-card,.next-card::before{animation:none}}
 .next-sos{position:absolute;top:-13px;right:18px;padding:2px 10px;border-radius:8px;background:#e8382f;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;border:2px solid #fff;transform:rotate(6deg);box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .next-star{position:absolute;color:#ffc83d;line-height:1;text-shadow:0 0 6px rgba(255,200,61,.6);animation:twinkle 2.4s ease-in-out infinite}
 .next-star.s1{top:-14px;left:16px;font-size:24px}
