@@ -822,7 +822,7 @@ async function roomCounts(room){
     sos.forEach(d => { const v = d.data(); Object.entries(v.p || {}).forEach(([uid, e]) => { if((e.h || []).length) people.add(uid); });
       old = Math.max(old, sosDayTotal({...v, p: {}})); });
     const n = people.size + old;
-    return {sos: n, meet: ops.docs.filter(d => { const o = d.data(); return o.topic === 'meet' && !o.cancelled; }).length};
+    return {sos: n, meet: ops.docs.filter(d => { const o = d.data(); return o.topic === 'meet' && !o.cancelled && !(typeof meetStarted === 'function' && meetStarted(o)); }).length};
   }catch(e){ return null; }   // 아직 멤버가 아닌 방(닉네임 정하기 전)은 못 세요
 }
 // SOS 날짜 문서 v 의 숫자: 예전 숫자 칸(h9 등) + 닉네임 예약(p: {uid: {h:[시간], n}})

@@ -103,13 +103,17 @@ const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 
 function copCollection(){ const r = roomRef(); return r && r.collection('opinions'); }
 
 // 모임 요청(topic 'meet') 중 오늘 이후 것을 가까운 순으로 cb에 넘겨요. 못 불러오면 null
+// 오늘 모임 중 시작 시간이 이미 지난 것 (예: 10시 40분이면 9시 모임). 그 시간 안(9시 30분)에는 아직 보여요
+function meetStarted(o){ return o.date === todayStr() && slotOrder(o.slot) < new Date().getHours(); }
 function watchMeets(cb){
   const col = copCollection(); if(!col){ cb(null); return; }
+  let docs = null;
+  const emit = () => { if(!docs) return; const today = todayStr();
+    cb(docs.filter(o => o.topic==='meet' && o.date && o.date >= today && !o.cancelled && !meetStarted(o))
+      .sort((a,b) => a.date.localeCompare(b.date) || slotOrder(a.slot) - slotOrder(b.slot))); };
+  setInterval(emit, 60000);   // 켜 둔 채로 시간이 지나도 시작한 모임은 알아서 빠져요
   sosReady().then(ok => { if(!ok){ cb(null); return; } col.where('date', '>=', todayStr()).limit(100).onSnapshot(serverOnly(snap => {   // 오늘 이후 모임만 읽어요 (읽기 횟수 절약)
-    const today = todayStr();
-    cb(snap.docs.map(d => ({id:d.id, ...d.data()}))
-      .filter(o => o.topic==='meet' && o.date && o.date >= today && !o.cancelled)
-      .sort((a,b) => a.date.localeCompare(b.date) || slotOrder(a.slot) - slotOrder(b.slot)));
+    docs = snap.docs.map(d => ({id:d.id, ...d.data()})); emit();
   }), err => { sosTrouble(err); cb(null); }); });
 }
 // 모임의 참석·미확정·불참: 닉네임 표(v: {uid: {s, n}}) + 예전 숫자 칸(joins/maybes/nos)

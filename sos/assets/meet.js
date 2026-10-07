@@ -158,9 +158,10 @@ function renderMeets(){
   const editSel = focused && focused.dataset.editComment ? [focused.querySelector('input').selectionStart, focused.querySelector('input').selectionEnd] : null;
 
   const today = todayStr();
-  const up = meet.items.filter(o => o.date >= today)
+  // 오늘 시작 시간이 지난 모임은 '지난 모임'으로 옮겨요
+  const up = meet.items.filter(o => o.date >= today && !meetStarted(o))
     .sort((a,b) => a.date.localeCompare(b.date) || slotOrder(a.slot) - slotOrder(b.slot));
-  const past = meet.items.filter(o => o.date < today).sort((a,b) => b.date.localeCompare(a.date)).slice(0,5);
+  const past = meet.items.filter(o => o.date < today || meetStarted(o)).sort((a,b) => b.date.localeCompare(a.date) || slotOrder(b.slot) - slotOrder(a.slot)).slice(0,5);
   const ul = $('#meetList'); ul.innerHTML = ''; up.forEach(o => ul.appendChild(meetCard(o, false)));
   $('#meetEmpty').textContent = '';
   $('#upSec').hidden = !up.length;   // 다가오는 모임이 없으면 칸째 숨겨요
@@ -313,3 +314,4 @@ if(location.hash==='#new'){   // 홈의 '모임 열기'로 왔으면 모임 만�
 if(location.hash==='#sos') setTimeout(() => $('[data-sos]').scrollIntoView({block:'start'}), 50);
 meetInit();
 sosInit();
+setInterval(() => { if(meet.items.length && !document.activeElement.closest('.comment-form')) renderMeets(); }, 60000);   // 시작한 모임을 '지난 모임'으로 옮겨요
