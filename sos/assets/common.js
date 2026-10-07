@@ -253,7 +253,7 @@ function showSosNames(day, h, v){
     + (old ? `<p class="who-none">+ 예전 기록 ${old}명 (닉네임 없음)</p>` : '')
     + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
     + btn
-    + '<p class="who-tip">💪 같은 시간에 SOS가 모였다면 모임을 열어 보세요!</p>';
+    + '<p class="who-tip">💪 같은 시간에 SOS가 모였다면<br>모임을 열어 보세요!</p>';
   const box = sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body});
   box.addEventListener('click', async e => {
     const b = e.target.closest('[data-sos-toggle]'); if(!b || b.disabled) return;
