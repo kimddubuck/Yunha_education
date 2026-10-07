@@ -253,9 +253,10 @@ function showSosNames(day, h, v){
     + (old ? `<p class="who-none">+ 예전 기록 ${old}명 (닉네임 없음)</p>` : '')
     + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
     + btn
-    + '<p class="who-tip">💪 같은 시간에 SOS가 모였다면<br>모임을 열어 보세요!</p>';
+    + (past ? '' : `<a class="sos-brave-btn" href="meet.html?d=${day}&s=${h}#new" data-brave>🙌 용기 내서 이 시간 모임 열기</a>`);
   const box = sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body});
   box.addEventListener('click', async e => {
+    if(e.target.closest('[data-brave]') && typeof openMeetForm === 'function'){ e.preventDefault(); box.remove(); openMeetForm(day, h + '시'); return; }
     const b = e.target.closest('[data-sos-toggle]'); if(!b || b.disabled) return;
     b.disabled = true; b.innerHTML = '저장 중…';
     try{ const nv = await sosToggleHour(day, h, v); box.remove(); showSosNames(day, h, nv); }

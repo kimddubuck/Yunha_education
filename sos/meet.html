@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610071432">
+<link rel="manifest" href="manifest.webmanifest?v=202610072347">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610071432">
-<script src="assets/gate.js?v=202610071432"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610072347">
+<script src="assets/gate.js?v=202610072347"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -32,7 +32,7 @@
           <div class="example-card">
             <span class="op-when">10/7 (수) 10시</span><span class="host-tag">👑 하늘맘 주최</span>
             <p class="op-text">장소: 2단지 커뮤니티
-놀이: 뽁뽁이 놀이 해요 (준비물 없어도 OK)</p>
+놀이: 뽁뽁이 놀이 (준비물 없음)</p>
             <p class="tally"><span>참석 <b>3</b></span><span>미확정 <b>2</b></span><span>불참 <b>1</b></span></p>
             <p class="op-text" style="font-size:13.5px">💬 "저는 11시쯤 갈 수 있어요"</p>
           </div>
@@ -42,7 +42,7 @@
         <p class="label">👑 주최자: <b id="meetHost"></b> <small class="hint">(내 닉네임)</small></p>
         <label class="label" for="meetText">장소·놀이</label>
         <textarea id="meetText" maxlength="500"></textarea>
-        <p class="hint">📍 장소는 '3단지 키즈룸'처럼 <b>공용 공간까지만</b> 적어 주세요.<br>집 주소(동·호수)는 적지 마세요.<span class="ttl-only"> 지난 모임은 7일 뒤 자동으로 지워져요.</span></p>
+        <p class="hint">📍 장소는 '3단지 키즈룸'처럼<br><b>공용 공간까지만</b> 적어 주세요.<br>집 주소(동·호수)는 적지 마세요.<span class="ttl-only"><br>지난 모임은 7일 뒤 자동으로 지워져요.</span></p>
         <div class="board-row">
           <span class="hint" id="meetCount">0 / 500</span>
           <button class="btn primary" type="submit" id="meetSend">💪 모임 열기</button>
@@ -69,8 +69,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610071432"></script>
-<script src="assets/push.js?v=202610071432"></script>
-<script src="assets/meet.js?v=202610071432"></script>
+<script src="assets/common.js?v=202610072347"></script>
+<script src="assets/push.js?v=202610072347"></script>
+<script src="assets/meet.js?v=202610072347"></script>
 </body>
 </html>

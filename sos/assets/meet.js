@@ -306,6 +306,10 @@ $('#meetList').addEventListener('submit', async e => {
 });
 
 $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
+// SOS 팝업의 '용기 내서 이 시간 모임 열기'로 왔으면 그 날짜·시간을 채워 둬요 (meet.html?d=YYYY-MM-DD&s=9#new)
+{ const q = new URLSearchParams(location.search), d = q.get('d'), h = parseInt(q.get('s'), 10);
+  if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){ openMeetForm(d, HOURS.includes(h) ? h + '시' : null);
+    history.replaceState(null, '', location.pathname + location.hash); } }
 if(location.hash==='#new'){   // 홈의 '모임 열기'로 왔으면 모임 만들기 칸까지 바로 내려가요
   $('#meetForm').hidden = false;
   const go = () => $('.sos-brave').scrollIntoView({block: 'start', behavior: 'smooth'});
