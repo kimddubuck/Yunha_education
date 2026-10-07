@@ -428,7 +428,7 @@ function sosReport(kind, mid, cid){
   document.querySelectorAll('[data-room-name]').forEach(el => { el.textContent = ROOM.name; });
   const inv = document.querySelector('[data-invite]');
   if(inv) inv.addEventListener('click', async () => {
-    const text = `[${ROOM.name}] 공동육아 SOS 🆘 방에 초대해요!\n독박 예정인 날 SOS 요청하고, 같이 모여요 💪\n\n📌 링크를 누르면 크롬으로 열려요.\n(아이폰은 사파리)\n\n${inviteUrl()}\n\n(비밀번호는 따로 알려드릴게요)`;
+    const text = `혹시 이런 거 같이 써 볼래요? 😊\n[${ROOM.name}] 공동육아 SOS 🆘\n\n독박인 날 시간만 눌러두면\n같은 시간에 힘든 사람이 몇 명인지 보여서\n모이자는 말 꺼내기가 훨씬 편해요.\n\n부담 없이 SOS만 눌러 놔도 돼요 🙌\n\n👇 누르면 크롬(아이폰은 사파리)으로 열려요\n${inviteUrl()}\n\n🔑 비밀번호는 따로 알려드릴게요`;
     if(navigator.share){ try{ await navigator.share({text}); return; }catch(e){ if(e.name === 'AbortError') return; } }
     try{ await navigator.clipboard.writeText(text); inv.textContent = '✅ 복사했어요! 단톡방에 붙여넣으세요'; setTimeout(() => { inv.textContent = '🔗 친구 초대하기'; }, 2500); }
     catch(e){ window.prompt('아래 글을 복사해서 단톡방에 붙여넣으세요.', text); }
