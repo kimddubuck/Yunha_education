@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610072347">
+<link rel="manifest" href="manifest.webmanifest?v=202610072356">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610072347">
-<script src="assets/gate.js?v=202610072347"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610072356">
+<script src="assets/gate.js?v=202610072356"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -34,7 +34,7 @@
     <div class="sos" data-sos-summary></div>
 
     <section class="sec next-card">
-      <span class="next-star s1" aria-hidden="true">✦</span><span class="next-star s2" aria-hidden="true">✦</span><span class="next-sos" aria-hidden="true">SOS</span>
+      <span class="next-star s1" aria-hidden="true">✦</span><span class="next-star s2" aria-hidden="true">✦</span><span class="next-star s3" aria-hidden="true">✦</span><span class="next-star s4" aria-hidden="true">✦</span><span class="next-star s5" aria-hidden="true">✦</span><span class="next-star s6" aria-hidden="true">✦</span><span class="next-star s7" aria-hidden="true">✧</span><span class="next-star s8" aria-hidden="true">✧</span><span class="next-sos" aria-hidden="true">SOS</span>
       <h2>🙌 다가오는 모임 <span class="next-count" id="nextCount" hidden></span></h2>
       <ul class="ops" id="next"></ul>
       <p class="hint" id="nextEmpty">모임을 불러오는 중…</p>
@@ -84,8 +84,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610072347"></script>
-<script src="assets/push.js?v=202610072347"></script>
+<script src="assets/common.js?v=202610072356"></script>
+<script src="assets/push.js?v=202610072356"></script>
 <script>
 sosSummary();
 // 📲 설치 안내: 이미 앱으로 열었으면 숨기고, 내 휴대폰 종류의 안내를 먼저 펼쳐요
@@ -117,7 +117,26 @@ watchMeets(list => {
     const n = document.createElement('button'); n.type = 'button'; n.className = 'tally';
     n.innerHTML = tallyHtml(o); n.addEventListener('click', () => showVoters(o));   // 누가 참석·불참했는지 닉네임 팝업
     const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
-    body.append(w, hs, t, n); li.append(dateBadge(o.date), body); ul.appendChild(li);
+    body.append(w, hs, t, n);
+    // 🙋 홈에서 바로 참석·미확정·불참 (같은 걸 다시 누르면 취소, 다른 걸 누르면 바꾸기)
+    const mine = ((o.v || {})[ME.uid] || {}).s || null;
+    const row = document.createElement('div'); row.className = 'vote-row';
+    [['join', 'joins', '🙋 참석'], ['maybe', 'maybes', '🤔 미확정'], ['no', 'nos', '🙅 불참']].forEach(([s, k, label]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'join'; b.dataset.vote = k;
+      b.setAttribute('aria-pressed', mine === s); b.textContent = label;
+      b.addEventListener('click', async () => {
+        if(!ME.uid) return;
+        row.querySelectorAll('button').forEach(x => { x.disabled = true; });
+        try{
+          await copCollection().doc(o.id).update({['v.' + ME.uid]: mine === s ? firebase.firestore.FieldValue.delete() : {s, n: ME.nick}});
+          if(s === 'join' && mine !== 'join' && o.uid !== ME.uid && typeof pushMeetJoin === 'function') pushMeetJoin(o, meetVotes(o).join.count + 1);   // 주최자에게 참석 알림
+        }catch(err){ sosTrouble(err); row.querySelectorAll('button').forEach(x => { x.disabled = false; }); if(typeof pushToast === 'function') pushToast('⚠️ 저장하지 못했어요. 다시 눌러 주세요'); }
+      });
+      row.appendChild(b);
+    });
+    li.append(dateBadge(o.date), body, row);   // 버튼 줄은 카드 전체 폭으로
+    if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; li.appendChild(h); }
+    ul.appendChild(li);
   });
   $('#nextEmpty').textContent = list.length ? '' : '아직 올라온 모임이 없어요.\nSOS가 몰린 시간을 보고 용기 내서 모임을 열어 보세요!';
   $('#nextCount').hidden = !list.length; $('#nextCount').textContent = `${list.length}개`;
