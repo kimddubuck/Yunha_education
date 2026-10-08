@@ -249,7 +249,6 @@ h1{letter-spacing:-.02em}
 .op-past .date-badge{background:var(--tag);color:var(--muted)}
 .vote-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:4px}
 .vote-row .join{padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;text-align:center}
-.vote-row .join[data-vote="joins"]{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
 .vote-row .join[data-vote="joins"][aria-pressed="false"]:disabled{opacity:.45}
 .vote-row .join[data-vote="nos"][aria-pressed="false"]:disabled{opacity:.45}
 .tally b{color:var(--accent-ink)}
@@ -261,7 +260,6 @@ main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn){color:
 .vote-row{grid-template-columns:repeat(3,1fr)}
 .vote-row .join{padding:8px 4px;white-space:nowrap}
 .vote-row .join[data-vote="maybes"][aria-pressed="false"]:disabled{opacity:.45}
-.vote-row .join[aria-pressed="true"]:not([data-vote="joins"]){background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent-soft)}
 .comment-toggle{align-self:flex-start;border:0;background:none;padding:2px 0;color:var(--muted);font-weight:600}
 .tally{gap:4px 10px;font-size:13.5px}
 .tally span + span::before{content:"·";margin-right:10px;color:var(--line)}
@@ -416,8 +414,8 @@ a.sos-btn{text-decoration:none;text-align:center}
 .next-card .ops > li .date-badge:not(.today),.next-card .ops > li .host-tag{background:var(--bg)}
 .next-card .ops > li.meet-card{flex-wrap:wrap;row-gap:8px}
 .next-card .ops > li > .vote-row{flex-basis:100%;margin-top:2px}
-.next-card .vote-row .join:not([aria-pressed="true"]){background:var(--bg);color:var(--fg);border-color:var(--line)}
-.next-card .vote-row .join[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.next-card .vote-row .join:not([aria-pressed="true"]){color:var(--fg)}
+
 .next-card .vote-hint{flex-basis:100%;margin:-4px 0 0;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap}
 .next-card p{margin:0}
 
@@ -775,8 +773,12 @@ body{padding-block:16px 120px}
 
 /* 홈 다가오는 모임 카드: 살짝 떠 있는 입체감 (위는 밝게, 아래는 진한 테두리·그림자) */
 .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 55%,#fff),var(--accent-soft));border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line));border-bottom-width:4px;border-bottom-color:color-mix(in srgb,var(--pick) 70%,#0b3d3d);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -4px rgba(21,96,95,.35)}
-.next-card .vote-row .join{box-shadow:0 3px 0 color-mix(in srgb,var(--line) 80%,#8aa),0 4px 6px rgba(0,0,0,.06);transform:translateY(-1px);transition:transform .08s,box-shadow .08s}
-.next-card .vote-row .join[aria-pressed="true"]{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 #15605f,0 4px 8px rgba(21,96,95,.25)}
-.next-card .vote-row .join:active{transform:translateY(2px);box-shadow:0 0 0 transparent}
+/* 참석·미확정·불참: 홈과 SOS 예약 화면 모두 볼록한 버튼 (누르면 쑥 들어가요) */
+.vote-row .join{border:1.5px solid color-mix(in srgb,var(--line) 70%,#9bb);background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 88%,#9bb));box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 0 color-mix(in srgb,var(--line) 55%,#7a9a9a),0 6px 10px rgba(0,0,0,.1);transform:translateY(-2px);transition:transform .08s,box-shadow .08s}
+.vote-row .join[aria-pressed="true"]{background:linear-gradient(180deg,#45b3b0,#23878a);color:#fff;border-color:#23878a;text-shadow:0 1px 0 rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #15605f,0 6px 10px rgba(21,96,95,.3)}
+.vote-row .join:not(:disabled):active{transform:translateY(2px);box-shadow:inset 0 2px 3px rgba(0,0,0,.15),0 0 0 transparent}
+.vote-row .join:disabled{transform:none;box-shadow:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}}
 :root[data-theme="dark"] .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #0c1414,0 6px 10px rgba(0,0,0,.4)}}
+:root[data-theme="dark"] .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #0c1414,0 6px 10px rgba(0,0,0,.4)}
