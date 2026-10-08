@@ -302,14 +302,21 @@ function sosInit(){
     // 내 SOS 요청 (오늘 이후) — 실수로 눌렀으면 여기서 취소
     const list = Object.keys(data).filter(d => d >= todayStr()).sort().flatMap(d => sosMine(data[d]).slice().sort((x, y) => x - y).map(h => [d, h]));
     const box = root.querySelector('.sos-mine'); box.hidden = !list.length;
-    box.innerHTML = '<p class="sos-mine-h">📌 내 SOS 요청</p>' + list.map(([d, h]) =>
-      `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">요청 취소</button></div>`).join('');
+    // 제목을 누르면 접고 펴요 (이 휴대폰에 기억)
+    let open = false; try{ open = localStorage.getItem('sosMineOpen') === '1'; }catch(e){}   // 처음엔 접혀 있어요
+    box.classList.toggle('closed', !open);
+    box.innerHTML = `<button type="button" class="sos-mine-h" data-mine-toggle aria-expanded="${open}">📌 내 SOS 요청 <small>${list.length}개</small><span class="sos-mine-arrow" aria-hidden="true">${open ? '접기 ▲' : '펼치기 ▼'}</span></button>` + (open ? list.map(([d, h]) =>
+      `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">요청 취소</button></div>`).join('') : '');
   }
   const put = (day, hours) => hours.length
     ? col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true})
     : col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
   col = sosWatch((d, c, err) => { col = c; if(d) data = d; if(err) broken = true; picker.render(); draw(); });
   root.querySelector('.sos-mine').addEventListener('click', async e => {
+    if(e.target.closest('[data-mine-toggle]')){
+      try{ localStorage.setItem('sosMineOpen', localStorage.getItem('sosMineOpen') === '1' ? '0' : '1'); }catch(err){}
+      draw(); return;
+    }
     const c = e.target.closest('[data-cancel]'); if(!c || !col) return;
     const [day, h] = c.dataset.cancel.split('|');
     c.disabled = true; c.textContent = '취소 중…';

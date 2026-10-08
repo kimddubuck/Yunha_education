@@ -322,7 +322,8 @@ a.sos-btn{text-decoration:none;text-align:center}
 .cover .lead{font-size:17px}
 .cover-sub{margin:0;font-size:14px;color:var(--muted)}
 .sos-mine{display:flex;flex-direction:column;gap:6px;background:var(--page);border-radius:14px;padding:10px 12px}
-.sos-mine-h{font-weight:700;font-size:14px}
+.sos-mine-h{display:flex;align-items:center;gap:6px;width:100%;margin:0;padding:2px 0;border:0;background:none;color:var(--fg);font:inherit;font-weight:700;font-size:14px;text-align:left;cursor:pointer}
+.sos-mine-arrow{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
 .sos-mine-h small{font-weight:500;color:var(--muted);font-size:12px}
 .sos-mine-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14.5px;font-weight:600}
 .sos-cancel{border:1px solid var(--line);background:var(--bg);color:var(--ipark-ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
