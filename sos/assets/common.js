@@ -297,7 +297,7 @@ function sosInit(){
     const b = root.querySelector('.sos-btn');
     b.disabled = !hs.length || done || !col || broken;
     b.className = 'sos-btn' + (done ? ' done' : '');
-    b.innerHTML = broken ? '⚠️ 지금은 SOS 요청을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 요청했어요<small>🫂 아래 "내 SOS 요청"에서 취소할 수 있어요</small>'
+    b.innerHTML = broken ? '⚠️ 지금은 SOS 요청을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 요청했어요<small>🫂 아래 "내가 요청한 SOS"에서 취소할 수 있어요</small>'
       : hs.length ? `🆘 SOS 요청하기${hs.length > 1 ? ` (${hs.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')} · ${esc(ME.nick || '내 닉네임')}(으)로</small>` : '🆘 SOS 요청하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
     // 내 SOS 요청 (오늘 이후) — 실수로 눌렀으면 여기서 취소
     const list = Object.keys(data).filter(d => d >= todayStr()).sort().flatMap(d => sosMine(data[d]).slice().sort((x, y) => x - y).map(h => [d, h]));
@@ -305,7 +305,7 @@ function sosInit(){
     // 제목을 누르면 접고 펴요 (이 휴대폰에 기억)
     let open = false; try{ open = localStorage.getItem('sosMineOpen') === '1'; }catch(e){}   // 처음엔 접혀 있어요
     box.classList.toggle('closed', !open);
-    box.innerHTML = `<button type="button" class="sos-mine-h" data-mine-toggle aria-expanded="${open}">📌 내 SOS 요청 <small>${list.length}개</small><span class="sos-mine-arrow" aria-hidden="true">${open ? '접기 ▲' : '펼치기 ▼'}</span></button>` + (open ? list.map(([d, h]) =>
+    box.innerHTML = `<button type="button" class="sos-mine-h" data-mine-toggle aria-expanded="${open}">📌 내가 요청한 SOS <small>${list.length}개</small><span class="sos-mine-arrow" aria-hidden="true">${open ? '접기 ▲' : '펼치기 ▼'}</span></button>` + (open ? list.map(([d, h]) =>
       `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">요청 취소</button></div>`).join('') : '');
   }
   const put = (day, hours) => hours.length
