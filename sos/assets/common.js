@@ -363,8 +363,9 @@ function sosSummary(){
     const label = name(sel) || dayLabel(day);
     const tabs = days.map((d, i) => { const n = data ? sosDayTotal(data[d]) : 0;
       return `<button type="button" class="sos-tab" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
-    const cells = HOURS.map(h => { const n = sosHourCount(t, h);
-      return `<button type="button" class="sos-cell${n ? ' on' : ''}" data-sos-hour="${h}"${data ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
+    const nowH = new Date().getHours();
+    const cells = HOURS.map(h => { const n = sosHourCount(t, h), gone = day === today && h < nowH;   // 오늘 지나간 시간은 못 눌러요
+      return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
     // 한 화면에 방 제목·SOS·모임이 다 보이게 짧게: 안내 한 줄, 시간 칸은 한 줄짜리 (다가오는 SOS 목록은 빼고 날짜 탭으로 봐요)
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
@@ -374,12 +375,15 @@ function sosSummary(){
   };
   box.addEventListener('click', e => {
     const hb = e.target.closest('[data-sos-hour]');
+    if(hb && hb.disabled) return;
     if(hb && last){ const d = hb.dataset.sosDate || days[sel]; showSosNames(d, +hb.dataset.sosHour, last[d]); return; }
     const b = e.target.closest('[data-sos-day]'); if(!b) return;
     sel = +b.dataset.sosDay; draw(last);
   });
   draw(null);
   sosWatch((d, c, err) => { if(err) failed = true; draw(d); });
+  let hr = new Date().getHours();   // 켜 둔 채로 정각이 지나면 그 시간 칸도 막아요
+  setInterval(() => { const h = new Date().getHours(); if(h !== hr){ hr = h; draw(last); } }, 60000);
 }
 
 /* 확인 팝업: sosConfirm({icon, title, body(HTML), ok, danger}) → 누르면 true, 취소면 false */

@@ -836,3 +836,6 @@ body{padding-block:16px 120px}
 /* 지나간 시간: 빗금 음영 + 줄 긋기로 못 누르는 걸 알 수 있게 */
 .time-btn:disabled,#meetForm .time-btn:disabled{cursor:not-allowed;opacity:.45;color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px;border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 18%,transparent) 6px 8px),var(--page);box-shadow:none}
 .time-btn:disabled small{display:none}
+/* 홈 SOS 달력: 오늘 지나간 시간은 빗금 음영 + 줄 긋기, 못 눌러요 */
+.sos-cell.gone{cursor:not-allowed;opacity:.4;border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 18%,transparent) 6px 8px),var(--page)!important;box-shadow:none}
+.sos-cell.gone b,.sos-cell.gone span{color:var(--muted)!important;text-decoration:line-through;text-decoration-thickness:2px}
