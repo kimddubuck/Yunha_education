@@ -38,8 +38,8 @@
   ],
   "shortcuts": [
     {
-      "name": "SOS 달력",
-      "short_name": "SOS 달력",
+      "name": "SOS 예약",
+      "short_name": "SOS 예약",
       "description": "SOS 요청하고 모임 열기",
       "url": "./meet.html",
       "icons": [
