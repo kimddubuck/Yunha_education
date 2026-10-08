@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610081443">
+<link rel="manifest" href="manifest.webmanifest?v=202610082240">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610081443">
-<script src="assets/gate.js?v=202610081443"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610082240">
+<script src="assets/gate.js?v=202610082240"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -90,7 +90,7 @@
       <table class="safe-table">
         <tr><th>어디서</th><th>저장되는 것</th></tr>
         <tr><td>🏠 모임 방</td><td><b>방 이름만</b>. 비밀번호는 저장하지 않아요. 비밀번호로 만든 암호화된 열쇠가 방 주소가 돼서, 비밀번호를 아는 사람만 방을 찾을 수 있어요.</td></tr>
-        <tr><td>🙋 멤버</td><td>방에서 쓰는 <b>닉네임</b>(직접 적은 것), 들어온 시각, 마지막 접속 날(방장만 봐요. 오래 안 온 멤버 정리와 방장 이어받기에 써요), 익명 로그인 번호(uid)</td></tr>
+        <tr><td>🙋 멤버</td><td>방에서 쓰는 <b>닉네임</b>(직접 적은 것), 들어온 시각, 마지막 접속 날(방장만 봐요. 오래 안 온 멤버 정리와 방장 이어받기에 써요), 익명 로그인 번호(uid). 내보내진 사람이 보낸 <b>'다시 받아 주세요' 부탁 글</b>(방장만 봐요. 허용·거절하면 지워져요)</td></tr>
         <tr><td>🆘 SOS 요청</td><td>날짜·시간 + <b>요청한 사람의 닉네임</b>. 방 사람들은 시간 숫자를 눌러 누가 보냈는지 볼 수 있어요.</td></tr>
         <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 닉네임</b>, 참석·미확정·불참한 사람의 닉네임, 댓글 글과 닉네임</td></tr>
       </table>
@@ -135,8 +135,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610081443"></script>
-<script src="assets/push.js?v=202610081443"></script>
+<script src="assets/common.js?v=202610082240"></script>
+<script src="assets/push.js?v=202610082240"></script>
 <script>
 document.getElementById('deleteMe').addEventListener('click', async e => {
   const owning = sosRooms().filter(r => r.owner).map(r => r.name);   // 내가 방장인 방이 있으면 먼저 알려 줘요
