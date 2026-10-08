@@ -772,3 +772,11 @@ body{padding-block:16px 120px}
 .ops .op-meta .who-mini{margin-left:auto}
 .ops .op-meta .op-when{white-space:nowrap;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .ops .op-meta .op-posted{flex-basis:100%;font-size:11.5px}
+
+/* 홈 다가오는 모임 카드: 살짝 떠 있는 입체감 (위는 밝게, 아래는 진한 테두리·그림자) */
+.next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 55%,#fff),var(--accent-soft));border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line));border-bottom-width:4px;border-bottom-color:color-mix(in srgb,var(--pick) 70%,#0b3d3d);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -4px rgba(21,96,95,.35)}
+.next-card .vote-row .join{box-shadow:0 3px 0 color-mix(in srgb,var(--line) 80%,#8aa),0 4px 6px rgba(0,0,0,.06);transform:translateY(-1px);transition:transform .08s,box-shadow .08s}
+.next-card .vote-row .join[aria-pressed="true"]{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 #15605f,0 4px 8px rgba(21,96,95,.25)}
+.next-card .vote-row .join:active{transform:translateY(2px);box-shadow:0 0 0 transparent}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}}
+:root[data-theme="dark"] .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}
