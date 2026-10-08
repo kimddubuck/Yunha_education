@@ -852,3 +852,5 @@ body{padding-block:16px 120px}
 .mem-ap-btns{display:flex;flex-direction:column;gap:4px;flex:none}
 .appeal-pop .appeal-in{width:100%;box-sizing:border-box;min-height:84px;resize:none;font:inherit;font-size:14.5px;line-height:1.5;text-align:left}
 .appeal-pop .appeal-sent{margin-top:8px;padding:6px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:13px}
+/* SOS 예약: 달력 아래 "날짜 · 시간을 골라 주세요" 줄은 빼요 (아래 SOS 요청하기 버튼이 안내해요) */
+[data-sos] .picked-when{display:none}
