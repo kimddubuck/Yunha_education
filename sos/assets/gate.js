@@ -140,7 +140,7 @@ function sosReady(){
       try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}
       forgetRoom(ROOM.roomId); alert(`'${ROOM.name}' 방은 방장이 지웠어요.`); location.href = 'index.html'; return new Promise(() => {});
     }
-    if(snap.exists && snap.data().on === false) return sosKickedOut();
+    if(snap.exists && snap.data().on === false) return sosKickedOut(snap.data());
     if(snap.exists){
       ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick);
       // 마지막 접속(seen): 하루에 두 번 정도만 남겨요. 방장이 오래 안 온 멤버를 알아보고, 방장이 떠났는지 판단할 때 써요
@@ -184,14 +184,53 @@ function sosReady(){
 }
 // 내보내졌을 때: 이 휴대폰 목록에서 빼고 알려 줘요 (닉네임 지우기용으로 방은 기억해 둬요)
 let sosLeaving = false;   // 내가 스스로 나가는 중이면 아래 감시가 끼어들지 않아요
-async function sosKickedOut(){
+async function sosKickedOut(mine){
   if(sosLeaving) return new Promise(() => {});
   sosLeaving = true;
-  rememberKicked(ROOM);   // '내 정보 모두 지우기' 때 이 방의 닉네임도 지울 수 있게 기억해 둬요
-  try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
-  forgetRoom(ROOM.roomId);
-  alert(`'${ROOM.name}' 방에서 방장이 내보냈어요.\n\n다시 들어가려면 방장에게 '다시 들어올 수 있게 허용'을 부탁해 주세요.\n허용되면 초대 링크로 다시 들어올 수 있어요.`);
+  const room = ROOM, ref = ME.uid ? roomRef().collection('members').doc(ME.uid) : null;
+  rememberKicked(room);   // '내 정보 모두 지우기' 때 이 방의 닉네임도 지울 수 있게 기억해 둬요
+  try{ if(typeof pushDropRoom === 'function') await pushDropRoom(room); }catch(e){}   // 이 방 알림 채널에서 빠져요
+  forgetRoom(room.roomId);
+  await sosAppealBox(room, ref, mine || {});
   location.href = 'index.html'; return new Promise(() => {});
+}
+// 🙋 내보내졌을 때: 실수였다면 방장에게 '다시 받아 주세요' 부탁을 남길 수 있어요 (방장 멤버 버튼에 N 표시)
+function sosAppealBox(room, ref, mine){
+  return new Promise(resolve => {
+    const nick = mine.nick && mine.nick !== '(정보 지움)' ? mine.nick : (room.nick || lastNick() || '');
+    const sent = !!mine.ap, recent = !!(mine.apAt && mine.apAt.toMillis && Date.now() - mine.apAt.toMillis() < 3600e3);   // 부탁은 1시간에 한 번
+    const box = document.createElement('div'); box.className = 'pop-back nick-pop appeal-pop';
+    box.innerHTML = `<form class="pop" role="dialog" aria-modal="true">
+        <p class="pop-icon" aria-hidden="true">🚪</p><p class="pop-t"></p>
+        <div class="pop-b"><p>실수로 내보내진 거라면<br>방장에게 다시 받아 달라고 부탁해 보세요.</p>
+          <p class="appeal-sent"${sent ? '' : ' hidden'}>📨 이미 부탁을 보냈어요. 방장이 확인하면<br>초대 링크로 다시 들어올 수 있어요.</p></div>
+        <textarea class="nick-in appeal-in" maxlength="200" rows="3" aria-label="방장에게 보낼 말"></textarea>
+        <p class="nick-msg" aria-live="polite"></p>
+        <div class="pop-btns"><button type="button" class="btn" data-pop="0">닫기</button><button type="submit" class="btn primary">🙋 부탁 보내기</button></div>
+      </form>`;
+    box.querySelector('.pop-t').textContent = `'${room.name}' 방에서 방장이 내보냈어요`;   // 방 이름은 글자로만
+    const inp = box.querySelector('.appeal-in');
+    const who = nick || '○○엄마', c = who.charCodeAt(who.length - 1), batchim = c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0;
+    inp.value = `저 ${who}${batchim ? '이에요' : '예요'}. 실수로 내보내진 것 같아요. 다시 받아 주세요 🙏`;
+    const msg = t => { box.querySelector('.nick-msg').textContent = t; };
+    box.addEventListener('click', e => { if(e.target.closest('[data-pop="0"]')){ box.remove(); resolve(); } });
+    box.querySelector('form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const v = inp.value.trim().slice(0, 200), b = box.querySelector('[type=submit]');
+      if(!v){ msg('보낼 말을 적어 주세요.'); return; }
+      if(!ref){ msg('지금은 보낼 수 없어요. 방장에게 직접 말해 주세요.'); return; }
+      b.disabled = true; msg('보내는 중…');
+      try{
+        await ref.update({ap: v, apAt: firebase.firestore.FieldValue.serverTimestamp()});
+        box.querySelector('.pop-b').innerHTML = '<p>📨 <b>방장에게 보냈어요!</b></p><p>방장이 <b>다시 허용</b>하면<br>초대 링크로 다시 들어올 수 있어요.</p>';
+        inp.remove(); msg(''); b.remove(); box.querySelector('[data-pop="0"]').textContent = '확인';
+      }catch(err){
+        b.disabled = false;
+        msg(recent ? '부탁은 1시간에 한 번만 보낼 수 있어요. 조금 뒤 다시 해 주세요.' : '보내지 못했어요. 잠시 뒤 다시 해 주세요.');
+      }
+    });
+    document.body.appendChild(box);
+  });
 }
 // 내 멤버 문서를 계속 지켜봐요: 앱을 켜 둔 사이에 내보내지거나 방이 지워지면 바로 알려 주고,
 //  다른 탭·기기에서 닉네임을 바꿨으면 여기서도 맞춰요 (안 맞으면 서버가 글쓰기를 거절해요)
@@ -200,7 +239,7 @@ function sosWatchMe(mine){
     if(sosLeaving || s.metadata.fromCache) return;
     if(s.exists){
       const d = s.data();
-      if(d.on === false) return sosKickedOut();
+      if(d.on === false) return sosKickedOut(d);
       if(d.nick && d.nick !== ME.nick){ ME.nick = d.nick; saveNick(d.nick); }
       return;
     }
@@ -270,7 +309,7 @@ async function sosDeleteMe(){
   if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
     const me = db.collection('rooms').doc(r.key).collection('members').doc(user.uid);
     try{ await me.delete(); }
-    catch(e){ try{ await me.update({nick: '(정보 지움)'}); }catch(err){} }
+    catch(e){ try{ await me.update({nick: '(정보 지움)', ap: firebase.firestore.FieldValue.delete()}); }catch(err){} }
   }
   try{ if(typeof pushOff === 'function') await pushOff(); }catch(e){}
   try{ if(user) await user.delete(); }catch(e){ try{ await firebase.auth().signOut(); }catch(err){} }
@@ -898,7 +937,7 @@ function sosEscapeInApp(){
       ${SOS_KAKAO ? '<button type="button" class="ie-sub" data-out>다른 브라우저로 열기</button>' : ''}
       <button type="button" class="ie-sub" data-copy>주소 복사하기</button>
       <p class="ie-msg" aria-live="polite"></p>
-      ${ROOM ? '<button type="button" class="ie-stay">이번만 카톡 안에서 계속하기</button>' : ''}
+      ${ROOM ? `<button type="button" class="ie-stay">이번만 ${SOS_KAKAO ? '카톡' : /Barcelona/i.test(SOS_UA) ? '스레드' : /Instagram/i.test(SOS_UA) ? '인스타' : '이 앱'} 안에서 계속하기</button>` : ''}
     </div>`;
   const msg = t => { box.querySelector('.ie-msg').textContent = t; };
   box.addEventListener('click', async e => {

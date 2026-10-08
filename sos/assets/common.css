@@ -839,3 +839,16 @@ body{padding-block:16px 120px}
 /* 홈 SOS 달력: 오늘 지나간 시간은 빗금 음영 + 줄 긋기, 못 눌러요 */
 .sos-cell.gone{cursor:not-allowed;opacity:.4;border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 18%,transparent) 6px 8px),var(--page)!important;box-shadow:none}
 .sos-cell.gone b,.sos-cell.gone span{color:var(--muted)!important;text-decoration:line-through;text-decoration-thickness:2px}
+/* 👥 멤버 버튼 N 표시 · 새 멤버 NEW · 다시 받아 달라는 부탁 */
+.mem-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e8382f;color:#fff;font-style:normal;font-size:11px;font-weight:900;line-height:18px;text-align:center;border:2px solid var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.25);animation:mem-pop 1.6s ease-in-out infinite}
+@keyframes mem-pop{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.mem-badge{animation:none}}
+.mem-nick-line{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mem-new{display:inline-block;padding:1px 6px;border-radius:999px;background:#e8382f;color:#fff;font-size:10.5px;font-weight:900;letter-spacing:.04em;line-height:1.5}
+.mem-appeal{margin:2px 0 8px;padding:8px 10px;border-radius:12px;border:2px solid #f2b531;background:color-mix(in srgb,#f2b531 12%,var(--bg))}
+.mem-appeal .who-h{margin:0 0 4px;font-weight:800}
+.mem-appeal .who-h b{display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:#e8382f;color:#fff;font-size:12px;text-align:center}
+.mem-ap{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--fg);white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.mem-ap-btns{display:flex;flex-direction:column;gap:4px;flex:none}
+.appeal-pop .appeal-in{width:100%;box-sizing:border-box;min-height:84px;resize:none;font:inherit;font-size:14.5px;line-height:1.5;text-align:left}
+.appeal-pop .appeal-sent{margin-top:8px;padding:6px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:13px}

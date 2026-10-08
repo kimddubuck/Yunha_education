@@ -506,10 +506,34 @@ function sosReport(kind, mid, cid){
 /* 👥 방 멤버 (홈 표지 오른쪽 위): 닉네임 목록 · 내 닉네임 바꾸기 · 방장은 내보내기 */
 (function membersButton(){
   const btn = document.querySelector('[data-members]'); if(!btn || !ROOM) return;
-  const load = fresh => sosMembers(fresh).then(list => { btn.querySelector('b').textContent = list.length || '…'; return list; });
+  // 🆕 새 멤버 · 🙋 다시 받아 달라는 부탁이 있으면 멤버 버튼에 N 표시 (멤버 목록을 열면 새 멤버 N은 사라져요)
+  const SEEN_KEY = 'sosMemSeen:' + ROOM.roomId;
+  const getSeen = () => { try{ return +localStorage.getItem(SEEN_KEY) || 0; }catch(e){ return 0; } };
+  const setSeen = v => { try{ localStorage.setItem(SEEN_KEY, String(v)); }catch(e){} };
+  if(!getSeen()) setSeen(Date.now());   // 처음엔 기존 멤버를 '새 멤버'로 치지 않아요
+  const jms = m => m.joinedAt && m.joinedAt.toMillis ? m.joinedAt.toMillis() : 0;
+  let newSince = null, appeals = [], outs = [], lastList = [];
+  const isNew = m => m.uid !== ME.uid && jms(m) > (newSince === null ? getSeen() : newSince);
+  function badge(){
+    const on = (newSince === null && lastList.some(isNew)) || appeals.length > 0;
+    let i = btn.querySelector('.mem-badge');
+    if(on && !i){ i = document.createElement('i'); i.className = 'mem-badge'; i.textContent = 'N'; btn.appendChild(i); }
+    if(!on && i) i.remove();
+    btn.setAttribute('aria-label', on ? '방 멤버 보기 (새 소식 있음)' : '방 멤버 보기');
+  }
+  // 방장: 내보낸 사람(+ 부탁 글)을 불러와요
+  const loadOut = () => ME.owner ? roomRef().collection('members').where('on', '==', false).get().then(q => {
+    outs = q.docs.map(d => ({uid: d.id, ...d.data()}));
+    appeals = outs.filter(m => m.ap); badge(); return outs;
+  }).catch(() => outs) : Promise.resolve((appeals = [], outs = []));
+  const load = fresh => sosMembers(fresh).then(list => { btn.querySelector('b').textContent = list.length || '…'; lastList = list; badge(); return list; });
   // 방장이 나를 지목했으면, 앱을 열 때 한 번 물어봐요
-  load(false).then(list => { if(ME.po && ME.po === ME.uid) askAccept(list); });
-  btn.addEventListener('click', async () => open(await load(false)));
+  load(false).then(list => { loadOut(); if(ME.po && ME.po === ME.uid) askAccept(list); });
+  document.addEventListener('sos:owner', () => loadOut());
+  btn.addEventListener('click', async () => {
+    if(newSince === null){ newSince = getSeen(); setSeen(Date.now()); }   // 이번 화면에서만 NEW 표시, 나갔다 오면 사라져요
+    const list = await load(false); await loadOut(); open(list);
+  });
   const nickOf = (list, uid) => (list.find(m => m.uid === uid) || {}).nick || '';
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const ago = m => {
@@ -553,31 +577,51 @@ function sosReport(kind, mid, cid){
     const cnt = {}; list.forEach(m => { cnt[m.nick] = (cnt[m.nick] || 0) + 1; });
     const joined = m => { const t = m.joinedAt && m.joinedAt.toDate ? m.joinedAt.toDate() : null; return t ? `${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} 들어옴` : ''; };
     const seenLine = m => ME.owner && m.uid !== ME.uid && ago(m) ? `<small class="mem-seen${sleepy(m) ? ' old' : ''}">${sleepy(m) ? '😴 ' : ''}마지막 접속 ${ago(m)}</small>` : '';
-    const row = m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick"></span>${cnt[m.nick] > 1 ? `<small class="mem-dup">⚠️ 중복 · ${joined(m)}</small>` : ''}${seenLine(m)}</span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.po ? '<span class="mem-tag po">👑 넘기는 중</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
+    const row = m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick-line"><span class="mem-nick"></span>${isNew(m) ? '<span class="mem-new">NEW</span>' : ''}</span>${cnt[m.nick] > 1 ? `<small class="mem-dup">⚠️ 중복 · ${joined(m)}</small>` : ''}${seenLine(m)}</span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.po ? '<span class="mem-tag po">👑 넘기는 중</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
       + (ME.owner && m.uid !== ME.uid ? `<button type="button" class="mem-kick" data-kick="${m.uid}">내보내기</button>` : '') + '</li>';
     const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
       body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>${Object.values(cnt).some(n => n > 1) ? `<p class="who-tip mem-dup-tip">⚠️ <b>중복</b>은 같은 사람이 다른 브라우저·앱으로 다시 들어온 기록일 수 있어요.${ME.owner ? ' 안 쓰는 쪽(보통 먼저 들어온 쪽)을 내보내기 해 주세요.' : ' 방장에게 정리를 부탁해 주세요.'}</p>` : ''}
+        ${ME.owner && appeals.length ? '<div class="mem-appeal"><p class="who-h">🙋 다시 받아 달라는 부탁 <b class="mem-ap-n"></b></p><ul class="mem-list"></ul></div>' : ''}
         ${ownerBox(list)}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
-        <ul class="mem-list">${list.map(row).join('')}</ul>
+        <ul class="mem-list">${[...list.filter(isNew), ...list.filter(m => !isNew(m))].map(row).join('')}</ul>
         ${ME.owner ? '<div class="mem-out"></div>' : ''}`});
-    // 방장: 내보낸 사람 목록 + 다시 들어올 수 있게 허용
-    if(ME.owner) roomRef().collection('members').where('on', '==', false).get().then(q => {
-      const out = box.querySelector('.mem-out'); if(!out || !q.size) return;
-      out.innerHTML = '<p class="who-h">🚫 내보낸 사람 <small>(허용하면 초대 링크로 다시 들어올 수 있어요)</small></p><ul class="mem-list"></ul>';
-      q.docs.forEach(d => { const li = document.createElement('li'); li.dataset.uid = d.id;
-        const n = document.createElement('span'); n.className = 'mem-nick'; n.textContent = d.data().nick;   // 글자로만
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'mem-kick mem-allow'; b.dataset.allow = d.id; b.textContent = '다시 허용';
-        li.append(n, b); out.querySelector('ul').appendChild(li); });
-    }).catch(() => {});
-    box.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
+    // 방장: 다시 받아 달라는 부탁(위쪽) + 내보낸 사람 목록(아래쪽) — 닉네임·부탁 글은 글자로만
+    const outLi = (m, ap) => { const li = document.createElement('li'); li.dataset.out = m.uid;
+      const w = document.createElement('span'); w.className = 'mem-who';
+      const n = document.createElement('span'); n.className = 'mem-nick'; n.textContent = m.nick; w.appendChild(n);
+      if(ap){ const q = document.createElement('small'); q.className = 'mem-ap'; q.textContent = '💬 ' + m.ap; w.appendChild(q); }
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'mem-kick mem-allow'; b.dataset.allow = m.uid; b.textContent = '다시 허용';
+      li.append(w, b);
+      if(ap){ const d = document.createElement('button'); d.type = 'button'; d.className = 'mem-kick'; d.dataset.deny = m.uid; d.textContent = '거절'; const g = document.createElement('span'); g.className = 'mem-ap-btns'; g.append(b, d); li.append(g); }
+      return li; };
+    const drawOut = () => {
+      const apBox = box.querySelector('.mem-appeal');
+      if(apBox){ if(!appeals.length) apBox.remove(); else { apBox.querySelector('.mem-ap-n').textContent = appeals.length; const ul = apBox.querySelector('ul'); ul.innerHTML = ''; appeals.forEach(m => ul.appendChild(outLi(m, true))); } }
+      const out = box.querySelector('.mem-out'); if(!out) return;
+      const rest = outs.filter(m => !m.ap);
+      out.innerHTML = rest.length ? '<p class="who-h">🚫 내보낸 사람 <small>(허용하면 초대 링크로 다시 들어올 수 있어요)</small></p><ul class="mem-list"></ul>' : '';
+      rest.forEach(m => out.querySelector('ul').appendChild(outLi(m, false)));
+    };
+    if(ME.owner) drawOut();
+    box.querySelectorAll('.mem-list li[data-uid]').forEach(li => { li.querySelector('.mem-nick').textContent = (list.find(m => m.uid === li.dataset.uid) || {}).nick || ''; });   // 닉네임은 글자로만
     box.querySelectorAll('.mem-n[data-n]').forEach(el => { el.textContent = nickOf(list, el.dataset.n); });
     box.addEventListener('click', async e => {
       const al = e.target.closest('[data-allow]');
       if(al){
         al.disabled = true;
-        try{ await roomRef().collection('members').doc(al.dataset.allow).delete(); al.closest('li').remove(); pushToast && typeof pushToast === 'function' && pushToast('✅ 다시 들어올 수 있게 했어요. 초대 링크를 보내 주세요'); }
+        try{ await roomRef().collection('members').doc(al.dataset.allow).delete();
+          outs = outs.filter(m => m.uid !== al.dataset.allow); appeals = appeals.filter(m => m.uid !== al.dataset.allow); badge(); drawOut();
+          typeof pushToast === 'function' && pushToast('✅ 다시 들어올 수 있게 했어요. 초대 링크를 보내 주세요'); }
         catch(err){ al.disabled = false; sosConfirm({icon: '😢', title: '허용하지 못했어요.', body: '<p>보안 규칙을 새로 게시했는지 확인해 주세요.</p>', ok: '확인'}); }
+        return;
+      }
+      const dn = e.target.closest('[data-deny]');
+      if(dn){   // 부탁 거절: 부탁 글만 지워요 (계속 내보낸 상태)
+        dn.disabled = true;
+        try{ await roomRef().collection('members').doc(dn.dataset.deny).update({ap: firebase.firestore.FieldValue.delete()});
+          outs = outs.map(m => m.uid === dn.dataset.deny ? {...m, ap: ''} : m); appeals = appeals.filter(m => m.uid !== dn.dataset.deny); badge(); drawOut(); }
+        catch(err){ dn.disabled = false; sosConfirm({icon: '😢', title: '거절하지 못했어요.', body: '<p>보안 규칙을 새로 게시했는지 확인해 주세요.</p>', ok: '확인'}); }
         return;
       }
       const k = e.target.closest('[data-kick]');
@@ -589,7 +633,7 @@ function sosReport(kind, mid, cid){
         try{
           await roomRef().collection('members').doc(m.uid).update({on: false});
           if(ME.po === m.uid){ try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; }catch(err){} }   // 넘기려던 사람을 내보냈으면 넘기기도 취소
-          open(await load(true));
+          const nl = await load(true); await loadOut(); open(nl);
         }
         catch(err){ sosConfirm({icon: '😢', title: '내보내지 못했어요.', body: '<p>잠시 뒤 다시 해 주세요.</p>', ok: '확인'}); }
         return;
