@@ -410,13 +410,13 @@ a.sos-btn{text-decoration:none;text-align:center}
 .next-card h2{display:flex;align-items:center;gap:8px;color:var(--accent-ink)}
 .next-count{font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--pick);color:var(--pick-fg)}
 .next-card #nextEmpty{white-space:pre-line;margin:0;font-size:14px;color:var(--fg)}
-.next-card .ops > li{margin-bottom:8px;background:var(--accent-soft);border-color:color-mix(in srgb, var(--pick) 35%, var(--line))}
-.next-card .ops > li .date-badge:not(.today),.next-card .ops > li .host-tag{background:var(--bg)}
-.next-card .ops > li.meet-card{flex-wrap:wrap;row-gap:8px}
-.next-card .ops > li > .vote-row{flex-basis:100%;margin-top:2px}
-.next-card .vote-row .join:not([aria-pressed="true"]){color:var(--fg)}
+:is(.next-card,.up-sec) .ops > li{margin-bottom:8px;background:var(--accent-soft);border-color:color-mix(in srgb, var(--pick) 35%, var(--line))}
+:is(.next-card,.up-sec) .ops > li .date-badge:not(.today),:is(.next-card,.up-sec) .ops > li .host-tag{background:var(--bg)}
+:is(.next-card,.up-sec) .ops > li.meet-card{flex-wrap:wrap;row-gap:8px}
+:is(.next-card,.up-sec) .ops > li > .vote-row{flex-basis:100%;margin-top:2px}
+:is(.next-card,.up-sec) .vote-row .join:not([aria-pressed="true"]){color:var(--fg)}
 
-.next-card .vote-hint{flex-basis:100%;margin:-4px 0 0;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap}
+:is(.next-card,.up-sec) .vote-hint{flex-basis:100%;margin:-4px 0 0;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap}
 .next-card p{margin:0}
 
 /* 참석·미확정·불참: 다시 누르면 취소 안내 */
@@ -728,13 +728,13 @@ body{padding-block:16px 120px}
 .mem-btn{top:10px;padding:3px 8px;font-size:15px}
 .next-card{padding:12px 14px}
 .next-card h2{margin:0 0 8px;font-size:18px}
-.next-card .ops > li{padding:10px 12px;margin-bottom:6px}
-.next-card .meet-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.next-card .meet-top .op-when{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:400px){.next-card .meet-top .op-when{font-size:15px;letter-spacing:-.3px}}
+:is(.next-card,.up-sec) .ops > li{padding:10px 12px;margin-bottom:6px}
+:is(.next-card,.up-sec) .meet-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+:is(.next-card,.up-sec) .meet-top .op-when{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:400px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:15px;letter-spacing:-.3px}}
 .who-mini{flex:none;border:0;background:linear-gradient(180deg,#45b3b0,#23878a);color:#fff;border-radius:999px;padding:4px 9px 5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 3px 0 #15605f,0 5px 8px rgba(21,96,95,.3);transform:translateY(-2px);transition:transform .08s,box-shadow .08s}
 .who-mini:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 #15605f,0 1px 2px rgba(21,96,95,.3)}
-.next-card .vote-row .join b{margin-left:2px;font-weight:800}
+:is(.next-card,.up-sec) .vote-row .join b{margin-left:2px;font-weight:800}
 /* 방 카드: 아이콘을 앱 이름 옆으로 (세로 공간 절약) */
 .cover .cover-icon{position:absolute;top:12px;left:16px;width:26px;height:26px;border-radius:7px}
 .cover .cover-app{padding-left:34px;min-height:26px;line-height:26px}
@@ -758,10 +758,10 @@ body{padding-block:16px 120px}
 .mem-btn b{font-size:13.5px}
 .mem-btn small{font-size:11px}
 @media (max-width:340px){
-  .next-card .meet-top .op-when{white-space:nowrap;font-size:14px}
-  .next-card .who-mini{padding:3px 8px 4px;font-size:11.5px}
-  .next-card .vote-row{gap:5px}
-  .next-card .vote-row .join{font-size:12.5px;padding:8px 2px;letter-spacing:-.3px}
+  :is(.next-card,.up-sec) .meet-top .op-when{white-space:nowrap;font-size:14px}
+  :is(.next-card,.up-sec) .who-mini{padding:3px 8px 4px;font-size:11.5px}
+  :is(.next-card,.up-sec) .vote-row{gap:5px}
+  :is(.next-card,.up-sec) .vote-row .join{font-size:12.5px;padding:8px 2px;letter-spacing:-.3px}
   .site-nav .brand{display:none}
 }
 
@@ -772,14 +772,14 @@ body{padding-block:16px 120px}
 .ops .op-meta .op-posted{flex-basis:100%;font-size:11.5px}
 
 /* 홈 다가오는 모임 카드: 살짝 떠 있는 입체감 (위는 밝게, 아래는 진한 테두리·그림자) */
-.next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 55%,#fff),var(--accent-soft));border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line));border-bottom-width:4px;border-bottom-color:color-mix(in srgb,var(--pick) 70%,#0b3d3d);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -4px rgba(21,96,95,.35)}
+:is(.next-card,.up-sec) .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 55%,#fff),var(--accent-soft));border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line));border-bottom-width:4px;border-bottom-color:color-mix(in srgb,var(--pick) 70%,#0b3d3d);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -4px rgba(21,96,95,.35)}
 /* 참석·미확정·불참: 홈과 SOS 예약 화면 모두 볼록한 버튼 (누르면 쑥 들어가요) */
 .vote-row .join{border:1.5px solid color-mix(in srgb,var(--line) 70%,#9bb);background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 88%,#9bb));box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 0 color-mix(in srgb,var(--line) 55%,#7a9a9a),0 6px 10px rgba(0,0,0,.1);transform:translateY(-2px);transition:transform .08s,box-shadow .08s}
 .vote-row .join[aria-pressed="true"]{background:linear-gradient(180deg,#45b3b0,#23878a);color:#fff;border-color:#23878a;text-shadow:0 1px 0 rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #15605f,0 6px 10px rgba(21,96,95,.3)}
 .vote-row .join:not(:disabled):active{transform:translateY(2px);box-shadow:inset 0 2px 3px rgba(0,0,0,.15),0 0 0 transparent}
 .vote-row .join:disabled{transform:none;box-shadow:none}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}}
-:root[data-theme="dark"] .next-card .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.next-card,.up-sec) .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}}
+:root[data-theme="dark"] :is(.next-card,.up-sec) .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #0c1414,0 6px 10px rgba(0,0,0,.4)}}
 :root[data-theme="dark"] .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #0c1414,0 6px 10px rgba(0,0,0,.4)}
 
@@ -793,20 +793,20 @@ body{padding-block:16px 120px}
 .vote-row .join[aria-pressed="true"]{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 0 #15605f,0 3px 6px rgba(21,96,95,.25)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #0c1414,0 3px 5px rgba(0,0,0,.4)}}
 :root[data-theme="dark"] .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #0c1414,0 3px 5px rgba(0,0,0,.4)}
-@media (max-width:340px){.next-card .vote-row .join{font-size:12px;padding:6px 2px}}
+@media (max-width:340px){:is(.next-card,.up-sec) .vote-row .join{font-size:12px;padding:6px 2px}}
 .who-mini{padding:3px 9px 4px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 0 #15605f,0 3px 6px rgba(21,96,95,.25);transform:translateY(-1px)}
 
 /* 홈 모임 카드: 날짜 네모는 빼고 내용을 넓게, 대신 날짜·요일·시간을 크게 강조 */
-.next-card .ops > li .date-badge{display:none}
-.next-card .ops > li.meet-card{column-gap:0;row-gap:10px}
-.next-card .ops > li .meet-body{flex:1 1 100%;min-width:0}
-.next-card .meet-top .op-when{font-size:19px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px}
-@media (max-width:400px){.next-card .meet-top .op-when{font-size:18px}}
-@media (max-width:340px){.next-card .meet-top .op-when{font-size:16px}}
+:is(.next-card,.up-sec) .ops > li .date-badge{display:none}
+:is(.next-card,.up-sec) .ops > li.meet-card{column-gap:0;row-gap:10px}
+:is(.next-card,.up-sec) .ops > li .meet-body{flex:1 1 100%;min-width:0}
+:is(.next-card,.up-sec) .meet-top .op-when{font-size:19px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px}
+@media (max-width:400px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:18px}}
+@media (max-width:340px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:16px}}
 /* 날짜·시간 글씨: 밝은 화면은 아주 진한 초록, 어두운 화면은 환한 민트로 더 굵게 */
-.next-card .meet-top .op-when{font-weight:900;color:#0b4f51;-webkit-text-stroke:.3px currentColor}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next-card .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}}
-:root[data-theme="dark"] .next-card .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}
+:is(.next-card,.up-sec) .meet-top .op-when{font-weight:900;color:#0b4f51;-webkit-text-stroke:.3px currentColor}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.next-card,.up-sec) .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}}
+:root[data-theme="dark"] :is(.next-card,.up-sec) .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}
 /* SOS 예약: 세로 여백 조금 줄여서 'SOS 요청하기' 버튼까지 한 화면에 */
 [data-sos]{gap:10px}
 .sos-picker{padding:12px 12px}
@@ -816,3 +816,7 @@ body{padding-block:16px 120px}
 .time-grid{gap:7px}
 .time-btn{min-height:40px}
 .sos-sub-s{line-height:1.5}
+
+/* SOS 예약 다가오는 모임: 홈 카드와 같은 모양, 버튼 줄·안내는 카드 폭에 맞게 */
+.up-sec .ops > li .meet-body{gap:8px}
+.up-sec .vote-hint{margin:-4px 0 0}

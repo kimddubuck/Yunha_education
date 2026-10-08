@@ -63,19 +63,24 @@ function meetCard(o, past){
   const body = document.createElement('div'); body.className = 'meet-body';
   li.append(dateBadge(o.date), body);
   const today = todayStr(), cs = (meet.comments[o.id] || []).filter(c => !c.deleted);
-  const meta = document.createElement('div'); meta.className = 'op-meta';
+  const live = !past && !o.cancelled;   // 다가오는 모임은 홈 카드와 같은 모양 (큰 날짜·시간 + 👀 참석자, 버튼 안에 숫자)
   const w = document.createElement('span'); w.className = 'op-when';
   w.textContent = `${dayLabel(o.date)} ${o.slot || ''}${o.date===today ? ' · 오늘' : ''}`;
-  const t = document.createElement('span'); t.textContent = fmtTime(o.createdAt);
-  // 👀 참석자 — 시간 줄 오른쪽 위에 볼록한 버튼 (누르면 누가 참석·불참했는지 닉네임 팝업)
-  const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
-  meta.append(w, who);
-  if(o.host){ const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = `👑 ${o.host} 주최`; meta.appendChild(hs); }
-  t.className = 'op-posted'; meta.appendChild(t);   // 글 올린 시각은 맨 아래 작게
+  const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
   const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
-  const tally = document.createElement('button'); tally.type = 'button'; tally.className = 'tally'; tally.dataset.voters = o.id;
-  tally.innerHTML = tallyHtml(o);   // 누르면 누가 참석·불참했는지 닉네임 팝업
-  body.append(meta, p, tally);
+  if(live){
+    // 👀 참석자 — 시간 줄 오른쪽 위 (누르면 누가 참석·불참했는지 닉네임 팝업)
+    const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
+    const top = document.createElement('div'); top.className = 'meet-top'; top.append(w, who);
+    body.append(top, hs, p);
+  } else {
+    const meta = document.createElement('div'); meta.className = 'op-meta';
+    const t = document.createElement('span'); t.textContent = fmtTime(o.createdAt);
+    meta.append(w, t); if(o.host) meta.appendChild(hs);
+    const tally = document.createElement('button'); tally.type = 'button'; tally.className = 'tally'; tally.dataset.voters = o.id;
+    tally.innerHTML = tallyHtml(o);   // 누르면 누가 참석·불참했는지 닉네임 팝업
+    body.append(meta, p, tally);
+  }
   if(o.cancelled){
     li.classList.add('op-past');
     const c = document.createElement('p'); c.className = 'cancelled'; c.textContent = '❌ 주최자가 취소한 모임이에요';
@@ -84,22 +89,16 @@ function meetCard(o, past){
   if(past) return li;
 
   const row = document.createElement('div'); row.className = 'vote-row';
-  const mine = {join: 'joins', maybe: 'maybes', no: 'nos'}[myVote(o)];
-  const jb = document.createElement('button'); jb.type = 'button'; jb.className = 'join'; jb.dataset.vote = 'joins'; jb.dataset.id = o.id;
-  jb.setAttribute('aria-pressed', mine==='joins');
-  jb.textContent = mine==='joins' ? '🙋 참석 ✓' : '🙋 참석';
-  const nb = document.createElement('button'); nb.type = 'button'; nb.className = 'join'; nb.dataset.vote = 'nos'; nb.dataset.id = o.id;
-  nb.setAttribute('aria-pressed', mine==='nos');
-  nb.textContent = mine==='nos' ? '🙅 불참 ✓' : '🙅 불참';
-  const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'join'; mb.dataset.vote = 'maybes'; mb.dataset.id = o.id;
-  mb.setAttribute('aria-pressed', mine==='maybes');
-  mb.textContent = mine==='maybes' ? '🤔 미확정 ✓' : '🤔 미확정';
+  const mine = {join: 'joins', maybe: 'maybes', no: 'nos'}[myVote(o)], cnt = meetVotes(o);
+  const vbtn = (k, s, label) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'join'; b.dataset.vote = k; b.dataset.id = o.id;
+    b.setAttribute('aria-pressed', mine===k); b.textContent = label + ' '; const c = document.createElement('b'); c.textContent = cnt[s].count; b.appendChild(c); return b; };
+  const jb = vbtn('joins', 'join', '🙋 참석'), mb = vbtn('maybes', 'maybe', '🤔 미확정'), nb = vbtn('nos', 'no', '🙅 불참');
   const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'join'; cb.dataset.toggle = o.id;
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
   cb.textContent = `💬 댓글${cs.length ? ' ' + cs.length : ''}`;
   cb.className = 'join comment-toggle';
   row.append(jb, mb, nb); body.append(row);
-  if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소, 다른 걸 누르면 바꿀 수 있어요'; body.append(h); }
+  if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; body.append(h); }
   body.append(cb);
   if(isMine(o) || ME.owner){
     const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet'; x.dataset.cancelMeet = o.id;
