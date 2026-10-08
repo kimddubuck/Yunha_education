@@ -126,7 +126,7 @@ function meetVotes(o){
 }
 function tallyHtml(o){
   const v = meetVotes(o);
-  return VOTE_KINDS.map(([s, , label]) => `<span>${label} <b>${v[s].count}</b></span>`).join('') + '<span class="tally-who">👀 누가?</span>';
+  return VOTE_KINDS.map(([s, , label]) => `<span>${label} <b>${v[s].count}</b></span>`).join('');
 }
 // 누가 참석·미확정·불참했는지 + 아직 답 안 한 멤버 (팝업)
 async function showVoters(o){

@@ -67,8 +67,11 @@ function meetCard(o, past){
   const w = document.createElement('span'); w.className = 'op-when';
   w.textContent = `${dayLabel(o.date)} ${o.slot || ''}${o.date===today ? ' · 오늘' : ''}`;
   const t = document.createElement('span'); t.textContent = fmtTime(o.createdAt);
-  meta.append(w, t);
+  // 👀 참석자 — 시간 줄 오른쪽 위에 볼록한 버튼 (누르면 누가 참석·불참했는지 닉네임 팝업)
+  const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
+  meta.append(w, who);
   if(o.host){ const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = `👑 ${o.host} 주최`; meta.appendChild(hs); }
+  t.className = 'op-posted'; meta.appendChild(t);   // 글 올린 시각은 맨 아래 작게
   const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
   const tally = document.createElement('button'); tally.type = 'button'; tally.className = 'tally'; tally.dataset.voters = o.id;
   tally.innerHTML = tallyHtml(o);   // 누르면 누가 참석·불참했는지 닉네임 팝업
@@ -84,13 +87,13 @@ function meetCard(o, past){
   const mine = {join: 'joins', maybe: 'maybes', no: 'nos'}[myVote(o)];
   const jb = document.createElement('button'); jb.type = 'button'; jb.className = 'join'; jb.dataset.vote = 'joins'; jb.dataset.id = o.id;
   jb.setAttribute('aria-pressed', mine==='joins');
-  jb.textContent = mine==='joins' ? '🙋 참석했어요' : '🙋 참석';
+  jb.textContent = mine==='joins' ? '🙋 참석 ✓' : '🙋 참석';
   const nb = document.createElement('button'); nb.type = 'button'; nb.className = 'join'; nb.dataset.vote = 'nos'; nb.dataset.id = o.id;
   nb.setAttribute('aria-pressed', mine==='nos');
-  nb.textContent = mine==='nos' ? '🙅 불참했어요' : '🙅 불참';
+  nb.textContent = mine==='nos' ? '🙅 불참 ✓' : '🙅 불참';
   const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'join'; mb.dataset.vote = 'maybes'; mb.dataset.id = o.id;
   mb.setAttribute('aria-pressed', mine==='maybes');
-  mb.textContent = mine==='maybes' ? '🤔 미확정했어요' : '🤔 미확정';
+  mb.textContent = mine==='maybes' ? '🤔 미확정 ✓' : '🤔 미확정';
   const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'join'; cb.dataset.toggle = o.id;
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
   cb.textContent = `💬 댓글${cs.length ? ' ' + cs.length : ''}`;
