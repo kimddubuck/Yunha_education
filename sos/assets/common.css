@@ -712,3 +712,40 @@ body{padding-block:16px 120px}
 .mem-own-box .mem-kick{flex:none;width:100%;padding:8px}
 .mem-own-box small .mem-n{color:var(--fg)}
 .tiny-note{margin:4px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted);text-align:center;word-break:keep-all}
+
+/* 🏠 홈을 한 화면에: 방 제목 · SOS 달력 · 다가오는 모임 (2026-10 높이 줄이기) */
+.sos-note1{margin:-4px 0 0;font-size:12.5px;color:var(--muted);white-space:nowrap}
+[data-sos-summary]{gap:10px;padding:14px}
+[data-sos-summary] .sos-today{gap:5px}
+[data-sos-summary] .sos-cell{flex-direction:row;justify-content:center;align-items:baseline;gap:4px;padding:7px 0}
+[data-sos-summary] .sos-cell b{font-size:13px}
+[data-sos-summary] .sos-cell span{font-size:11.5px}
+[data-sos-summary] .sos-tab{padding:5px 11px;font-size:13px}
+.cover{padding:12px 16px 14px;gap:4px}
+.cover-icon{width:36px;height:36px;border-radius:9px}
+.cover h1.room-title{font-size:23px;line-height:1.25}
+.cover .cover-sub{font-size:12.5px;line-height:1.45}
+.room-bar{margin-top:4px}
+.room-bar .btn{padding:7px 12px}
+.mem-btn{top:10px;padding:3px 8px;font-size:15px}
+.next-card{padding:12px 14px}
+.next-card h2{margin:0 0 8px;font-size:18px}
+.next-card .ops > li{padding:10px 12px;margin-bottom:6px}
+.next-card .meet-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.next-card .who-mini{flex:none;border:1.5px solid var(--pick);background:var(--bg);color:var(--accent-ink);border-radius:999px;padding:2px 9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.next-card .vote-row .join b{margin-left:2px;font-weight:800}
+/* 방 카드: 아이콘을 앱 이름 옆으로 (세로 공간 절약) */
+.cover .cover-icon{position:absolute;top:12px;left:16px;width:26px;height:26px;border-radius:7px}
+.cover .cover-app{padding-left:34px;min-height:26px;line-height:26px}
+.cover .title-row{padding-right:64px}
+/* 홈은 카드 사이도 촘촘하게 (방 제목 · SOS · 모임이 한 화면에) */
+.wrap.single main:has(> .cover){gap:12px}
+.wrap.single main:has(> .cover) .next-card{margin-top:4px}
+.wrap.single main:has(> .cover) .cover{padding-bottom:10px}
+/* 화면이 짧은 폰에서는 방 카드의 한 줄 소개를 숨겨 모임 버튼까지 보이게 해요 */
+@media (max-height:820px){ .cover .cover-sub{display:none} }
+@media (max-height:820px){
+  [data-sos-summary] .sos-note1{display:none}
+  [data-sos-summary] .sos-cell{padding:5px 0}
+  [data-sos-summary]{gap:8px;padding:12px}
+}

@@ -362,16 +362,11 @@ function sosSummary(){
       return `<button type="button" class="sos-tab" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
     const cells = HOURS.map(h => { const n = sosHourCount(t, h);
       return `<button type="button" class="sos-cell${n ? ' on' : ''}" data-sos-hour="${h}"${data ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
-    const upcoming = data ? Object.keys(data).filter(d => d > today).sort().map(d => {
-      const hs = HOURS.filter(h => sosHourCount(data[d], h)).map(h => `<button type="button" class="sos-chip" data-sos-hour="${h}" data-sos-date="${d}">${h}시 ${sosHourCount(data[d], h)}명</button>`);
-      return hs.length ? `<div class="sos-day"><b>${dayLabel(d)}</b><div>${hs.join('')}</div></div>` : '';
-    }).filter(Boolean).slice(0,5) : [];
+    // 한 화면에 방 제목·SOS·모임이 다 보이게 짧게: 안내 한 줄, 시간 칸은 한 줄짜리 (다가오는 SOS 목록은 빼고 날짜 탭으로 봐요)
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
-      <p class="sos-sub"><b>📅 ${name(sel) ? label + '의' : label} SOS 요청</b>${name(sel) ? ` (${dayLabel(day)})` : ''}</p>
-      <p class="sos-note">👀 시간별로 SOS를 요청한 사람 수예요.<br><b>시간을 누르면 누가 보냈는지 보이고,<br>바로 요청할 수 있어요.</b></p>
-      <div class="sos-today">${cells}</div>
-      ${upcoming.length ? `<p class="sos-sub"><b>🗓 다가오는 SOS 요청</b></p><div class="sos-days">${upcoming.join('')}</div>` : ''}`;
+      <p class="sos-note1">👆 시간을 누르면 누가 보냈는지 보여요</p>
+      <div class="sos-today">${cells}</div>`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
   };
   box.addEventListener('click', e => {
