@@ -825,3 +825,11 @@ body{padding-block:16px 120px}
 .up-sec .ops > li.op-past .meet-body > .op-text{font-weight:600}
 .up-sec .tally{justify-content:center;font-size:13.5px}
 .board-form > .example{margin-top:6px;padding-top:12px;border-top:1px dashed var(--line)}
+/* 모임 만들기 양식: 시간 버튼은 낮게, 주최자·장소놀이 칸은 또렷하게 */
+#meetForm .time-btn{min-height:34px;padding:4px 0}
+#meetForm .time-grid{gap:6px}
+#meetForm > .label{font-size:15px;font-weight:800;color:var(--fg)}
+#meetForm > p.label:has(#meetHost){display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:8px 12px;border-radius:12px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line))}
+#meetForm #meetHost{color:var(--accent-ink);font-weight:900}
+#meetForm textarea{border:2px solid var(--pick);font-size:16px;font-weight:600;color:var(--fg);box-shadow:0 0 0 3px color-mix(in srgb,var(--pick) 15%,transparent)}
+#meetForm textarea:focus{outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--pick) 30%,transparent)}
