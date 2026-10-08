@@ -803,3 +803,7 @@ body{padding-block:16px 120px}
 .next-card .meet-top .op-when{font-size:19px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px}
 @media (max-width:400px){.next-card .meet-top .op-when{font-size:18px}}
 @media (max-width:340px){.next-card .meet-top .op-when{font-size:16px}}
+/* 날짜·시간 글씨: 밝은 화면은 아주 진한 초록, 어두운 화면은 환한 민트로 더 굵게 */
+.next-card .meet-top .op-when{font-weight:900;color:#0b4f51;-webkit-text-stroke:.3px currentColor}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next-card .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}}
+:root[data-theme="dark"] .next-card .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}
