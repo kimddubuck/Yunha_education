@@ -63,23 +63,18 @@ function meetCard(o, past){
   const body = document.createElement('div'); body.className = 'meet-body';
   li.append(dateBadge(o.date), body);
   const today = todayStr(), cs = (meet.comments[o.id] || []).filter(c => !c.deleted);
-  const live = !past && !o.cancelled;   // 다가오는 모임은 홈 카드와 같은 모양 (큰 날짜·시간 + 👀 참석자, 버튼 안에 숫자)
+  const live = !past && !o.cancelled;   // 홈 카드와 같은 모양 (큰 날짜·시간 + 👀 참석자). 다가오는 모임만 버튼 안에 숫자
   const w = document.createElement('span'); w.className = 'op-when';
   w.textContent = `${dayLabel(o.date)} ${o.slot || ''}${o.date===today ? ' · 오늘' : ''}`;
   const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
   const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
-  if(live){
-    // 👀 참석자 — 시간 줄 오른쪽 위 (누르면 누가 참석·불참했는지 닉네임 팝업)
-    const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
-    const top = document.createElement('div'); top.className = 'meet-top'; top.append(w, who);
-    body.append(top, hs, p);
-  } else {
-    const meta = document.createElement('div'); meta.className = 'op-meta';
-    const t = document.createElement('span'); t.textContent = fmtTime(o.createdAt);
-    meta.append(w, t); if(o.host) meta.appendChild(hs);
+  // 👀 참석자 — 시간 줄 오른쪽 위 (누르면 누가 참석·불참했는지 닉네임 팝업). 지난 모임도 같은 모양
+  const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
+  const top = document.createElement('div'); top.className = 'meet-top'; top.append(w, who);
+  body.append(top, hs, p);
+  if(!live){   // 지난·취소된 모임은 버튼 대신 숫자만
     const tally = document.createElement('button'); tally.type = 'button'; tally.className = 'tally'; tally.dataset.voters = o.id;
-    tally.innerHTML = tallyHtml(o);   // 누르면 누가 참석·불참했는지 닉네임 팝업
-    body.append(meta, p, tally);
+    tally.innerHTML = tallyHtml(o); body.append(tally);
   }
   if(o.cancelled){
     li.classList.add('op-past');

@@ -820,3 +820,7 @@ body{padding-block:16px 120px}
 /* SOS 예약 다가오는 모임: 홈 카드와 같은 모양, 버튼 줄·안내는 카드 폭에 맞게 */
 .up-sec .ops > li .meet-body{gap:8px}
 .up-sec .vote-hint{margin:-4px 0 0}
+/* 지난 모임도 같은 카드 모양: 살짝 흐리게, 숫자는 버튼 대신 한 줄로 */
+.up-sec .ops > li.op-past{opacity:.72}
+.up-sec .ops > li.op-past .meet-body > .op-text{font-weight:600}
+.up-sec .tally{justify-content:center;font-size:13.5px}
