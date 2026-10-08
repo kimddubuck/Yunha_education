@@ -207,6 +207,9 @@ function createPicker(root, opts = {}){
     if(t){ st.slot = t.dataset.slot; render(); opts.onChange && opts.onChange(st); }
   });
   render();
+  // 켜 둔 채로 시간이 지나면 그 시간 버튼도 바로 막혀요 (1분마다 확인)
+  let hr = new Date().getHours();
+  setInterval(() => { const h = new Date().getHours(); if(h !== hr){ hr = h; if(root.isConnected) render(); } }, 60000);
   return {state: st, render};
 }
 
