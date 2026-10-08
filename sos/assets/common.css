@@ -427,10 +427,10 @@ a.sos-btn{text-decoration:none;text-align:center}
 /* 🙌 '나 여기 있어요': 테두리를 따라 노란 빛이 돌고, 카드가 숨 쉬듯 빛나요 */
 @property --nc-a{syntax:'<angle>';initial-value:0deg;inherits:false}
 .next-card{animation:nc-breathe 2.6s ease-in-out infinite}
-.next-card::before{content:"";position:absolute;inset:-2px;border-radius:16px;padding:3px;pointer-events:none;z-index:0;
-  background:conic-gradient(from var(--nc-a),transparent 0deg 250deg,#ffd54a 290deg,#fff6c4 315deg,#ffd54a 335deg,transparent 360deg);
+.next-card::before{content:"";position:absolute;inset:-2px;border-radius:16px;padding:4px;pointer-events:none;z-index:0;
+  background:conic-gradient(from var(--nc-a),transparent 0deg 220deg,#ffc400 270deg,#fffbe0 310deg,#ffc400 340deg,transparent 360deg);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
-  animation:nc-spin 3.2s linear infinite}
+  animation:nc-spin 1.5s linear infinite}
 .next-card > *{position:relative;z-index:1}
 .next-card > .next-star,.next-card > .next-sos{position:absolute}
 @keyframes nc-spin{to{--nc-a:360deg}}
