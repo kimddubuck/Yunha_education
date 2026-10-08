@@ -350,7 +350,7 @@ function sosSummary(){
   // 오늘부터 7일 중 하루를 골라 그날 시간표를 봐요
   const days = Array.from({length:7}, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; });
-  const name = i => i === 0 ? '오늘' : i === 1 ? '내일' : null;
+  const name = () => null;   // 탭은 오늘·내일도 날짜·요일로 똑같이 (10/8 목)
   let sel = 0, last = null;
   let failed = false;
   const draw = data => {
