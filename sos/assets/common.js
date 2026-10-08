@@ -435,6 +435,14 @@ function sosReport(kind, mid, cid){
 (function roomBar(){
   if(!ROOM) return;
   document.querySelectorAll('[data-room-name]').forEach(el => { el.textContent = ROOM.name; });
+  // 홈 방 제목은 한 줄로: 넘치면 글자를 1px씩 줄여요 (15px까지, 그래도 길면 … 으로)
+  const fitRoomTitle = () => document.querySelectorAll('.cover h1.room-title').forEach(el => {
+    el.style.fontSize = ''; let fs = parseFloat(getComputedStyle(el).fontSize) || 23;
+    while(el.scrollWidth > el.clientWidth + 1 && fs > 15){ fs -= 1; el.style.fontSize = fs + 'px'; }
+  });
+  fitRoomTitle(); window.addEventListener('resize', fitRoomTitle);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitRoomTitle);
+  setTimeout(fitRoomTitle, 600);   // 종(🔔)이 그려진 뒤 한 번 더
   const inv = document.querySelector('[data-invite]');
   if(inv) inv.addEventListener('click', async () => {
     const text = `혹시 이런 거 같이 써 볼래요? 😊\n[${ROOM.name}] 공동육아 SOS 🆘\n\n독박인 날 시간만 눌러두면\n같은 시간에 힘든 사람이 몇 명인지 보여서\n모이자는 말 꺼내기가 훨씬 편해요.\n\n부담 없이 SOS만 눌러 놔도 돼요 🙌\n\n👇 누르면 크롬(아이폰은 사파리)으로 열려요\n${inviteUrl()}\n\n🔑 비밀번호는 따로 알려드릴게요`;
