@@ -824,3 +824,4 @@ body{padding-block:16px 120px}
 .up-sec .ops > li.op-past{opacity:.72}
 .up-sec .ops > li.op-past .meet-body > .op-text{font-weight:600}
 .up-sec .tally{justify-content:center;font-size:13.5px}
+.board-form > .example{margin-top:6px;padding-top:12px;border-top:1px dashed var(--line)}
