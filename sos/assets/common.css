@@ -807,3 +807,12 @@ body{padding-block:16px 120px}
 .next-card .meet-top .op-when{font-weight:900;color:#0b4f51;-webkit-text-stroke:.3px currentColor}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next-card .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}}
 :root[data-theme="dark"] .next-card .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}
+/* SOS 예약: 세로 여백 조금 줄여서 'SOS 요청하기' 버튼까지 한 화면에 */
+[data-sos]{gap:10px}
+.sos-picker{padding:12px 12px}
+.picker{gap:10px}
+.cal-grid{row-gap:6px}
+.cal-day{min-height:40px}
+.time-grid{gap:7px}
+.time-btn{min-height:40px}
+.sos-sub-s{line-height:1.5}
