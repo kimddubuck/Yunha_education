@@ -300,7 +300,8 @@ function sosInit(){
     b.innerHTML = broken ? '⚠️ 지금은 SOS 요청을 할 수 없어요<small>위의 안내를 확인해 주세요</small>' : done ? '✅ SOS 요청했어요<small>🫂 아래 "내가 요청한 SOS"에서 취소할 수 있어요</small>'
       : hs.length ? `🆘 SOS 요청하기${hs.length > 1 ? ` (${hs.length}개)` : ''}<small>${dayLabel(st.date)} ${st.slots.join('·')} · ${esc(ME.nick || '내 닉네임')}(으)로</small>` : '🆘 SOS 요청하기<small>날짜와 시간을 눌러 주세요 · 여러 개 OK</small>';
     // 내 SOS 요청 (오늘 이후) — 실수로 눌렀으면 여기서 취소
-    const list = Object.keys(data).filter(d => d >= todayStr()).sort().flatMap(d => sosMine(data[d]).slice().sort((x, y) => x - y).map(h => [d, h]));
+    const today = todayStr(), nowH = new Date().getHours();   // 오늘 이미 지난 시간은 빼요 (6시 반이면 오늘 9·10·11시는 안 보여요)
+    const list = Object.keys(data).filter(d => d >= today).sort().flatMap(d => sosMine(data[d]).slice().sort((x, y) => x - y).filter(h => d > today || h >= nowH).map(h => [d, h]));
     const box = root.querySelector('.sos-mine'); box.hidden = !list.length;
     // 제목을 누르면 접고 펴요 (이 휴대폰에 기억)
     let open = false; try{ open = localStorage.getItem('sosMineOpen') === '1'; }catch(e){}   // 처음엔 접혀 있어요
@@ -312,6 +313,7 @@ function sosInit(){
     ? col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true})
     : col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
   col = sosWatch((d, c, err) => { col = c; if(d) data = d; if(err) broken = true; picker.render(); draw(); });
+  setInterval(draw, 60000);   // 켜 둔 채로 시간이 지나도 지난 SOS는 알아서 빠져요
   root.querySelector('.sos-mine').addEventListener('click', async e => {
     if(e.target.closest('[data-mine-toggle]')){
       try{ localStorage.setItem('sosMineOpen', localStorage.getItem('sosMineOpen') === '1' ? '0' : '1'); }catch(err){}
