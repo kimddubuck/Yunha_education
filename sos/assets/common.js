@@ -524,8 +524,17 @@ function sosReport(kind, mid, cid){
     btn.setAttribute('aria-label', on ? '방 멤버 보기 (새 소식 있음)' : '방 멤버 보기');
   }
   // 방장: 내보낸 사람(+ 부탁 글)을 불러와요
-  const loadOut = () => ME.owner ? roomRef().collection('members').where('on', '==', false).get().then(q => {
-    outs = q.docs.map(d => ({uid: d.id, ...d.data()}));
+  // 내보낸 지 30일이 지나면 기록을 지워요 (그 뒤로는 초대 링크 + 비밀번호로 다시 들어올 수 있어요)
+  const KICK_KEEP_DAYS = 30;
+  const loadOut = () => ME.owner ? roomRef().collection('members').where('on', '==', false).get().then(async q => {
+    const col = roomRef().collection('members'), now = Date.now();
+    outs = [];
+    for(const d of q.docs){
+      const m = {uid: d.id, ...d.data()}, at = m.kickedAt && m.kickedAt.toMillis ? m.kickedAt.toMillis() : 0;
+      if(!at){ col.doc(d.id).update({kickedAt: firebase.firestore.FieldValue.serverTimestamp()}).catch(() => {}); }   // 예전에 내보낸 사람: 오늘부터 30일
+      else if(now - at > KICK_KEEP_DAYS * 864e5){ try{ await col.doc(d.id).delete(); continue; }catch(e){} }
+      outs.push(m);
+    }
     appeals = outs.filter(m => m.ap); badge(); return outs;
   }).catch(() => outs) : Promise.resolve((appeals = [], outs = []));
   const load = fresh => sosMembers(fresh).then(list => { btn.querySelector('b').textContent = list.length || '…'; lastList = list; badge(); return list; });
@@ -611,7 +620,7 @@ function sosReport(kind, mid, cid){
       const out = box.querySelector('.mem-out'); if(!out) return;
       const rest = outs.filter(m => !m.ap);
       const wasOpen = !!out.querySelector('details[open]');   // 허용하고 다시 그려도 펼친 상태는 그대로
-      out.innerHTML = rest.length ? `<details class="mem-out-box"${wasOpen ? ' open' : ''}><summary class="who-h">🚫 내보낸 사람 <b>${rest.length}명</b></summary><p class="who-tip">허용하면 초대 링크로<br>다시 들어올 수 있어요.</p><ul class="mem-list"></ul></details>` : '';
+      out.innerHTML = rest.length ? `<details class="mem-out-box"${wasOpen ? ' open' : ''}><summary class="who-h">🚫 내보낸 사람 <b>${rest.length}명</b></summary><p class="who-tip">허용하면 초대 링크로<br>다시 들어올 수 있어요.<br>내보낸 지 <b>30일</b>이 지나면 자동으로 지워져요.</p><ul class="mem-list"></ul></details>` : '';
       rest.forEach(m => out.querySelector('ul').appendChild(outLi(m, false)));
     };
     if(ME.owner) drawOut();
@@ -642,7 +651,9 @@ function sosReport(kind, mid, cid){
           body: '<ul><li>이 사람은 이 방의 SOS·모임을 더 이상 볼 수 없어요.</li><li>방장이 <b>다시 허용</b>하기 전까지는 같은 휴대폰으로 다시 들어올 수 없어요.</li><li>앱을 지우고 다시 깔면 들어올 수 있으니, 꼭 막아야 하면 <b>새 방을 만들어 새 비밀번호</b>로 옮겨 주세요.</li></ul>'});
         if(!yes){ open(list); return; }
         try{
-          await roomRef().collection('members').doc(m.uid).update({on: false});
+          const md = roomRef().collection('members').doc(m.uid);
+          try{ await md.update({on: false, kickedAt: firebase.firestore.FieldValue.serverTimestamp()}); }   // 내보낸 시각: 30일 뒤 자동 삭제
+          catch(e1){ await md.update({on: false}); }   // 보안 규칙 v7 게시 전이면 시각 없이 내보내요 (나중에 시각을 적어요)
           if(ME.po === m.uid){ try{ await roomRef().update({po: firebase.firestore.FieldValue.delete()}); ME.po = ''; }catch(err){} }   // 넘기려던 사람을 내보냈으면 넘기기도 취소
           const nl = await load(true); await loadOut(); open(nl);
         }
