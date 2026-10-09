@@ -600,7 +600,8 @@ function sosReport(kind, mid, cid){
       if(apBox){ if(!appeals.length) apBox.remove(); else { apBox.querySelector('.mem-ap-n').textContent = appeals.length; const ul = apBox.querySelector('ul'); ul.innerHTML = ''; appeals.forEach(m => ul.appendChild(outLi(m, true))); } }
       const out = box.querySelector('.mem-out'); if(!out) return;
       const rest = outs.filter(m => !m.ap);
-      out.innerHTML = rest.length ? '<p class="who-h">🚫 내보낸 사람 <small>(허용하면 초대 링크로 다시 들어올 수 있어요)</small></p><ul class="mem-list"></ul>' : '';
+      const wasOpen = !!out.querySelector('details[open]');   // 허용하고 다시 그려도 펼친 상태는 그대로
+      out.innerHTML = rest.length ? `<details class="mem-out-box"${wasOpen ? ' open' : ''}><summary class="who-h">🚫 내보낸 사람 <b>${rest.length}명</b></summary><p class="who-tip">허용하면 초대 링크로<br>다시 들어올 수 있어요.</p><ul class="mem-list"></ul></details>` : '';
       rest.forEach(m => out.querySelector('ul').appendChild(outLi(m, false)));
     };
     if(ME.owner) drawOut();

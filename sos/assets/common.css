@@ -853,3 +853,11 @@ body{padding-block:16px 120px}
 .appeal-pop .appeal-sent{margin-top:8px;padding:6px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:13px}
 /* SOS 예약: 달력 아래 "날짜 · 시간을 골라 주세요" 줄은 빼요 (아래 SOS 요청하기 버튼이 안내해요) */
 [data-sos] .picked-when{display:none}
+/* 👥 멤버: 내보낸 사람은 접어 둬요 (눌러서 펼치기) */
+.mem-out-box{margin-top:10px;border-radius:12px;border:1px solid var(--line);padding:2px 10px 6px}
+.mem-out-box > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;margin:0;padding:8px 0;font-weight:800}
+.mem-out-box > summary::-webkit-details-marker{display:none}
+.mem-out-box > summary b{color:var(--muted);font-weight:700}
+.mem-out-box > summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .15s}
+.mem-out-box[open] > summary::after{transform:rotate(180deg)}
+.mem-out-box > .who-tip{margin:0 0 8px}
