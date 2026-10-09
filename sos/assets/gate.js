@@ -24,14 +24,16 @@ const SOS_INAPP = (SOS_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Barcelo
 // 🧭 지금 쓰는 브라우저 이름 (입장할 때 '이 브라우저가 내 계정이에요' 안내용)
 function sosBrowser(){
   const u = SOS_UA, and = /android/i.test(u);
-  const name = SOS_IOS ? (/CriOS/.test(u) ? '크롬' : /FxiOS/.test(u) ? '파이어폭스' : /EdgiOS/.test(u) ? '엣지' : /Whale/.test(u) ? '웨일' : '사파리')
+  const apple = SOS_IOS || (/Macintosh/.test(u) && navigator.maxTouchPoints > 0);   // 아이폰·아이패드 (아이패드는 맥처럼 보여요)
+  const name = apple ? (/CriOS/.test(u) ? '크롬' : /FxiOS/.test(u) ? '파이어폭스' : /EdgiOS/.test(u) ? '엣지' : /Whale/.test(u) ? '웨일' : /NAVER/.test(u) ? '네이버 앱' : '사파리')
     : /SamsungBrowser/.test(u) ? '삼성 인터넷' : /Whale/.test(u) ? '웨일' : /Firefox/.test(u) ? '파이어폭스' : /EdgA?\//.test(u) ? '엣지' : /OPR\//.test(u) ? '오페라'
-    : navigator.brave ? '브레이브' : /Chrome\//.test(u) ? '크롬' : '이 브라우저';
+    : navigator.brave ? '브레이브' : /Chrome\//.test(u) ? '크롬' : /Safari\//.test(u) ? '사파리' : '이 브라우저';
   const c = name.charCodeAt(name.length - 1), jong = c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : 0;
   const ro = name + (jong && jong !== 8 ? '으로' : '로');   // 크롬으로 · 사파리로 · 웨일로
-  const best = SOS_IOS ? name === '사파리' : and ? name === '크롬' : true;
   const ie = jong ? '이에요' : '예요';   // 크롬이에요 · 사파리예요
-  return {name, ro, ie, best, rec: SOS_IOS ? '사파리' : '크롬'};
+  const rec = apple ? '사파리' : '크롬';   // 아이폰·아이패드는 사파리, 안드로이드는 크롬
+  const best = apple || and ? name === rec : true;
+  return {name, ro, ie, best, rec, apple};
 }
 const SOS_CONTACT = 'ifb1321@gmail.com';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
@@ -607,6 +609,7 @@ function gateCss(){
     #gate .g-brw .g-brw-h{font-size:13px!important;font-weight:800;color:var(--muted,#736e75)}
     #gate .g-brw .g-brw-rec{margin:0 0 2px;padding:9px 6px;border-radius:12px;background:#ffe58a;color:#3a2a00;font-size:17px!important;font-weight:900;letter-spacing:-.3px}
     #gate .g-brw .g-brw-rec b{color:#c62828;font-size:19px}
+    #gate .g-brw .g-brw-rec small{display:block;font-size:13px;font-weight:800;color:#6b5200;margin-bottom:1px}
     #gate .g-brw .g-brw-warn{color:#c62828}
     #gate .g-brw .g-brw-warn b{color:#c62828}
     #gate .g-brw .g-brw-now{padding:6px 8px;border-radius:10px;font-weight:700}
@@ -753,7 +756,7 @@ ${closable || invite ? '' : GATE_HOW_CREATE}
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
       <input id="gateNick" aria-label="닉네임" placeholder="닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
       <div class="g-brw">${(b => `<p class="g-brw-h">📌 처음이라면 꼭 읽어 주세요</p>
-        <p class="g-brw-rec">📱 <b>${b.rec}</b>${b.rec === '크롬' ? '으로' : '로'} 들어와 주세요</p>
+        <p class="g-brw-rec"><small>${b.apple ? '🍎 아이폰·아이패드는' : '🤖 안드로이드는'}</small><b>${b.rec}</b>${b.rec === '크롬' ? '으로' : '로'} 들어와 주세요</p>
         <p>이 앱은 <b>회원가입이 없어요.</b><br>대신 <b>처음 들어온 브라우저</b>가<br>나를 기억해요.</p>
         <p class="g-brw-warn">다른 브라우저로 열면 나를 몰라봐서<br><b>'처음 온 사람'</b>이 돼요.</p>
         <p class="g-brw-now ${b.best ? 'ok' : 'no'}">${b.best ? `✅ 지금 <b>${b.name}</b>${b.ie}. 좋아요!` : `⚠️ 지금은 <b>${b.name}</b>${b.ie}.<br>${b.rec}${b.rec === '크롬' ? '으로' : '로'} 다시 열어 주세요.`}</p>`)(sosBrowser())}</div>
@@ -764,7 +767,7 @@ ${closable || invite ? '' : GATE_HOW_CREATE}
       <input type="password" id="gatePw" aria-label="방 비밀번호" placeholder="비밀번호 (4자 이상)" maxlength="40">
       <input id="gateNick" aria-label="내 닉네임" placeholder="내 닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
       <div class="g-brw">${(b => `<p class="g-brw-h">📌 처음이라면 꼭 읽어 주세요</p>
-        <p class="g-brw-rec">📱 <b>${b.rec}</b>${b.rec === '크롬' ? '으로' : '로'} 들어와 주세요</p>
+        <p class="g-brw-rec"><small>${b.apple ? '🍎 아이폰·아이패드는' : '🤖 안드로이드는'}</small><b>${b.rec}</b>${b.rec === '크롬' ? '으로' : '로'} 들어와 주세요</p>
         <p>이 앱은 <b>회원가입이 없어요.</b><br>대신 <b>처음 들어온 브라우저</b>가<br>나를 기억해요.</p>
         <p class="g-brw-warn">다른 브라우저로 열면 나를 몰라봐서<br><b>'처음 온 사람'</b>이 돼요.</p>
         <p class="g-brw-now ${b.best ? 'ok' : 'no'}">${b.best ? `✅ 지금 <b>${b.name}</b>${b.ie}. 좋아요!` : `⚠️ 지금은 <b>${b.name}</b>${b.ie}.<br>${b.rec}${b.rec === '크롬' ? '으로' : '로'} 다시 열어 주세요.`}</p>`)(sosBrowser())}</div>
