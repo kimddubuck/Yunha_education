@@ -12,6 +12,7 @@ const SOS_FIREBASE = {
   messagingSenderId: "133710590792",
   appId: "1:133710590792:web:1a4d163ac4679ed6d1397d"
 };
+document.documentElement.setAttribute('data-theme', 'dark');   // 🌙 테마는 다크 하나로 통일해요
 const ROOMS_KEY = 'sosRooms', CUR_KEY = 'sosRoom';
 // 📲 카톡 등 앱 안 브라우저: 저장 공간이 따로라 같은 사람이 브라우저마다 따로 생겨요(중복 멤버).
 //  그래서 방에 들어가기 전에 안드로이드는 크롬, 아이폰은 사파리로 넘겨요 (sosEscapeInApp, 아래)
@@ -520,7 +521,7 @@ function gateCss(){
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
     #gate .g-story .g-kick{font-weight:800;font-size:21px!important;line-height:1.35;letter-spacing:-.3px;color:#e8382f;white-space:nowrap;margin-bottom:-2px}
-    @media (prefers-color-scheme: dark){ #gate .g-story .g-kick{color:#ff6b62} }
+    #gate .g-story .g-kick{color:#ff6b62}
     /* 검정 글자 테두리 (이모티콘은 빼고 글자만) — 테두리를 글자 뒤에 그려서 글자가 가늘어지지 않게 */
     #gate .g-story .g-kick span{-webkit-text-stroke:3.5px #111;paint-order:stroke fill;letter-spacing:.2px}
     @supports not (paint-order:stroke fill){ #gate .g-story .g-kick span{-webkit-text-stroke:0;text-shadow:-1.5px -1.5px 0 #111,1.5px -1.5px 0 #111,-1.5px 1.5px 0 #111,1.5px 1.5px 0 #111,0 -1.5px 0 #111,0 1.5px 0 #111,-1.5px 0 0 #111,1.5px 0 0 #111} }
@@ -532,7 +533,7 @@ function gateCss(){
     #gate .g-story .g-sub{color:var(--muted,#736e75)}
     #gate .g-story .g-shy{font-weight:700;font-size:15px!important;color:var(--fg,#22282a);letter-spacing:-.2px}
     #gate .g-story .g-shy b{color:#e8382f}
-    @media (prefers-color-scheme: dark){ #gate .g-story .g-shy b{color:#ff6b62} }
+    #gate .g-story .g-shy b{color:#ff6b62}
     @media (max-width:359px){ #gate .g-how li{font-size:13px!important;white-space:nowrap;letter-spacing:-.2px} #gate .g-story p{font-size:13px!important;letter-spacing:-.2px} }
     #gate .g-how{text-align:left;margin:0;padding:0 4px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.55}
     #gate .g-how b{color:var(--accent-ink,#1c7276)}
@@ -612,19 +613,19 @@ function gateCss(){
     #gate .g-brw .g-brw-rec{margin:0 0 2px;padding:9px 6px;border-radius:12px;background:#ffe58a;color:#3a2a00;font-size:17px!important;font-weight:900;letter-spacing:-.3px}
     #gate .g-brw .g-brw-rec b{color:#c62828;font-size:19px}
     #gate .g-brw .g-brw-rec small{display:block;font-size:13px;font-weight:800;color:#6b5200;margin-bottom:1px}
-    #gate .g-brw .g-brw-warn{color:#c62828}
-    #gate .g-brw .g-brw-warn b{color:#c62828}
+    #gate .g-brw .g-brw-warn{color:#ff7a70}
+    #gate .g-brw .g-brw-warn b{color:#ff7a70}
     #gate .g-brw .g-brw-now{padding:6px 8px;border-radius:10px;font-weight:700}
     #gate .g-brw .g-brw-now.ok{background:var(--accent-soft,#e1f2f1);color:var(--accent-ink,#1c7276)}
-    #gate .g-brw .g-brw-now.no{background:#fdecea;color:#c62828}
-    #gate .g-brw .g-brw-now.no b{color:#c62828}
+    #gate .g-brw .g-brw-now.no{background:#3a1d1d;color:#ff7a70}
+    #gate .g-brw .g-brw-now.no b{color:#ff9a92}
     @media (max-width:350px){ #gate .g-box > p:not(.g-box-h):not(.g-msg){font-size:13px!important;letter-spacing:-.4px} #gate .g-inv-by{font-size:12.5px!important;letter-spacing:-.4px} }
     @media (max-width:350px){ #gate .g-brw{padding:10px 8px} #gate .g-brw p{font-size:12.5px!important} #gate .g-brw .g-brw-rec{font-size:15.5px!important} #gate .g-brw .g-brw-rec b{font-size:17px} }
     #gate input{border:1.5px solid rgba(127,127,127,.6)!important;background:var(--bg,#fff)}
     #gate input:focus{outline:2px solid var(--pick,#2a9095);border-color:var(--pick,#2a9095)!important}
     #gate .g-paste{border:2px dashed #e0a400!important;border-radius:14px}
     #gate .g-paste summary{color:#b88600;font-weight:700}
-    @media (prefers-color-scheme: dark){ #gate .g-paste summary{color:#ffc83d} }
+    #gate .g-paste summary{color:#ffc83d}
     #gate .g-pw{margin-top:4px;border-top:1px solid var(--line,#e3e3e5);padding-top:14px}`;
   css.id = 'gateCss'; document.head.appendChild(css);
 }

@@ -886,3 +886,6 @@ body{padding-block:16px 120px}
 .ops .meet-body > .comment-toggle{align-self:stretch;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border:2px solid #f2b531;border-radius:12px;background:color-mix(in srgb,#f2b531 14%,var(--bg));color:var(--fg);font-size:14.5px;font-weight:800;box-shadow:0 2px 0 color-mix(in srgb,#f2b531 60%,#7a5a00);cursor:pointer}
 .ops .meet-body > .comment-toggle[aria-expanded="true"]{background:#f2b531;color:#3a2a00}
 .ops .meet-body > .comment-toggle:active{transform:translateY(2px);box-shadow:none}
+
+/* 다가오는 모임 제목은 하얀 글씨로 */
+.next-card h2{color:#fff}
