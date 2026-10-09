@@ -278,7 +278,7 @@ function sosInit(){
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
     <div class="sos-brave">
-      <span class="brave-star s1" aria-hidden="true">✦</span><span class="brave-star s2" aria-hidden="true">✦</span>
+      <span class="brave-hero" aria-hidden="true"></span><span class="brave-star s1" aria-hidden="true">✦</span><span class="brave-star s2" aria-hidden="true">✦</span>
       <p class="brave-h">💪 용기 한 번 내 볼까요?</p>
       <p class="brave-sub">SOS가 몰린 시간에 내가 먼저 모임을 열면<br><b>누군가의 독박이 끝나요</b> 🫶</p>
       <a href="#new" class="sos-make brave-btn"></a>

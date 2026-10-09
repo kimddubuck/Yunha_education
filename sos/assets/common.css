@@ -916,3 +916,15 @@ body{padding-block:16px 120px}
 .hero-pop .pop-icon{animation:hero-rise 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
 @keyframes hero-rise{0%{transform:translateY(10px) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}100%{transform:translateY(10px) rotate(-3deg)}}
 @media (prefers-reduced-motion:reduce){.hero-pop .pop-icon{animation:none}}
+/* 💪 용기 상자: 홈 모임 카드처럼 금빛 테두리가 돌고 숨 쉬듯 반짝 + 아기 품은 구원자가 흔들흔들 */
+.sos-brave{animation:nc-breathe 2.6s ease-in-out infinite}
+.sos-brave::before{content:"";position:absolute;inset:-2px;border-radius:18px;padding:4px;pointer-events:none;z-index:0;
+  background:conic-gradient(from var(--nc-a),transparent 0deg 220deg,#ffc400 270deg,#fffbe0 310deg,#ffc400 340deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:nc-spin 1.5s linear infinite}
+.sos-brave > *:not(.brave-star):not(.brave-hero){position:relative;z-index:1}
+.sos-brave > .brave-hero{position:absolute;z-index:2;top:-30px;right:6px;width:44px;height:76px;background:url(hero-up.svg) center/contain no-repeat;pointer-events:none;
+  transform-origin:50% 100%;animation:brave-sway 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes brave-sway{0%,100%{transform:translateX(-10px) rotate(-10deg)}50%{transform:translateX(8px) translateY(-6px) rotate(10deg)}}
+.sos-brave .brave-h{padding-right:34px;padding-left:34px}
+@media (prefers-reduced-motion:reduce){.sos-brave,.sos-brave::before,.sos-brave > .brave-hero{animation:none}}
