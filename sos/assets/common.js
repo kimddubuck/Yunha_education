@@ -576,6 +576,11 @@ function sosReport(kind, mid, cid){
     if(sosOwnerGone(list)) return `<div class="mem-own-box"><p>${list.some(m => m.uid === ME.ou) ? `<b>👑 방장이 오래 안 들어왔어요</b><br><small>${OWNER_GONE_DAYS}일 넘게 접속이 없어서<br>멤버 누구나 방장을 이어받을 수 있어요.</small>` : '<b>👑 방장이 방에서 나갔어요</b><br><small>멤버 누구나 방장을 이어받을 수 있어요.</small>'}</p><button type="button" class="mem-kick mem-allow" data-take>내가 방장 이어받기</button></div>`;
     return '';
   }
+  // 정렬: 나 → 새 멤버 → (방장에게는) 최근 접속한 순서
+  const seenMs = m => { const t = m.seen || m.joinedAt; return t && t.toMillis ? t.toMillis() : 0; };
+  const sortMembers = list => { const me = list.filter(m => m.uid === ME.uid), rest = list.filter(m => m.uid !== ME.uid);
+    const byRecent = a => ME.owner ? [...a].sort((x, y) => seenMs(y) - seenMs(x)) : a;
+    return [...me, ...byRecent(rest.filter(isNew)), ...byRecent(rest.filter(m => !isNew(m)))]; };
   function open(list){
     const cnt = {}; list.forEach(m => { cnt[m.nick] = (cnt[m.nick] || 0) + 1; });
     const joined = m => { const t = m.joinedAt && m.joinedAt.toDate ? m.joinedAt.toDate() : null; return t ? `${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} 들어옴` : ''; };
@@ -587,7 +592,7 @@ function sosReport(kind, mid, cid){
         ${ME.owner && appeals.length ? '<div class="mem-appeal"><p class="who-h">🙋 다시 받아 달라는 부탁 <b class="mem-ap-n"></b></p><ul class="mem-list"></ul></div>' : ''}
         ${ownerBox(list)}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
-        <ul class="mem-list">${[...list.filter(isNew), ...list.filter(m => !isNew(m))].map(row).join('')}</ul>
+        <ul class="mem-list">${sortMembers(list).map(row).join('')}</ul>
         ${ME.owner ? '<div class="mem-out"></div>' : ''}`});
     // 방장: 다시 받아 달라는 부탁(위쪽) + 내보낸 사람 목록(아래쪽) — 닉네임·부탁 글은 글자로만
     const outLi = (m, ap) => { const li = document.createElement('li'); li.dataset.out = m.uid;
