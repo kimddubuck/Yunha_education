@@ -21,6 +21,17 @@ const SOS_IOS = /iphone|ipad|ipod/i.test(SOS_UA);
 const SOS_KAKAO = /KAKAOTALK/i.test(SOS_UA);
 const SOS_INAPP = (SOS_KAKAO || /NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Barcelona|Line\/|DaumApps|BAND\/|everytimeApp/i.test(SOS_UA))
   && !document.documentElement.hasAttribute('data-public');
+// 🧭 지금 쓰는 브라우저 이름 (입장할 때 '이 브라우저가 내 계정이에요' 안내용)
+function sosBrowser(){
+  const u = SOS_UA, and = /android/i.test(u);
+  const name = SOS_IOS ? (/CriOS/.test(u) ? '크롬' : /FxiOS/.test(u) ? '파이어폭스' : /EdgiOS/.test(u) ? '엣지' : /Whale/.test(u) ? '웨일' : '사파리')
+    : /SamsungBrowser/.test(u) ? '삼성 인터넷' : /Whale/.test(u) ? '웨일' : /Firefox/.test(u) ? '파이어폭스' : /EdgA?\//.test(u) ? '엣지' : /OPR\//.test(u) ? '오페라'
+    : navigator.brave ? '브레이브' : /Chrome\//.test(u) ? '크롬' : '이 브라우저';
+  const c = name.charCodeAt(name.length - 1), jong = c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : 0;
+  const ro = name + (jong && jong !== 8 ? '으로' : '로');   // 크롬으로 · 사파리로 · 웨일로
+  const best = SOS_IOS ? name === '사파리' : and ? name === '크롬' : true;
+  return {name, ro, best, rec: SOS_IOS ? '사파리' : '크롬'};
+}
 const SOS_CONTACT = 'ifb1321@gmail.com';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
   if(SOS_CONTACT){ el.innerHTML = ''; const a = document.createElement('a'); a.href = 'mailto:' + SOS_CONTACT; a.textContent = SOS_CONTACT; el.appendChild(a); }
@@ -589,6 +600,13 @@ function gateCss(){
     #gate .g-box-h{font-size:16px!important;font-weight:800;color:var(--accent-ink,#1c7276)!important;margin:0}
     #gate .g-box p{margin:0}
     #gate .g-box .g-msg{margin:0;min-height:0}
+    #gate .g-brw{padding:10px 12px;border-radius:12px;background:var(--bg,#fff);border:1.5px dashed var(--pick,#2a9095);font-size:13px!important;line-height:1.55;word-break:keep-all}
+    #gate .g-brw p{margin:0 0 4px;font-size:13px!important;color:var(--muted,#736e75)}
+    #gate .g-brw .g-brw-h{font-size:14.5px!important;font-weight:800;color:var(--fg,#22282a)}
+    #gate .g-brw .g-brw-h b{color:var(--accent-ink,#1c7276)}
+    #gate .g-brw .g-brw-warn{color:#c62828}
+    #gate .g-brw .g-brw-tip{margin:0;color:var(--fg,#22282a)}
+    @media (max-width:350px){ #gate .g-brw{padding:9px 8px;letter-spacing:-.3px} #gate .g-brw p{font-size:12px!important} #gate .g-brw .g-brw-h{font-size:13.5px!important} }
     #gate input{border:1.5px solid rgba(127,127,127,.6)!important;background:var(--bg,#fff)}
     #gate input:focus{outline:2px solid var(--pick,#2a9095);border-color:var(--pick,#2a9095)!important}
     #gate .g-paste{border:2px dashed #e0a400!important;border-radius:14px}
@@ -726,12 +744,20 @@ ${closable || invite ? '' : GATE_HOW_CREATE}
       <p>단톡방 공지의 비밀번호를 넣어 주세요.<br>한 번 들어오면 다음부터 바로 열려요.</p>
       <input type="password" id="gatePw" aria-label="입장 비밀번호" placeholder="비밀번호" maxlength="40">
       <input id="gateNick" aria-label="닉네임" placeholder="닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
+      <div class="g-brw">${(b => `<p class="g-brw-h">📱 지금 <b>${b.ro}</b> 들어가요</p>
+        <p>가입이 없는 대신 <b>이 브라우저</b>가<br>내 계정이 돼요. 앞으로도 꼭 이 브라우저나<br>홈 화면 아이콘으로만 열어 주세요.</p>
+        <p class="g-brw-warn">다른 브라우저로 열면 <b>새 사람</b>이 돼요.<br>멤버가 두 번 생기고<br>알림·내 SOS도 따로 놀아요.</p>
+        ${b.best ? '' : `<p class="g-brw-tip">💡 휴대폰이 ${SOS_IOS ? '아이폰' : '안드로이드'}이면<br><b>${b.rec}</b>${b.rec === '크롬' ? '으로' : '로'} 들어오는 걸 추천해요.</p>`}`)(sosBrowser())}</div>
       <button type="submit">들어가기</button>`
       : `<p class="g-box-h">🏠 새 모임 방 만들기</p>
       <p>방을 만들고 초대 링크를 단톡방에 올리면 끝!</p>
       <input id="gateName" aria-label="방 이름" placeholder="방 이름 (예: 래미안 3단지 공동육아)" maxlength="30">
       <input type="password" id="gatePw" aria-label="방 비밀번호" placeholder="비밀번호 (4자 이상)" maxlength="40">
       <input id="gateNick" aria-label="내 닉네임" placeholder="내 닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
+      <div class="g-brw">${(b => `<p class="g-brw-h">📱 지금 <b>${b.ro}</b> 들어가요</p>
+        <p>가입이 없는 대신 <b>이 브라우저</b>가<br>내 계정이 돼요. 앞으로도 꼭 이 브라우저나<br>홈 화면 아이콘으로만 열어 주세요.</p>
+        <p class="g-brw-warn">다른 브라우저로 열면 <b>새 사람</b>이 돼요.<br>멤버가 두 번 생기고<br>알림·내 SOS도 따로 놀아요.</p>
+        ${b.best ? '' : `<p class="g-brw-tip">💡 휴대폰이 ${SOS_IOS ? '아이폰' : '안드로이드'}이면<br><b>${b.rec}</b>${b.rec === '크롬' ? '으로' : '로'} 들어오는 걸 추천해요.</p>`}`)(sosBrowser())}</div>
       <button type="submit">방 만들기</button>`}
       <p class="g-msg" id="gateMsg" aria-live="polite"></p>
       </div>
