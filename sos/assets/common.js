@@ -538,8 +538,11 @@ function sosReport(kind, mid, cid){
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const ago = m => {
     const t = m.seen || m.joinedAt; if(!t || !t.toMillis) return '';
-    const d = Math.floor((Date.now() - t.toMillis()) / 864e5);
-    return d < 1 ? '오늘' : d < 2 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d / 30)}달 전` : '1년 넘게 전';
+    // 달력 날짜 기준: 오늘 오전 8:12 · 어제 오후 9:30 · 3일 전 (10/6) · 2달 전
+    const at = t.toDate(), now = new Date(), day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const d = Math.round((day0(now) - day0(at)) / 864e5), h = at.getHours();
+    const hm = `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${String(at.getMinutes()).padStart(2, '0')}`;
+    return d < 1 ? `오늘 ${hm}` : d < 2 ? `어제 ${hm}` : d < 30 ? `${d}일 전 (${at.getMonth() + 1}/${at.getDate()})` : d < 365 ? `${Math.floor(d / 30)}달 전` : '1년 넘게 전';
   };
   const sleepy = m => { const t = m.seen || m.joinedAt; return !!(t && t.toMillis && Date.now() - t.toMillis() > OWNER_GONE_DAYS * 864e5); };
   async function becomeOwner(list, how){

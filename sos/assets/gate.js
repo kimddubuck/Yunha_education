@@ -157,9 +157,9 @@ function sosReady(){
     if(snap.exists && snap.data().on === false) return sosKickedOut(snap.data());
     if(snap.exists){
       ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick);
-      // 마지막 접속(seen): 하루에 두 번 정도만 남겨요. 방장이 오래 안 온 멤버를 알아보고, 방장이 떠났는지 판단할 때 써요
+      // 마지막 접속(seen): 1시간에 한 번만 남겨요 (방장 멤버 목록에 '오늘 오전 8:12' 처럼 보여요). 오래 안 온 멤버·떠난 방장 판단에도 써요
       const last = snap.data().seen || snap.data().joinedAt;
-      if(!last || !last.toMillis || Date.now() - last.toMillis() > 12 * 3600e3) mine.update({seen: firebase.firestore.FieldValue.serverTimestamp()}).catch(() => {});
+      if(!last || !last.toMillis || Date.now() - last.toMillis() > 3600e3) mine.update({seen: firebase.firestore.FieldValue.serverTimestamp()}).catch(() => {});
     }
     else{
       let nick = ROOM.nick;
