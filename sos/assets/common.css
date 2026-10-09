@@ -947,3 +947,6 @@ body{padding-block:16px 120px}
 [data-sos] .sos-sub-s{font-size:12.5px}
 [data-sos] .cal-day{min-height:36px}
 .sec > .sos-brave,.sos-brave{margin-top:24px}
+/* SOS 달력 ↔ 용기 상자 사이 여백 줄이기 (구원자는 SOS 상자 위로 살짝 겹쳐도 OK) */
+.sec > .sos-brave,.sos-brave{margin-top:6px}
+.sos-brave > .brave-hero{z-index:5}
