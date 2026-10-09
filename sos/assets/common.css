@@ -893,6 +893,18 @@ body{padding-block:16px 120px}
 .sos-cell{position:relative}
 .sos-cell.on:not(.gone)::after{content:"🚨";position:absolute;top:-9px;right:-5px;font-size:14px;line-height:1;transform-origin:50% 90%;animation:siren-shake .55s ease-in-out infinite,siren-flash .8s steps(1) infinite;pointer-events:none}
 /* 🦸 다가오는 모임의 SOS 스티커를 구원자가 날아와 구해요 */
-.next-card > .next-hero{position:absolute;z-index:3;top:-30px;right:-12px;font-size:28px;line-height:1;pointer-events:none;animation:hero-rescue 2.4s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
-@keyframes hero-rescue{0%{transform:translate(-70px,8px) rotate(-25deg) scale(.85)}35%{transform:translate(-8px,-6px) rotate(-8deg) scale(1.05)}55%{transform:translate(0,-10px) rotate(4deg) scale(1.1)}80%{transform:translate(-4px,-4px) rotate(-6deg) scale(1)}100%{transform:translate(-70px,8px) rotate(-25deg) scale(.85)}}
+/* 🦸 구원자가 다가오는 모임 카드 테두리를 따라 계속 한 바퀴씩 날아요 (SOS 스티커는 빼요) */
+.next-card > .next-sos{display:none}
+.next-card > .next-hero{position:absolute;z-index:3;width:30px;height:30px;margin:-15px 0 0 -15px;font-size:26px;line-height:30px;text-align:center;pointer-events:none;
+  animation:hero-lap 9s linear infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-lap{
+  0%{left:4%;top:0;transform:rotate(45deg)}
+  24%{left:96%;top:0;transform:rotate(45deg)}
+  26%{left:100%;top:3%;transform:rotate(135deg)}
+  49%{left:100%;top:97%;transform:rotate(135deg)}
+  51%{left:96%;top:100%;transform:rotate(225deg)}
+  74%{left:4%;top:100%;transform:rotate(225deg)}
+  76%{left:0;top:97%;transform:rotate(315deg)}
+  99%{left:0;top:3%;transform:rotate(315deg)}
+  100%{left:4%;top:0;transform:rotate(405deg)}}
 @media (prefers-reduced-motion:reduce){.sos-cell.on::after,.next-card > .next-hero{animation:none}}
