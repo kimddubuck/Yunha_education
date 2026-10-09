@@ -882,3 +882,7 @@ body{padding-block:16px 120px}
 @keyframes hero-glow{0%,100%{filter:drop-shadow(0 0 6px rgba(255,200,40,.6))}50%{filter:drop-shadow(0 0 16px rgba(255,210,60,1)) drop-shadow(0 0 28px rgba(255,180,0,.55))}}
 .hero-pop .pop{animation:siren-in .45s cubic-bezier(.3,1.6,.5,1)}
 @media (prefers-reduced-motion:reduce){.hero-pop .pop-icon,.hero-pop .pop{animation:none}}
+/* 💬 댓글 버튼: 눈에 띄게 (카드 폭 버튼 + 개수 강조) */
+.ops .meet-body > .comment-toggle{align-self:stretch;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border:2px solid #f2b531;border-radius:12px;background:color-mix(in srgb,#f2b531 14%,var(--bg));color:var(--fg);font-size:14.5px;font-weight:800;box-shadow:0 2px 0 color-mix(in srgb,#f2b531 60%,#7a5a00);cursor:pointer}
+.ops .meet-body > .comment-toggle[aria-expanded="true"]{background:#f2b531;color:#3a2a00}
+.ops .meet-body > .comment-toggle:active{transform:translateY(2px);box-shadow:none}

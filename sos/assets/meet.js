@@ -90,7 +90,8 @@ function meetCard(o, past){
   const jb = vbtn('joins', 'join', '🙋 참석'), mb = vbtn('maybes', 'maybe', '🤔 미확정'), nb = vbtn('nos', 'no', '🙅 불참');
   const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'join'; cb.dataset.toggle = o.id;
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
-  cb.textContent = `💬 댓글${cs.length ? ' ' + cs.length : ''}`;
+  cb.textContent = cs.length ? `💬 댓글 ${cs.length}개 보기` : '💬 댓글 남기기';
+  if(meet.open.has(o.id)) cb.textContent = '💬 댓글 접기';
   cb.className = 'join comment-toggle';
   row.append(jb, mb, nb); body.append(row);
   if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; body.append(h); }
