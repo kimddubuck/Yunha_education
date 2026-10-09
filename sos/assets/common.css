@@ -940,3 +940,10 @@ body{padding-block:16px 120px}
 [data-sos] .sos-btn{min-height:46px;padding:6px 12px;font-size:15.5px;gap:1px}
 [data-sos] .sos-btn small{font-size:11.5px}
 .sec > .sos-brave,.sos-brave{margin-top:26px}
+/* SOS 예약 첫 화면에 '용기 한 번 내 볼까요?'까지 보이게: 시간 칸은 한 줄(9:00 1명), 내 SOS 줄도 납작하게 */
+[data-sos] .time-btn{flex-direction:row;align-items:baseline;justify-content:center;gap:3px;min-height:34px;padding:4px 0}
+[data-sos] .time-btn small{font-size:10.5px}
+[data-sos] .sos-mine{padding:6px 12px;border-radius:12px}
+[data-sos] .sos-sub-s{font-size:12.5px}
+[data-sos] .cal-day{min-height:36px}
+.sec > .sos-brave,.sos-brave{margin-top:24px}
