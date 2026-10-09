@@ -928,3 +928,15 @@ body{padding-block:16px 120px}
 @keyframes brave-sway{0%,100%{transform:translateX(-10px) rotate(-10deg)}50%{transform:translateX(8px) translateY(-6px) rotate(10deg)}}
 .sos-brave .brave-h{padding-right:34px;padding-left:34px}
 @media (prefers-reduced-motion:reduce){.sos-brave,.sos-brave::before,.sos-brave > .brave-hero{animation:none}}
+/* SOS 예약: 세로 여백 조금 더 줄이고 SOS 요청하기 버튼도 낮게 → 첫 화면 아래에 용기 상자의 구원자가 보이게 */
+[data-sos]{gap:8px;padding:12px 14px}
+.sos-picker{padding:10px 12px}
+.picker{gap:8px}
+.cal-grid{row-gap:4px}
+.cal-day{min-height:38px}
+.time-grid{gap:6px}
+.time-btn{min-height:36px}
+.sos-sub-s{line-height:1.45}
+[data-sos] .sos-btn{min-height:46px;padding:6px 12px;font-size:15.5px;gap:1px}
+[data-sos] .sos-btn small{font-size:11.5px}
+.sec > .sos-brave,.sos-brave{margin-top:26px}
