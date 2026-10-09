@@ -911,4 +911,8 @@ body{padding-block:16px 120px}
 /* SOS 달력 테두리: 더 두껍고 또렷한 빨강 */
 .sos{border:3px solid color-mix(in srgb,#e8382f 70%,var(--ipark-line))}
 
-.hero-pop .pop-icon .hero-img{display:block;width:118px;height:auto}
+.hero-pop .pop-icon .hero-img{display:block;width:78px;height:auto}
+/* 팝업의 구원자: 아기를 번쩍 들고 위로 슝~ 날아오르는 느낌 */
+.hero-pop .pop-icon{animation:hero-rise 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-rise{0%{transform:translateY(10px) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}100%{transform:translateY(10px) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){.hero-pop .pop-icon{animation:none}}
