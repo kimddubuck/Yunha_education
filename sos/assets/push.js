@@ -151,14 +151,14 @@ async function pushNewMeet(meetId, date, slot, host){
     pushLS.set('sosPushMeetTopics', [...pushLS.get('sosPushMeetTopics', []), {t, room: ROOM.roomId}].slice(-30));
     pushSync(false).catch(() => {});
   }
-  pushNotify(TO_ROOM, '🙌 새 모임이 열렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'meet-' + meetId);
+  pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 갈 수 있는지 눌러서 알려 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
 }
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){
   if(!PUSH_VAPID || !ROOM || !(count >= 1)) return;
   const crowd = count >= SOS_CROWD_AT;
   pushNotify(TO_ROOM, crowd ? `🆘 SOS가 몰렸어요 (${count}명)` : '🆘 SOS 요청이 왔어요',
-    `${ROOM.name} · ${crowd ? '용기 내서 모임을 열어 볼까요?' : '누가 도움이 필요해요. 눌러서 확인해 보세요'}`, pushLink('meet.html'), 'sos-' + date + slot);
+    `${dayLabel(date)} ${slot} · ${crowd ? '용기 내서 모임을 열어 볼까요?' : '나도 이 시간 독박이면 눌러서 SOS 🙋'}`, pushLink('index.html') + `&go=s${date}-${parseInt(slot)}`, 'sos-' + date + slot);
 }
 async function pushMeetJoin(o, joins){
   if(!PUSH_VAPID || !ROOM) return;

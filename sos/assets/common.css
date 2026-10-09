@@ -861,3 +861,11 @@ body{padding-block:16px 120px}
 .mem-out-box > summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .15s}
 .mem-out-box[open] > summary::after{transform:rotate(180deg)}
 .mem-out-box > .who-tip{margin:0 0 8px}
+/* 🔔 알림을 눌러 들어왔을 때 띄우는 참여 권유 창 */
+.go-nudge{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#ffe58a;color:#3a2a00;font-size:14.5px;font-weight:700;line-height:1.5;text-align:center}
+.go-nudge b{color:#c62828}
+.pop .go-host{display:inline-block;margin:0 0 6px}
+.pop .go-text{margin:0 0 10px;padding:8px 10px;border-radius:10px;border-left:4px solid var(--pick);background:var(--tag);font-weight:600;white-space:pre-wrap;text-align:left}
+.pop .go-votes{margin-top:0}
+.go-tip{margin:8px 0 0;font-size:12.5px;color:var(--muted);text-align:center}
+.go-later{display:block;width:100%;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer}

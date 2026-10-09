@@ -57,6 +57,8 @@ function rememberRoom(room){
 }
 // 지금 들어와 있는 방. 초대 링크(?r=)로 왔는데 처음 보는 방이면 null (비밀번호를 물어요)
 const INVITE = new URLSearchParams(location.search).get('r');
+// 🔔 알림을 눌러 왔으면: 그 SOS 시간(s날짜-시)이나 모임(m아이디)을 바로 띄워 참여를 권해요 (sosGoSos · sosGoMeet)
+let SOS_GO = new URLSearchParams(location.search).get('go') || '';
 // 초대 링크에 함께 실려 온 방 이름·초대한 사람 닉네임 (비밀번호 전에 '어느 방인지' 보여 주는 용도, 글자로만 써요)
 //  짧게 i = base64url(JSON [방 이름, 닉네임]) 로 실어요 (예전 링크의 n·by 도 읽어요)
 const INVITE_INFO = (() => { const q = new URLSearchParams(location.search);

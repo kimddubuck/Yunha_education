@@ -243,7 +243,7 @@ async function sosToggleHour(day, h, v){
   return nv;
 }
 // 그 시간에 SOS 보낸 사람 팝업 + 바로 요청하기(다시 누르면 취소)
-function showSosNames(day, h, v){
+function showSosNames(day, h, v, nudge){
   h = +h;
   const names = sosHourNames(v, h), old = (v && v['h' + h]) || 0;
   const mine = ME.uid && sosMine(v).includes(h);
@@ -257,12 +257,13 @@ function showSosNames(day, h, v){
     + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
     + btn
     + (past ? '' : `<a class="sos-brave-btn" href="meet.html?d=${day}&s=${h}#new" data-brave>🙌 용기 내서 이 시간 모임 열기</a>`);
-  const box = sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body});
+  const top = nudge && !mine && !past ? '<p class="go-nudge">🔔 같은 시간에 힘든 이웃이 있어요.<br>나도 이 시간 독박이면 <b>눌러 주세요</b> 👇</p>' : '';
+  const box = sosInfo({icon: '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body: top + body + (nudge ? '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>' : '')});
   box.addEventListener('click', async e => {
     if(e.target.closest('[data-brave]') && typeof openMeetForm === 'function'){ e.preventDefault(); box.remove(); openMeetForm(day, h + '시'); return; }
     const b = e.target.closest('[data-sos-toggle]'); if(!b || b.disabled) return;
     b.disabled = true; b.innerHTML = '저장 중…';
-    try{ const nv = await sosToggleHour(day, h, v); box.remove(); showSosNames(day, h, nv); }
+    try{ const nv = await sosToggleHour(day, h, v); box.remove(); showSosNames(day, h, nv); if(nudge && typeof pushToast === 'function' && sosMine(nv).includes(h)) pushToast('🆘 SOS 보냈어요! 같은 시간 이웃이 보고 힘이 될 거예요'); }
     catch(err){ sosTrouble(err); b.disabled = false; b.innerHTML = '⚠️ 저장하지 못했어요<small>다시 눌러 주세요</small>'; }
   });
 }
@@ -381,7 +382,7 @@ function sosSummary(){
     sel = +b.dataset.sosDay; draw(last);
   });
   draw(null);
-  sosWatch((d, c, err) => { if(err) failed = true; draw(d); });
+  sosWatch((d, c, err) => { if(err) failed = true; draw(d); if(d) sosGoSos(d); });
   let hr = new Date().getHours();   // 켜 둔 채로 정각이 지나면 그 시간 칸도 막아요
   setInterval(() => { const h = new Date().getHours(); if(h !== hr){ hr = h; draw(last); } }, 60000);
 }
@@ -709,3 +710,42 @@ if(TTL_READY && typeof ROOM !== 'undefined' && ROOM) window.addEventListener('lo
   try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); }catch(e){}
   setTimeout(() => sosReady().then(ok => ok && cleanupExpired()).catch(() => {}), 3000);   // 화면을 먼저 그리고 나서 천천히
 });
+
+
+/* 🔔 알림을 눌러 들어왔을 때 바로 참여하게 이끌어요 (한 번만)
+   - SOS 알림 → 그 날짜·시간 SOS 창 ("나도 이 시간 독박이면 눌러 주세요")
+   - 새 모임 알림 → 그 모임 창 (참석 · 미확정 · 불참 바로 누르기) */
+function sosGoSos(data){
+  if(!/^s\d{4}-\d{2}-\d{2}-\d{1,2}$/.test(SOS_GO) || !ME.uid) return;
+  const m = SOS_GO.match(/^s(\d{4}-\d{2}-\d{2})-(\d{1,2})$/); SOS_GO = '';
+  const day = m[1], h = +m[2];
+  if(day < todayStr() || (day === todayStr() && h < new Date().getHours())) return;   // 이미 지난 시간이면 안 띄워요
+  showSosNames(day, h, data[day], true);
+}
+function sosGoMeet(list){
+  if(!/^m[A-Za-z0-9]{1,40}$/.test(SOS_GO) || !ME.uid || !list) return;
+  const o = list.find(x => x.id === SOS_GO.slice(1)); SOS_GO = '';
+  if(!o || ((o.v || {})[ME.uid] || {}).s) return;   // 지난·취소된 모임이거나 이미 답했으면 안 띄워요
+  showMeetVote(o);
+}
+function showMeetVote(o){
+  const cnt = meetVotes(o);
+  const box = sosInfo({icon: '🙌', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body: `<p class="go-nudge">🔔 새 모임이 열렸어요!<br>갈 수 있는지 <b>눌러서 알려 주세요</b> 👇</p>
+    ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
+    <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
+    <p class="go-tip">미리 알려 주면 주최자가 준비하기 편해요 😊</p>
+    <button type="button" class="go-later" data-pop="1">나중에 할게요</button>`});
+  if(o.host) box.querySelector('.go-host').textContent = `👑 ${o.host} 주최`;   // 글은 글자로만
+  box.querySelector('.go-text').textContent = o.text;
+  box.addEventListener('click', async e => {
+    const b = e.target.closest('[data-go-vote]'); if(!b) return;
+    const s = b.dataset.goVote;
+    box.querySelectorAll('[data-go-vote]').forEach(x => { x.disabled = true; });
+    try{
+      await copCollection().doc(o.id).update({['v.' + ME.uid]: {s, n: ME.nick}});
+      if(s === 'join' && o.uid !== ME.uid && typeof pushMeetJoin === 'function') pushMeetJoin(o, cnt.join.count + 1);   // 주최자에게 참석 알림
+      box.remove();
+      if(typeof pushToast === 'function') pushToast(s === 'join' ? '🙋 참석으로 알렸어요! 그날 만나요' : s === 'maybe' ? '🤔 미확정으로 알렸어요' : '🙅 불참으로 알렸어요');
+    }catch(err){ sosTrouble(err); box.querySelectorAll('[data-go-vote]').forEach(x => { x.disabled = false; }); }
+  });
+}
