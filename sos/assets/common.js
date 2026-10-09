@@ -731,12 +731,12 @@ function sosGoMeet(list){
 }
 function showMeetVote(o){
   const cnt = meetVotes(o);
-  const box = sosInfo({icon: '🚨', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body: `<p class="go-nudge">🔔 새 모임이 열렸어요!<br>갈 수 있는지 <b>눌러서 알려 주세요</b> 👇</p>
+  const box = sosInfo({icon: '🦸', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body: `<p class="go-nudge">🦸 용기 낸 구원자가 모임을 열었어요!<br>갈 수 있는지 <b>눌러서 알려 주세요</b> 👇</p>
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
     <p class="go-tip">미리 알려 주면 주최자가 준비하기 편해요 😊</p>
     <button type="button" class="go-later" data-pop="1">나중에 할게요</button>`});
-  box.classList.add('siren-pop');
+  box.classList.add('hero-pop');
   if(o.host) box.querySelector('.go-host').textContent = `👑 ${o.host} 주최`;   // 글은 글자로만
   box.querySelector('.go-text').textContent = o.text;
   box.addEventListener('click', async e => {

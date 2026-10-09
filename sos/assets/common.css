@@ -876,3 +876,9 @@ body{padding-block:16px 120px}
 .siren-pop .pop{animation:siren-in .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes siren-in{0%{transform:scale(.7) rotate(-3deg);opacity:0}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.siren-pop .pop-icon,.siren-pop .pop{animation:none}}
+/* 🦸 새 모임 알림: 용기 낸 구원자가 금빛을 내며 둥실둥실 날아다녀요 */
+.hero-pop .pop-icon{display:block;width:max-content;margin:0 auto;font-size:54px;line-height:1;animation:hero-fly 1.6s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-fly{0%,100%{transform:translate(-10px,4px) rotate(-14deg)}50%{transform:translate(10px,-10px) rotate(8deg)}}
+@keyframes hero-glow{0%,100%{filter:drop-shadow(0 0 6px rgba(255,200,40,.6))}50%{filter:drop-shadow(0 0 16px rgba(255,210,60,1)) drop-shadow(0 0 28px rgba(255,180,0,.55))}}
+.hero-pop .pop{animation:siren-in .45s cubic-bezier(.3,1.6,.5,1)}
+@media (prefers-reduced-motion:reduce){.hero-pop .pop-icon,.hero-pop .pop{animation:none}}
