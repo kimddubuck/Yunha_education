@@ -1009,3 +1009,10 @@ body{padding-block:16px 120px}
 .next-card #nextEmpty{font-size:13.5px;line-height:1.5}
 .next-card .next-cta{margin:8px 0 0}
 .next-card .next-cta .btn{padding:9px 12px}
+
+/* 홈 SOS 달력: '먼저 꾹' 한마디 · 다가오는 모임: 참석 여부 부탁 (작지만 눈에 띄게) */
+.sos-nudge{margin:-2px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.sos-nudge b{color:#ffd54a;font-weight:800}
+.next-note{margin:-4px 0 8px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.next-note b{color:#fff;font-weight:700}
+@media (max-width:360px){ .sos-nudge,.next-note{font-size:12px;letter-spacing:-.3px} }
