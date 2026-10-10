@@ -1030,3 +1030,5 @@ body{padding-block:16px 120px}
 [data-sos] .sos-sub-s{font-size:clamp(9.6px,3.05vw,13px);white-space:nowrap;letter-spacing:-.5px;overflow:hidden}
 @media (max-width:340px){ [data-sos] .sos-sub-s{letter-spacing:-.75px} }
 [data-sos] .picker .cal-head{margin-bottom:-7px}
+[data-sos] .picker .cal-grid{row-gap:2px}
+[data-sos] .picker .cal-day{min-height:32px;padding:1px 0}
