@@ -537,12 +537,12 @@ function gateCss(){
     #gate .g-story{text-align:left;display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
-    #gate .g-first{border:2px solid #ffd54a;border-radius:12px;padding:10px 12px;background:rgba(255,213,74,.08);box-shadow:0 0 14px rgba(255,213,74,.18)}
+    #gate .g-first{border-left:3px solid rgba(255,213,74,.55);padding:2px 0 2px 11px}
     #gate .g-first p{margin:0}
     #gate .g-first p + p{margin-top:6px}
-    #gate .g-first .g-first-h{font-size:17px;font-weight:800;color:#ffd54a}
-    #gate .g-first .g-first-h b{color:#fff;background:#e8382f;border-radius:6px;padding:0 6px}
-    #gate .g-first b{color:#ffe28a}
+    #gate .g-first .g-first-h{font-size:15px;font-weight:700}
+    #gate .g-first .g-first-h b{color:#ffd54a}
+    #gate .g-first b{font-weight:700}
     #gate .g-first .g-first-s{font-size:12.5px;color:var(--muted,#9aa)}
     #gate .g-story .g-kick{font-weight:800;font-size:21px!important;line-height:1.35;letter-spacing:-.3px;color:#e8382f;white-space:nowrap;margin-bottom:-2px}
     #gate .g-story .g-kick{color:#ff6b62}
