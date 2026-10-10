@@ -976,3 +976,4 @@ body{padding-block:16px 120px}
 .next-card > .next-hero{left:auto;top:-30px;right:6px;margin:0;width:44px;height:76px;background:url(hero-up.svg) center/contain no-repeat;
   transform-origin:50% 100%;animation:brave-sway 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
 .next-card h2{padding-right:44px}
+.next-card > .next-hero{top:-4px;right:30px}
