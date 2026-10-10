@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610101443">
-<script src="assets/gate.js?v=202610101443"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610101458">
+<script src="assets/gate.js?v=202610101458"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -247,6 +247,7 @@ async function start(){
   unsub = db.collection('rooms').onSnapshot(snap => {
     reads += snap.docChanges().length;
     rooms = snap.docs.map(d => ({key: d.id, ...d.data()}));
+    try{ localStorage.setItem('sosNoCount', '1'); }catch(e){}   // 운영자 휴대폰은 방문자·조회수에서 빼요
     $('#setup').hidden = true; $('#dash').hidden = false; $('#live').classList.remove('off'); $('#live').querySelector('span').textContent = '실시간 · 방 ' + rooms.length;
     loadDetails(db);
   }, err => {
@@ -328,7 +329,7 @@ function render(){
   cumulative('#joinAllCum', '#joinAllSum', Object.values(joinAll), '명');
   cumulative('#roomAllCum', '#roomAllSum', rooms.map(r => ms(r.createdAt)).filter(Boolean), '개');
   dailyViews();
-  $('#joinAllNote').textContent = logOk ? '※ 규칙 v8 게시 전에 나간·지운 기록은 빠져 있어요' : '⚠️ 보안 규칙 v8을 게시하면 앞으로 나간 사람·지운 방 멤버도 세요. 지금은 남아 있는 멤버(내보낸 사람 포함)만 세요.';
+  $('#joinAllNote').textContent = logOk ? '' : '⚠️ 보안 규칙 v8을 게시하면 앞으로 나간 사람·지운 방 멤버도 세요. 지금은 남아 있는 멤버(내보낸 사람 포함)만 세요.';
   // 한도
   const q = (label, used, limit, unit, note) => { const p = Math.min(100, used / limit * 100); return `<div class="q"><b>${label}</b><div class="meter"><i class="${p > 90 ? 'over' : p > 60 ? 'hot' : ''}" style="width:${p}%"></i></div><small>${used.toLocaleString()} / ${limit.toLocaleString()}${unit} · ${note}</small></div>`; };
   const est = members * 3 * 25;   // 멤버마다 하루 3번 열고, 한 번에 25문서쯤 읽는다고 넉넉히 추정

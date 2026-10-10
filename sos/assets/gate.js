@@ -338,6 +338,7 @@ function sosJoinLog(room, mine, snap){
 function sosCountView(){
   try{
     if(!/\.pages\.dev$/.test(location.hostname) || /admin\.html$/.test(location.pathname)) return;
+    try{ if(localStorage.getItem('sosNoCount')) return; }catch(e){}   // 운영자(운영 현황을 연 휴대폰)는 세지 않아요
     const db = sosDb(); if(!db) return;
     const d = new Date(), day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     let v = 0; try{ if(localStorage.getItem('sosVisit') !== day) v = 1; }catch(e){}
