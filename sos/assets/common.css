@@ -995,3 +995,6 @@ body{padding-block:16px 120px}
 /* 비행운: 노란 빛줄기는 스스로 돌지 않고, 구원자 위치(--trail-a)를 따라가요 */
 .next-card.trail::before{animation:none;background:conic-gradient(from var(--trail-a,0deg),transparent 0deg 200deg,rgba(255,196,0,.35) 250deg,#ffc400 300deg,#fffbe0 328deg,#fff 333deg,transparent 336deg 360deg)}
 .next-card > .next-hero.lap{animation:hero-glow 1.6s ease-in-out infinite}
+/* 모임이 없을 때: 제목과 안내 문장 사이 여백 줄이기 (빈 목록은 자리 차지 안 해요) */
+.next-card .ops:empty{display:none}
+.next-card h2{margin-bottom:6px}
