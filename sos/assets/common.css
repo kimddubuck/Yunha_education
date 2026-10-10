@@ -961,3 +961,5 @@ body{padding-block:16px 120px}
 .ops .cancel-meet{align-self:center;padding:5px 16px;border-width:1.5px;border-radius:999px;font-size:13px;line-height:1.4}
 .ops .cancel-meet.confirm{padding:6px 16px}
 .ops .cancel-meet.confirm{border-radius:14px}
+/* 댓글·취소 버튼: 높이는 작게, 가로는 카드 폭 꽉 */
+.ops .meet-body > .comment-toggle,.ops .cancel-meet{align-self:stretch;border-radius:12px}
