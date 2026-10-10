@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610101017">
-<script src="assets/gate.js?v=202610101017"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610101207">
+<script src="assets/gate.js?v=202610101207"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -48,6 +48,9 @@ body{word-break:keep-all}
 .card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card h2{margin:0;font-size:16px}
 .card p{margin:0;font-size:13.5px;color:var(--muted)}
+.cum-h h2 small{font-size:.72em;font-weight:600;color:var(--muted)}
+.cum-note{margin:6px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.cum-note:empty{display:none}
 .cum{position:relative;height:170px;touch-action:pan-y;overflow:hidden}
 html,body{overflow-x:hidden}
 .cum svg{display:block;width:100%;height:100%;overflow:visible}
@@ -130,6 +133,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
   .card h2{font-size:14.5px}
   /* 타일 아래 남은 화면 높이를 그래프 2개가 반씩 나눠 써요 (JS가 --fold 에 남은 높이를 넣어요) */
   .two{display:grid;grid-template-rows:1fr 1fr;height:var(--fold,360px);min-height:240px}
+  .two.all{height:400px}
   .two .card{display:flex;flex-direction:column;min-height:0}
   .two .cum{flex:1;height:auto;min-height:60px}
   .cum-sum b{font-size:18px}
@@ -175,6 +179,11 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
       <div class="card"><div class="cum-h"><h2>🏠 누적 모임방</h2><div class="cum-sum" id="roomSum"></div></div><div class="cum" id="roomCum"></div></div>
     </div>
 
+    <div class="two all">
+      <div class="card"><div class="cum-h"><h2>🙋 누적 가입 <small>지운 것 포함</small></h2><div class="cum-sum" id="joinAllSum"></div></div><div class="cum" id="joinAllCum"></div><p class="cum-note" id="joinAllNote"></p></div>
+      <div class="card"><div class="cum-h"><h2>🏠 누적 모임방 <small>지운 방 포함</small></h2><div class="cum-sum" id="roomAllSum"></div></div><div class="cum" id="roomAllCum"></div></div>
+    </div>
+
     <div class="card">
       <h2>📊 무료 한도</h2>
       <p>아래는 우리 숫자로 계산한 <b>추정치</b>예요.<br>정확한 사용량은 콘솔에서 확인해요.</p>
@@ -216,6 +225,7 @@ const fmtDay = t => t ? new Date(t).toLocaleDateString('ko-KR', {month: 'numeric
 const weekStarts = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return Array.from({length: 12}, (_, i) => d.getTime() - (11 - i) * 7 * DAY); })();
 const weekIdx = t => { const i = Math.floor((t - weekStarts[0]) / (7 * DAY)); return i >= 0 && i < 12 ? i : -1; };
 let reads = 0;   // 이 화면이 쓴 문서 읽기 수 (대략)
+let joinAll = {}, logOk = true;   // 방/uid → 들어온 시각 (가입 기록 + 멤버, 지운 것 포함)
 let rooms = [], details = {}, sortK = 'members', sortDir = -1, unsub = null;
 
 async function start(){
@@ -242,6 +252,13 @@ let loading = false;
 async function loadDetails(db){
   if(loading) return; loading = true;
   try{
+    // 📈 가입 기록(joinlog, 규칙 v8): 지운 방까지 모든 방. 규칙 게시 전이면 못 읽어서 '지금 남은 멤버'로만 세요
+    logOk = true;
+    await Promise.all(rooms.map(async r => {
+      try{ const jl = await db.collection('rooms').doc(r.key).collection('joinlog').get(); reads += jl.size + 1;
+        jl.forEach(d => { const t = ms(d.data().at); if(t) joinAll[r.key + '/' + d.id] = t; }); }
+      catch(e){ logOk = false; }
+    }));
     await Promise.all(rooms.filter(r => !r.deleted).map(async r => {
       const ref = db.collection('rooms').doc(r.key);
       const [mem, sos, meets] = await Promise.all([
@@ -250,6 +267,7 @@ async function loadDetails(db){
         ref.collection('opinions').where('date', '>=', today).get()
       ]);
       reads += mem.size + sos.size + meets.size + 3;
+      mem.forEach(d => { const t = ms(d.data().joinedAt); if(t && !joinAll[r.key + '/' + d.id]) joinAll[r.key + '/' + d.id] = t; });   // 내보낸 사람도 들어온 적은 있으니 세요
       const members = mem.docs.map(d => ({uid: d.id, ...d.data()})).filter(m => m.on !== false);
       const kicked = mem.size - members.length;
       const lastOf = m => Math.max(ms(m.seen), ms(m.joinedAt));
@@ -295,6 +313,10 @@ function render(){
   fitFold();
   cumulative('#joinCum', '#joinSum', joinTimes, '명');
   cumulative('#roomCum', '#roomSum', roomTimes, '개');
+  // 지운 것 포함: 가입 = 가입 기록 + 지금 멤버(내보낸 사람 포함) 겹치는 건 한 번만 · 모임방 = 지운 방도 만든 날로
+  cumulative('#joinAllCum', '#joinAllSum', Object.values(joinAll), '명');
+  cumulative('#roomAllCum', '#roomAllSum', rooms.map(r => ms(r.createdAt)).filter(Boolean), '개');
+  $('#joinAllNote').textContent = logOk ? '※ 규칙 v8 게시 전에 나간·지운 기록은 빠져 있어요' : '⚠️ 보안 규칙 v8을 게시하면 앞으로 나간 사람·지운 방 멤버도 세요. 지금은 남아 있는 멤버(내보낸 사람 포함)만 세요.';
   // 한도
   const q = (label, used, limit, unit, note) => { const p = Math.min(100, used / limit * 100); return `<div class="q"><b>${label}</b><div class="meter"><i class="${p > 90 ? 'over' : p > 60 ? 'hot' : ''}" style="width:${p}%"></i></div><small>${used.toLocaleString()} / ${limit.toLocaleString()}${unit} · ${note}</small></div>`; };
   const est = members * 3 * 25;   // 멤버마다 하루 3번 열고, 한 번에 25문서쯤 읽는다고 넉넉히 추정

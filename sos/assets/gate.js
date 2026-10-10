@@ -182,6 +182,7 @@ function sosReady(){
         if(dup.length) setTimeout(() => alert(`'${nick}' 닉네임이 이 방에 이미 있어요.\n\n다른 브라우저(카카오톡 안 브라우저 등)나 앱으로 들어왔던 기록일 수 있어요. 브라우저마다 따로 로그인되기 때문이에요.\n\n• 같은 사람이면: 방장에게 예전 것 '내보내기'를 부탁해 주세요 (👥 멤버)\n• 다른 사람이면: 👥 멤버 → ✏️ 내 닉네임 바꾸기`), 300);
       }catch(e){}
     }
+    sosJoinLog(room, mine, snap);
     // 방장인지: 새 방은 ou(방장 uid). 예전 방은 이 휴대폰의 방장 열쇠로 한 번 등록해요
     try{
       const r = rs.data() || {};
@@ -317,6 +318,21 @@ document.addEventListener('click', e => { if(e.target.closest('#gate .g-share'))
 // 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
 //  SOS 요청·참석 표시는 날짜가 지나고 7일 뒤 자동으로 지워져요
 //  내보내진 방은 문서를 지울 수 없어서(다시 들어오는 걸 막으려고 남겨 둬요) 닉네임만 '(정보 지움)'으로 바꿔요
+// 📈 가입 기록 (운영 현황 '누적 가입 · 지운 것 포함' 그래프용): 방마다 한 번, 들어온 시각(joinedAt)을 그대로 남겨요.
+//    멤버 기록은 나가거나 방이 지워지면 없어지지만 이 기록은 남아요. 닉네임 없이 시각만 있어요
+function sosJoinLog(room, mine, snap){
+  const k = 'sosJL:' + ROOM.roomId;
+  try{ if(localStorage.getItem(k) || sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); }catch(e){ return; }
+  (async () => {
+    const log = room.collection('joinlog').doc(ME.uid);
+    if(!(await log.get()).exists){
+      const s = snap.exists ? snap : await mine.get(), at = s.exists && s.data().joinedAt;
+      if(!at) return;
+      await log.set({at});
+    }
+    try{ localStorage.setItem(k, '1'); }catch(e){}
+  })().catch(() => {});
+}
 const KICKED_KEY = 'sosKicked';
 function rememberKicked(room){ try{ localStorage.setItem(KICKED_KEY, JSON.stringify([{roomId: room.roomId, key: room.key}, ...sosKicked().filter(r => r.roomId !== room.roomId)].slice(0, 20))); }catch(e){} }
 function sosKicked(){ try{ return JSON.parse(localStorage.getItem(KICKED_KEY) || '[]'); }catch(e){ return []; } }
