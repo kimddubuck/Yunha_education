@@ -374,7 +374,7 @@ function sosSummary(){
       return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
     // 한 화면에 방 제목·SOS·모임이 다 보이게 짧게: 안내 한 줄, 시간 칸은 한 줄짜리 (다가오는 SOS 목록은 빼고 날짜 탭으로 봐요)
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
-      <p class="sos-nudge"><i>🙋</i><span>눈치 보지 말고 <b>먼저 꾹!</b><br>다들 누가 먼저 누를지 기다려요 👀</span></p>
+      <p class="sos-nudge">🙋 눈치 보지 말고 <b>먼저 꾹!</b> 다들 기다리는 중 👀</p>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-note1">👆 시간을 누르면 누가 보냈는지 보여요</p>
       <div class="sos-today">${cells}</div>`;

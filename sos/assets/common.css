@@ -1022,3 +1022,6 @@ body{padding-block:16px 120px}
 /* 제목과 한마디 사이 여백: SOS 달력 · 다가오는 모임 둘 다 똑같이 좁게 */
 [data-sos-summary] p.sos-nudge{margin-top:-5px}
 .next-card p.next-note{margin-top:-13px;margin-bottom:-2px}
+/* 한마디는 한 줄로: 폰 너비에 맞춰 글자 크기가 줄어요 */
+.sos-nudge,.next-note{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(10.5px,3.4vw,13px);letter-spacing:-.2px}
+.next-note[hidden]{display:none}
