@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>사용법 · 공동육아 SOS</title>
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610101258">
+<link rel="manifest" href="manifest.webmanifest?v=202610101310">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <style>
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;word-break:keep-all;background:#1f6f73;color:#fff;font-family:'IBM Plex Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+  html,body{margin:0;height:100%;word-break:keep-all;background:#111619;color:#fff;font-family:'IBM Plex Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
   body{display:flex;flex-direction:column;height:100dvh}
   header{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
   header a,header button{border:0;font-family:inherit;cursor:pointer;color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.14)}
@@ -45,8 +45,8 @@
 </div>
 <div id="toast"></div>
 <script>
-// 사용법 그림 17장: 옆으로 넘겨 보고, 지인에게 그림 그대로(또는 링크로) 보내요
-const N = 18, pad = i => String(i).padStart(2, '0');
+// 사용법 그림 19장: 옆으로 넘겨 보고, 지인에게 그림 그대로(또는 링크로) 보내요
+const N = 19, pad = i => String(i).padStart(2, '0');
 const track = document.getElementById('track'), dots = document.getElementById('dots');
 const LINK = location.origin + location.pathname;
 for(let i = 1; i <= N; i++){
