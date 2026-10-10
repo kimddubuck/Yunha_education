@@ -333,6 +333,20 @@ function sosJoinLog(room, mine, snap){
     try{ localStorage.setItem(k, '1'); }catch(e){}
   })().catch(() => {});
 }
+// 👀 방문자·조회수 (운영 현황 그래프용): 페이지가 열릴 때마다 오늘 조회수 +1, 같은 휴대폰은 하루 한 번만 방문자 +1
+//    날짜별 숫자 두 개만 남아요 (누가 왔는지는 안 남아요). 실제 사이트(pages.dev)에서만 세요
+function sosCountView(){
+  try{
+    if(!/\.pages\.dev$/.test(location.hostname) || /admin\.html$/.test(location.pathname)) return;
+    const db = sosDb(); if(!db) return;
+    const d = new Date(), day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    let v = 0; try{ if(localStorage.getItem('sosVisit') !== day) v = 1; }catch(e){}
+    const inc = firebase.firestore.FieldValue.increment;
+    db.collection('stats').doc(day).set({p: inc(1), v: inc(v)}, {merge: true})
+      .then(() => { if(v) try{ localStorage.setItem('sosVisit', day); }catch(e){} }).catch(() => {});
+  }catch(e){}
+}
+addEventListener('load', () => setTimeout(sosCountView, 1500));
 const KICKED_KEY = 'sosKicked';
 function rememberKicked(room){ try{ localStorage.setItem(KICKED_KEY, JSON.stringify([{roomId: room.roomId, key: room.key}, ...sosKicked().filter(r => r.roomId !== room.roomId)].slice(0, 20))); }catch(e){} }
 function sosKicked(){ try{ return JSON.parse(localStorage.getItem(KICKED_KEY) || '[]'); }catch(e){ return []; } }

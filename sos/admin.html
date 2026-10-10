@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610101310">
-<script src="assets/gate.js?v=202610101310"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610101443">
+<script src="assets/gate.js?v=202610101443"></script>
 <style>
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
@@ -55,7 +55,13 @@ body{word-break:keep-all}
 html,body{overflow-x:hidden}
 .cum svg{display:block;width:100%;height:100%;overflow:visible}
 .cum .grid{stroke:var(--line);stroke-width:1}
-.cum .ax{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+.cum .ax{fill:var(--muted);font-size:10px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.cum .ax.mo{fill:var(--fg);font-weight:700}
+.cum .tk{stroke:var(--line);stroke-width:1}
+.cum .vbar{fill:#ffd54a;opacity:.55}
+.cum .vline{fill:none;stroke:var(--pick);stroke-width:2;stroke-linejoin:round}
+.cum .vdot{fill:var(--pick)}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 8px;vertical-align:-1px}
 .cum .area{fill:var(--pick);opacity:.14}
 .cum .line{fill:none;stroke:var(--pick);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .cum .end{fill:var(--pick);stroke:var(--bg);stroke-width:2}
@@ -184,6 +190,9 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
       <div class="card"><div class="cum-h"><h2>🏠 누적 모임방 <small>지운 방 포함</small></h2><div class="cum-sum" id="roomAllSum"></div></div><div class="cum" id="roomAllCum"></div></div>
     </div>
 
+    <div class="card"><div class="cum-h"><h2>👀 방문자 · 조회수 <small>하루</small></h2><div class="cum-sum" id="viewSum"></div></div><div class="cum" id="viewCum"></div>
+      <p class="cum-note" id="viewNote"></p></div>
+
     <div class="card">
       <h2>📊 무료 한도</h2>
       <p>아래는 우리 숫자로 계산한 <b>추정치</b>예요.<br>정확한 사용량은 콘솔에서 확인해요.</p>
@@ -225,6 +234,7 @@ const fmtDay = t => t ? new Date(t).toLocaleDateString('ko-KR', {month: 'numeric
 const weekStarts = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return Array.from({length: 12}, (_, i) => d.getTime() - (11 - i) * 7 * DAY); })();
 const weekIdx = t => { const i = Math.floor((t - weekStarts[0]) / (7 * DAY)); return i >= 0 && i < 12 ? i : -1; };
 let reads = 0;   // 이 화면이 쓴 문서 읽기 수 (대략)
+let views = {}, viewsOk = true;   // 날짜 → {v: 방문자, p: 조회수}
 let joinAll = {}, logOk = true;   // 방/uid → 들어온 시각 (가입 기록 + 멤버, 지운 것 포함)
 let rooms = [], details = {}, sortK = 'members', sortDir = -1, unsub = null;
 
@@ -254,6 +264,7 @@ async function loadDetails(db){
   try{
     // 📈 가입 기록(joinlog, 규칙 v8): 지운 방까지 모든 방. 규칙 게시 전이면 못 읽어서 '지금 남은 멤버'로만 세요
     logOk = true;
+    try{ const st = await db.collection('stats').get(); reads += st.size + 1; views = {}; st.forEach(d => { views[d.id] = d.data(); }); viewsOk = true; }catch(e){ viewsOk = false; }
     await Promise.all(rooms.map(async r => {
       try{ const jl = await db.collection('rooms').doc(r.key).collection('joinlog').get(); reads += jl.size + 1;
         jl.forEach(d => { const t = ms(d.data().at); if(t) joinAll[r.key + '/' + d.id] = t; }); }
@@ -316,6 +327,7 @@ function render(){
   // 지운 것 포함: 가입 = 가입 기록 + 지금 멤버(내보낸 사람 포함) 겹치는 건 한 번만 · 모임방 = 지운 방도 만든 날로
   cumulative('#joinAllCum', '#joinAllSum', Object.values(joinAll), '명');
   cumulative('#roomAllCum', '#roomAllSum', rooms.map(r => ms(r.createdAt)).filter(Boolean), '개');
+  dailyViews();
   $('#joinAllNote').textContent = logOk ? '※ 규칙 v8 게시 전에 나간·지운 기록은 빠져 있어요' : '⚠️ 보안 규칙 v8을 게시하면 앞으로 나간 사람·지운 방 멤버도 세요. 지금은 남아 있는 멤버(내보낸 사람 포함)만 세요.';
   // 한도
   const q = (label, used, limit, unit, note) => { const p = Math.min(100, used / limit * 100); return `<div class="q"><b>${label}</b><div class="meter"><i class="${p > 90 ? 'over' : p > 60 ? 'hot' : ''}" style="width:${p}%"></i></div><small>${used.toLocaleString()} / ${limit.toLocaleString()}${unit} · ${note}</small></div>`; };
@@ -359,6 +371,16 @@ function render(){
 // 날짜별 누적 선 그래프 (한 가지 색, 끝점 강조, 눌러서 날짜별 값 보기)
 const dayKey = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const md = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
+// x축: 날짜를 하루하루 다 적어요 (첫날·1일은 '10/1'처럼 달까지). 칸이 너무 좁을 때만 건너뛰어요
+function dayAxis(days, x, H, B){
+  const gap = days.length > 1 ? x(1) - x(0) : 99, k = Math.max(1, Math.ceil(13 / gap));
+  let g = '';
+  days.forEach((t, i) => { const d = new Date(t), first = i === 0 || d.getDate() === 1;
+    g += `<line class="tk" x1="${x(i)}" x2="${x(i)}" y1="${H - B}" y2="${H - B + 3}"/>`;
+    if(i % k && !first && i !== days.length - 1) return;
+    g += `<text class="ax${first ? ' mo' : ''}" x="${x(i)}" y="${H - 6}" text-anchor="middle">${first ? md(t) : d.getDate()}</text>`; });
+  return g;
+}
 function cumulative(sel, sumSel, times, unit){
   const box = $(sel), today = dayKey(now);
   const first = times.length ? Math.min(...times.map(dayKey)) : today;
@@ -375,8 +397,7 @@ function cumulative(sel, sumSel, times, unit){
   const x = i => L + (days.length > 1 ? i / (days.length - 1) : 0.5) * (W - L - R), y = v => T + (1 - v / top) * (H - T - B);
   let g = '';
   for(let v = 0; v <= top; v += step) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end">${v}</text>`;
-  const ticks = [0, Math.floor((days.length - 1) / 2), days.length - 1].filter((v, i, a) => a.indexOf(v) === i);
-  ticks.forEach(i => { g += `<text class="ax" x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === days.length - 1 ? 'end' : 'middle'}">${md(days[i])}</text>`; });
+  g += dayAxis(days, x, H, B);
   const pts = cum.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
   const li = cum.length - 1;
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="날짜별 누적 ${total}${unit}">${g}
@@ -396,6 +417,35 @@ function cumulative(sel, sumSel, times, unit){
   };
   svg.onpointermove = show; svg.onpointerdown = show;
   svg.onpointerleave = () => { tip.hidden = true; hl.setAttribute('visibility', 'hidden'); };
+}
+// 👀 하루 방문자(같은 휴대폰은 하루 한 번) · 조회수(페이지가 열린 횟수) — 노란 막대 = 조회수, 선 = 방문자
+function dailyViews(){
+  const box = $('#viewCum'), today0 = dayKey(now), keys = Object.keys(views).sort();
+  const first = keys.length ? dayKey(new Date(keys[0] + 'T00:00:00').getTime()) : today0;
+  const start = Math.max(Math.min(first, today0 - 13 * DAY), today0 - 89 * DAY);
+  const days = []; for(let t = start; t <= today0; t += DAY) days.push(t);
+  const get = t => views[ymd(new Date(t))] || {}, V = days.map(t => get(t).v || 0), P = days.map(t => get(t).p || 0);
+  const li = days.length - 1, sum = a => a.reduce((x, y) => x + y, 0);
+  $('#viewSum').innerHTML = `<b>오늘 ${V[li]}명</b><span>조회 ${P[li]}</span>`;
+  $('#viewNote').innerHTML = viewsOk ? `<span class="lg" style="background:#ffd54a;opacity:.7"></span>조회수 <span class="lg" style="background:var(--pick)"></span>방문자<br>최근 7일: 방문 ${sum(V.slice(-7))}명 · 조회 ${sum(P.slice(-7))}<br>방문자는 같은 휴대폰을 하루 한 번만 세요`
+    : '⚠️ 보안 규칙 v9를 게시하면 방문자·조회수가 쌓이기 시작해요.';
+  const W = box.clientWidth || 320, H = box.clientHeight || 170, L = 26, R = 12, T = 14, B = 22;
+  const max = Math.max(1, ...P, ...V), step = max <= 4 ? 1 : Math.ceil(max / 4), top = Math.ceil(max / step) * step;
+  const x = i => L + 6 + (days.length > 1 ? i / li : 0.5) * (W - L - R - 12), y = v => T + (1 - v / top) * (H - T - B);
+  const bw = Math.max(2, Math.min(14, (W - L - R) / days.length * .6));
+  let g = '';
+  for(let v = 0; v <= top; v += step) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end">${v}</text>`;
+  g += dayAxis(days, x, H, B);
+  P.forEach((p, i) => { if(p) g += `<rect class="vbar" x="${x(i) - bw / 2}" y="${y(p)}" width="${bw}" height="${y(0) - y(p)}" rx="2"/>`; });
+  g += `<polyline class="vline" points="${V.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}"/>` + V.map((v, i) => v ? `<circle class="vdot" cx="${x(i)}" cy="${y(v)}" r="2.6"/>` : '').join('');
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="하루 방문자와 조회수">${g}<line class="hl" y1="${T}" y2="${H - B}" x1="0" x2="0" visibility="hidden"/></svg><div class="tip" hidden></div>`;
+  const svg = box.querySelector('svg'), hl = box.querySelector('.hl'), tip = box.querySelector('.tip');
+  const show = ev => { const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(li, Math.round((px - L - 6) / Math.max(1, W - L - R - 12) * li)));
+    hl.setAttribute('x1', x(i)); hl.setAttribute('x2', x(i)); hl.setAttribute('visibility', 'visible');
+    tip.hidden = false; tip.textContent = `${md(days[i])} · 방문 ${V[i]}명 · 조회 ${P[i]}`;
+    const half = tip.offsetWidth / 2 + 2; tip.style.left = Math.max(half, Math.min(r.width - half, x(i) * r.width / W)) + 'px'; };
+  svg.onpointermove = show; svg.onpointerdown = show; svg.onpointerleave = () => { tip.hidden = true; hl.setAttribute('visibility', 'hidden'); };
 }
 // 점검 모드 (주소 끝에 #dbg): 화면보다 넓은 요소를 찾아 맨 아래에 보여 줘요
 function dbg(){
