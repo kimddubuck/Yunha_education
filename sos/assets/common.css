@@ -998,3 +998,14 @@ body{padding-block:16px 120px}
 /* 모임이 없을 때: 제목과 안내 문장 사이 여백 줄이기 (빈 목록은 자리 차지 안 해요) */
 .next-card .ops:empty{display:none}
 .next-card h2{margin-bottom:6px}
+/* 홈 한 화면에 '다가오는 모임'까지: 세로 여백 조금씩 줄이기 */
+.wrap.single main:has(> .cover){gap:9px}
+.cover{padding-top:10px;padding-bottom:10px}
+.room-bar .btn{padding:6px 12px}
+[data-sos-summary]{gap:8px;padding:11px 13px}
+[data-sos-summary] .sos-cell{padding:5px 0}
+[data-sos-summary] .sos-today{gap:4px}
+.next-card{padding:11px 14px}
+.next-card #nextEmpty{font-size:13.5px;line-height:1.5}
+.next-card .next-cta{margin:8px 0 0}
+.next-card .next-cta .btn{padding:9px 12px}
