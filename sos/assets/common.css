@@ -970,3 +970,5 @@ body{padding-block:16px 120px}
 .sos-tab.sun[aria-pressed="true"]{color:#a31a12}
 .cal-week .sat,.cal-day.sat{color:#6ea8ff}
 .cal-week .sun,.cal-day.sun{color:#ff6b62}
+/* SOS 달력 안내 문장: 더 굵고 밝게 */
+[data-sos] .sos-sub-s{font-weight:700;color:#d6dedd}
