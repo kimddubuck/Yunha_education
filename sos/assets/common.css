@@ -1026,3 +1026,5 @@ body{padding-block:16px 120px}
 .sos-nudge,.next-note{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(10.5px,3.4vw,13px);letter-spacing:-.2px}
 .next-note[hidden]{display:none}
 .sos-nudge{font-size:clamp(10px,3.2vw,13px);letter-spacing:-.4px}
+.sos-sub-s b{color:#ffd54a}
+[data-sos] .sos-sub-s{font-size:clamp(10.5px,3.3vw,13px);white-space:nowrap;letter-spacing:-.3px;overflow:hidden}

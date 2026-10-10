@@ -277,7 +277,7 @@ function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
   let data = {}, col = null, broken = false;
   root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count"></p></div>
-    <p class="sos-sub sos-sub-s">독박하는 날, 미리 SOS를 요청해 두세요.<br>SOS가 모이면 용기 있는 한 명이 모임을 열어요 💪</p>
+    <p class="sos-sub sos-sub-s">독박하는 날, 눈치 보지 말고 <b>먼저 SOS 꾹!</b> 🙋<br>다들 기다리는 중! SOS가 모이면 모임이 열려요 💪</p>
     <div class="sos-picker"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
