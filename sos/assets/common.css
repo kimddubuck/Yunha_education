@@ -1025,3 +1025,4 @@ body{padding-block:16px 120px}
 /* 한마디는 한 줄로: 폰 너비에 맞춰 글자 크기가 줄어요 */
 .sos-nudge,.next-note{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(10.5px,3.4vw,13px);letter-spacing:-.2px}
 .next-note[hidden]{display:none}
+.sos-nudge{font-size:clamp(10px,3.2vw,13px);letter-spacing:-.4px}
