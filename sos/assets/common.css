@@ -1032,3 +1032,4 @@ body{padding-block:16px 120px}
 [data-sos] .picker .cal-head{margin-bottom:-7px}
 [data-sos] .picker .cal-grid{row-gap:2px}
 [data-sos] .picker .cal-day{min-height:32px;padding:1px 0}
+[data-sos] .sos-btn{min-height:44px;padding:5px 12px;gap:0;line-height:1.25}
