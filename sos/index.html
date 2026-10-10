@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610100937">
+<link rel="manifest" href="manifest.webmanifest?v=202610100942">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610100937">
-<script src="assets/gate.js?v=202610100937"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610100942">
+<script src="assets/gate.js?v=202610100942"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -35,7 +35,7 @@
 
     <section class="sec next-card">
       <span class="next-star s1" aria-hidden="true">✦</span><span class="next-star s2" aria-hidden="true">✦</span><span class="next-star s3" aria-hidden="true">✦</span><span class="next-star s4" aria-hidden="true">✦</span><span class="next-star s5" aria-hidden="true">✦</span><span class="next-star s6" aria-hidden="true">✦</span><span class="next-star s7" aria-hidden="true">✧</span><span class="next-star s8" aria-hidden="true">✧</span><span class="next-sos" aria-hidden="true">SOS</span><span class="next-hero" aria-hidden="true"></span>
-      <h2>🙌 다가오는 모임 <span class="next-count" id="nextCount" hidden></span></h2>
+      <h2><img class="h-hero" src="assets/hero-up.svg" alt=""> 다가오는 모임 <span class="next-count" id="nextCount" hidden></span></h2>
       <ul class="ops" id="next"></ul>
       <p class="hint" id="nextEmpty">모임을 불러오는 중…</p>
       <p class="next-cta" id="nextMake" hidden><a class="btn primary block" href="meet.html#new">💪 첫 모임 열기</a></p>
@@ -84,10 +84,17 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610100937"></script>
-<script src="assets/push.js?v=202610100937"></script>
+<script src="assets/common.js?v=202610100942"></script>
+<script src="assets/push.js?v=202610100942"></script>
 <script>
 sosSummary();
+// 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
+(function heroLaps(){
+  const h = document.querySelector('.next-hero'); if(!h || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  h.addEventListener('animationend', e => { if(e.animationName === 'hero-lap2') h.classList.remove('lap'); });
+  const lap = () => { if(!document.hidden && h.isConnected) h.classList.add('lap'); };
+  setTimeout(lap, 4000); setInterval(lap, 14000);
+})();
 // 📲 설치 안내: 이미 앱으로 열었으면 숨기고, 내 휴대폰 종류의 안내를 먼저 펼쳐요
 (function installGuide(){
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;

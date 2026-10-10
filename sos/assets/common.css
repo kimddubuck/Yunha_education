@@ -977,3 +977,18 @@ body{padding-block:16px 120px}
   transform-origin:50% 100%;animation:brave-sway 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
 .next-card h2{padding-right:44px}
 .next-card > .next-hero{top:-4px;right:30px}
+.next-card h2 .h-hero{width:auto;height:1.6em;margin:-.3em -2px -.2em 0;vertical-align:middle}
+/* 🦸 평소엔 오른쪽 위에서 흔들흔들 → 가끔 테두리를 한 바퀴 날아서 다시 제자리 (.lap 은 앱이 잠깐 붙였다 떼요) */
+.next-card > .next-hero.lap{right:auto;width:60px;height:38px;margin:-19px 0 0 -30px;background-image:url(hero.svg);transform-origin:50% 50%;
+  animation:hero-lap2 3.6s linear 1,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-lap2{
+  0%{left:86%;top:0;transform:rotate(0deg)}
+  6%{left:100%;top:4%;transform:rotate(90deg)}
+  27%{left:100%;top:96%;transform:rotate(90deg)}
+  31%{left:96%;top:100%;transform:rotate(180deg)}
+  56%{left:4%;top:100%;transform:rotate(180deg)}
+  60%{left:0;top:96%;transform:rotate(270deg)}
+  81%{left:0;top:4%;transform:rotate(270deg)}
+  85%{left:4%;top:0;transform:rotate(360deg)}
+  100%{left:86%;top:0;transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.next-card > .next-hero.lap{animation:none}}
