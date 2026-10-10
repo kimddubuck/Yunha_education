@@ -261,7 +261,7 @@ function showSosNames(day, h, v, nudge){
     + (!names.length && !old ? '<p class="who-none">아직 SOS가 없어요.</p>' : '')
     + btn
     + (past ? '' : `<a class="sos-brave-btn" href="meet.html?d=${day}&s=${h}#new" data-brave>🙌 용기 내서 이 시간 모임 열기</a>`);
-  const top = nudge && !mine && !past ? '<p class="go-nudge">🔔 같은 시간에 힘든 이웃이 있어요.<br>나도 이 시간 독박이면 <b>눌러 주세요</b> 👇</p>' : '';
+  const top = nudge && !mine && !past ? (names.length + old ? '<p class="go-nudge">🔔 같은 시간에 힘든 이웃이 있어요.<br>나도 이 시간 독박이면 <b>눌러 주세요</b> 👇</p>' : '<p class="go-nudge">🔔 방금 SOS가 취소됐나 봐요.<br>그래도 이 시간 독박이면 <b>눌러 주세요</b> 👇</p>') : '';
   const box = sosInfo({icon: nudge ? '🚨' : '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body: top + body + (nudge ? '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>' : '')});
   if(nudge) box.classList.add('siren-pop');
   box.addEventListener('click', async e => {
