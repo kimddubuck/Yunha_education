@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610100943">
+<link rel="manifest" href="manifest.webmanifest?v=202610100947">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610100943">
-<script src="assets/gate.js?v=202610100943"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610100947">
+<script src="assets/gate.js?v=202610100947"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -84,15 +84,48 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610100943"></script>
-<script src="assets/push.js?v=202610100943"></script>
+<script src="assets/common.js?v=202610100947"></script>
+<script src="assets/push.js?v=202610100947"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
 (function heroLaps(){
-  const h = document.querySelector('.next-hero'); if(!h || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  h.addEventListener('animationend', e => { if(e.animationName === 'hero-lap2') h.classList.remove('lap'); });
-  const lap = () => { if(!document.hidden && h.isConnected) h.classList.add('lap'); };
+  // 🦸 구원자가 테두리를 날면, 노란 빛줄기가 비행운처럼 그 뒤를 따라와요 (빛의 머리 = 구원자 위치)
+  const h = document.querySelector('.next-hero'), card = h && h.closest('.next-card');
+  if(!h || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  card.classList.add('trail');
+  const R = 18, LAP_MS = 3600, HW = 0, HH = 0;   // (가운데 맞춤은 CSS margin 이 해요)
+  const geo = () => { const w = card.offsetWidth, hgt = card.offsetHeight, a = Math.PI * R / 2;
+    return {w, h: hgt, segs: [w - 2*R, a, hgt - 2*R, a, w - 2*R, a, hgt - 2*R, a], P: 2*(w - 2*R) + 2*(hgt - 2*R) + 4*a}; };
+  // 둥근 사각형 테두리 위 s 지점의 위치와 나아가는 방향(도)
+  const at = (g, s) => { s = ((s % g.P) + g.P) % g.P; const {w, h: H} = g;
+    for(let i = 0; i < 8; i++){ const L = g.segs[i]; if(s <= L || i === 7){ const t = Math.min(s, L);
+        switch(i){
+          case 0: return {x: R + t, y: 0, d: 0};
+          case 2: return {x: w, y: R + t, d: 90};
+          case 4: return {x: w - R - t, y: H, d: 180};
+          case 6: return {x: 0, y: H - R - t, d: 270};
+          default: { const c = [[w-R, R, -90], [w-R, H-R, 0], [R, H-R, 90], [R, R, 180]][(i-1)/2], ang = c[2] + t / R * 180 / Math.PI, rad = ang * Math.PI / 180;
+            return {x: c[0] + R * Math.cos(rad), y: c[1] + R * Math.sin(rad), d: ang + 90}; } } }
+      s -= L; } };
+  const ring = (g, x, y) => { const th = Math.atan2(x - g.w / 2, -(y - g.h / 2)) * 180 / Math.PI; card.style.setProperty('--trail-a', (th - 330) + 'deg'); };
+  const rest = () => { const g = geo(); ring(g, g.w - 28, 0); };   // 쉬는 동안: 빛줄기가 구원자 자리까지 와 있어요
+  rest(); addEventListener('resize', rest);
+  let busy = false;
+  const lap = () => {
+    if(busy || document.hidden || !h.isConnected) return; busy = true;
+    const g = geo(), s0 = g.w - 28 - R, t0 = performance.now();
+    h.classList.add('lap');
+    const step = now => {
+      const k = Math.min(1, (now - t0) / LAP_MS), e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;   // 살살 출발 → 슝 → 살살 도착
+      const p = at(g, s0 + e * g.P);
+      h.style.left = (p.x - HW) + 'px'; h.style.top = (p.y - HH) + 'px'; h.style.transform = `rotate(${p.d}deg)`;
+      ring(g, p.x, p.y);
+      if(k < 1) requestAnimationFrame(step);
+      else { h.classList.remove('lap'); h.style.left = h.style.top = h.style.transform = ''; rest(); busy = false; }
+    };
+    requestAnimationFrame(step);
+  };
   setTimeout(lap, 4000); setInterval(lap, 14000);
 })();
 // 📲 설치 안내: 이미 앱으로 열었으면 숨기고, 내 휴대폰 종류의 안내를 먼저 펼쳐요
