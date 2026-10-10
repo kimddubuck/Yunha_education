@@ -956,3 +956,8 @@ body{padding-block:16px 120px}
 @keyframes cancel-pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,56,47,.6)}50%{box-shadow:0 0 0 6px rgba(232,56,47,0)}}
 @media (prefers-reduced-motion:reduce){.ops .cancel-meet.confirm{animation:none}}
 .ops .cancel-meet{white-space:pre-line;line-height:1.45}
+/* 댓글·취소 버튼: 눈에는 띄되 작게 (가운데 정렬 알약 모양) */
+.ops .meet-body > .comment-toggle{align-self:center;padding:6px 18px;border-width:1.5px;border-radius:999px;font-size:13.5px;box-shadow:none}
+.ops .cancel-meet{align-self:center;padding:5px 16px;border-width:1.5px;border-radius:999px;font-size:13px;line-height:1.4}
+.ops .cancel-meet.confirm{padding:6px 16px}
+.ops .cancel-meet.confirm{border-radius:14px}
