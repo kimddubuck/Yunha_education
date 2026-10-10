@@ -474,6 +474,7 @@ const GATE_STORY = `        <div class="g-tool">
           <p class="g-sub">아기랑 하루 종일 붙어 있는데<br>의미 없이 시간만 흘러가는 것 같은 날.</p>
           <p>같이 육아하면 서로 의지도 되고<br>아이에게도 좋은 에너지를<br>줄 수 있을 것 같은데…</p>
           <p class="g-shy">단톡방에 "모임 해요!"<br>글쓰긴 쑥스러울 때 🙈<br>조용히 <b>SOS</b>를 보내 보세요.</p>
+          <div class="g-first"><p class="g-first-h">🙋 눈치 보지 말고 <b>먼저 꾹!</b></p><p>다들 누가 먼저 누르나<br><b>기다리고만 있어요</b> 👀</p><p>내 SOS 하나가 다른 엄마 아빠의<br><b>SOS를 불러오고</b>,<br>SOS가 쌓일수록 <b>모임이 열려요</b> 🔥</p><p class="g-first-s">부담 갖지 마세요 😊<br>눌러도 꼭 나가야 하는 건 아니에요.</p></div>
           <p>SOS가 모이면,<br><b>용기 있는 누군가가<br>손을 내밀어 줄 거예요</b> 🙌<br>오늘도 으쌰으쌰 같이 이겨내요 💪</p>
         </div>
         <ul class="g-how">
@@ -536,6 +537,13 @@ function gateCss(){
     #gate .g-story{text-align:left;display:flex;flex-direction:column;gap:10px;padding:14px 12px;border-radius:14px;background:var(--tag,#efefef)}
     #gate .g-story p{color:var(--fg,#22282a);font-size:14px;line-height:1.7}
     #gate .g-story .g-q{font-weight:700;font-size:16px}
+    #gate .g-first{border:2px solid #ffd54a;border-radius:12px;padding:10px 12px;background:rgba(255,213,74,.08);box-shadow:0 0 14px rgba(255,213,74,.18)}
+    #gate .g-first p{margin:0}
+    #gate .g-first p + p{margin-top:6px}
+    #gate .g-first .g-first-h{font-size:17px;font-weight:800;color:#ffd54a}
+    #gate .g-first .g-first-h b{color:#fff;background:#e8382f;border-radius:6px;padding:0 6px}
+    #gate .g-first b{color:#ffe28a}
+    #gate .g-first .g-first-s{font-size:12.5px;color:var(--muted,#9aa)}
     #gate .g-story .g-kick{font-weight:800;font-size:21px!important;line-height:1.35;letter-spacing:-.3px;color:#e8382f;white-space:nowrap;margin-bottom:-2px}
     #gate .g-story .g-kick{color:#ff6b62}
     /* 검정 글자 테두리 (이모티콘은 빼고 글자만) — 테두리를 글자 뒤에 그려서 글자가 가늘어지지 않게 */
