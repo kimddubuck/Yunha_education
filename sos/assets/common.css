@@ -1016,3 +1016,6 @@ body{padding-block:16px 120px}
 .next-note{margin:-4px 0 8px;font-size:12.5px;line-height:1.5;color:var(--muted)}
 .next-note b{color:#fff;font-weight:700}
 @media (max-width:360px){ .sos-nudge,.next-note{font-size:12px;letter-spacing:-.3px} }
+.sos-nudge,.next-note{display:flex;gap:6px;align-items:flex-start}
+.sos-nudge > i,.next-note > i{font-style:normal;flex:none}
+.next-note[hidden]{display:none}
