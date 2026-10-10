@@ -76,6 +76,10 @@ function dateBadge(ymd){
   el.innerHTML = `<small>${ymd===todayStr() ? '오늘' : m + '월'}</small><b>${d}</b><small>${WEEK[new Date(y, m-1, d).getDay()]}</small>`;
   return el;
 }
+// 🇰🇷 공휴일(대체공휴일 포함): 일요일처럼 빨간 글씨로 보여요
+const HOLIDAYS = new Set(['2026-01-01','2026-02-16','2026-02-17','2026-02-18','2026-03-01','2026-03-02','2026-05-05','2026-05-24','2026-05-25','2026-06-03','2026-06-06','2026-08-15','2026-08-17','2026-09-24','2026-09-25','2026-09-26','2026-09-28','2026-10-03','2026-10-05','2026-10-09','2026-12-25',
+  '2027-01-01','2027-02-06','2027-02-07','2027-02-08','2027-02-09','2027-03-01','2027-05-05','2027-05-13','2027-06-06','2027-08-15','2027-08-16','2027-09-14','2027-09-15','2027-09-16','2027-10-03','2027-10-04','2027-10-09','2027-10-11','2027-12-25','2027-12-27']);
+function dayKind(ymd){ const [y,m,d] = ymd.split('-').map(Number), w = new Date(y, m-1, d).getDay(); return HOLIDAYS.has(ymd) || w === 0 ? 'sun' : w === 6 ? 'sat' : ''; }
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
@@ -171,7 +175,7 @@ function createPicker(root, opts = {}){
     let html = '';
     for(const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)){
       const v = ymd(d.getFullYear(), d.getMonth()+1, d.getDate()), dow = d.getDay(), past = v < today || v > lastBookDay(), n = opts.dayBadge ? opts.dayBadge(v) : 0;
-      const cls = ['cal-day', dow===0 ? 'sun' : dow===6 ? 'sat' : '', v===today ? 'today' : '', v===st.date ? 'on' : ''].join(' ');
+      const cls = ['cal-day', dayKind(v), v===today ? 'today' : '', v===st.date ? 'on' : ''].join(' ');
       const label = d.getDate() === 1 ? `${d.getMonth()+1}/1` : d.getDate();
       html += `<button type="button" class="${cls}" data-date="${v}" ${past ? 'disabled' : ''} aria-pressed="${v===st.date}">${label}<small>${n ? n + '명' : v===today ? '오늘' : ''}</small></button>`;
     }
@@ -364,7 +368,7 @@ function sosSummary(){
     const today = todayStr(), day = days[sel], t = (data && data[day]) || {};
     const label = name(sel) || dayLabel(day);
     const tabs = days.map((d, i) => { const n = data ? sosDayTotal(data[d]) : 0;
-      return `<button type="button" class="sos-tab" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
+      return `<button type="button" class="sos-tab ${dayKind(d)}" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
     const nowH = new Date().getHours();
     const cells = HOURS.map(h => { const n = sosHourCount(t, h), gone = day === today && h < nowH;   // 오늘 지나간 시간은 못 눌러요
       return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');

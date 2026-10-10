@@ -963,3 +963,10 @@ body{padding-block:16px 120px}
 .ops .cancel-meet.confirm{border-radius:14px}
 /* 댓글·취소 버튼: 높이는 작게, 가로는 카드 폭 꽉 */
 .ops .meet-body > .comment-toggle,.ops .cancel-meet{align-self:stretch;border-radius:12px}
+/* 날짜 탭: 토요일 파랑 · 일요일·공휴일 빨강 (고른 탭은 흰 바탕 위 진한 색) */
+.sos-tab.sat{color:#6ea8ff}
+.sos-tab.sun{color:#ff6b62}
+.sos-tab.sat[aria-pressed="true"]{color:#0b3a8a}
+.sos-tab.sun[aria-pressed="true"]{color:#a31a12}
+.cal-week .sat,.cal-day.sat{color:#6ea8ff}
+.cal-week .sun,.cal-day.sun{color:#ff6b62}
