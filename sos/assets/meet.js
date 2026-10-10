@@ -97,9 +97,9 @@ function meetCard(o, past){
   if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; body.append(h); }
   body.append(cb);
   if(isMine(o) || ME.owner){
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet'; x.dataset.cancelMeet = o.id;
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet' + (meet.confirm===o.id ? ' confirm' : ''); x.dataset.cancelMeet = o.id;
     x.textContent = meet.cancelErr && meet.cancelErr.id===o.id ? meet.cancelErr.msg
-      : meet.confirm===o.id ? '정말 취소할까요? 한 번 더 누르면 취소돼요' : isMine(o) ? '🗑 내가 연 모임 취소하기' : '🗑 모임 취소하기 (방장)';
+      : meet.confirm===o.id ? '⚠️ 정말 취소할까요?\n한 번 더 누르면 취소돼요' : isMine(o) ? '🗑 내가 연 모임 취소하기' : '🗑 모임 취소하기 (방장)';
     body.appendChild(x);
   }
 

@@ -606,6 +606,7 @@ function gateCss(){
     #gate .g-box-h{font-size:16px!important;font-weight:800;color:var(--accent-ink,#1c7276)!important;margin:0}
     #gate .g-box p{margin:0}
     #gate .g-box .g-msg{margin:0;min-height:0}
+    #gate .g-hero{display:inline-block;width:auto;height:1.55em;margin:-.35em 2px -.25em 0;vertical-align:middle}
     #gate .g-brw{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:14px;background:var(--bg,#fff);border:1.5px dashed var(--pick,#2a9095);text-align:center;word-break:keep-all}
     #gate .g-brw p{margin:0;font-size:13.5px!important;line-height:1.55;color:var(--muted,#736e75)}
     #gate .g-brw p b{color:var(--fg,#22282a)}
@@ -784,7 +785,7 @@ ${invite && !closable ? GATE_HOW_INVITE : ''}`;
       <img class="g-icon" src="assets/icon.svg" alt="" width="72" height="72">
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
       ${list}
-      <p class="g-legend">🆘 = 1주일 안에 SOS 보낸 사람 · 🙌 = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
+      <p class="g-legend">🆘 = 1주일 안에 SOS 보낸 사람 · <img class="g-hero" src="assets/hero-up.svg" alt=""> = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
 ${formHtml.replace(list, '')}
 ${GATE_PASTE}
@@ -819,7 +820,7 @@ ${invite ? '' : GATE_PASTE}
       const chips = b.querySelector('.g-chips');
       if(!c) return;
       if(c.gone){ chips.innerHTML = '<span class="g-chip gone">지워진 방</span>'; forgetRoom(room.roomId); b.disabled = true; if(typeof pushDropRoom === 'function') pushDropRoom(room).catch(() => {}); return; }
-      chips.innerHTML = (c.sos ? `<span class="g-chip sos">🆘 ${c.sos}</span>` : '') + (c.meet ? `<span class="g-chip meet">🙌 ${c.meet}</span>` : '')
+      chips.innerHTML = (c.sos ? `<span class="g-chip sos">🆘 ${c.sos}</span>` : '') + (c.meet ? `<span class="g-chip meet"><img class="g-hero" src="assets/hero-up.svg" alt="">${c.meet}</span>` : '')
         || '<span class="g-chip quiet">조용해요</span>';
     });
   });
