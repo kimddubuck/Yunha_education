@@ -1095,3 +1095,5 @@ html,body{overflow-x:hidden}
 .app-tip p,.app-tip small{white-space:nowrap;letter-spacing:-.3px}
 .app-tip p{font-size:clamp(12px,3.8vw,14px)}
 .app-tip small{font-size:clamp(10.5px,3.2vw,12px)}
+.end-edit{width:100%;margin-top:6px}
+.pop-b .end-row{margin-top:4px}

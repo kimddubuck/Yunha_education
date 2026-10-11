@@ -96,6 +96,11 @@ function meetCard(o, past){
   row.append(jb, mb, nb); body.append(row);
   if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; body.append(h); }
   body.append(cb);
+  if(isMine(o)){   // ⏰ 연 사람은 끝나는 시간을 정하거나 바꿀 수 있어요
+    const t = document.createElement('button'); t.type = 'button'; t.className = 'join end-edit'; t.dataset.editMeet = o.id;
+    t.textContent = '✏️ 모임 수정하기 (날짜·시간·장소)';
+    body.appendChild(t);
+  }
   if(isMine(o) || ME.owner){
     const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet' + (meet.confirm===o.id ? ' confirm' : ''); x.dataset.cancelMeet = o.id;
     x.textContent = meet.cancelErr && meet.cancelErr.id===o.id ? meet.cancelErr.msg
@@ -194,6 +199,24 @@ function openMeetForm(date, slot){
   $('#meetForm').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+// ✏️ 연 사람이 모임 고치기: 같은 양식에 채워서 열고, 저장하면 방에 '모임이 바뀌었어요' 알림
+let editMeet = null;
+function setEditMode(o){
+  editMeet = o ? o.id : null;
+  $('#meetSend').textContent = o ? '✏️ 수정 저장' : '💪 모임 열기';
+  let c = $('#meetEditCancel');
+  if(o && !c){ c = document.createElement('button'); c.type = 'button'; c.id = 'meetEditCancel'; c.className = 'btn'; c.textContent = '수정 그만두기';
+    c.addEventListener('click', () => { setEditMode(null); $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`; $('#meetMsg').textContent = ''; });
+    $('#meetSend').before(c); }
+  if(!o && c) c.remove();
+  const h = $('#meetForm .label'); if(h) h.textContent = o ? '✏️ 모임 수정하기 · 날짜와 시간' : '📅 날짜와 시간을 골라 주세요';
+}
+function startEditMeet(o){
+  openMeetForm(o.date, o.slot);
+  meetEnd = o.end || meetEnd; drawEnd(); meetPicker.render();
+  $('#meetText').value = o.text || ''; $('#meetCount').textContent = `${$('#meetText').value.length} / 500`;
+  $('#meetMsg').textContent = ''; setEditMode(o);
+}
 $('#meetText').addEventListener('input', () => { $('#meetCount').textContent = `${$('#meetText').value.length} / 500`; });
 $('#meetForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -207,6 +230,15 @@ $('#meetForm').addEventListener('submit', async e => {
   if(!meet.col) return;
   $('#meetSend').disabled = true;
   try{
+    if(editMeet){
+      const id = editMeet, slot = meetPicker.state.slot, ch = {text, date, slot, ...ttl(date)};
+      ch.end = meetEnd && parseInt(meetEnd) > parseInt(slot) ? meetEnd : firebase.firestore.FieldValue.delete();
+      await meet.col.doc(id).update(ch);
+      if(typeof pushEditMeet === 'function') pushEditMeet(id, date, meetWhen({slot, end: typeof ch.end === 'string' ? ch.end : ''}));
+      setEditMode(null); $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
+      $('#meetMsg').textContent = '✏️ 모임을 고쳤어요. 방 사람들에게 알림을 보냈어요';
+      return;
+    }
     const doc = {topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()};
     if(meetEnd && parseInt(meetEnd) > parseInt(doc.slot)) doc.end = meetEnd;
     let ref;
@@ -218,7 +250,7 @@ $('#meetForm').addEventListener('submit', async e => {
     if(ref && ref.id) ref.update({['v.' + ME.uid]: {s: 'join', n: host}}).catch(() => {});
     if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetWhen(doc), host);   // 방에 새 모임 알림
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
-  }catch(err){ sosTrouble(err); $('#meetMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
+  }catch(err){ sosTrouble(err); $('#meetMsg').textContent = editMeet && err && err.code === 'permission-denied' ? '⚠️ 수정이 막혔어요. 보안 규칙(v12)을 게시해 주세요.' : '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
   finally{ $('#meetSend').disabled = false; }
 });
 
@@ -247,6 +279,8 @@ $('#meetList').addEventListener('click', async e => {
   if(rp){ sosReport(rp.dataset.cid ? 'comment' : 'meet', rp.dataset.report, rp.dataset.cid); return; }
   const od = e.target.closest('[data-owner-del]');
   if(od){ ownerDelete(od.dataset.ownerDel, od.dataset.cid); return; }
+  const ee = e.target.closest('[data-edit-meet]');
+  if(ee){ const o = meet.items.find(x => x.id === ee.dataset.editMeet); if(o) startEditMeet(o); return; }
   const cm = e.target.closest('[data-cancel-meet]');
   if(cm){
     const id = cm.dataset.cancelMeet;

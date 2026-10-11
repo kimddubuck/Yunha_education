@@ -153,6 +153,11 @@ async function pushNewMeet(meetId, date, slot, host){
   }
   pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 참석·미확정·불참 중 하나를 눌러 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
 }
+// ✏️ 모임이 바뀌면 방 사람들에게 알려요 (같은 모임 알림을 새 내용으로 바꿔요)
+function pushEditMeet(meetId, date, when){
+  if(!PUSH_VAPID || !ROOM) return;
+  pushNotify(TO_ROOM, `✏️ 모임이 바뀌었어요 · ${dayLabel(date)} ${when || ''}`.trim(), `${ROOM.name} · 바뀐 내용을 보고 참석·미확정·불참을 확인해 주세요`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
+}
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){
   if(!PUSH_VAPID || !ROOM || !(count >= 1)) return;
