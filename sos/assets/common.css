@@ -1066,3 +1066,9 @@ html,body{overflow-x:hidden}
 .mem-legend li.warn{border-color:#e0a400;color:#ffc83d}
 .mem-legend svg{width:18px;height:18px;flex:none}
 .mem-guide .mem-legend{margin:0 0 10px!important;padding:0!important}
+/* 멤버 창 위쪽 버튼 3개는 낮게 (멤버 목록이 더 많이 보이게) */
+.pop .mem-renick{margin:0 0 6px!important;padding:5px 10px!important;min-height:0!important;font-size:13.5px;line-height:1.4}
+.pop .mem-renick + .mem-renick{margin-top:0!important}
+.pop .mem-guide{margin:0 0 8px}
+.pop .mem-guide summary{padding:5px 0;font-size:13.5px}
+.pop .mem-guide summary small{font-size:11px}
