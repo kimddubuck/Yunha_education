@@ -154,7 +154,7 @@ if('serviceWorker' in navigator){ window.addEventListener('load', () => { naviga
    - dayBadge(날짜) / hourBadge(날짜, '10시') 가 숫자를 돌려주면 작게 표시해요 (SOS 수 등). */
 function createPicker(root, opts = {}){
   const months = opts.months || 2;   // 1주일이 다음 달로 넘어갈 수 있어서 두 달까지 넘겨 봐요
-  const st = {date: todayStr(), slot: null, slots: [], month: null};
+  const st = {date: todayStr(), slot: null, slots: [], end: null, month: null};
   const ymd = (y,m,d) => `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
   root.classList.add('picker');
   root.innerHTML = `<div class="cal-head">
@@ -189,12 +189,16 @@ function createPicker(root, opts = {}){
     if(st.date === today){
       const gone = h => parseInt(h) < new Date().getHours();
       if(opts.multi && st.slots.some(gone)){ st.slots = st.slots.filter(h => !gone(h)); st.slot = st.slots[0] || null; }
-      else if(!opts.multi && st.slot && gone(st.slot)) st.slot = null;
+      else if(!opts.multi && st.slot && gone(st.slot)){ st.slot = null; st.end = null; }
     }
     root.querySelector('.time-grid').innerHTML = HOURS.map(h => {
       const n = opts.hourBadge ? opts.hourBadge(st.date, h + '시') : 0;
       const gone = st.date === today && h < new Date().getHours();
-      return `<button type="button" class="time-btn" data-slot="${h}시" ${gone ? 'disabled' : ''} aria-pressed="${opts.multi ? st.slots.includes(h+'시') : st.slot===h+'시'}">${h}:00${n ? `<small>${n}명</small>` : ''}</button>`;
+      // range: 숙박 예약처럼 시작 → 끝을 누르면 그 사이가 감싸져요
+      const s = parseInt(st.slot), en = parseInt(st.end), isS = st.slot === h + '시', isE = st.end === h + '시', mid = opts.range && s && en && h > s && h < en;
+      const rc = opts.range ? (isS ? ' r-start' : '') + (isE ? ' r-end' : '') + (mid ? ' r-mid' : '') + (s && en ? ' r-has' : '') : '';
+      const tag = opts.range && (isS || isE) ? `<small>${isS ? '시작' : '끝'}</small>` : n ? `<small>${n}명</small>` : '';
+      return `<button type="button" class="time-btn${rc}" data-slot="${h}시" ${gone ? 'disabled' : ''} aria-pressed="${opts.multi ? st.slots.includes(h+'시') : isS || (opts.range && isE)}">${h}:00${tag}</button>`;
     }).join('');
     root.querySelector('.picked-when').textContent = st.date ? (opts.whenText ? opts.whenText(st) : `${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''}`) : '';
   }
@@ -209,6 +213,12 @@ function createPicker(root, opts = {}){
       const v = t.dataset.slot;
       st.slots = st.slots.includes(v) ? st.slots.filter(x => x !== v) : [...st.slots, v].sort((a,b) => parseInt(a) - parseInt(b));
       st.slot = st.slots[0] || null; render(); opts.onChange && opts.onChange(st); return;
+    }
+    if(t && opts.range){   // 처음 누르면 시작, 그 뒤 더 늦은 시간을 누르면 끝 (다시 누르면 처음부터)
+      const h = parseInt(t.dataset.slot);
+      if(st.slot && !st.end && h > parseInt(st.slot)) st.end = t.dataset.slot;
+      else { st.slot = t.dataset.slot; st.end = null; }
+      render(); opts.onChange && opts.onChange(st); return;
     }
     if(t){ st.slot = t.dataset.slot; render(); opts.onChange && opts.onChange(st); }
   });

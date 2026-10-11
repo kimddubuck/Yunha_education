@@ -177,25 +177,15 @@ function renderMeets(){
 }
 
 /* ---------- 달력 + 시간 고르기 (common.js의 createPicker) ---------- */
-let meetEnd = null;   // 끝나는 시간 ('11시'). 시작 시간을 고르면 2시간 뒤로 먼저 골라 둬요
-const meetPicker = createPicker($('#meetPicker'), {
-  whenText: st => `${dayLabel(st.date)}${st.slot ? ' ' + st.slot + (meetEnd ? '~' + meetEnd : '') : ''}에 모여요`,
-  onChange: st => { const s = parseInt(st.slot); if(s && !(meetEnd && parseInt(meetEnd) > s && parseInt(meetEnd) <= s + 4)) meetEnd = Math.min(s + 2, 22) + '시'; if(!s) meetEnd = null; drawEnd(); meetPicker.render(); }
+// 시간은 숙박 예약처럼: 시작 시간을 누르고, 끝나는 시간을 누르면 그 사이가 감싸져요
+const meetPicker = createPicker($('#meetPicker'), {range: true,
+  whenText: st => !st.slot ? '시작 시간을 눌러 주세요' : !st.end ? `${dayLabel(st.date)} ${st.slot} 시작 · 이제 끝나는 시간을 눌러 주세요` : `${dayLabel(st.date)} ${st.slot}~${st.end}에 모여요`
 });
-// ⏰ 끝나는 시간: 시작 1~4시간 뒤 (밤 10시까지)
-function drawEnd(){
-  const box = $('#meetEnd'), s = parseInt(meetPicker.state.slot);
-  if(!s){ box.innerHTML = '<p class="label">⏰ 끝나는 시간 <small class="hint">시작 시간을 먼저 골라 주세요</small></p>'; return; }
-  const opts = []; for(let h = s + 1; h <= Math.min(s + 4, 22); h++) opts.push(h);
-  box.innerHTML = '<p class="label">⏰ 끝나는 시간</p><div class="end-row">' + opts.map(h => `<button type="button" class="end-btn" data-end="${h}시" aria-pressed="${meetEnd === h + '시'}">~${h}시<small>${h - s}시간</small></button>`).join('') + '</div>';
-}
-$('#meetEnd').addEventListener('click', e => { const b = e.target.closest('[data-end]'); if(!b) return; meetEnd = b.dataset.end; drawEnd(); meetPicker.render(); });
-drawEnd();
 // SOS에서 '＋ 모임 만들기'를 누르면 고른 날짜·시간을 채워서 열어요
 function openMeetForm(date, slot){
   if(date && date >= todayStr() && date <= lastBookDay()){ meetPicker.state.date = date; const [y,m] = date.split('-').map(Number); meetPicker.state.month = {y,m}; }
-  if(slot){ meetPicker.state.slot = slot; meetEnd = Math.min(parseInt(slot) + 2, 22) + '시'; }
-  drawEnd(); meetPicker.render(); $('#meetForm').hidden = false;
+  if(slot){ meetPicker.state.slot = slot; meetPicker.state.end = null; }
+  meetPicker.render(); $('#meetForm').hidden = false;
   $('#meetForm').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -213,7 +203,7 @@ function setEditMode(o){
 }
 function startEditMeet(o){
   openMeetForm(o.date, o.slot);
-  meetEnd = o.end || meetEnd; drawEnd(); meetPicker.render();
+  meetPicker.state.end = o.end || null; meetPicker.render();
   $('#meetText').value = o.text || ''; $('#meetCount').textContent = `${$('#meetText').value.length} / 500`;
   $('#meetMsg').textContent = ''; setEditMode(o);
 }
@@ -223,7 +213,8 @@ $('#meetForm').addEventListener('submit', async e => {
   const text = $('#meetText').value.trim(), date = meetPicker.state.date, host = ME.nick;
   // 양식 칸(장소:/시간:/놀이:)만 남아 있으면 빈 글로 봐요
   if(!date || date < todayStr() || date > lastBookDay()){ $('#meetMsg').textContent = '오늘부터 1주일 안의 날짜를 골라 주세요.'; return; }
-  if(!meetPicker.state.slot){ $('#meetMsg').textContent = '시간을 골라 주세요.'; return; }
+  if(!meetPicker.state.slot){ $('#meetMsg').textContent = '시작 시간을 눌러 주세요.'; return; }
+  if(!meetPicker.state.end){ $('#meetMsg').textContent = '끝나는 시간도 눌러 주세요. (시작 → 끝 순서로)'; return; }
   if(date === todayStr() && parseInt(meetPicker.state.slot) < new Date().getHours()){ meetPicker.render(); $('#meetMsg').textContent = '지난 시간이에요. 시간을 다시 골라 주세요.'; return; }
   if(!host){ $('#meetMsg').textContent = '닉네임을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.'; return; }
   if(!text.replace(/^(장소|시간|놀이):/gm, '').trim()){ $('#meetMsg').textContent = '장소나 놀이를 적어 주세요.'; return; }
@@ -232,6 +223,7 @@ $('#meetForm').addEventListener('submit', async e => {
   try{
     if(editMeet){
       const id = editMeet, slot = meetPicker.state.slot, ch = {text, date, slot, ...ttl(date)};
+      const meetEnd = meetPicker.state.end;
       ch.end = meetEnd && parseInt(meetEnd) > parseInt(slot) ? meetEnd : firebase.firestore.FieldValue.delete();
       await meet.col.doc(id).update(ch);
       if(typeof pushEditMeet === 'function') pushEditMeet(id, date, meetWhen({slot, end: typeof ch.end === 'string' ? ch.end : ''}));
@@ -240,6 +232,7 @@ $('#meetForm').addEventListener('submit', async e => {
       return;
     }
     const doc = {topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()};
+    const meetEnd = meetPicker.state.end;
     if(meetEnd && parseInt(meetEnd) > parseInt(doc.slot)) doc.end = meetEnd;
     let ref;
     try{ ref = await meet.col.add(doc); }

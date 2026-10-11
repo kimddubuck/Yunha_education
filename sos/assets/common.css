@@ -1097,3 +1097,7 @@ html,body{overflow-x:hidden}
 .app-tip small{font-size:clamp(10.5px,3.2vw,12px)}
 .end-edit{width:100%;margin-top:6px}
 .pop-b .end-row{margin-top:4px}
+/* 모임 시간: 시작~끝 범위 (숙박 예약처럼) */
+.time-btn.r-mid{background:rgba(79,193,189,.22);border-color:rgba(79,193,189,.5);color:var(--fg)}
+.time-btn.r-start,.time-btn.r-end{background:var(--pick);border-color:var(--pick);color:var(--pick-fg,#0d1b1b)}
+.time-btn.r-start small,.time-btn.r-end small{color:inherit;font-weight:800}
