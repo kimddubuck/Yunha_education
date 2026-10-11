@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ko" data-public data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>운영 현황 · 공동육아 SOS</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1c7276">
+<link rel="manifest" href="manifest-admin.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SOS 운영">
+<link rel="stylesheet" href="assets/common.css?v=202610110020">
+<script src="assets/gate.js?v=202610110020"></script>
+<style>
+/* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
+body{padding-block:20px 60px}
+.wrap.admin{display:flex;flex-direction:column;gap:18px;max-width:980px}
+#dash:not([hidden]){display:flex;flex-direction:column;gap:12px}
+/* 휴대폰 글자 크기를 키운 설정에서도 글자가 칸 밖으로 넘쳐 페이지가 넓어지지 않게: 넘치면 칸 안에서 자르고(…) 화면 폭은 그대로 */
+.wrap.admin{width:100%;box-sizing:border-box;overflow-x:clip}
+.tile,.card{overflow:hidden}
+.tile span,.tile small{overflow:hidden;text-overflow:ellipsis}
+.ad-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ad-head h1{margin:0;font-size:22px;white-space:nowrap}
+.ad-head .btn{margin-left:auto}
+.ad-head .btn{padding:8px 12px;font-size:14px}
+.ad-sub{margin:0;font-size:13px;line-height:1.6;color:var(--muted)}
+body{word-break:keep-all}
+.legend{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:6px}
+.links{display:flex;flex-direction:column;gap:6px}
+.links a{display:block;padding:9px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--accent-ink);font-size:13.5px;font-weight:600}
+.toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+.toggle input{width:16px;height:16px;accent-color:var(--pick)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.live i{width:8px;height:8px;border-radius:50%;background:#2e8b57;display:inline-block}
+.live.off i{background:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile b{font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--fg)}
+.tile span{font-size:13px;color:var(--muted)}
+.tile small{font-size:12px;color:var(--accent-ink)}
+.tile.warn{border-color:#e0a800}
+.tile.warn small{color:#b88600}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:16px}
+.card p{margin:0;font-size:13.5px;color:var(--muted)}
+.cum-h h2 small{font-size:.72em;font-weight:600;color:var(--muted)}
+.cum-note{margin:6px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.cum-note:empty{display:none}
+.cum{position:relative;height:170px;touch-action:pan-y;overflow:hidden}
+html,body{overflow-x:hidden}
+.cum svg{display:block;width:100%;height:100%;overflow:visible}
+.cum .grid{stroke:var(--line);stroke-width:1}
+.cum .ax{fill:var(--muted);font-size:10px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.cum .ax.mo{fill:var(--fg);font-weight:700}
+.cum .tk{stroke:var(--line);stroke-width:1}
+.cum .vbar{fill:#ffd54a;opacity:.55}
+.cum .vline{fill:none;stroke:var(--pick);stroke-width:2;stroke-linejoin:round}
+.cum .vdot{fill:var(--pick)}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 8px;vertical-align:-1px}
+.cum .area{fill:var(--pick);opacity:.14}
+.cum .line{fill:none;stroke:var(--pick);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.cum .end{fill:var(--pick);stroke:var(--bg);stroke-width:2}
+.cum .endv{fill:var(--fg);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.cum .hl{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.cum .tip{position:absolute;top:0;transform:translateX(-50%);background:var(--fg);color:var(--bg);font-size:12px;line-height:1.4;padding:4px 8px;border-radius:8px;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+.cum-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cum-h h2{white-space:nowrap}
+.cum-sum{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.cum-sum b{font-size:24px;font-variant-numeric:tabular-nums}
+.cum-sum span{font-size:13px;color:var(--accent-ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
+th[aria-sort]::after{content:" ▾";color:var(--accent-ink)}
+th[aria-sort="ascending"]::after{content:" ▴"}
+td.n{text-align:right}
+td .rn{display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+.flag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;background:#fff3cd;color:#7a5c00;margin-left:4px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .flag{background:#3a3218;color:#ffd54a}}
+:root[data-theme="dark"] .flag{background:#3a3218;color:#ffd54a}
+.flag.bad{background:var(--ipark-soft);color:var(--ipark-ink)}
+.flag.gone{background:var(--tag);color:var(--muted)}
+tr.gone td{color:var(--muted)}
+.quota{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.q{display:flex;flex-direction:column;gap:6px}
+.q b{font-size:13.5px}
+.meter{height:10px;border-radius:999px;background:var(--tag);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--pick);border-radius:999px}
+.meter i.hot{background:#e0a800}.meter i.over{background:var(--ipark)}
+.q small{font-size:12px;color:var(--muted)}
+.setup{background:var(--bg);border:2px solid #e0a800;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.setup h2{margin:0;font-size:17px}
+.setup ol{margin:0;padding-left:20px;font-size:14px;line-height:1.7}
+.uid{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.uid code{font-size:13px;padding:6px 10px;border-radius:8px;background:var(--tag);user-select:all;word-break:break-all}
+pre{margin:0;background:var(--tag);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+.empty{text-align:center;padding:20px;color:var(--muted);font-size:14px}
+.err{background:var(--ipark-soft);color:var(--ipark-ink);border-radius:12px;padding:10px 12px;font-size:13.5px}
+details.dorm{font-size:13px}
+details.dorm summary{cursor:pointer;color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chips span{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--tag)}
+/* 모바일: 방별 표를 카드로 */
+@media (max-width:700px){
+  .tbl{overflow:visible}
+  table{min-width:0;display:block}
+  thead{display:none}
+  tbody{display:flex;flex-direction:column;gap:8px}
+  tr{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 4px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--bg)}
+  tr.gone{opacity:.7}
+  td{border:0;padding:0;white-space:normal;display:flex;flex-direction:column;gap:1px;min-width:0}
+  td.n{text-align:left}
+  td::before{content:attr(data-label);font-size:10.5px;color:var(--muted)}
+  td:first-child{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 6px;font-weight:700;font-size:14.5px}
+  td:first-child::before{display:none}
+  td:first-child small{display:inline!important;font-weight:400}
+  td .rn{max-width:100%}
+  td:last-child{grid-column:3/-1;flex-direction:row;gap:4px;justify-content:flex-end;align-self:end}
+  td:last-child::before{content:"만든 날 "}
+  .ad-head h1{font-size:19px}
+  .ad-head{flex-wrap:nowrap}
+  .rf-t{display:none}
+  td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  td::before{overflow:hidden;text-overflow:ellipsis}
+  td:first-child{white-space:normal}
+  body{padding-block:12px 60px}
+  .wrap.admin{gap:10px}
+  #dash:not([hidden]){gap:8px}
+  .two{gap:8px}
+  .card{padding:10px 12px;gap:4px;border-radius:14px}
+  .card h2{font-size:14.5px}
+  /* 타일 아래 남은 화면 높이를 그래프 2개가 반씩 나눠 써요 (JS가 --fold 에 남은 높이를 넣어요) */
+  .two{display:grid;grid-template-rows:1fr 1fr;height:var(--fold,360px);min-height:240px}
+  .two.all{height:400px}
+  .two .card{display:flex;flex-direction:column;min-height:0}
+  .two .cum{flex:1;height:auto;min-height:60px}
+  .cum-sum b{font-size:18px}
+  .cum-sum span{font-size:12px}
+  .tiles{grid-template-columns:repeat(3,1fr);gap:6px}
+  .tile{padding:6px 9px;border-radius:11px;gap:0}
+  .tile b{font-size:18px}
+  .tile span{font-size:12px;white-space:nowrap}
+  .tile small{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .setup li{word-break:keep-all}
+}
+.install-tip{font-size:12.5px;color:var(--muted);margin:0}
+</style>
+</head>
+<body>
+<div class="wrap admin">
+  <div class="ad-head">
+    <h1>🛠 운영 현황</h1>
+    <span class="live off" id="live"><i></i><span>연결 중…</span></span>
+    <button type="button" class="btn" id="refresh" aria-label="새로고침">🔄<span class="rf-t"> 새로고침</span></button>
+  </div>
+
+  <div class="setup" id="setup" hidden>
+    <h2>🔑 처음 한 번만<br>이 브라우저를 운영자로 등록</h2>
+    <ol>
+      <li>아래 <b>내 번호</b>를 복사해요.<br><small>브라우저가 바뀌면 번호도 바뀌어요.</small></li>
+      <li>Firebase 콘솔 → Firestore → 규칙에서<br><code>isAdmin()</code> 목록에 넣고 <b>게시</b>해요.</li>
+      <li>이 화면을 새로고침해요.</li>
+    </ol>
+    <div class="uid"><code id="myUid">…</code><button type="button" class="btn" id="copyUid">복사</button></div>
+    <p class="ad-sub">규칙에 이렇게 들어가 있어야 해요.<br>여러 브라우저면 쉼표로 이어요.</p>
+    <pre id="ruleSnip">function isAdmin() {
+  return request.auth != null && request.auth.uid in ['여기에 내 번호'];
+}</pre>
+    <p class="ad-sub" id="setupMsg"></p>
+  </div>
+
+  <div id="dash" hidden>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="two">
+      <div class="card"><div class="cum-h"><h2>🙋 누적 신규 가입</h2><div class="cum-sum" id="joinSum"></div></div><div class="cum" id="joinCum"></div></div>
+      <div class="card"><div class="cum-h"><h2>🏠 누적 모임방</h2><div class="cum-sum" id="roomSum"></div></div><div class="cum" id="roomCum"></div></div>
+    </div>
+
+    <div class="two all">
+      <div class="card"><div class="cum-h"><h2>🙋 누적 가입 <small>지운 것 포함</small></h2><div class="cum-sum" id="joinAllSum"></div></div><div class="cum" id="joinAllCum"></div><p class="cum-note" id="joinAllNote"></p></div>
+      <div class="card"><div class="cum-h"><h2>🏠 누적 모임방 <small>지운 방 포함</small></h2><div class="cum-sum" id="roomAllSum"></div></div><div class="cum" id="roomAllCum"></div></div>
+    </div>
+
+    <div class="card"><div class="cum-h"><h2>👀 방문자 · 조회수 <small>하루</small></h2><div class="cum-sum" id="viewSum"></div></div><div class="cum" id="viewCum"></div>
+      <p class="cum-note" id="viewNote"></p></div>
+
+    <div class="card">
+      <h2>📊 무료 한도</h2>
+      <p>아래는 우리 숫자로 계산한 <b>추정치</b>예요.<br>정확한 사용량은 콘솔에서 확인해요.</p>
+      <div class="quota" id="quota"></div>
+      <div class="links"><a href="https://console.firebase.google.com/project/sos-calendar-f6bf7/usage" target="_blank" rel="noopener">📈 Firebase 사용량 보기 ›</a><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">⚡ Cloudflare 알림 함수 사용량 ›</a></div>
+    </div>
+
+    <div class="card">
+      <h2>🏠 방별 현황</h2>
+      <ul class="legend">
+        <li><span class="flag">방장 부재</span> 방장이 60일+ 안 들어옴</li>
+        <li><span class="flag bad">조용</span> 30일+ 아무도 안 들어옴</li>
+        <li><span class="flag gone">빈 방</span> 멤버 0명 · 만들다 만 방</li>
+        <li><span class="ad-sub">장기 미사용 = 60일+ 안 들어온 멤버</span></li>
+      </ul>
+      <label class="toggle"><input type="checkbox" id="showGone"><span>지워진 방도 보기 · <span id="goneN">0</span>개</span></label>
+      <div class="tbl"><table id="rooms"><thead><tr>
+        <th data-k="name">방</th><th data-k="members" aria-sort="descending">멤버</th><th data-k="new7">신규 7일</th><th data-k="active7">활성 7일</th><th data-k="dormant">60일+ 미사용</th><th data-k="sos">이번 주 SOS</th><th data-k="meets">모임</th><th data-k="last">마지막 활동</th><th data-k="created">만든 날</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div id="roomsEmpty" class="empty" hidden>아직 방이 없어요.</div>
+    </div>
+    <div class="err" id="err" hidden></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+/* 운영자 화면 — 서버 규칙 isAdmin() 에 등록된 번호(uid)로만 읽혀요. 이 화면은 어떤 데이터도 쓰지 않아요. */
+const $ = s => document.querySelector(s);
+const DAY = 864e5, now = Date.now();
+const ms = t => (t && t.toMillis) ? t.toMillis() : 0;
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today = ymd(new Date()), week = ymd(new Date(now + 6 * DAY));
+const ago = t => { if(!t) return '—'; const d = Math.floor((now - t) / DAY); return d < 1 ? '오늘' : d < 2 ? '어제' : d < 30 ? `${d}일 전` : d < 365 ? `${Math.floor(d/30)}달 전` : '1년+'; };
+const fmtDay = t => t ? new Date(t).toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric'}) : '—';
+// 주 시작(월요일) 12칸
+const weekStarts = (() => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return Array.from({length: 12}, (_, i) => d.getTime() - (11 - i) * 7 * DAY); })();
+const weekIdx = t => { const i = Math.floor((t - weekStarts[0]) / (7 * DAY)); return i >= 0 && i < 12 ? i : -1; };
+let reads = 0;   // 이 화면이 쓴 문서 읽기 수 (대략)
+let views = {}, viewsOk = true;   // 날짜 → {v: 방문자, p: 조회수}
+let joinAll = {}, logOk = true;   // 방/uid → 들어온 시각 (가입 기록 + 멤버, 지운 것 포함)
+let rooms = [], details = {}, sortK = 'members', sortDir = -1, unsub = null;
+
+async function start(){
+  const db = sosDb(); if(!db){ showErr('Firebase를 불러오지 못했어요. 인터넷을 확인해 주세요.'); return; }
+  const user = await sosAuth(); if(!user){ showErr('로그인 준비가 안 됐어요. 새로고침해 주세요.'); return; }
+  $('#myUid').textContent = user.uid;
+  $('#ruleSnip').textContent = `function isAdmin() {\n  return request.auth != null && request.auth.uid in ['${user.uid}'];\n}`;
+  // 방 목록: 실시간 (운영자가 아니면 permission-denied → 설정 안내)
+  unsub = db.collection('rooms').onSnapshot(snap => {
+    reads += snap.docChanges().length;
+    rooms = snap.docs.map(d => ({key: d.id, ...d.data()}));
+    try{ localStorage.setItem('sosNoCount', '1'); }catch(e){}   // 운영자 휴대폰은 방문자·조회수에서 빼요
+    $('#setup').hidden = true; $('#dash').hidden = false; $('#live').classList.remove('off'); $('#live').querySelector('span').textContent = '실시간 · 방 ' + rooms.length;
+    loadDetails(db);
+  }, err => {
+    if(err.code === 'permission-denied'){ $('#setup').hidden = false; $('#dash').hidden = true; $('#setupMsg').textContent = '아직 운영자로 등록되지 않았어요. 위 순서대로 규칙에 번호를 넣고 게시해 주세요.'; }
+    else showErr('방 목록을 읽지 못했어요: ' + (err.code || err.message));
+    $('#live').querySelector('span').textContent = '연결 안 됨';
+  });
+}
+function showErr(t){ const e = $('#err'); e.hidden = false; e.textContent = t; }
+
+// 방마다: 멤버 전체(들어온 날·마지막 접속), 이번 주 SOS, 다가오는 모임 수
+let loading = false;
+async function loadDetails(db){
+  if(loading) return; loading = true;
+  try{
+    // 📈 가입 기록(joinlog, 규칙 v8): 지운 방까지 모든 방. 규칙 게시 전이면 못 읽어서 '지금 남은 멤버'로만 세요
+    logOk = true;
+    try{ const st = await db.collection('stats').get(); reads += st.size + 1; views = {}; st.forEach(d => { views[d.id] = d.data(); }); viewsOk = true; }catch(e){ viewsOk = false; }
+    await Promise.all(rooms.map(async r => {
+      try{ const jl = await db.collection('rooms').doc(r.key).collection('joinlog').get(); reads += jl.size + 1;
+        jl.forEach(d => { const t = ms(d.data().at); if(t) joinAll[r.key + '/' + d.id] = t; }); }
+      catch(e){ logOk = false; }
+    }));
+    await Promise.all(rooms.filter(r => !r.deleted).map(async r => {
+      const ref = db.collection('rooms').doc(r.key);
+      const [mem, sos, meets] = await Promise.all([
+        ref.collection('members').get(),
+        ref.collection('sos').where(firebase.firestore.FieldPath.documentId(), '>=', today).where(firebase.firestore.FieldPath.documentId(), '<=', week).get(),
+        ref.collection('opinions').where('date', '>=', today).get()
+      ]);
+      reads += mem.size + sos.size + meets.size + 3;
+      mem.forEach(d => { const t = ms(d.data().joinedAt); if(t && !joinAll[r.key + '/' + d.id]) joinAll[r.key + '/' + d.id] = t; });   // 내보낸 사람도 들어온 적은 있으니 세요
+      const members = mem.docs.map(d => ({uid: d.id, ...d.data()})).filter(m => m.on !== false);
+      const kicked = mem.size - members.length;
+      const lastOf = m => Math.max(ms(m.seen), ms(m.joinedAt));
+      const people = new Set(); sos.forEach(d => Object.entries(d.data().p || {}).forEach(([u, e]) => { if((e.h || []).length) people.add(u); }));
+      const owner = members.find(m => m.uid === r.ou);
+      const last = Math.max(0, ...members.map(lastOf), ms(r.createdAt));
+      details[r.key] = {
+        members: members.length, kicked,
+        new7: members.filter(m => now - ms(m.joinedAt) < 7 * DAY).length,
+        new30: members.filter(m => now - ms(m.joinedAt) < 30 * DAY).length,
+        active7: members.filter(m => now - lastOf(m) < 7 * DAY).length,
+        dormant: members.filter(m => now - lastOf(m) > 60 * DAY),
+        sos: people.size, meets: meets.docs.filter(d => { const o = d.data(); return o.topic === 'meet' && !o.cancelled && !(o.date === today && (parseInt(o.slot) || 0) < new Date().getHours()); }).length,   // 이미 시작한 오늘 모임은 빼요 (홈과 같은 기준)
+        last, ownerGone: !owner || now - lastOf(owner) > 60 * DAY,
+        joins: members.map(m => ms(m.joinedAt))
+      };
+    }));
+  }catch(e){ showErr('방 안의 숫자를 읽지 못했어요: ' + (e.code || e.message)); }
+  loading = false; render();
+}
+
+function render(){
+  const alive = rooms.filter(r => !r.deleted), gone = rooms.length - alive.length;
+  const D = alive.map(r => details[r.key]).filter(Boolean);
+  const sum = k => D.reduce((a, d) => a + (typeof d[k] === 'number' ? d[k] : d[k].length), 0);
+  const members = sum('members'), new7 = sum('new7'), new30 = sum('new30'), active7 = sum('active7'), dormant = sum('dormant'), sos = sum('sos'), meets = sum('meets');
+  const quiet = alive.filter(r => details[r.key] && now - details[r.key].last > 30 * DAY).length;
+  const noOwner = alive.filter(r => details[r.key] && details[r.key].members && details[r.key].ownerGone).length;
+  const empty = alive.filter(r => details[r.key] && !details[r.key].members).length;
+  const tile = (b, s, sm, warn) => `<div class="tile${warn ? ' warn' : ''}"><b>${b}</b><span>${s}</span>${sm ? `<small>${sm}</small>` : ''}</div>`;
+  $('#tiles').innerHTML = tile(alive.length, '방', gone ? `지워진 ${gone}` : '')
+    + tile(members, '멤버', `활성 ${active7}명`)
+    + tile(new7, '신규 7일', `30일 ${new30}명`)
+    + tile(dormant, '장기 미사용', members ? `60일+ · ${Math.round(dormant / members * 100)}%` : '60일+', dormant > 0 && dormant / Math.max(1, members) > 0.3)
+    + tile(sos, 'SOS 인원', '이번 주')
+    + tile(meets, '모임', '다가오는')
+    + tile(quiet, '조용한 방', '30일+ 활동 0', quiet > 0)
+    + tile(noOwner, '방장 부재', '60일+', noOwner > 0)
+    + tile(empty, '빈 방', '멤버 0명', false);
+  // 날짜별 누적: 가입(지금 멤버의 들어온 날) · 모임방(살아 있는 방의 만든 날)
+  const joinTimes = D.flatMap(d => d.joins).filter(Boolean);
+  const roomTimes = alive.map(r => ms(r.createdAt)).filter(Boolean);
+  fitFold();
+  cumulative('#joinCum', '#joinSum', joinTimes, '명');
+  cumulative('#roomCum', '#roomSum', roomTimes, '개');
+  // 지운 것 포함: 가입 = 가입 기록 + 지금 멤버(내보낸 사람 포함) 겹치는 건 한 번만 · 모임방 = 지운 방도 만든 날로
+  cumulative('#joinAllCum', '#joinAllSum', Object.values(joinAll), '명');
+  cumulative('#roomAllCum', '#roomAllSum', rooms.map(r => ms(r.createdAt)).filter(Boolean), '개');
+  dailyViews();
+  $('#joinAllNote').textContent = logOk ? '' : '⚠️ 보안 규칙 v8을 게시하면 앞으로 나간 사람·지운 방 멤버도 세요. 지금은 남아 있는 멤버(내보낸 사람 포함)만 세요.';
+  // 한도
+  const q = (label, used, limit, unit, note) => { const p = Math.min(100, used / limit * 100); return `<div class="q"><b>${label}</b><div class="meter"><i class="${p > 90 ? 'over' : p > 60 ? 'hot' : ''}" style="width:${p}%"></i></div><small>${used.toLocaleString()} / ${limit.toLocaleString()}${unit} · ${note}</small></div>`; };
+  const est = members * 3 * 25;   // 멤버마다 하루 3번 열고, 한 번에 25문서쯤 읽는다고 넉넉히 추정
+  $('#quota').innerHTML = q('이 화면이 읽은 문서', reads, 50000, '/일', '무료 읽기 한도')
+    + q('하루 읽기 추정', est, 50000, '/일', '넘으면 오후 5시까지 멈춤')
+    + q('알림 호출 추정', (sos + meets) * 2, 100000, '/일', '무료 한도')
+    + q('저장 공간 추정', alive.length * 10, 1048576, 'KB', '무료 1GB');
+  // 표
+  const showGone = $('#showGone').checked; $('#goneN').textContent = gone;
+  const rows = rooms.filter(r => showGone || !r.deleted).map(r => ({r, d: details[r.key]}));
+  const val = ({r, d}) => sortK === 'name' ? (r.name || '') : sortK === 'created' ? ms(r.createdAt) : sortK === 'last' ? (d ? d.last : 0) : d ? (typeof d[sortK] === 'number' ? d[sortK] : d[sortK].length) : -1;
+  rows.sort((a, b) => { const x = val(a), y = val(b); return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sortDir; });
+  const tb = $('#rooms tbody'); tb.innerHTML = '';
+  rows.forEach(({r, d}) => {
+    const tr = document.createElement('tr'); if(r.deleted) tr.className = 'gone';
+    const name = document.createElement('td'); const rn = document.createElement('span'); rn.className = 'rn'; rn.textContent = r.deleted ? '(지워진 방)' : (r.name || '(이름 없음)'); name.appendChild(rn);
+    // 콘솔에서 찾을 때 쓰라고 문서 번호 앞부분을 작게 보여 줘요 (이름 없는 방·지워진 방은 이것밖에 단서가 없어요)
+    const kid = document.createElement('small'); kid.style.cssText = 'display:block;font-size:11px;color:var(--muted);font-family:monospace'; kid.textContent = r.key.slice(0, 10) + '…'; kid.title = r.key; name.appendChild(kid);
+    if(d && !d.members && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag gone">빈 방</span>');
+    else if(d && d.ownerGone && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag">방장 부재</span>');
+    if(d && now - d.last > 30 * DAY && !r.deleted) name.insertAdjacentHTML('beforeend', '<span class="flag bad">조용</span>');
+    if(d && d.kicked) name.insertAdjacentHTML('beforeend', `<span class="flag gone">내보냄 ${d.kicked}</span>`);
+    tr.appendChild(name);
+    const n = v => { const td = document.createElement('td'); td.className = 'n'; td.textContent = v; return td; };
+    if(d){
+      tr.append(n(d.members), n(d.new7), n(d.active7));
+      const dm = n(d.dormant.length);
+      if(d.dormant.length){ const det = document.createElement('details'); det.className = 'dorm'; det.innerHTML = `<summary>${d.dormant.length}명</summary>`; const ch = document.createElement('div'); ch.className = 'chips';
+        d.dormant.forEach(m => { const s = document.createElement('span'); s.textContent = `${m.nick} · ${ago(Math.max(ms(m.seen), ms(m.joinedAt)))}`; ch.appendChild(s); }); det.appendChild(ch); dm.textContent = ''; dm.appendChild(det); }
+      tr.append(dm, n(d.sos), n(d.meets), n(ago(d.last)));
+    } else tr.insertAdjacentHTML('beforeend', '<td class="n">—</td>'.repeat(7));
+    tr.appendChild(n(fmtDay(ms(r.createdAt))));
+    const labels = ['', '멤버', '신규 7일', '활성 7일', '장기 미사용', 'SOS 인원', '모임', '마지막 활동', '만든 날'];
+    [...tr.children].forEach((td, i) => { td.dataset.label = labels[i] || ''; });
+    tb.appendChild(tr);
+  });
+  $('#roomsEmpty').hidden = rooms.length > 0;
+  document.querySelectorAll('#rooms th').forEach(th => { if(th.dataset.k === sortK) th.setAttribute('aria-sort', sortDir < 0 ? 'descending' : 'ascending'); else th.removeAttribute('aria-sort'); });
+}
+// 날짜별 누적 선 그래프 (한 가지 색, 끝점 강조, 눌러서 날짜별 값 보기)
+const dayKey = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const md = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
+// x축: 날짜를 하루하루 다 적어요 (첫날·1일은 '10/1'처럼 달까지). 칸이 너무 좁을 때만 건너뛰어요
+function dayAxis(days, x, H, B){
+  const gap = days.length > 1 ? x(1) - x(0) : 99, k = Math.max(1, Math.ceil(13 / gap));
+  let g = '';
+  days.forEach((t, i) => { const d = new Date(t), first = i === 0 || d.getDate() === 1;
+    g += `<line class="tk" x1="${x(i)}" x2="${x(i)}" y1="${H - B}" y2="${H - B + 3}"/>`;
+    if(i % k && !first && i !== days.length - 1) return;
+    g += `<text class="ax${first ? ' mo' : ''}" x="${x(i)}" y="${H - 6}" text-anchor="middle">${first ? md(t) : d.getDate()}</text>`; });
+  return g;
+}
+function cumulative(sel, sumSel, times, unit){
+  const box = $(sel), today = dayKey(now);
+  const first = times.length ? Math.min(...times.map(dayKey)) : today;
+  const start = Math.max(Math.min(first, today - 13 * DAY), today - 89 * DAY);   // 최소 2주, 최대 90일
+  const days = []; for(let t = start; t <= today; t += DAY) days.push(t);
+  const before = times.filter(t => dayKey(t) < start).length;
+  const daily = days.map(t => times.filter(x => dayKey(x) === t).length);
+  let run = before; const cum = daily.map(v => run += v);
+  const total = cum[cum.length - 1] || 0, week = cum[cum.length - 1] - (cum[cum.length - 8] ?? before);
+  $(sumSel).innerHTML = `<b>${total}${unit}</b><span>최근 7일 +${week}</span>`;
+  const W = box.clientWidth || 320, H = box.clientHeight || 170, L = 26, R = 30, T = 14, B = 22;
+  const max = Math.max(1, ...cum), step = max <= 4 ? 1 : Math.ceil(max / 4);
+  const top = Math.ceil(max / step) * step;
+  const x = i => L + (days.length > 1 ? i / (days.length - 1) : 0.5) * (W - L - R), y = v => T + (1 - v / top) * (H - T - B);
+  let g = '';
+  for(let v = 0; v <= top; v += step) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end">${v}</text>`;
+  g += dayAxis(days, x, H, B);
+  const pts = cum.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const li = cum.length - 1;
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="날짜별 누적 ${total}${unit}">${g}
+    <path class="area" d="M${x(0)},${y(0)} L${pts.join(' L')} L${x(li)},${y(0)} Z"/>
+    <polyline class="line" points="${pts.join(' ')}"/>
+    <line class="hl" y1="${T}" y2="${H - B}" x1="0" x2="0" visibility="hidden"/>
+    <circle class="end" cx="${x(li)}" cy="${y(cum[li])}" r="4.5"/>
+    <text class="endv" x="${x(li) + 7}" y="${y(cum[li]) + 4}">${cum[li]}</text></svg><div class="tip" hidden></div>`;
+  const svg = box.querySelector('svg'), hl = box.querySelector('.hl'), tip = box.querySelector('.tip');
+  const show = ev => {
+    const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(li, Math.round((px - L) / Math.max(1, W - L - R) * (days.length - 1))));
+    hl.setAttribute('x1', x(i)); hl.setAttribute('x2', x(i)); hl.setAttribute('visibility', 'visible');
+    tip.hidden = false; tip.textContent = `${md(days[i])} · 누적 ${cum[i]}${unit}${daily[i] ? ` (+${daily[i]})` : ''}`;
+    const half = tip.offsetWidth / 2 + 2;   // 말풍선이 그래프 밖(화면 밖)으로 나가지 않게
+    tip.style.left = Math.max(half, Math.min(r.width - half, x(i) * r.width / W)) + 'px';
+  };
+  svg.onpointermove = show; svg.onpointerdown = show;
+  svg.onpointerleave = () => { tip.hidden = true; hl.setAttribute('visibility', 'hidden'); };
+}
+// 👀 하루 방문자(같은 휴대폰은 하루 한 번) · 조회수(페이지가 열린 횟수) — 노란 막대 = 조회수, 선 = 방문자
+function dailyViews(){
+  const box = $('#viewCum'), today0 = dayKey(now), keys = Object.keys(views).sort();
+  const first = keys.length ? dayKey(new Date(keys[0] + 'T00:00:00').getTime()) : today0;
+  const start = Math.max(Math.min(first, today0 - 13 * DAY), today0 - 89 * DAY);
+  const days = []; for(let t = start; t <= today0; t += DAY) days.push(t);
+  const get = t => views[ymd(new Date(t))] || {}, V = days.map(t => get(t).v || 0), P = days.map(t => get(t).p || 0);
+  const li = days.length - 1, sum = a => a.reduce((x, y) => x + y, 0);
+  $('#viewSum').innerHTML = `<b>오늘 ${V[li]}명</b><span>조회 ${P[li]}</span>`;
+  $('#viewNote').innerHTML = viewsOk ? `<span class="lg" style="background:#ffd54a;opacity:.7"></span>조회수 <span class="lg" style="background:var(--pick)"></span>방문자<br>최근 7일: 방문 ${sum(V.slice(-7))}명 · 조회 ${sum(P.slice(-7))}<br>방문자는 같은 휴대폰을 하루 한 번만 세요`
+    : '⚠️ 보안 규칙 v9를 게시하면 방문자·조회수가 쌓이기 시작해요.';
+  const W = box.clientWidth || 320, H = box.clientHeight || 170, L = 26, R = 12, T = 14, B = 22;
+  const max = Math.max(1, ...P, ...V), step = max <= 4 ? 1 : Math.ceil(max / 4), top = Math.ceil(max / step) * step;
+  const x = i => L + 6 + (days.length > 1 ? i / li : 0.5) * (W - L - R - 12), y = v => T + (1 - v / top) * (H - T - B);
+  const bw = Math.max(2, Math.min(14, (W - L - R) / days.length * .6));
+  let g = '';
+  for(let v = 0; v <= top; v += step) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end">${v}</text>`;
+  g += dayAxis(days, x, H, B);
+  P.forEach((p, i) => { if(p) g += `<rect class="vbar" x="${x(i) - bw / 2}" y="${y(p)}" width="${bw}" height="${y(0) - y(p)}" rx="2"/>`; });
+  g += `<polyline class="vline" points="${V.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}"/>` + V.map((v, i) => v ? `<circle class="vdot" cx="${x(i)}" cy="${y(v)}" r="2.6"/>` : '').join('');
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="하루 방문자와 조회수">${g}<line class="hl" y1="${T}" y2="${H - B}" x1="0" x2="0" visibility="hidden"/></svg><div class="tip" hidden></div>`;
+  const svg = box.querySelector('svg'), hl = box.querySelector('.hl'), tip = box.querySelector('.tip');
+  const show = ev => { const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(li, Math.round((px - L - 6) / Math.max(1, W - L - R - 12) * li)));
+    hl.setAttribute('x1', x(i)); hl.setAttribute('x2', x(i)); hl.setAttribute('visibility', 'visible');
+    tip.hidden = false; tip.textContent = `${md(days[i])} · 방문 ${V[i]}명 · 조회 ${P[i]}`;
+    const half = tip.offsetWidth / 2 + 2; tip.style.left = Math.max(half, Math.min(r.width - half, x(i) * r.width / W)) + 'px'; };
+  svg.onpointermove = show; svg.onpointerdown = show; svg.onpointerleave = () => { tip.hidden = true; hl.setAttribute('visibility', 'hidden'); };
+}
+// 점검 모드 (주소 끝에 #dbg): 화면보다 넓은 요소를 찾아 맨 아래에 보여 줘요
+function dbg(){
+  if(location.hash !== '#dbg') return;
+  const vw = document.documentElement.clientWidth, out = [];
+  document.querySelectorAll('body *').forEach(el => { const r = el.getBoundingClientRect(); if(r.width && (r.right > vw - 8 || r.left < 8)) out.push(`${el.tagName.toLowerCase()}.${String(el.className).split(' ')[0]} ${Math.round(r.left)}~${Math.round(r.right)}`); });
+  let box = document.getElementById('dbgBox'); if(!box){ box = document.createElement('pre'); box.id = 'dbgBox'; box.style.cssText = 'white-space:pre-wrap;font-size:11px;background:#300;color:#fcc;padding:8px;border-radius:8px'; document.querySelector('.wrap.admin').appendChild(box); }
+  box.textContent = `vw ${vw} · inner ${innerWidth} · scroll ${document.documentElement.scrollWidth} · dpr ${devicePixelRatio} · vv ${visualViewport ? Math.round(visualViewport.width) + '@' + visualViewport.scale.toFixed(2) : '-'}\n` + out.slice(0, 15).join('\n');
+}
+setInterval(dbg, 2000);
+// 폰에서 타일 + 그래프 2개가 한 화면에 딱 들어오게: 그래프 칸 높이 = 화면 높이 - 그래프 칸 위치 - 아래 여백
+function fitFold(){
+  const two = document.querySelector('.two'); if(!two) return;
+  if(!matchMedia('(max-width:700px)').matches){ two.style.removeProperty('--fold'); return; }
+  const top = two.getBoundingClientRect().top + scrollY;
+  two.style.setProperty('--fold', Math.max(240, Math.floor(innerHeight - top - 10)) + 'px');
+}
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => rooms.length && render(), 150); });
+$('#showGone').addEventListener('change', () => render());
+document.querySelector('#rooms thead').addEventListener('click', e => { const th = e.target.closest('th'); if(!th) return; if(sortK === th.dataset.k) sortDir *= -1; else { sortK = th.dataset.k; sortDir = th.dataset.k === 'name' ? 1 : -1; } render(); });
+$('#refresh').addEventListener('click', () => { details = {}; loadDetails(sosDb()); });
+$('#copyUid').addEventListener('click', async () => { try{ await navigator.clipboard.writeText($('#myUid').textContent); $('#copyUid').textContent = '✅ 복사됨'; }catch(e){ prompt('이 번호를 복사해 주세요', $('#myUid').textContent); } });
+start();
+</script>
+</body>
+</html>

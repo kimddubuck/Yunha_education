@@ -1,0 +1,1038 @@
+/* 공동육아 SOS 공통 스타일 — 소모임 앱 스타일: 연회색 바탕, 흰 카드, 래미안 청록·아이파크 빨강 포인트, 아래쪽 탭 메뉴(모바일)
+   놀이 고르기는 왼쪽 카드 목록 + 오른쪽(모바일은 아래 고정) '오늘 놀이' 바구니 */
+:root{
+  /* 소모임 앱 느낌: 연회색 바탕 위 흰 카드. 포인트 색은 우리 아파트에서 빌려 왔어요
+     래미안 청록(기본 버튼·탭) + 래미안 웜그레이(보조 글씨) + 아이파크 빨강(SOS) */
+  --page:#f3f4f4; --bg:#ffffff; --fg:#22282a; --muted:#736e75; --line:#e3e3e5;
+  --tag:#efefef; --tag-fg:#55525a; --hover:#f5f7f7; --pick:#2a9095; --pick-fg:#ffffff;
+  --accent-soft:#e1f2f1; --accent-ink:#1c7276;
+  --done:#e1f2f1; --done-fg:#1c7276; --warn:#fbf3db; --warn-fg:#8a6b20;
+  --shadow:0 1px 2px rgba(20,40,42,.06),0 2px 10px rgba(20,40,42,.05);
+  --ipark:#e5322a; --ipark-soft:#fde6e4; --ipark-line:#f3b4ae; --ipark-ink:#d0241b;
+  --font:"Pretendard","IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --r:14px; --tabbar:62px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#0f1213; --bg:#1a1e1f; --fg:#e8ecec; --muted:#a39fa6; --line:#2b3133;
+  --tag:#24292b; --tag-fg:#c6c9cb; --hover:#212729; --pick:#4fbcbd; --pick-fg:#0a1a1b;
+  --accent-soft:#163031; --accent-ink:#7fd6d4;
+  --done:#163031; --done-fg:#7fd6d4; --warn:#2e2816; --warn-fg:#d8b768;
+  --shadow:0 1px 2px rgba(0,0,0,.3); --ipark-soft:#3a1d1a; --ipark-line:#6b302a; --ipark-ink:#ff8f84; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#0f1213; --bg:#1a1e1f; --fg:#e8ecec; --muted:#a39fa6; --line:#2b3133;
+  --tag:#24292b; --tag-fg:#c6c9cb; --hover:#212729; --pick:#4fbcbd; --pick-fg:#0a1a1b;
+  --accent-soft:#163031; --accent-ink:#7fd6d4;
+  --done:#163031; --done-fg:#7fd6d4; --warn:#2e2816; --warn-fg:#d8b768;
+  --shadow:0 1px 2px rgba(0,0,0,.3); --ipark-soft:#3a1d1a; --ipark-line:#6b302a; --ipark-ink:#ff8f84; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty;background:var(--page);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:28px 140px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;align-items:start}
+header{grid-column:1/-1;display:flex;flex-direction:column;gap:6px}
+h1{font-size:28px;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:0}
+.props{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px;margin-top:4px}
+.props b{color:var(--fg);font-weight:500}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+.chip:hover{background:var(--hover)}
+.chip[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.chip:focus-visible,.card:focus-visible,.btn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+.count{color:var(--muted);font-size:13px;margin-left:auto}
+
+.grid{display:flex;flex-direction:column;gap:32px}
+.group{display:flex;flex-direction:column;gap:4px}
+.group-h{margin:0;font-size:19px;font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.group-h span{color:var(--muted);font-weight:500;font-size:14px;margin-left:4px}
+.group-d{margin:4px 0 8px;color:var(--muted);font-size:13.5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:14px 14px 12px;background:var(--bg);cursor:pointer;display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:inherit;min-width:0}
+.card:hover{background:var(--hover)}
+.card.on{border-color:var(--pick);box-shadow:inset 0 0 0 1px var(--pick)}
+.card-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card h3{margin:0;font-size:16px;font-weight:600;line-height:1.35}
+.check{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;color:transparent}
+.card.on .check{background:var(--pick);border-color:var(--pick);color:var(--pick-fg)}
+.how{margin:0;color:var(--fg);font-size:14px}
+.orig{margin:0;color:var(--muted);font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.tag{background:var(--tag);color:var(--tag-fg);border-radius:4px;padding:1px 7px;font-size:12px;white-space:nowrap}
+.tag.done{background:var(--done);color:var(--done-fg)}
+.tag.warn{background:var(--warn);color:var(--warn-fg)}
+.empty{color:var(--muted);padding:24px 0}
+
+aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+aside h2{margin:0;font-size:16px;font-weight:600}
+.today{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.today li{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;font-size:14px}
+.today li span{min-width:0}
+.today small{display:block;color:var(--muted);font-size:12.5px}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px}
+.label{font-size:12px;letter-spacing:.04em;color:var(--muted);margin:0 0 4px}
+.stuff{margin:0;font-size:14px}
+.hint{color:var(--muted);font-size:13.5px;margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:var(--r);padding:7px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.toast{font-size:13px;color:var(--done-fg);min-height:1em;margin:0}
+#copyArea{position:absolute;left:-9999px}
+
+/* 모바일: 바구니를 아래쪽 막대로 */
+.body{display:flex;flex-direction:column;gap:14px}
+.bar{display:none}
+@media (max-width:820px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  aside{position:fixed;left:0;right:0;bottom:0;top:auto;border-radius:12px 12px 0 0;border-bottom:0;max-height:70vh;overflow:auto;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 20px rgba(0,0,0,.08);z-index:5}
+  aside.closed .body{display:none}
+  .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;border:0;background:none;color:inherit;font:inherit;padding:0;width:100%;text-align:left}
+  aside > h2{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.card,.chip{transition:background .12s,border-color .12s}}
+
+.eyebrow{margin:0;font-size:13.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.message{display:flex;flex-direction:column;gap:10px;background:var(--tag);border-radius:var(--r);padding:14px 16px;margin-top:6px;max-width:62ch}
+.message p{margin:0;font-size:15px;line-height:1.65}
+.message b{font-weight:600}
+.message .cheer{font-weight:600;padding-top:10px;border-top:1px solid var(--line)}
+.fold{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:var(--r);padding:12px 14px;font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;text-align:left}
+.fold:hover{background:var(--hover)}
+.fold:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.fold .chev{color:var(--muted);font-weight:500;font-size:13.5px;white-space:nowrap}
+.fold-body{display:flex;flex-direction:column;gap:20px}
+.fold-body[hidden]{display:none}
+.picked-line{margin:0;font-size:14.5px}
+.picked-line b{font-weight:600}
+.slot-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 4px}
+.slot-h h2{margin:0;font-size:21px;font-weight:700}
+.slot-h .rule{font-size:13px;color:var(--muted)}
+.slot{display:flex;flex-direction:column;gap:20px;padding-bottom:36px}
+.match{background:var(--tag);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.match .label{margin:0}
+.say{margin:0;font-size:15px;font-weight:600}
+.intro{border-left:3px solid var(--line);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:4px;max-width:62ch}
+.intro p{margin:0;font-size:14.5px}
+.intro .intro-q{font-weight:600;font-size:15.5px}
+.tag.same{background:var(--pick);color:var(--pick-fg)}
+.today .slotname{font-size:12px;color:var(--muted);display:block}
+
+/* 글쓰기 양식 (모임 만들기·놀이 추가) */
+.board-form{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.board-form select,.board-form textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;width:100%}
+.board-form textarea{min-height:84px;resize:vertical}
+.board-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.meet-fields{display:flex;flex-wrap:wrap;gap:12px 24px}
+.meet-fields[hidden]{display:none}
+.meet-row{display:flex;flex-direction:column;gap:6px}
+.meet-row input{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:7px 10px}
+.op-when{font-weight:600;color:var(--fg)}
+.op-past{opacity:.55}
+.join{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:3px 10px;font:inherit;font-size:12.5px;cursor:pointer}
+.join[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.ops{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.ops li{padding:12px 2px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.ops .op-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.ops .op-meta{display:flex;flex-wrap:wrap;gap:6px;color:var(--muted);font-size:12.5px;align-items:center}
+
+/* ---------- 공통: 위쪽 메뉴 ---------- */
+.site-nav{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:16px;color:var(--fg);text-decoration:none;white-space:nowrap}
+.nav-links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.nav-links a:hover{background:var(--hover);color:var(--fg)}
+.nav-links a[aria-current="page"]{background:var(--pick);color:var(--pick-fg)}
+.nav-links a:focus-visible,.brand:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.wrap.single{grid-template-columns:minmax(0,1fr);max-width:760px}
+.page-h{display:flex;flex-direction:column;gap:6px}
+
+/* ---------- 홈 ---------- */
+.hero{display:flex;flex-direction:column;gap:8px;padding-block:8px}
+.hero h1{font-size:32px}
+.lead{margin:0;font-size:16px;line-height:1.7}
+.menu-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.menu-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:var(--r);padding:16px;color:var(--fg);text-decoration:none;background:var(--bg)}
+.menu-card:hover{background:var(--hover)}
+.menu-card:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.menu-card b{font-size:16px}
+.menu-card span{color:var(--muted);font-size:14px}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec h2{margin:0;font-size:19px;font-weight:700}
+.list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.list li{font-size:15px}
+.events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.events li{display:flex;flex-direction:column;gap:4px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.events .when{font-weight:600}
+.events .what{color:var(--fg);font-size:14.5px;white-space:pre-wrap}
+.events .sub-info{color:var(--muted);font-size:13px}
+.events a{color:inherit}
+.notice-img{display:block;max-width:100%;width:240px;border:1px solid var(--line);border-radius:var(--r);margin-top:4px}
+a.btn{display:inline-block;text-decoration:none}
+.wrap.single main{display:flex;flex-direction:column;gap:36px}
+.hero + .sec, .page-h + .sec{margin-top:-8px}
+.example{display:flex;flex-direction:column;gap:6px}
+.example[hidden]{display:none}
+.example-card{display:flex;flex-direction:column;gap:6px;align-items:flex-start;border:1px dashed var(--line);border-radius:var(--r);padding:12px;background:var(--tag)}
+.example-card .op-text{margin:0;white-space:pre-wrap;font-size:14.5px}
+.tally{margin:2px 0 0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted)}
+.tally b{color:var(--fg);font-size:15px}
+.comments{display:flex;flex-direction:column;gap:8px;margin-top:4px;padding:10px 12px;background:var(--tag);border-radius:var(--r)}
+.comment-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.comment-list li{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;font-size:14px}
+.comment-list li span{overflow-wrap:anywhere}
+.comment-list small{color:var(--muted);font-size:12px}
+.comment-form{display:flex;gap:8px}
+.comment-form input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:7px 10px}
+.ops .comment-list li{padding:0;border:0;flex-direction:row}
+.add-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:6px}
+#addPanel[hidden]{display:none}
+.add-form{display:flex;flex-direction:column;gap:12px}
+.add-form input,.add-form select,.add-form textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;width:100%}
+.add-form textarea{min-height:70px;resize:vertical}
+
+
+/* ========== 소모임 앱 스타일 덧칠 ========== */
+.card,.menu-card,.board-form,.fold,aside,.ops > li,.events > li{box-shadow:var(--shadow)}
+.card,.menu-card,.fold{border-color:var(--line)}
+.ops > li,.events > li{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.btn{border-radius:10px;padding:9px 14px;font-weight:600}
+.btn.primary{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.btn.block{display:block;width:100%;text-align:center}
+.chip{background:var(--bg)}
+.tag.same{background:var(--accent-soft);color:var(--accent-ink)}
+.card.on{border-color:var(--pick);box-shadow:inset 0 0 0 1px var(--pick),var(--shadow)}
+.card.on .check{background:var(--pick);border-color:var(--pick);color:var(--pick-fg)}
+.message{background:var(--accent-soft)}
+.message .cheer{border-top-color:rgba(28,114,118,.2)}
+.intro{border-left-color:var(--pick)}
+h1{letter-spacing:-.02em}
+
+/* 위쪽 머리말 + 메뉴 */
+.site-nav{border-bottom:0;padding-bottom:4px}
+.brand{font-size:18px}
+.nav-links a{font-weight:600}
+.nav-links a[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink)}
+.nav-links .ti{margin-right:4px}
+
+/* 모바일: 아래쪽 탭 메뉴 */
+@media (max-width:820px){
+  body{padding-bottom:calc(var(--tabbar) + 90px + env(safe-area-inset-bottom,0px))}
+  .site-nav{justify-content:center}
+  .nav-links{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;
+    background:var(--bg);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 12px rgba(0,0,0,.05)}
+  .nav-links a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;border-radius:10px;font-size:11.5px;color:var(--muted)}
+  .nav-links a[aria-current="page"]{background:none;color:var(--accent-ink)}
+  .nav-links .ti{margin:0;font-size:21px;line-height:1.1;filter:grayscale(1);opacity:.7}
+  .nav-links a[aria-current="page"] .ti{filter:none;opacity:1}
+  aside{bottom:calc(var(--tabbar) + env(safe-area-inset-bottom,0px));z-index:15}
+}
+
+/* 홈 커버 */
+.cover{background:linear-gradient(140deg,var(--accent-soft),var(--bg));border:1px solid var(--line);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.cover .emoji{font-size:44px;line-height:1}
+.cover h1{font-size:28px}
+.cover .lead{font-size:15.5px}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.quick a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-size:13px;font-weight:600;box-shadow:var(--shadow)}
+.quick a span{font-size:22px}
+.quick a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+
+/* 모임 카드: 왼쪽 날짜 배지 */
+.meet-card{display:flex;gap:14px;align-items:flex-start}
+.meet-body{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.date-badge{flex:none;width:54px;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);text-align:center;padding:6px 0;display:flex;flex-direction:column;line-height:1.15}
+.date-badge small{font-size:11px;font-weight:600}
+.date-badge b{font-size:22px;font-weight:800}
+.date-badge.today{background:var(--pick);color:var(--pick-fg)}
+.op-past .date-badge{background:var(--tag);color:var(--muted)}
+.vote-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:4px}
+.vote-row .join{padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;text-align:center}
+.vote-row .join[data-vote="joins"][aria-pressed="false"]:disabled{opacity:.45}
+.vote-row .join[data-vote="nos"][aria-pressed="false"]:disabled{opacity:.45}
+.tally b{color:var(--accent-ink)}
+.write-toggle{margin-bottom:4px}
+a.tally{text-decoration:none}
+.ops > li.meet-card{flex-direction:row;gap:14px}
+.date-badge small{color:inherit;opacity:.85}
+main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn){color:var(--accent-ink)}
+.vote-row{grid-template-columns:repeat(3,1fr)}
+.vote-row .join{padding:8px 4px;white-space:nowrap}
+.vote-row .join[data-vote="maybes"][aria-pressed="false"]:disabled{opacity:.45}
+.comment-toggle{align-self:flex-start;border:0;background:none;padding:2px 0;color:var(--muted);font-weight:600}
+.tally{gap:4px 10px;font-size:13.5px}
+.tally span + span::before{content:"·";margin-right:10px;color:var(--line)}
+.anon-box{display:flex;flex-direction:column;gap:4px;background:var(--accent-soft);border-radius:var(--r);padding:14px 16px;color:var(--fg);text-decoration:none}
+.anon-box p{margin:0;font-size:14.5px;line-height:1.6}
+.anon-box .anon-h{font-weight:700;font-size:16px;color:var(--accent-ink)}
+.anon-link:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.install{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);gap:10px}
+.how-to{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--page)}
+.how-to summary{font-weight:700;cursor:pointer;font-size:15px}
+.how-to ol{margin:10px 0 4px;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14.5px}
+.how-to .hint{margin-top:6px}
+/* 모임 만들기: 달력 + 시간 */
+.picker{display:flex;flex-direction:column;gap:10px}
+.cal-head{display:flex;align-items:center;justify-content:center;gap:18px}
+.cal-head b{font-size:20px;font-variant-numeric:tabular-nums}
+.cal-nav{border:0;background:none;color:var(--fg);font-size:26px;line-height:1;padding:2px 10px;cursor:pointer;border-radius:8px}
+.cal-nav:disabled{opacity:.25;cursor:default}
+.cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-week span{font-size:13px;color:var(--muted);padding:4px 0}
+.cal-week .sun,.cal-day.sun{color:#e05252}
+.cal-week .sat,.cal-day.sat{color:#3d7be0}
+.cal-day{border:0;background:none;color:var(--fg);font:inherit;font-size:16px;font-weight:600;border-radius:12px;padding:8px 0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;font-variant-numeric:tabular-nums}
+.cal-day small{font-size:10.5px;font-weight:600}
+.cal-day:disabled{color:var(--muted);opacity:.45;cursor:default}
+.cal-day.today:not(.on){box-shadow:inset 0 0 0 1.5px var(--pick)}
+.cal-day.on{background:var(--pick);color:var(--pick-fg)}
+.cal-day:focus-visible,.time-btn:focus-visible,.cal-nav:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.time-btn{border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;font-size:15px;font-weight:600;border-radius:12px;padding:12px 0;cursor:pointer;font-variant-numeric:tabular-nums}
+.time-btn[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.picked-when{margin:0;font-weight:700;color:var(--accent-ink);text-align:center;min-height:1.4em}
+/* 🆘 나 지금 힘들어요 + 시간대 막대 */
+.sos{display:flex;flex-direction:column;gap:12px;background:var(--bg);border:1.5px solid var(--ipark-line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+.sos p{margin:0}
+.sos-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.sos-h{font-weight:800;font-size:16px}
+.sos-count{font-size:14px;color:var(--muted)}
+.sos-count b{color:var(--fg);font-size:18px}
+.sos-btn{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;border:0;border-radius:999px;padding:14px 16px;background:linear-gradient(135deg,#f0564c,var(--ipark));color:#fff;font:inherit;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(229,50,42,.3)}
+.sos-btn small{font-size:12px;font-weight:500;opacity:.92}
+.sos-btn:active:not(:disabled){transform:scale(.98)}
+.sos-btn.done{background:var(--accent-soft);color:var(--accent-ink);box-shadow:none}
+.sos-btn:disabled{cursor:default}
+.sos-btn:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.sos-hint{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.7;margin:0}
+.sos-hint a{color:var(--accent-ink);font-weight:700;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.sos-btn{transition:transform .1s}}
+.cal-day small{min-height:12px;font-size:10px}
+.cal-day:not(.on) small{color:var(--ipark-ink)}
+.time-btn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:9px 0}
+.time-btn small{font-size:10.5px;font-weight:700;color:var(--ipark-ink)}
+.time-btn[aria-pressed="true"] small{color:inherit}
+a.sos-btn{text-decoration:none;text-align:center}
+.sos-picker{background:var(--page);border-radius:14px;padding:10px}
+.sos-sub b{color:var(--fg)}
+.sos-sub{font-size:13.5px;color:var(--muted);line-height:1.55}
+.cover .lead{font-size:17px}
+.cover-sub{margin:0;font-size:14px;color:var(--muted)}
+.sos-mine{display:flex;flex-direction:column;gap:6px;background:var(--page);border-radius:14px;padding:10px 12px}
+.sos-mine-h{display:flex;align-items:center;gap:6px;width:100%;margin:0;padding:2px 0;border:0;background:none;color:var(--fg);font:inherit;font-weight:700;font-size:14px;text-align:left;cursor:pointer}
+.sos-mine-arrow{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.sos-mine-h small{font-weight:500;color:var(--muted);font-size:12px}
+.sos-mine-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14.5px;font-weight:600}
+.sos-cancel{border:1px solid var(--line);background:var(--bg);color:var(--ipark-ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.sos-cancel:disabled{opacity:.6;cursor:default}
+.sos-sub b{color:var(--fg);font-weight:700}
+.host-tag{font-size:12.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);border-radius:999px;padding:1px 8px}
+.host-tag:empty{display:none}
+.host-input{font:inherit;font-size:15px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.cancel-meet{align-self:flex-start;border:0;background:none;color:var(--ipark-ink);font:inherit;font-size:13px;font-weight:700;padding:2px 0;cursor:pointer}
+.cancelled{margin:0;font-size:13.5px;font-weight:700;color:var(--ipark-ink)}
+/* 홈: 오늘의 SOS 예약 시간표 */
+.sos-today{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+/* 현황판 칸: 눌러지는 버튼처럼 보이지 않게 테두리 없이 납작하게 */
+.sos-cell{display:flex;flex-direction:column;align-items:center;gap:0;border:1px solid transparent;border-radius:8px;padding:5px 0;background:var(--tag);font-variant-numeric:tabular-nums;cursor:default;user-select:none}
+.sos-cell b{font-size:13.5px}
+.sos-cell span{font-size:12px;color:var(--muted);font-weight:700}
+.sos-cell.on{background:var(--ipark-soft);border-color:var(--ipark-line)}
+.sos-cell.on span{color:var(--ipark-ink)}
+.sos-days{display:flex;flex-direction:column;gap:6px}
+.sos-day{display:flex;gap:10px;align-items:baseline;font-size:14px}
+.sos-day b{flex:none;min-width:64px}
+.sos-day div{display:flex;flex-wrap:wrap;gap:4px}
+.sos-chip{font-size:12.5px;font-weight:700;color:var(--ipark-ink);background:var(--ipark-soft);border-radius:999px;padding:1px 8px}
+
+/* ---------- 안전·개인정보 ---------- */
+.safety h2{font-size:18px;margin:0 0 8px}
+.safety p{margin:0 0 8px;line-height:1.65}
+.safe-list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.6}
+.safe-table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px}
+.safe-table th,.safe-table td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top;line-height:1.55}
+.safe-table th{color:var(--muted);font-weight:600}
+.safe-table td:first-child{white-space:nowrap}
+/* 표지: 래미안 청록 + 아이파크 빨강 띠 */
+.cover{position:relative;overflow:hidden}
+.cover::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--pick) 0 70%,var(--ipark) 70% 100%)}
+.cover .eyebrow{color:var(--accent-ink)}
+/* 내 댓글 수정·삭제 */
+.comment-act{display:inline-flex;gap:6px;margin-left:auto}
+.comment-act button{border:0;background:none;padding:0 2px;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer}
+.comment-list li .comment-edit{width:100%}
+/* 홈 SOS: 날짜 고르기 (오늘부터 7일) */
+.sos-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:2px}
+.sos-tabs::-webkit-scrollbar{display:none}
+.sos-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.sos-tab small{font-size:11px;font-weight:800;color:#fff;background:var(--ipark);border-radius:999px;padding:0 6px;line-height:1.6}
+.sos-tab[aria-pressed="true"]{background:var(--pick);border-color:var(--pick);color:var(--pick-fg)}
+.sos-tab[aria-pressed="true"] small{background:#fff;color:var(--ipark-ink)}
+.sos-note{margin:-4px 0 0;font-size:12.5px;color:var(--muted)}
+@media (max-width:340px){.sos-note{font-size:12px;letter-spacing:-.3px}}
+/* 두 줄로 넘어가도 줄 길이가 비슷하게 */
+.picked-when,.sos-btn,.sos-btn small{text-wrap:balance}
+.cover-icon{width:64px;height:64px;border-radius:16px;display:block}
+/* 메뉴 오른쪽 '📖 소개' (첫 화면 이야기 다시 보기) */
+.site-nav{position:relative}
+.intro-btn{margin-left:auto;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.intro-btn:hover{background:var(--hover)}
+@media (max-width:820px){ .intro-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);margin:0} .site-nav{min-height:36px} }
+/* 설치 안내: 웹앱 = 바로가기 (다운로드 부담 덜기) */
+.webapp-note{background:var(--accent-soft);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}
+.webapp-note p{margin:0;font-size:14px;line-height:1.6}
+.webapp-note .webapp-h{font-weight:700;color:var(--accent-ink)}
+.webapp-note ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.6;color:var(--fg)}
+
+/* 홈 표지: 친구 초대 · 방 바꾸기 */
+.room-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.room-bar .btn{font-size:13px}
+
+/* 확인 팝업 (방 지우기 등) */
+.pop-back{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,30,28,.45)}
+.pop{width:100%;max-width:340px;background:var(--bg);border-radius:18px;padding:22px 18px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);text-align:center}
+.pop-icon{margin:0;font-size:34px}
+.pop-t{margin:6px 0 10px;font-size:17px;font-weight:700;word-break:keep-all;overflow-wrap:anywhere}
+.pop-b{text-align:left;font-size:14px;line-height:1.6;color:var(--fg)}
+.pop-b p{margin:0 0 8px}
+.pop-b ul{margin:0 0 4px;padding-left:18px}
+.pop-warn{color:#c0392b;font-weight:700;text-align:center}
+.pop-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.pop-btns .btn{width:100%;padding:11px 8px}
+.btn.danger{background:#d64535;color:#fff;border-color:#d64535}
+
+/* 서버 문제 안내 띠 (무료 사용량 초과·연결 끊김) */
+.trouble{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fdecea;border:1px solid #f5c2bb;color:#8a2a1f;font-size:14px;line-height:1.6}
+
+/* 홈: 다가오는 모임을 눈에 띄게 (SOS 도우미 바로 아래 청록 테두리 카드) */
+.next-card{background:var(--bg);border:2px solid var(--pick);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.next-card h2{display:flex;align-items:center;gap:8px;color:var(--accent-ink)}
+.next-count{font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--pick);color:var(--pick-fg)}
+.next-card #nextEmpty{white-space:pre-line;margin:0;font-size:14px;color:var(--fg)}
+:is(.next-card,.up-sec) .ops > li{margin-bottom:8px;background:var(--accent-soft);border-color:color-mix(in srgb, var(--pick) 35%, var(--line))}
+:is(.next-card,.up-sec) .ops > li .date-badge:not(.today),:is(.next-card,.up-sec) .ops > li .host-tag{background:var(--bg)}
+:is(.next-card,.up-sec) .ops > li.meet-card{flex-wrap:wrap;row-gap:8px}
+:is(.next-card,.up-sec) .ops > li > .vote-row{flex-basis:100%;margin-top:2px}
+:is(.next-card,.up-sec) .vote-row .join:not([aria-pressed="true"]){color:var(--fg)}
+
+:is(.next-card,.up-sec) .vote-hint{flex-basis:100%;margin:-4px 0 0;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap}
+.next-card p{margin:0}
+
+/* 참석·미확정·불참: 다시 누르면 취소 안내 */
+.vote-hint{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* 다가오는 모임 카드 테두리 꾸미기: 빨간 SOS 스티커 + 반짝이는 별 */
+.next-card{position:relative;margin-top:10px}
+/* 🙌 '나 여기 있어요': 테두리를 따라 노란 빛이 돌고, 카드가 숨 쉬듯 빛나요 */
+@property --nc-a{syntax:'<angle>';initial-value:0deg;inherits:false}
+.next-card{animation:nc-breathe 2.6s ease-in-out infinite}
+.next-card::before{content:"";position:absolute;inset:-2px;border-radius:16px;padding:4px;pointer-events:none;z-index:0;
+  background:conic-gradient(from var(--nc-a),transparent 0deg 220deg,#ffc400 270deg,#fffbe0 310deg,#ffc400 340deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:nc-spin 1.5s linear infinite}
+.next-card > *{position:relative;z-index:1}
+.next-card > .next-star,.next-card > .next-sos{position:absolute}
+@keyframes nc-spin{to{--nc-a:360deg}}
+@keyframes nc-breathe{0%,100%{box-shadow:var(--shadow),0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:var(--shadow),0 0 18px 2px rgba(255,213,74,.45)}}
+@media (prefers-reduced-motion: reduce){.next-card,.next-card::before{animation:none}}
+.next-sos{position:absolute;top:-13px;right:18px;padding:2px 10px;border-radius:8px;background:#e8382f;color:#fff;font-weight:800;font-size:13px;letter-spacing:.06em;border:2px solid #fff;transform:rotate(6deg);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.next-star{position:absolute;color:#ffc83d;line-height:1;text-shadow:0 0 6px rgba(255,200,61,.6);animation:twinkle 2.4s ease-in-out infinite}
+.next-star.s1{top:-14px;left:16px;font-size:24px}
+.next-star.s2{bottom:-12px;right:26px;font-size:18px;animation-delay:1.2s}
+.next-star.s3{top:-10px;left:46%;font-size:14px;animation-delay:.6s}
+.next-star.s4{top:38%;right:-11px;font-size:20px;animation-delay:1.8s}
+.next-star.s5{bottom:-10px;left:22%;font-size:15px;animation-delay:.3s}
+.next-star.s6{top:62%;left:-10px;font-size:17px;animation-delay:1.5s}
+.next-star.s7{bottom:22%;right:-8px;font-size:12px;animation-delay:.9s;color:#fff3b0}
+.next-star.s8{top:-8px;left:28%;font-size:11px;animation-delay:2s;color:#fff3b0}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
+@media (prefers-reduced-motion: reduce){.next-star{animation:none}}
+
+/* 개인정보: 짧고 한눈에 (안심 배지 · 입장 그림 · 저장 항목 타일) */
+.safe2{display:flex;flex-direction:column;gap:14px}
+.safe-hero{text-align:center;padding:22px 16px;border-radius:18px;background:var(--accent-soft);border:1px solid var(--line)}
+.safe-lock{font-size:44px;margin:0}
+.safe-hero h1{margin:4px 0 6px;font-size:24px;color:var(--accent-ink)}
+.safe-hero p{margin:0;font-size:15px;line-height:1.6}
+.safe-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
+.safe-badges span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600}
+.safe-card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.safe-card h2{margin:0 0 10px;font-size:17px}
+.safe-card p{margin:10px 0 0;font-size:14px;line-height:1.6;color:var(--muted)}
+.safe-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.sf-item{background:var(--tag);border-radius:10px;padding:8px 10px;font-weight:700;font-size:14px}
+.sf-ok{background:var(--pick);color:var(--pick-fg)}
+.sf-op{font-weight:800;color:var(--muted)}
+.safe-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.safe-grid div{background:var(--tag);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px}
+.safe-grid b{font-size:14.5px}
+.safe-grid span{font-size:12.5px;line-height:1.5;color:var(--muted)}
+.safe-grid em{font-style:normal;font-weight:700;color:var(--accent-ink)}
+.safe-short{margin:0;padding-left:18px;font-size:14px;line-height:1.8}
+.safe-tip{margin:0;font-size:13.5px;line-height:1.6;padding:12px 14px;border-radius:12px;background:var(--tag)}
+.safe-more{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}
+.safe-more summary{font-weight:700;cursor:pointer}
+.safe2 .safe-lock{font-size:44px;line-height:1.1}
+.safe2 .safe-flow{gap:4px;flex-wrap:nowrap}
+.safe2 .sf-item{padding:7px 8px;font-size:13px;white-space:nowrap}
+.safe2 .safe-auto{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);color:var(--fg);font-size:13.5px;line-height:1.6}
+
+/* 홈: 🔔 알림 카드 */
+.push-card{background:var(--bg);border:1.5px dashed var(--pick);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.push-card p{margin:0}
+.push-h{font-weight:800;font-size:16px}
+.push-sub{font-size:13.5px;line-height:1.6;color:var(--muted)}
+
+/* 🔔 알림 카드 안의 '알림이 안 올 때' 접기 카드 */
+.push-help{border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg)}
+.push-help > summary{font-weight:700;font-size:14px;cursor:pointer}
+.push-help .how-to{margin-top:8px}
+.push-help ol{margin:6px 0;padding-left:20px;font-size:13.5px;line-height:1.65}
+.push-help li{margin:6px 0}
+
+/* 📖 알림 설정 방법: 번호 동그라미 + 큰 그림 문자, 한 단계 한 동작 */
+.push-help .ph-lead{margin:8px 0;font-size:13.5px;line-height:1.6}
+.push-help .ph-os{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.push-help .ph-os > summary{font-weight:800;font-size:15px;cursor:pointer;padding:2px 0}
+.push-help ol.ph-steps{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ph-step{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:var(--tag)}
+.ph-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--pick);color:var(--pick-fg);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.ph-icon{flex:none;font-size:24px;width:30px;text-align:center}
+.ph-text{display:flex;flex-direction:column;gap:2px;font-size:14px;line-height:1.45;min-width:0}
+.ph-text small{font-size:12.5px;color:var(--muted);line-height:1.5}
+.ph-stuck{margin-top:10px;padding:10px;border-radius:12px;border:2px dashed #e0a400}
+.ph-stuck .ph-num{background:#e0a400;color:#1d1a12}
+.ph-stuck-h{margin:0;font-weight:800;font-size:14px}
+.ph-tip{margin:8px 2px 0;font-size:12.5px;line-height:1.6;color:var(--muted)}
+
+/* 🔔 방별 알림 스위치 */
+.push-rooms{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;background:var(--tag)}
+.push-rooms-h{margin:0;font-weight:800;font-size:14px}
+.push-room{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:14.5px;font-weight:600;cursor:pointer}
+.push-room-name{flex:1;overflow-wrap:anywhere}
+.switch{appearance:none;-webkit-appearance:none;flex:none;width:46px;height:26px;border-radius:999px;background:#8a8f93;position:relative;cursor:pointer;transition:background .15s;margin:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.switch:checked{background:var(--pick)}
+.switch:checked::after{left:23px}
+.switch:disabled{opacity:.6}
+.push-saved{margin:0;font-size:12.5px;color:var(--muted);min-height:1em}
+
+/* 홈 표지: 방 이름을 큰 제목으로, 앱 이름·안내는 작게 */
+.cover .cover-app{font-size:13px}
+.cover h1.room-title{font-size:30px;line-height:1.25;margin:2px 0 4px;overflow-wrap:anywhere;color:var(--fg)}
+.cover .cover-sub{font-size:13.5px}
+
+/* 왼쪽 위 🏠 방 목록 버튼 (오른쪽 위 📖 소개와 짝) */
+.rooms-btn{border:1.5px solid var(--pick);background:var(--bg);color:var(--accent-ink);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.rooms-btn:hover{background:var(--hover)}
+@media (max-width:820px){ .rooms-btn{position:absolute;left:0;top:50%;transform:translateY(-50%);margin:0} }
+
+/* 🔔 방 이름 옆 알림 종 */
+.cover .title-row{display:flex;align-items:center;gap:10px}
+.cover .title-row h1{margin:2px 0 4px}
+.bell{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--tag);font-size:20px;line-height:1;padding:0;cursor:pointer;color:var(--fg)}
+.bell.on{border-color:var(--pick);background:var(--bg)}
+.bell.busy{opacity:.55}
+.push-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 32px);margin:0;padding:10px 16px;border-radius:999px;background:#22282a;color:#fff;font-size:14px;font-weight:600;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2);text-align:center}
+
+/* 👥 멤버 · 닉네임 */
+.mem-btn{position:absolute;top:16px;right:14px;display:flex;flex-direction:column;align-items:center;gap:0;min-width:56px;padding:6px 10px;border-radius:14px;border:1.5px solid var(--pick);background:var(--bg);color:var(--fg);font:inherit;font-size:18px;line-height:1.15;cursor:pointer}
+.mem-btn b{font-size:15px;color:var(--accent-ink)}
+.mem-btn small{font-size:11px;color:var(--muted);font-weight:600}
+.mem-list{list-style:none;margin:6px 0 10px;padding:0;display:flex;flex-direction:column;gap:6px;max-height:48vh;overflow-y:auto;text-align:left}
+.mem-list li{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:12px;background:var(--tag);font-weight:600;font-size:14.5px}
+.mem-nick{flex:1;min-width:0;overflow-wrap:anywhere}
+.mem-tag{flex:none;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px;border:1px solid var(--pick);color:var(--accent-ink)}
+.mem-tag.own{border-color:#e0a800;color:#b8860b}
+.mem-kick{flex:none;font:inherit;font-size:12.5px;font-weight:700;padding:5px 9px;border-radius:10px;border:1px solid #e8382f;background:transparent;color:#e8382f;cursor:pointer}
+.who-h{margin:10px 0 4px;font-weight:800;font-size:14px;text-align:left}
+.who-list{display:flex;flex-wrap:wrap;gap:5px;text-align:left}
+.who-chip{padding:4px 10px;border-radius:999px;background:var(--tag);font-size:13.5px;font-weight:600;overflow-wrap:anywhere}
+.who-none{color:var(--muted);font-size:13px}
+.who-tip{color:var(--muted);font-size:13px;margin:6px 0 0}
+button.tally{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;padding:0;text-align:left;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.tally-who{font-size:12px;font-weight:700;color:var(--accent-ink);padding:2px 8px;border-radius:999px;border:1px solid var(--pick)}
+button.sos-cell{font:inherit;color:inherit;cursor:pointer}
+button.sos-cell:disabled{cursor:default}
+button.sos-chip{font:inherit;border:0;cursor:pointer}
+.sos-who{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.sos-who:empty{display:none}
+.sos-who-h{margin:0;font-weight:800;font-size:14px}
+.sos-who-h small{font-weight:500;color:var(--muted);font-size:12px}
+.sos-who-row{display:flex;gap:8px;align-items:baseline;text-align:left;font:inherit;font-size:13.5px;padding:7px 10px;border-radius:10px;border:0;background:var(--tag);color:var(--fg);cursor:pointer}
+.sos-who-row b{flex:none}
+.comment-nick{display:block;font-size:12.5px;color:var(--accent-ink);margin-bottom:1px}
+.nick-pop .nick-in{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:center;margin:4px 0}
+.nick-msg{color:#c0392b;min-height:1.2em;margin:0;font-size:13px}
+.pop-info{position:relative;padding-top:26px;padding-bottom:20px}
+.pop-x{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:0;background:var(--tag);color:var(--fg);font-size:18px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* 달력 날짜 세로 간격 줄이기 */
+.cal-grid{row-gap:2px}
+.cal-day{min-height:36px;padding:3px 0;gap:0;line-height:1.15}
+.cal-day small{min-height:11px;line-height:11px}
+/* 팝업 구분: 테두리 + 뒤 화면 더 어둡게 */
+.pop{border:2px solid var(--pick);box-shadow:0 10px 36px rgba(0,0,0,.45)}
+.pop-back{background:rgba(8,12,12,.68)}
+/* 사람이 많을 때(20~30명): 팝업 안에서 스크롤 · 목록 촘촘하게 */
+.pop-info{max-height:calc(100dvh - 32px);display:flex;flex-direction:column}
+.pop-info .pop-b{overflow-y:auto;min-height:0;flex:1 1 auto;overscroll-behavior:contain;margin:0 -10px;padding:0 10px 12px}
+.pop-b ul.mem-list{padding:0;margin:6px 0 10px;max-height:none;gap:4px}
+.mem-list li{padding:6px 8px 6px 10px;font-size:14px;min-height:36px}
+.mem-kick{padding:4px 8px;font-size:12px}
+.who-list{gap:4px}
+.who-chip{padding:3px 9px;font-size:13px}
+.mem-renick{margin:8px 0 2px;padding:9px!important;font-size:14px}
+/* 세로 여백 줄이기: 칸 사이 · 홈 표지 */
+.wrap.single main{gap:20px}
+.cover{padding:16px 18px;gap:6px}
+.cover-icon{width:48px;height:48px;border-radius:12px}
+.cover .title-row h1,.cover h1.room-title{margin:0}
+.cover-sub{line-height:1.5}
+.room-bar{margin-top:6px}
+.mem-btn{top:14px;right:14px;padding:5px 9px}
+.cover .bell{width:36px;height:36px;font-size:18px}
+/* SOS 팝업 안의 요청하기 / 요청 취소 버튼 */
+.sos-pop-btn{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;margin:12px 0 2px;padding:12px;border:0;border-radius:999px;background:linear-gradient(135deg,#f0564e,#e0332b);color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(224,51,43,.35)}
+.sos-pop-btn small{font-size:12px;font-weight:600;opacity:.92}
+.sos-pop-btn.on{background:var(--tag);color:var(--accent-ink);box-shadow:inset 0 0 0 2px var(--pick)}
+.sos-pop-btn:disabled{opacity:.6;cursor:default}
+.pop .sos-pop-btn{width:auto;min-width:200px;margin:10px auto 2px;padding:8px 18px;font-size:14px;box-shadow:0 2px 8px rgba(224,51,43,.3)}
+.pop .sos-pop-btn small{font-size:11px}
+.pop .sos-pop-btn.on{box-shadow:inset 0 0 0 2px var(--pick)}
+.sos-brave-btn{position:relative;overflow:hidden;display:block;margin:10px 0 2px;padding:9px 12px;border-radius:10px;border:3px solid #ffd54a;background:var(--accent-soft);color:var(--accent-ink);font-size:14.5px;font-weight:800;text-align:center;text-decoration:none;white-space:nowrap;animation:brave-glow 1.6s ease-in-out infinite}
+/* 반짝반짝: 노란 빛이 은은하게 커졌다 작아지고, 빛줄기가 버튼을 쓱 지나가요 */
+.sos-brave-btn::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-40%;width:30%;background:linear-gradient(100deg,transparent,rgba(255,240,170,.75),transparent);transform:skewX(-20deg);animation:brave-shine 2.4s ease-in-out infinite;pointer-events:none}
+@keyframes brave-glow{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,.55)}50%{box-shadow:0 0 14px 3px rgba(255,213,74,.75)}}
+@keyframes brave-shine{0%,55%{left:-40%}85%,100%{left:120%}}
+@media (prefers-reduced-motion: reduce){.sos-brave-btn,.sos-brave-btn::after{animation:none}.sos-brave-btn{box-shadow:0 0 10px 2px rgba(255,213,74,.6)}}
+/* 네모 버튼: 가로는 팝업 폭만큼, 세로는 한 줄 */
+.pop .sos-pop-btn{width:100%;min-width:0;flex-direction:row;justify-content:center;align-items:baseline;flex-wrap:wrap;gap:2px 8px;margin:10px 0 2px;padding:8px 12px;border-radius:10px;font-size:14.5px}
+.pop .sos-pop-btn small{font-size:11.5px}
+/* 닉네임 칩: 크게 + 테두리 (SOS는 빨강) */
+.who-list{gap:6px}
+.who-chip{padding:5px 12px;font-size:15px;font-weight:700;border:1.5px solid var(--pick);background:var(--bg)}
+.who-chip.sos{border-color:#e8382f;background:rgba(232,56,47,.12)}
+/* 입장 흐름: 4칸이 카드 안에 들어가게 (아이콘 위, 글자 아래) */
+.safe2 .safe-flow{gap:3px}
+.safe2 .sf-item{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;font-size:12px;white-space:nowrap;text-align:center}
+.safe2 .sf-item i{font-style:normal;font-size:18px;line-height:1}
+.safe2 .sf-op{flex:none;font-size:13px}
+/* 개인정보 화면: 낱말 중간에서 줄이 안 끊기게 */
+.safe2 p,.safe2 li,.safe2 span,.safe2 td{word-break:keep-all;overflow-wrap:anywhere}
+/* SOS 달력 화면을 한 화면에: 시간 버튼·간격 줄이기 */
+.picker{gap:8px}
+.time-grid{gap:6px}
+.time-btn{padding:6px 0;font-size:14px;border-radius:10px;min-height:38px;justify-content:center}
+.cal-head{margin:0}
+.cal-week{font-size:12.5px}
+.sos-picker{padding:8px 10px}
+.cal-nav[hidden]{display:block!important;visibility:hidden}
+body{padding-block:16px 120px}
+.sos-sub-s{font-size:12.5px;line-height:1.5;margin:0}
+[data-sos] .sos-btn{padding:9px 14px;font-size:15.5px;gap:1px}
+[data-sos] .sos-btn small{font-size:11px}
+[data-sos] .sos-hint{line-height:1.5;font-size:12.5px}
+[data-sos]{gap:8px}
+.cal-head b{font-size:16px}
+.time-btn{min-height:34px;padding:4px 0}
+/* 모든 탭 공통: 위 메뉴 ↔ 첫 칸 사이 여백 줄이기 (홈·SOS 달력·개인정보 같은 높이) */
+.wrap.single{gap:10px}
+.site-nav{padding-bottom:0}
+/* 달력은 다시 숨 쉬게: 세로 여백 늘리기 */
+.picker{gap:12px}
+.cal-grid{row-gap:6px}
+.cal-day{min-height:42px}
+.time-grid{gap:8px}
+.time-btn{min-height:40px;padding:6px 0}
+.cal-head b{font-size:18px}
+/* SOS 달력: 한 화면보다 보기 편한 쪽으로 — 여백 더 넉넉하게 */
+[data-sos]{gap:14px}
+.sos-picker{padding:16px 14px}
+.picker{gap:16px}
+.cal-grid{row-gap:10px}
+.cal-day{min-height:46px}
+.time-grid{gap:10px}
+.time-btn{min-height:46px;font-size:15px}
+.sos-sub-s{line-height:1.65}
+[data-sos] .sos-btn{padding:12px 16px;font-size:16px;gap:3px}
+[data-sos] .sos-hint{line-height:1.7}
+/* 💪 용기 상자: SOS를 보고 모임을 여는 한 명 */
+.sos-brave{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 14px 14px;border-radius:16px;border:2px solid #f2b531;background:linear-gradient(160deg,rgba(242,181,49,.14),rgba(42,144,149,.10));text-align:center}
+.brave-h{margin:0;font-size:17px;font-weight:800;color:var(--fg)}
+.brave-sub{margin:0;font-size:13px;line-height:1.6;color:var(--muted);word-break:keep-all}
+.brave-sub b{color:var(--fg)}
+.brave-btn{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:11px 12px;border-radius:12px;background:var(--pick);color:var(--pick-fg);font-weight:800;font-size:15px;text-decoration:none;box-shadow:0 3px 10px rgba(42,144,149,.3)}
+.brave-star{position:absolute;color:#f2b531;font-size:16px;line-height:1}
+.brave-star.s1{top:-9px;left:14px}
+.brave-star.s2{bottom:-8px;right:16px;font-size:12px}
+.sos-brave .brave-btn{color:var(--pick-fg)!important}
+.sec > .sos-brave{margin-top:18px}
+.sec > .sos-brave{margin-top:0;margin-bottom:14px}
+/* 🚩 신고 · 방장 관리 */
+.report-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.report-btn{font:inherit;font-size:14.5px;font-weight:700;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--tag);color:var(--fg);cursor:pointer}
+.report-btn:disabled{opacity:.5}
+.mod-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.mod-btn{font:inherit;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.mod-btn.danger{border-color:#e8382f;color:#e8382f}
+.mod-flag{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(232,56,47,.15);color:#e8382f}
+.comment-mod{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}
+.comment-mod button{font:inherit;font-size:11.5px;padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.comment-mod .danger{border-color:#e8382f;color:#e8382f}
+/* SOS 요청하기 ↔ 모임 열기: 둥근 사각형, 같은 높이 */
+[data-sos] .sos-btn,.sos-brave .brave-btn{border-radius:12px;min-height:56px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-sizing:border-box}
+.sos-brave .brave-btn{font-size:16px}
+[data-sos] .sos-btn,.sos-brave .brave-btn{min-height:60px}
+.sos-brave{padding-left:15px;padding-right:15px}
+/* 개인정보 탭 안의 [개인정보 | 이용약관] 전환 */
+.seg-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--tag)}
+.seg-tabs a{text-align:center;padding:9px 6px;border-radius:10px;font-weight:700;font-size:14.5px;color:var(--muted);text-decoration:none}
+.seg-tabs a[aria-current]{background:var(--bg);color:var(--accent-ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.seg-tabs a:not([aria-current]){color:var(--muted)!important}
+@media (max-width:380px){.site-nav .brand{font-size:16px}}
+.tally span.tally-who::before{content:none}
+.ph-test{margin:8px 0 4px}
+.mem-tag.dup{border-color:#e0a800;color:#b8860b;font-weight:600}
+.mem-dup-tip{background:rgba(242,181,49,.14);padding:8px 10px;border-radius:10px;text-align:left}
+.mem-allow{border-color:var(--pick)!important;color:var(--accent-ink)!important}
+.mem-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mem-who .mem-nick{flex:none}
+.mem-dup{font-size:12px;font-weight:700;color:#b8860b}
+
+/* 👑 방장 넘기기 · 마지막 접속 */
+.mem-seen{font-size:12px;color:var(--muted);white-space:nowrap}
+.mem-seen.old{color:#b8860b;font-weight:700}
+.mem-tag.po{border-color:#e0a800;color:#b8860b;white-space:nowrap}
+.mem-own-box{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:8px 0;padding:10px 12px;border:1.5px solid #e0a800;border-radius:14px;background:color-mix(in srgb, #ffd54a 14%, transparent);text-align:left}
+.mem-own-box p{flex:1;min-width:0;margin:0;font-size:14px;line-height:1.5;word-break:keep-all}
+.mem-own-box small{font-size:12px;color:var(--muted)}
+.mem-own-box .mem-kick{flex:none;width:100%;padding:8px}
+.mem-own-box small .mem-n{color:var(--fg)}
+.tiny-note{margin:4px 0 0;font-size:11.5px;line-height:1.5;color:var(--muted);text-align:center;word-break:keep-all}
+
+/* 🏠 홈을 한 화면에: 방 제목 · SOS 달력 · 다가오는 모임 (2026-10 높이 줄이기) */
+.sos-note1{margin:-4px 0 0;font-size:12.5px;color:var(--muted);white-space:nowrap}
+[data-sos-summary]{gap:10px;padding:14px}
+[data-sos-summary] .sos-today{gap:5px}
+[data-sos-summary] .sos-cell{flex-direction:row;justify-content:center;align-items:baseline;gap:4px;padding:7px 0}
+[data-sos-summary] .sos-cell b{font-size:13px}
+[data-sos-summary] .sos-cell span{font-size:11.5px}
+[data-sos-summary] .sos-tab{padding:5px 11px;font-size:13px}
+.cover{padding:12px 16px 14px;gap:4px}
+.cover-icon{width:36px;height:36px;border-radius:9px}
+.cover h1.room-title{font-size:23px;line-height:1.25}
+.cover .cover-sub{font-size:12.5px;line-height:1.45}
+.room-bar{margin-top:4px}
+.room-bar .btn{padding:7px 12px}
+.mem-btn{top:10px;padding:3px 8px;font-size:15px}
+.next-card{padding:12px 14px}
+.next-card h2{margin:0 0 8px;font-size:18px}
+:is(.next-card,.up-sec) .ops > li{padding:10px 12px;margin-bottom:6px}
+:is(.next-card,.up-sec) .meet-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+:is(.next-card,.up-sec) .meet-top .op-when{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:400px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:15px;letter-spacing:-.3px}}
+.who-mini{flex:none;border:0;background:linear-gradient(180deg,#45b3b0,#23878a);color:#fff;border-radius:999px;padding:4px 9px 5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 3px 0 #15605f,0 5px 8px rgba(21,96,95,.3);transform:translateY(-2px);transition:transform .08s,box-shadow .08s}
+.who-mini:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 #15605f,0 1px 2px rgba(21,96,95,.3)}
+:is(.next-card,.up-sec) .vote-row .join b{margin-left:2px;font-weight:800}
+/* 방 카드: 아이콘을 앱 이름 옆으로 (세로 공간 절약) */
+.cover .cover-icon{position:absolute;top:12px;left:16px;width:26px;height:26px;border-radius:7px}
+.cover .cover-app{padding-left:34px;min-height:26px;line-height:26px}
+.cover .title-row{padding-right:64px}
+/* 홈은 카드 사이도 촘촘하게 (방 제목 · SOS · 모임이 한 화면에) */
+.wrap.single main:has(> .cover){gap:12px}
+.wrap.single main:has(> .cover) .next-card{margin-top:4px}
+.wrap.single main:has(> .cover) .cover{padding-bottom:10px}
+/* 화면이 짧은 폰에서는 방 카드의 한 줄 소개를 숨겨 모임 버튼까지 보이게 해요 */
+@media (max-height:820px){ .cover .cover-sub{display:none} }
+@media (max-height:820px){
+  [data-sos-summary] .sos-note1{display:none}
+  [data-sos-summary] .sos-cell{padding:5px 0}
+  [data-sos-summary]{gap:8px;padding:12px}
+}
+
+/* 방 이름은 한 줄로 (길면 글자가 자동으로 작아져요, fitRoomTitle) · 멤버 수는 작은 알약 */
+.cover .title-row{padding-right:0}
+.cover h1.room-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mem-btn{top:11px;flex-direction:row;align-items:center;gap:3px;min-width:0;padding:2px 10px;border-radius:999px;border-width:1.5px;font-size:13px;line-height:1.5}
+.mem-btn b{font-size:13.5px}
+.mem-btn small{font-size:11px}
+@media (max-width:340px){
+  :is(.next-card,.up-sec) .meet-top .op-when{white-space:nowrap;font-size:14px}
+  :is(.next-card,.up-sec) .who-mini{padding:3px 8px 4px;font-size:11.5px}
+  :is(.next-card,.up-sec) .vote-row{gap:5px}
+  :is(.next-card,.up-sec) .vote-row .join{font-size:12.5px;padding:8px 2px;letter-spacing:-.3px}
+  .site-nav .brand{display:none}
+}
+
+/* SOS 예약 화면: 모임 시간 줄 오른쪽 위에 👀 참석자 */
+.ops .op-meta{position:relative}
+.ops .op-meta .who-mini{margin-left:auto}
+.ops .op-meta .op-when{white-space:nowrap;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ops .op-meta .op-posted{flex-basis:100%;font-size:11.5px}
+
+/* 홈 다가오는 모임 카드: 살짝 떠 있는 입체감 (위는 밝게, 아래는 진한 테두리·그림자) */
+:is(.next-card,.up-sec) .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 55%,#fff),var(--accent-soft));border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line));border-bottom-width:4px;border-bottom-color:color-mix(in srgb,var(--pick) 70%,#0b3d3d);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -4px rgba(21,96,95,.35)}
+/* 참석·미확정·불참: 홈과 SOS 예약 화면 모두 볼록한 버튼 (누르면 쑥 들어가요) */
+.vote-row .join{border:1.5px solid color-mix(in srgb,var(--line) 70%,#9bb);background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 88%,#9bb));box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 0 color-mix(in srgb,var(--line) 55%,#7a9a9a),0 6px 10px rgba(0,0,0,.1);transform:translateY(-2px);transition:transform .08s,box-shadow .08s}
+.vote-row .join[aria-pressed="true"]{background:linear-gradient(180deg,#45b3b0,#23878a);color:#fff;border-color:#23878a;text-shadow:0 1px 0 rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #15605f,0 6px 10px rgba(21,96,95,.3)}
+.vote-row .join:not(:disabled):active{transform:translateY(2px);box-shadow:inset 0 2px 3px rgba(0,0,0,.15),0 0 0 transparent}
+.vote-row .join:disabled{transform:none;box-shadow:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.next-card,.up-sec) .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}}
+:root[data-theme="dark"] :is(.next-card,.up-sec) .ops > li{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-soft) 80%,#2a4a4a),var(--accent-soft));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px -4px rgba(0,0,0,.6)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #0c1414,0 6px 10px rgba(0,0,0,.4)}}
+:root[data-theme="dark"] .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 0 #0c1414,0 6px 10px rgba(0,0,0,.4)}
+
+/* 모임 내용(장소·놀이…)이 눈에 띄게: 흰 메모 칸 + 왼쪽 색 줄 + 진한 글씨 */
+.ops .meet-body > .op-text{background:var(--bg);color:var(--fg);font-weight:600;font-size:15px;line-height:1.5;padding:7px 10px;border-radius:10px;border-left:4px solid var(--pick);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ops > li.op-past .meet-body > .op-text{font-weight:400;box-shadow:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ops .meet-body > .op-text{background:#0f1a1a;color:#f2f6f6}}
+:root[data-theme="dark"] .ops .meet-body > .op-text{background:#0f1a1a;color:#f2f6f6}
+/* 투표 버튼은 너무 크지 않게: 높이·그림자 줄이기 */
+.vote-row .join{padding:6px 4px;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 0 color-mix(in srgb,var(--line) 55%,#7a9a9a),0 3px 5px rgba(0,0,0,.08);transform:translateY(-1px)}
+.vote-row .join[aria-pressed="true"]{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 0 #15605f,0 3px 6px rgba(21,96,95,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #0c1414,0 3px 5px rgba(0,0,0,.4)}}
+:root[data-theme="dark"] .vote-row .join:not([aria-pressed="true"]){box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #0c1414,0 3px 5px rgba(0,0,0,.4)}
+@media (max-width:340px){:is(.next-card,.up-sec) .vote-row .join{font-size:12px;padding:6px 2px}}
+.who-mini{padding:3px 9px 4px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 0 #15605f,0 3px 6px rgba(21,96,95,.25);transform:translateY(-1px)}
+
+/* 홈 모임 카드: 날짜 네모는 빼고 내용을 넓게, 대신 날짜·요일·시간을 크게 강조 */
+:is(.next-card,.up-sec) .ops > li .date-badge{display:none}
+:is(.next-card,.up-sec) .ops > li.meet-card{column-gap:0;row-gap:10px}
+:is(.next-card,.up-sec) .ops > li .meet-body{flex:1 1 100%;min-width:0}
+:is(.next-card,.up-sec) .meet-top .op-when{font-size:19px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px}
+@media (max-width:400px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:18px}}
+@media (max-width:340px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:16px}}
+/* 날짜·시간 글씨: 밝은 화면은 아주 진한 초록, 어두운 화면은 환한 민트로 더 굵게 */
+:is(.next-card,.up-sec) .meet-top .op-when{font-weight:900;color:#0b4f51;-webkit-text-stroke:.3px currentColor}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.next-card,.up-sec) .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}}
+:root[data-theme="dark"] :is(.next-card,.up-sec) .meet-top .op-when{color:#8ff5ee;text-shadow:0 0 10px rgba(110,240,230,.25)}
+/* SOS 예약: 세로 여백 조금 줄여서 'SOS 요청하기' 버튼까지 한 화면에 */
+[data-sos]{gap:10px}
+.sos-picker{padding:12px 12px}
+.picker{gap:10px}
+.cal-grid{row-gap:6px}
+.cal-day{min-height:40px}
+.time-grid{gap:7px}
+.time-btn{min-height:40px}
+.sos-sub-s{line-height:1.5}
+
+/* SOS 예약 다가오는 모임: 홈 카드와 같은 모양, 버튼 줄·안내는 카드 폭에 맞게 */
+.up-sec .ops > li .meet-body{gap:8px}
+.up-sec .vote-hint{margin:-4px 0 0}
+/* 지난 모임도 같은 카드 모양: 살짝 흐리게, 숫자는 버튼 대신 한 줄로 */
+.up-sec .ops > li.op-past{opacity:.72}
+.up-sec .ops > li.op-past .meet-body > .op-text{font-weight:600}
+.up-sec .tally{justify-content:center;font-size:13.5px}
+/* 모임 만들기 양식: 시간 버튼은 낮게, 주최자·장소놀이 칸은 또렷하게 */
+#meetForm .time-btn{min-height:34px;padding:4px 0}
+#meetForm .time-grid{gap:6px}
+#meetForm > .label{font-size:15px;font-weight:800;color:var(--fg)}
+#meetForm > p.label:has(#meetHost){display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:8px 12px;border-radius:12px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--pick) 45%,var(--line))}
+#meetForm #meetHost{color:var(--accent-ink);font-weight:900}
+#meetForm textarea{border:2px solid var(--pick);font-size:16px;font-weight:600;color:var(--fg);box-shadow:0 0 0 3px color-mix(in srgb,var(--pick) 15%,transparent)}
+#meetForm textarea:focus{outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--pick) 30%,transparent)}
+/* 지나간 시간: 빗금 음영 + 줄 긋기로 못 누르는 걸 알 수 있게 */
+.time-btn:disabled,#meetForm .time-btn:disabled{cursor:not-allowed;opacity:.45;color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px;border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 18%,transparent) 6px 8px),var(--page);box-shadow:none}
+.time-btn:disabled small{display:none}
+/* 홈 SOS 달력: 오늘 지나간 시간은 빗금 음영 + 줄 긋기, 못 눌러요 */
+.sos-cell.gone{cursor:not-allowed;opacity:.4;border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 18%,transparent) 6px 8px),var(--page)!important;box-shadow:none}
+.sos-cell.gone b,.sos-cell.gone span{color:var(--muted)!important;text-decoration:line-through;text-decoration-thickness:2px}
+/* 👥 멤버 버튼 N 표시 · 새 멤버 NEW · 다시 받아 달라는 부탁 */
+.mem-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e8382f;color:#fff;font-style:normal;font-size:11px;font-weight:900;line-height:18px;text-align:center;border:2px solid var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.25);animation:mem-pop 1.6s ease-in-out infinite}
+@keyframes mem-pop{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.mem-badge{animation:none}}
+.mem-nick-line{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mem-new{display:inline-block;padding:1px 6px;border-radius:999px;background:#e8382f;color:#fff;font-size:10.5px;font-weight:900;letter-spacing:.04em;line-height:1.5}
+.mem-appeal{margin:2px 0 8px;padding:8px 10px;border-radius:12px;border:2px solid #f2b531;background:color-mix(in srgb,#f2b531 12%,var(--bg))}
+.mem-appeal .who-h{margin:0 0 4px;font-weight:800}
+.mem-appeal .who-h b{display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:#e8382f;color:#fff;font-size:12px;text-align:center}
+.mem-ap{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--fg);white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.mem-ap-btns{display:flex;flex-direction:column;gap:4px;flex:none}
+.appeal-pop .appeal-in{width:100%;box-sizing:border-box;min-height:84px;resize:none;font:inherit;font-size:14.5px;line-height:1.5;text-align:left}
+.appeal-pop .appeal-sent{margin-top:8px;padding:6px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:13px}
+/* SOS 예약: 달력 아래 "날짜 · 시간을 골라 주세요" 줄은 빼요 (아래 SOS 요청하기 버튼이 안내해요) */
+[data-sos] .picked-when{display:none}
+/* 👥 멤버: 내보낸 사람은 접어 둬요 (눌러서 펼치기) */
+.mem-out-box{margin-top:10px;border-radius:12px;border:1px solid var(--line);padding:2px 10px 6px}
+.mem-out-box > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;margin:0;padding:8px 0;font-weight:800}
+.mem-out-box > summary::-webkit-details-marker{display:none}
+.mem-out-box > summary b{color:var(--muted);font-weight:700}
+.mem-out-box > summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .15s}
+.mem-out-box[open] > summary::after{transform:rotate(180deg)}
+.mem-out-box > .who-tip{margin:0 0 8px}
+/* 🔔 알림을 눌러 들어왔을 때 띄우는 참여 권유 창 */
+.go-nudge{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#ffe58a;color:#3a2a00;font-size:14.5px;font-weight:700;line-height:1.5;text-align:center}
+.go-nudge b{color:#c62828}
+.pop .go-host{display:inline-block;margin:0 0 6px}
+.pop .go-text{margin:0 0 10px;padding:8px 10px;border-radius:10px;border-left:4px solid var(--pick);background:var(--tag);font-weight:600;white-space:pre-wrap;text-align:left}
+.pop .go-votes{margin-top:0}
+.go-tip{margin:8px 0 0;font-size:12.5px;color:var(--muted);text-align:center}
+.go-later{display:block;width:100%;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+/* 🚨 알림 눌러 들어왔을 때: 사이렌이 들썩이며 빨강·파랑으로 번쩍 (비상 상황 느낌) */
+.siren-pop .pop-icon{display:block;width:max-content;margin:0 auto;font-size:52px;line-height:1;transform-origin:50% 90%;animation:siren-shake .5s ease-in-out infinite,siren-flash .8s steps(1) infinite;border-radius:50%}
+@keyframes siren-shake{0%,100%{transform:rotate(-12deg) scale(1)}25%{transform:rotate(10deg) scale(1.12)}50%{transform:rotate(-8deg) scale(1)}75%{transform:rotate(12deg) scale(1.12)}}
+@keyframes siren-flash{0%{filter:drop-shadow(0 0 10px rgba(255,40,40,.95)) drop-shadow(0 0 22px rgba(255,40,40,.6))}50%{filter:drop-shadow(0 0 10px rgba(40,120,255,.95)) drop-shadow(0 0 22px rgba(40,120,255,.6))}}
+.siren-pop .pop{animation:siren-in .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes siren-in{0%{transform:scale(.7) rotate(-3deg);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.siren-pop .pop-icon,.siren-pop .pop{animation:none}}
+/* 🦸 새 모임 알림: 용기 낸 구원자가 금빛을 내며 둥실둥실 날아다녀요 */
+.hero-pop .pop-icon{display:block;width:max-content;margin:0 auto;font-size:54px;line-height:1;animation:hero-fly 1.6s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-fly{0%,100%{transform:translate(-10px,4px) rotate(-14deg)}50%{transform:translate(10px,-10px) rotate(8deg)}}
+@keyframes hero-glow{0%,100%{filter:drop-shadow(0 0 6px rgba(255,200,40,.6))}50%{filter:drop-shadow(0 0 16px rgba(255,210,60,1)) drop-shadow(0 0 28px rgba(255,180,0,.55))}}
+.hero-pop .pop{animation:siren-in .45s cubic-bezier(.3,1.6,.5,1)}
+@media (prefers-reduced-motion:reduce){.hero-pop .pop-icon,.hero-pop .pop{animation:none}}
+/* 💬 댓글 버튼: 눈에 띄게 (카드 폭 버튼 + 개수 강조) */
+.ops .meet-body > .comment-toggle{align-self:stretch;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border:2px solid #f2b531;border-radius:12px;background:color-mix(in srgb,#f2b531 14%,var(--bg));color:var(--fg);font-size:14.5px;font-weight:800;box-shadow:0 2px 0 color-mix(in srgb,#f2b531 60%,#7a5a00);cursor:pointer}
+.ops .meet-body > .comment-toggle[aria-expanded="true"]{background:#f2b531;color:#3a2a00}
+.ops .meet-body > .comment-toggle:active{transform:translateY(2px);box-shadow:none}
+
+/* 다가오는 모임 제목은 하얀 글씨로 */
+.next-card h2{color:#fff}
+/* 🚨 SOS가 있는 시간 칸: 오른쪽 위에 작은 사이렌이 들썩여요 */
+.sos-cell{position:relative}
+.sos-cell.on:not(.gone)::after{content:"🚨";position:absolute;top:-9px;right:-5px;font-size:14px;line-height:1;transform-origin:50% 90%;animation:siren-shake .55s ease-in-out infinite,siren-flash .8s steps(1) infinite;pointer-events:none}
+/* 🦸 다가오는 모임의 SOS 스티커를 구원자가 날아와 구해요 */
+/* 🦸 구원자가 다가오는 모임 카드 테두리를 따라 계속 한 바퀴씩 날아요 (SOS 스티커는 빼요) */
+.next-card > .next-sos{display:none}
+.next-card > .next-hero{position:absolute;z-index:3;width:60px;height:38px;margin:-24px 0 0 -30px;background:url(hero.svg) center/contain no-repeat;pointer-events:none;
+  animation:hero-lap 3.5s linear infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-lap{
+  0%{left:4%;top:0;transform:rotate(0deg)}
+  24%{left:96%;top:0;transform:rotate(0deg)}
+  26%{left:100%;top:3%;transform:rotate(90deg)}
+  49%{left:100%;top:97%;transform:rotate(90deg)}
+  51%{left:96%;top:100%;transform:rotate(180deg)}
+  74%{left:4%;top:100%;transform:rotate(180deg)}
+  76%{left:0;top:97%;transform:rotate(270deg)}
+  99%{left:0;top:3%;transform:rotate(270deg)}
+  100%{left:4%;top:0;transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sos-cell.on::after,.next-card > .next-hero{animation:none}}
+/* SOS 달력 테두리: 더 두껍고 또렷한 빨강 */
+.sos{border:3px solid color-mix(in srgb,#e8382f 70%,var(--ipark-line))}
+
+.hero-pop .pop-icon .hero-img{display:block;width:78px;height:auto}
+/* 팝업의 구원자: 아기를 번쩍 들고 위로 슝~ 날아오르는 느낌 */
+.hero-pop .pop-icon{animation:hero-rise 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-rise{0%{transform:translateY(10px) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}100%{transform:translateY(10px) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){.hero-pop .pop-icon{animation:none}}
+/* 💪 용기 상자: 홈 모임 카드처럼 금빛 테두리가 돌고 숨 쉬듯 반짝 + 아기 품은 구원자가 흔들흔들 */
+.sos-brave{animation:nc-breathe 2.6s ease-in-out infinite}
+.sos-brave::before{content:"";position:absolute;inset:-2px;border-radius:18px;padding:4px;pointer-events:none;z-index:0;
+  background:conic-gradient(from var(--nc-a),transparent 0deg 220deg,#ffc400 270deg,#fffbe0 310deg,#ffc400 340deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:nc-spin 1.5s linear infinite}
+.sos-brave > *:not(.brave-star):not(.brave-hero){position:relative;z-index:1}
+.sos-brave > .brave-hero{position:absolute;z-index:2;top:-30px;right:6px;width:44px;height:76px;background:url(hero-up.svg) center/contain no-repeat;pointer-events:none;
+  transform-origin:50% 100%;animation:brave-sway 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+@keyframes brave-sway{0%,100%{transform:translateX(-10px) rotate(-10deg)}50%{transform:translateX(8px) translateY(-6px) rotate(10deg)}}
+.sos-brave .brave-h{padding-right:34px;padding-left:34px}
+@media (prefers-reduced-motion:reduce){.sos-brave,.sos-brave::before,.sos-brave > .brave-hero{animation:none}}
+/* SOS 예약: 세로 여백 조금 더 줄이고 SOS 요청하기 버튼도 낮게 → 첫 화면 아래에 용기 상자의 구원자가 보이게 */
+[data-sos]{gap:8px;padding:12px 14px}
+.sos-picker{padding:10px 12px}
+.picker{gap:8px}
+.cal-grid{row-gap:4px}
+.cal-day{min-height:38px}
+.time-grid{gap:6px}
+.time-btn{min-height:36px}
+.sos-sub-s{line-height:1.45}
+[data-sos] .sos-btn{min-height:46px;padding:6px 12px;font-size:15.5px;gap:1px}
+[data-sos] .sos-btn small{font-size:11.5px}
+.sec > .sos-brave,.sos-brave{margin-top:26px}
+/* SOS 예약 첫 화면에 '용기 한 번 내 볼까요?'까지 보이게: 시간 칸은 한 줄(9:00 1명), 내 SOS 줄도 납작하게 */
+[data-sos] .time-btn{flex-direction:row;align-items:baseline;justify-content:center;gap:3px;min-height:34px;padding:4px 0}
+[data-sos] .time-btn small{font-size:10.5px}
+[data-sos] .sos-mine{padding:6px 12px;border-radius:12px}
+[data-sos] .sos-sub-s{font-size:12.5px}
+[data-sos] .cal-day{min-height:36px}
+.sec > .sos-brave,.sos-brave{margin-top:24px}
+/* SOS 달력 ↔ 용기 상자 사이 여백 줄이기 (구원자는 SOS 상자 위로 살짝 겹쳐도 OK) */
+.sec > .sos-brave,.sos-brave{margin-top:6px}
+.sos-brave > .brave-hero{z-index:5}
+/* 🗑 모임 취소 버튼: 빨간 테두리 버튼으로, 확인 단계는 꽉 찬 빨강 + 깜빡 */
+.ops .cancel-meet{align-self:stretch;padding:9px 12px;border:2px solid #e8382f;border-radius:12px;background:transparent;color:#ff7a70;font-size:14px;font-weight:800;text-align:center}
+.ops .cancel-meet.confirm{background:#e8382f;color:#fff;animation:cancel-pulse 1s ease-in-out infinite}
+@keyframes cancel-pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,56,47,.6)}50%{box-shadow:0 0 0 6px rgba(232,56,47,0)}}
+@media (prefers-reduced-motion:reduce){.ops .cancel-meet.confirm{animation:none}}
+.ops .cancel-meet{white-space:pre-line;line-height:1.45}
+/* 댓글·취소 버튼: 눈에는 띄되 작게 (가운데 정렬 알약 모양) */
+.ops .meet-body > .comment-toggle{align-self:center;padding:6px 18px;border-width:1.5px;border-radius:999px;font-size:13.5px;box-shadow:none}
+.ops .cancel-meet{align-self:center;padding:5px 16px;border-width:1.5px;border-radius:999px;font-size:13px;line-height:1.4}
+.ops .cancel-meet.confirm{padding:6px 16px}
+.ops .cancel-meet.confirm{border-radius:14px}
+/* 댓글·취소 버튼: 높이는 작게, 가로는 카드 폭 꽉 */
+.ops .meet-body > .comment-toggle,.ops .cancel-meet{align-self:stretch;border-radius:12px}
+/* 날짜 탭: 토요일 파랑 · 일요일·공휴일 빨강 (고른 탭은 흰 바탕 위 진한 색) */
+.sos-tab.sat{color:#6ea8ff}
+.sos-tab.sun{color:#ff6b62}
+.sos-tab.sat[aria-pressed="true"]{color:#0b3a8a}
+.sos-tab.sun[aria-pressed="true"]{color:#a31a12}
+.cal-week .sat,.cal-day.sat{color:#6ea8ff}
+.cal-week .sun,.cal-day.sun{color:#ff6b62}
+/* SOS 달력 안내 문장: 더 굵고 밝게 */
+[data-sos] .sos-sub-s{font-weight:700;color:#d6dedd}
+/* 🦸 홈 다가오는 모임: 구원자는 오른쪽 위에 고정, 용기 상자처럼 흔들흔들 */
+.next-card > .next-hero{left:auto;top:-30px;right:6px;margin:0;width:44px;height:76px;background:url(hero-up.svg) center/contain no-repeat;
+  transform-origin:50% 100%;animation:brave-sway 1.8s ease-in-out infinite,hero-glow 1.6s ease-in-out infinite}
+.next-card h2{padding-right:44px}
+.next-card > .next-hero{top:-30px;right:6px}
+.next-card h2 .h-hero{width:auto;height:1.6em;margin:-.3em -2px -.2em 0;vertical-align:middle}
+/* 🦸 평소엔 오른쪽 위에서 흔들흔들 → 가끔 테두리를 한 바퀴 날아서 다시 제자리 (.lap 은 앱이 잠깐 붙였다 떼요) */
+.next-card > .next-hero.lap{right:auto;width:60px;height:38px;margin:-19px 0 0 -30px;background-image:url(hero.svg);transform-origin:50% 50%;
+  animation:hero-lap2 3.6s linear 1,hero-glow 1.6s ease-in-out infinite}
+@keyframes hero-lap2{
+  0%{left:86%;top:0;transform:rotate(0deg)}
+  6%{left:100%;top:4%;transform:rotate(90deg)}
+  27%{left:100%;top:96%;transform:rotate(90deg)}
+  31%{left:96%;top:100%;transform:rotate(180deg)}
+  56%{left:4%;top:100%;transform:rotate(180deg)}
+  60%{left:0;top:96%;transform:rotate(270deg)}
+  81%{left:0;top:4%;transform:rotate(270deg)}
+  85%{left:4%;top:0;transform:rotate(360deg)}
+  100%{left:86%;top:0;transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.next-card > .next-hero.lap{animation:none}}
+/* 비행운: 노란 빛줄기는 스스로 돌지 않고, 구원자 위치(--trail-a)를 따라가요 */
+.next-card.trail::before{animation:none;background:conic-gradient(from var(--trail-a,0deg),transparent 0deg 200deg,rgba(255,196,0,.35) 250deg,#ffc400 300deg,#fffbe0 328deg,#fff 333deg,transparent 336deg 360deg)}
+.next-card > .next-hero.lap{animation:hero-glow 1.6s ease-in-out infinite}
+/* 모임이 없을 때: 제목과 안내 문장 사이 여백 줄이기 (빈 목록은 자리 차지 안 해요) */
+.next-card .ops:empty{display:none}
+.next-card h2{margin-bottom:6px}
+/* 홈 한 화면에 '다가오는 모임'까지: 세로 여백 조금씩 줄이기 */
+.wrap.single main:has(> .cover){gap:9px}
+.cover{padding-top:10px;padding-bottom:10px}
+.room-bar .btn{padding:6px 12px}
+[data-sos-summary]{gap:8px;padding:11px 13px}
+[data-sos-summary] .sos-cell{padding:5px 0}
+[data-sos-summary] .sos-today{gap:4px}
+.next-card{padding:11px 14px}
+.next-card #nextEmpty{font-size:13.5px;line-height:1.5}
+.next-card .next-cta{margin:8px 0 0}
+.next-card .next-cta .btn{padding:9px 12px}
+
+/* 홈 SOS 달력: '먼저 꾹' 한마디 · 다가오는 모임: 참석 여부 부탁 (작지만 눈에 띄게) */
+.sos-nudge{margin:-2px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.sos-nudge b{color:#ffd54a;font-weight:800}
+.next-note{margin:-4px 0 8px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.next-note b{color:#fff;font-weight:700}
+@media (max-width:360px){ .sos-nudge,.next-note{font-size:12px;letter-spacing:-.3px} }
+.sos-nudge,.next-note{display:flex;gap:6px;align-items:flex-start}
+.sos-nudge > i,.next-note > i{font-style:normal;flex:none}
+.next-note[hidden]{display:none}
+/* 제목과 한마디 사이 여백: SOS 달력 · 다가오는 모임 둘 다 똑같이 좁게 */
+[data-sos-summary] p.sos-nudge{margin-top:-5px}
+.next-card p.next-note{margin-top:-13px;margin-bottom:-2px}
+/* 한마디는 한 줄로: 폰 너비에 맞춰 글자 크기가 줄어요 */
+.sos-nudge,.next-note{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(10.5px,3.4vw,13px);letter-spacing:-.2px}
+.next-note[hidden]{display:none}
+.sos-nudge{font-size:clamp(10px,3.2vw,13px);letter-spacing:-.4px}
+.sos-sub-s b{color:#ffd54a}
+[data-sos] .sos-sub-s{font-size:clamp(9.6px,3.05vw,13px);white-space:nowrap;letter-spacing:-.5px;overflow:hidden}
+@media (max-width:340px){ [data-sos] .sos-sub-s{letter-spacing:-.85px} }
+[data-sos] .picker .cal-head{margin-bottom:-7px}
+[data-sos] .picker .cal-grid{row-gap:2px}
+[data-sos] .picker .cal-day{min-height:32px;padding:1px 0}
+[data-sos] .sos-btn{min-height:44px;padding:5px 12px;gap:0;line-height:1.25}
+/* 🦸 구원자가 테두리를 날 때 화면 밖으로 살짝 나가도 페이지 폭이 늘지 않게 (스크롤 막대가 움찔하던 것 막기) */
+html,body{overflow-x:hidden}
+@supports (overflow:clip){ html,body{overflow-x:clip} }

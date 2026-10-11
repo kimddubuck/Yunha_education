@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>사용법 · 공동육아 SOS</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest?v=202610110020">
+<meta name="theme-color" content="#2a9095">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;word-break:keep-all;background:#111619;color:#fff;font-family:'IBM Plex Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+  body{display:flex;flex-direction:column;height:100dvh}
+  header{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+  header a,header button{border:0;font-family:inherit;cursor:pointer;color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.14)}
+  header h1{flex:1;margin:0;font-size:16px;text-align:center;white-space:nowrap}
+  header a,header button{white-space:nowrap}
+  #count{font-size:13px;font-weight:600;opacity:.8;margin-left:4px}
+  .track{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .track::-webkit-scrollbar{display:none}
+  .slide{flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:0 12px}
+  .slide img{width:100%;max-width:520px;height:auto;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);margin:4px 0 12px}
+  .nav{display:flex;align-items:center;gap:10px;padding:8px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  .nav button{border:0;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-size:20px;font-weight:700;width:46px;height:46px;cursor:pointer}
+  .nav button:disabled{opacity:.3}
+  .dots{flex:1;display:flex;justify-content:center;gap:clamp(3px,1.2vw,6px)}
+  .dots i{flex:none;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)}
+  .dots i.on{background:#ffd54a;transform:scale(1.25)}
+  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+  #toast.on{opacity:.95}
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" id="back" aria-label="돌아가기">←</a>
+  <h1>📖 사용법 <span id="count">1 / 17</span></h1>
+  <button type="button" id="shareLink">📤 공유하기</button>
+</header>
+<div class="track" id="track"></div>
+<div class="nav">
+  <button type="button" id="prev" aria-label="이전">‹</button>
+  <div class="dots" id="dots"></div>
+  <button type="button" id="next" aria-label="다음">›</button>
+</div>
+<div id="toast"></div>
+<script>
+// 사용법 그림 19장: 옆으로 넘겨 보고, 지인에게 그림 그대로(또는 링크로) 보내요
+const N = 19, pad = i => String(i).padStart(2, '0');
+const track = document.getElementById('track'), dots = document.getElementById('dots');
+const LINK = location.origin + location.pathname;
+for(let i = 1; i <= N; i++){
+  track.insertAdjacentHTML('beforeend', `<div class="slide"><img src="guide/${pad(i)}.webp" alt="사용법 ${i} / ${N}" ${i > 2 ? 'loading="lazy"' : ''}></div>`);
+  dots.insertAdjacentHTML('beforeend', '<i></i>');
+}
+let cur = 0;
+function show(i){
+  cur = i;
+  document.getElementById('count').textContent = `${i + 1} / ${N}`;
+  [...dots.children].forEach((d, k) => d.classList.toggle('on', k === i));
+  document.getElementById('prev').disabled = i === 0;
+  document.getElementById('next').disabled = i === N - 1;
+}
+const go = i => { i = Math.max(0, Math.min(N - 1, i)); show(i); track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); };
+// 손으로 넘길 때는 멈춘 뒤에 몇 번째 장인지 맞춰요 (버튼으로 넘기는 중엔 중간 위치에 흔들리지 않게)
+let settle; track.addEventListener('scroll', () => { clearTimeout(settle); settle = setTimeout(() => { const i = Math.round(track.scrollLeft / track.clientWidth); if(i !== cur) show(i); }, 120); }, { passive: true });
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+document.addEventListener('keydown', e => { if(e.key === 'ArrowLeft') go(cur - 1); if(e.key === 'ArrowRight') go(cur + 1); });
+const p = parseInt(new URLSearchParams(location.search).get('p'), 10);
+show(0);
+if(p > 1) requestAnimationFrame(() => { track.scrollLeft = (Math.min(p, N) - 1) * track.clientWidth; show(Math.min(p, N) - 1); });
+// 앱 안에서 왔으면 뒤로 가기, 공유 링크로 바로 왔으면 첫 화면으로
+document.getElementById('back').onclick = e => { if(history.length > 1 && document.referrer.startsWith(location.origin)){ e.preventDefault(); history.back(); } };
+
+const toast = t => { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); };
+async function copyLink(){
+  try{ await navigator.clipboard.writeText(LINK); toast('링크를 복사했어요'); }
+  catch(e){ prompt('이 링크를 복사해 주세요', LINK); }
+}
+document.getElementById('shareLink').onclick = async () => {
+  if(navigator.share){ try{ await navigator.share({ title: '공동육아 SOS 사용법', text: '공동육아 SOS 사용법 (그림 17장)', url: LINK }); }catch(e){ if(e.name !== 'AbortError') copyLink(); } }
+  else copyLink();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SOS 예약 · 공동육아 SOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest?v=202610110020">
+<meta name="theme-color" content="#2a9095">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="공동육아 SOS">
+<link rel="stylesheet" href="assets/common.css?v=202610110020">
+<script src="assets/gate.js?v=202610110020"></script>
+</head>
+<body>
+<div class="wrap single">
+  <nav class="site-nav" id="siteNav" data-page="meet" aria-label="메뉴"></nav>
+  <main>
+    <header class="page-h">
+      <div class="sos" data-sos></div>
+    </header>
+
+    <section class="sec">
+      <form class="board-form" id="meetForm" hidden>
+        <p class="label">📅 날짜와 시간을 골라 주세요</p>
+        <div id="meetPicker"></div>
+        <p class="label">👑 주최자: <b id="meetHost"></b> <small class="hint">(내 닉네임)</small></p>
+        <label class="label" for="meetText">장소·놀이</label>
+        <textarea id="meetText" maxlength="500"></textarea>
+        <p class="hint">📍 장소는 '3단지 키즈룸'처럼<br><b>공용 공간까지만</b> 적어 주세요.<br>집 주소(동·호수)는 적지 마세요.<span class="ttl-only"><br>지난 모임은 7일 뒤 자동으로 지워져요.</span></p>
+        <div class="board-row">
+          <span class="hint" id="meetCount">0 / 500</span>
+          <button class="btn primary" type="submit" id="meetSend">💪 모임 열기</button>
+        </div>
+        <p class="toast" id="meetMsg" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="sec up-sec" id="upSec" hidden>
+      <h2>다가오는 모임</h2>
+      <ul class="ops" id="meetList"></ul>
+      <p class="hint" id="meetEmpty"></p>
+    </section>
+
+    <section class="sec up-sec past-sec" id="pastSec" hidden>
+      <h2>지난 모임</h2>
+      <ul class="ops" id="pastList"></ul>
+    </section>
+    <p class="ttl-only tiny-note">🗑 SOS 요청·모임·댓글은 그 날짜가 지나고 <b>1주일 뒤</b> 자동으로 지워져요.</p>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+<script src="assets/common.js?v=202610110020"></script>
+<script src="assets/push.js?v=202610110020"></script>
+<script src="assets/meet.js?v=202610110020"></script>
+</body>
+</html>

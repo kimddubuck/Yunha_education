@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -9 72 45">
+  <!-- 날아가는 구원자 (오른쪽을 향해 쭉 뻗은 자세) + 등에 업힌 아기 -->
+  <path d="M44 13 C30 6 16 4 3 3 C9 9 10 14 6 20 C20 22 33 22 44 20 Z" fill="#e8382f"/>
+  <path d="M44 13 C32 9 20 8 9 8 C14 12 14 16 11 19 C22 20 33 20 44 19 Z" fill="#b8231c"/>
+  <rect x="9" y="13" width="20" height="5.5" rx="2.7" fill="#2f6fd6"/>
+  <rect x="9" y="19" width="19" height="5.5" rx="2.7" fill="#2f6fd6"/>
+  <rect x="3.5" y="12.6" width="8" height="6.3" rx="3" fill="#e8382f"/>
+  <rect x="3.5" y="18.6" width="8" height="6.3" rx="3" fill="#e8382f"/>
+  <rect x="26" y="11.5" width="22" height="14" rx="6" fill="#3b82f0"/>
+  <rect x="26" y="17.4" width="7" height="2.6" fill="#ffd23f"/>
+  <path d="M38 14.5 l3.5 3 l-3.5 3 l-3.5 -3 z" fill="#ffd23f"/>
+  <rect x="44" y="9.5" width="17" height="5" rx="2.5" fill="#3b82f0"/>
+  <circle cx="63" cy="12" r="3.4" fill="#f6c39a"/>
+  <circle cx="53" cy="20" r="7" fill="#f6c39a"/>
+  <path d="M46.2 18.5 C46.5 12.5 51 11.5 55 12.2 C58.5 13 60 15.5 59.5 18 C57 16 52 15.8 46.2 18.5 Z" fill="#2b2b2b"/>
+  <circle cx="56.2" cy="20.3" r="1" fill="#2b2b2b"/>
+  <path d="M54.3 23.4 q1.8 1.2 3.4 -0.2" stroke="#b5533c" stroke-width="1" fill="none" stroke-linecap="round"/>
+
+  <!-- 👶 등에 업힌 아기: 노란 우주복, 구원자 어깨를 꼭 잡고 있어요 -->
+  <path d="M28 12 C28 6 33 3.5 38 4 C42 4.5 44 7 44 12 Z" fill="#ffd23f"/>
+  <path d="M40 8 C43 8.5 45 10 46 12.5" stroke="#f6c39a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <circle cx="36.5" cy="-1" r="5.4" fill="#f9d2b0"/>
+  <path d="M33 -5.2 C34.5 -7.4 37.5 -7.6 39 -5.6 C37.6 -6.2 36.2 -5.6 35.6 -4.6 Z" fill="#6b4a2b"/>
+  <circle cx="38.6" cy="-1.3" r=".8" fill="#2b2b2b"/>
+  <circle cx="35.4" cy="-1.3" r=".8" fill="#2b2b2b"/>
+  <path d="M35.7 1.2 q1.2 1 2.4 0" stroke="#b5533c" stroke-width=".8" fill="none" stroke-linecap="round"/>
+  <circle cx="34" cy="0.6" r="1.1" fill="#ff9aa8" opacity=".7"/>
+  <circle cx="39.6" cy="0.6" r="1.1" fill="#ff9aa8" opacity=".7"/>
+</svg>
