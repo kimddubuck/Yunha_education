@@ -1036,3 +1036,6 @@ body{padding-block:16px 120px}
 /* 🦸 구원자가 테두리를 날 때 화면 밖으로 살짝 나가도 페이지 폭이 늘지 않게 (스크롤 막대가 움찔하던 것 막기) */
 html,body{overflow-x:hidden}
 @supports (overflow:clip){ html,body{overflow-x:clip} }
+/* 방장 멤버 목록: 어느 브라우저로 쓰는지 (카톡 등 앱 안 브라우저는 주황) */
+.mem-br{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--muted);vertical-align:2px;white-space:nowrap}
+.mem-br.inapp{border-color:#e0a400;color:#ffc83d}

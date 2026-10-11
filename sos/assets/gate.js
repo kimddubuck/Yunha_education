@@ -36,6 +36,17 @@ function sosBrowser(){
   const best = apple || and ? name === rec : true;
   return {name, ro, ie, best, rec, apple};
 }
+// 멤버 목록(방장 화면)에 보이는 '어느 브라우저로 쓰는지' 코드. 정해진 값만 저장해요
+function sosBrCode(){
+  const u = SOS_UA;
+  if(SOS_KAKAO) return 'kakao';
+  if(/Instagram/i.test(u)) return 'insta';
+  if(/NAVER\(inapp/i.test(u)) return 'naver';
+  if(/BAND\//i.test(u)) return 'band';
+  if(SOS_INAPP) return 'inapp';
+  if(matchMedia('(display-mode: standalone)').matches || navigator.standalone) return 'home';
+  return {'크롬': 'chrome', '사파리': 'safari', '삼성 인터넷': 'samsung', '웨일': 'whale'}[sosBrowser().name] || 'other';
+}
 const SOS_CONTACT = 'ifb1321@gmail.com';   // 운영자 문의 이메일 (이용약관·개인정보 페이지에 보여요). 비어 있으면 '준비 중'
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('[data-contact]').forEach(el => {
   if(SOS_CONTACT){ el.innerHTML = ''; const a = document.createElement('a'); a.href = 'mailto:' + SOS_CONTACT; a.textContent = SOS_CONTACT; el.appendChild(a); }
@@ -162,6 +173,7 @@ function sosReady(){
       ME.nick = snap.data().nick; if(ROOM.nick !== ME.nick) saveNick(ME.nick);
       // 마지막 접속(seen): 1시간에 한 번만 남겨요 (방장 멤버 목록에 '오늘 오전 8:12' 처럼 보여요). 오래 안 온 멤버·떠난 방장 판단에도 써요
       const last = snap.data().seen || snap.data().joinedAt;
+      try{ const br = sosBrCode(); if(snap.data().br !== br) mine.update({br}).catch(() => {}); }catch(e){}   // 규칙 v10 전에는 조용히 실패해요
       // 카톡 등 앱 안 브라우저에서 크롬·사파리로 넘어가는 중이면 접속으로 치지 않아요 (같은 사람이 두 번 접속한 것처럼 보이지 않게)
       if(!(SOS_INAPP && !window.__sosStay) && (!last || !last.toMillis || Date.now() - last.toMillis() > 3600e3)) mine.update({seen: firebase.firestore.FieldValue.serverTimestamp()}).catch(() => {});
     }
@@ -169,7 +181,7 @@ function sosReady(){
       let nick = ROOM.nick;
       while(!nick) nick = await askNick(`'${ROOM.name}' 방에서 쓸 닉네임`, '모임·SOS·댓글에 이 닉네임이 보여요. 단톡방 닉네임과 같게 하면 알아보기 쉬워요.');
       nick = nick.slice(0, NICK_MAX);
-      try{ await mine.set({nick, on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); }
+      try{ await mine.set({nick, on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); mine.update({br: sosBrCode()}).catch(() => {}); }
       catch(e){
         // 다른 탭이 같은 순간에 먼저 들어왔으면 그 문서를 그대로 써요
         let again = null; try{ again = await mine.get(); }catch(err){}
