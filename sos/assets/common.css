@@ -1039,3 +1039,5 @@ html,body{overflow-x:hidden}
 /* 방장 멤버 목록: 어느 브라우저로 쓰는지 (카톡 등 앱 안 브라우저는 주황) */
 .mem-br{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);font-size:11px;font-weight:700;color:var(--muted);vertical-align:2px;white-space:nowrap}
 .mem-br.inapp{border-color:#e0a400;color:#ffc83d}
+.mem-br{display:inline-flex;align-items:center;gap:4px;padding:1px 8px 1px 3px;vertical-align:1px;font-size:11.5px;color:var(--fg)}
+.mem-br svg{width:16px;height:16px;flex:none;display:block}
