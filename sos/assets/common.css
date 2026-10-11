@@ -1124,3 +1124,5 @@ html,body{overflow-x:hidden}
 /* 모임 카드 아래 버튼: 글자 크기 같게 · 높이 낮게 */
 .ops .meet-body > .act,.ops .act,.meet-card > .act,.ops .mod-row .mod-btn{min-height:32px!important;padding:4px 10px!important;margin-top:5px;font-size:13.5px!important;font-weight:800!important;line-height:1.3!important}
 .ops .mod-row{margin-top:5px;gap:5px}
+.app-tip.warn{border-color:#e8382f;background:rgba(232,56,47,.1)}
+.app-tip.warn p b{color:#ff8a80}

@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610111125">
+<link rel="manifest" href="manifest.webmanifest?v=202610111329">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610111125">
-<script src="assets/gate.js?v=202610111125"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610111329">
+<script src="assets/gate.js?v=202610111329"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -85,8 +85,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610111125"></script>
-<script src="assets/push.js?v=202610111125"></script>
+<script src="assets/common.js?v=202610111329"></script>
+<script src="assets/push.js?v=202610111329"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -139,14 +139,22 @@ sosSummary();
   // 📲 홈 맨 위 안내 띠: 홈 화면 앱이 아니면 보여요 (닫으면 3일 동안 숨김). 카톡 등 앱 안 브라우저는 따로 안내가 떠서 빼요
   const apple = ios || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 0);
   let hid = 0; try{ hid = +localStorage.getItem('sosAppTipOff') || 0; }catch(e){}
-  if(!(typeof SOS_INAPP !== 'undefined' && SOS_INAPP) && Date.now() - hid > 3 * 864e5){
-    const bar = document.createElement('div'); bar.className = 'app-tip';
-    bar.innerHTML = apple
+  if(Date.now() - hid > 3 * 864e5){
+    // 브라우저마다 다른 안내: 카톡 등 앱 안 / 아이폰 사파리 / 크롬·사파리가 아닌 브라우저 / 안드로이드 크롬
+    const inapp = typeof SOS_INAPP !== 'undefined' && SOS_INAPP, br = typeof sosBrowser === 'function' ? sosBrowser() : {name: '', best: true};
+    const where = /KAKAOTALK/i.test(navigator.userAgent) ? '카톡' : /Instagram/i.test(navigator.userAgent) ? '인스타' : /NAVER/i.test(navigator.userAgent) ? '네이버 앱' : /BAND\//i.test(navigator.userAgent) ? '밴드' : '앱';
+    const bar = document.createElement('div'); bar.className = 'app-tip' + (inapp ? ' warn' : '');
+    bar.innerHTML = inapp
+      ? `<p>💬 지금 <b>${where} 안</b>에서 보는 중<br>알림·설치가 안 돼요</p><small>${apple ? '사파리로' : '크롬으로'} 열어 주세요</small><div class="app-tip-btns"><button type="button" class="btn" data-tip-out>${apple ? '사파리로' : '크롬으로'} 열기</button><button type="button" class="btn ghost" data-tip-x>닫기</button></div>`
+      : !br.best
+      ? `<p>🌐 <b>${br.name}</b>에서는<br>알림이 잘 안 와요</p><small>${apple ? '사파리로' : '크롬으로'} 열어 주세요</small><div class="app-tip-btns"><button type="button" class="btn" data-tip-out>${apple ? '사파리로' : '크롬으로'} 열기</button><button type="button" class="btn ghost" data-tip-x>닫기</button></div>`
+      : apple
       ? '<p>🍎 아이폰은 <b>홈 화면에 추가</b>해야<br>알림이 와요</p><small>사파리 <b>공유(⬆︎) → 홈 화면에 추가</b></small><div class="app-tip-btns"><button type="button" class="btn" data-tip-how>방법 보기</button><button type="button" class="btn ghost" data-tip-x>닫기</button></div>'
       : '<p>📲 <b>홈 화면에 앱 설치</b>하면<br>알림이 잘 오고 바로 열려요</p><div class="app-tip-btns"><button type="button" class="btn" data-tip-how>설치하기</button><button type="button" class="btn ghost" data-tip-x>닫기</button></div>';
     document.querySelector('main').prepend(bar);
     bar.addEventListener('click', async e => {
       if(e.target.closest('[data-tip-x]')){ try{ localStorage.setItem('sosAppTipOff', Date.now()); }catch(err){} bar.remove(); return; }
+      if(e.target.closest('[data-tip-out]')){ try{ const L = sosEscapeLinks(sosEscapeTarget()); sosGo(apple ? (/KAKAOTALK/i.test(navigator.userAgent) ? L.kakaoOut : L.safari) : L.chrome); }catch(err){} return; }
       if(e.target.closest('[data-tip-how]')){
         if(deferred){ deferred.prompt(); await deferred.userChoice.catch(() => {}); deferred = null; return; }   // 안드로이드 크롬: 바로 설치 창
         $('#install').scrollIntoView({behavior: 'smooth', block: 'start'});
