@@ -769,20 +769,20 @@ function sosGoSos(data){
   if(!/^s\d{4}-\d{2}-\d{2}-\d{1,2}$/.test(SOS_GO) || !ME.uid) return;
   const m = SOS_GO.match(/^s(\d{4}-\d{2}-\d{2})-(\d{1,2})$/); SOS_GO = '';
   const day = m[1], h = +m[2];
-  if(day < todayStr() || (day === todayStr() && h < new Date().getHours())) return;   // 이미 지난 시간이면 안 띄워요
+  if(day < todayStr() || (day === todayStr() && h < new Date().getHours())){ if(typeof pushToast === 'function') pushToast('이미 지난 시간의 SOS예요'); return; }
   showSosNames(day, h, data[day], true);
 }
 function sosGoMeet(list){
   if(!/^m[A-Za-z0-9]{1,40}$/.test(SOS_GO) || !ME.uid || !list) return;
   const o = list.find(x => x.id === SOS_GO.slice(1)); SOS_GO = '';
-  if(!o || ((o.v || {})[ME.uid] || {}).s) return;   // 지난·취소된 모임이거나 이미 답했으면 안 띄워요
+  if(!o){ if(typeof pushToast === 'function') pushToast('이미 지났거나 취소된 모임이에요'); return; }   // 이미 답한 모임도 띄워요 (바뀐 내용 확인 · 답 바꾸기)
   showMeetVote(o);
 }
 function showMeetVote(o){
   const cnt = meetVotes(o);
   const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">🦸 구원자가 모임을 열었어요!</p>
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
-    <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
+    <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}" aria-pressed="${((o.v || {})[ME.uid] || {}).s === s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
     <p class="go-tip">👆 <b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊</p>
     <button type="button" class="go-later" data-pop="1">나중에 할게요</button>`});
   box.classList.add('hero-pop');

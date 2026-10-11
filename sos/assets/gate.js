@@ -71,6 +71,11 @@ function rememberRoom(room){
 const INVITE = new URLSearchParams(location.search).get('r');
 // 🔔 알림을 눌러 왔으면: 그 SOS 시간(s날짜-시)이나 모임(m아이디)을 바로 띄워 참여를 권해요 (sosGoSos · sosGoMeet)
 let SOS_GO = new URLSearchParams(location.search).get('go') || '';
+// 앱이 이미 열려 있을 때 알림을 누르면 서비스 워커가 주소를 보내 줘요 → 그 주소로 옮겨서 팝업을 띄워요
+if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  const d = e.data || {}; if(d.type !== 'sos-open' || typeof d.link !== 'string') return;
+  try{ const u = new URL(d.link, location.href); if(u.origin === location.origin) location.assign(u.href); }catch(err){}
+});
 // 초대 링크에 함께 실려 온 방 이름·초대한 사람 닉네임 (비밀번호 전에 '어느 방인지' 보여 주는 용도, 글자로만 써요)
 //  짧게 i = base64url(JSON [방 이름, 닉네임]) 로 실어요 (예전 링크의 n·by 도 읽어요)
 const INVITE_INFO = (() => { const q = new URLSearchParams(location.search);

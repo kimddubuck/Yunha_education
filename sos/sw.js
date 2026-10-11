@@ -42,6 +42,10 @@ self.addEventListener('notificationclick', e => {
     // 앱 화면(홈·SOS 달력)이 열려 있으면 그 창을 옮겨서 보여 주고, 다른 페이지(사용법 등)만 열려 있으면 새 창으로 열어요
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const app = wins.filter(w => 'focus' in w && /(\/|index\.html|meet\.html)(\?.*)?$/.test(new URL(w.url).pathname + new URL(w.url).search));
+    // 열려 있는 앱 창에 '이 주소로 가 주세요'를 보내고 앞으로 가져와요 (아이폰 홈 화면 앱은 navigate가 안 돼서 창이 직접 옮겨 가요)
+    for (const w of app) {
+      try { w.postMessage({ type: 'sos-open', link: url }); await w.focus(); return; } catch (err) { /* 다음 창 */ }
+    }
     for (const w of app) {
       try { const moved = await w.navigate(url); if (moved) return moved.focus(); } catch (err) { /* 이 창은 못 옮겨요 → 다음 창 */ }
     }
