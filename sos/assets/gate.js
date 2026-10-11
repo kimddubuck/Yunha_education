@@ -698,7 +698,7 @@ function showIntro(){
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
 ${GATE_STORY}
       <button type="button" class="g-ok">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(19장)</small></a>
       <a class="g-link" href="index.html#install">📲 홈 화면에 설치하는 방법 보기</a>
     </div>`;
   const close = () => { box.remove(); document.removeEventListener('keydown', esc); };
@@ -706,7 +706,8 @@ ${GATE_STORY}
   box.addEventListener('click', e => { if(e.target === box || e.target.closest('.g-close, .g-ok, .g-link')) close(); });
   document.addEventListener('keydown', esc);
   document.body.appendChild(box);
-  box.querySelector('.g-ok').focus();
+  box.querySelector('.g-ok').focus({preventScroll: true});   // 맨 아래 버튼에 초점을 줘도 화면은 맨 위부터 보여요
+  box.scrollTop = 0;
 }
 
 // 비밀번호 화면의 사용 방법: 이미 쓰는 모임 앱(단톡방·밴드 등) 옆에 붙여 쓰는 도구라는 것
@@ -728,7 +729,7 @@ const GATE_HOW_INVITE = `      <div class="g-guide">
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
         </ol>
-        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
+        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(19장)</small></a>
       </div>`;
 
 // 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
@@ -859,7 +860,7 @@ ${GATE_PASTE}
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(17장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(19장)</small></a>
 ${GATE_EXTRA}
     </div>
     <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>
