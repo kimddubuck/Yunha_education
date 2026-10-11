@@ -98,7 +98,6 @@ function meetCard(o, past){
   if(meet.open.has(o.id)) cb.textContent = '💬 댓글 접기';
   cb.className = 'join comment-toggle act cmt';
   row.append(jb, mb, nb); body.append(row);
-  if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; body.append(h); }
   body.append(cb);
   if(isMine(o)){   // ⏰ 연 사람은 끝나는 시간을 정하거나 바꿀 수 있어요
     const t = document.createElement('button'); t.type = 'button'; t.className = 'act edit'; t.dataset.editMeet = o.id;
