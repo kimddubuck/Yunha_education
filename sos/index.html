@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610110713">
+<link rel="manifest" href="manifest.webmanifest?v=202610111048">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610110713">
-<script src="assets/gate.js?v=202610110713"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610111048">
+<script src="assets/gate.js?v=202610111048"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -85,8 +85,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610110713"></script>
-<script src="assets/push.js?v=202610110713"></script>
+<script src="assets/common.js?v=202610111048"></script>
+<script src="assets/push.js?v=202610111048"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -131,12 +131,30 @@ sosSummary();
 })();
 // 📲 설치 안내: 이미 앱으로 열었으면 숨기고, 내 휴대폰 종류의 안내를 먼저 펼쳐요
 (function installGuide(){
+  let deferred = null;
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if(standalone){ $('#install').hidden = true; return; }
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   (ios ? $('#howIos') : $('#howAndroid')).open = true;
+  // 📲 홈 맨 위 안내 띠: 홈 화면 앱이 아니면 보여요 (닫으면 3일 동안 숨김). 카톡 등 앱 안 브라우저는 따로 안내가 떠서 빼요
+  const apple = ios || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 0);
+  let hid = 0; try{ hid = +localStorage.getItem('sosAppTipOff') || 0; }catch(e){}
+  if(!(typeof SOS_INAPP !== 'undefined' && SOS_INAPP) && Date.now() - hid > 3 * 864e5){
+    const bar = document.createElement('div'); bar.className = 'app-tip';
+    bar.innerHTML = apple
+      ? '<p>🍎 아이폰은 <b>홈 화면에 추가</b>해야<br>알림이 와요</p><small>사파리 <b>공유(⬆︎) → 홈 화면에 추가</b></small><div class="app-tip-btns"><button type="button" class="btn" data-tip-how>방법 보기</button><button type="button" class="btn ghost" data-tip-x>닫기</button></div>'
+      : '<p>📲 <b>홈 화면에 앱 설치</b>하면<br>알림이 잘 오고 바로 열려요</p><div class="app-tip-btns"><button type="button" class="btn" data-tip-how>설치하기</button><button type="button" class="btn ghost" data-tip-x>닫기</button></div>';
+    document.querySelector('main').prepend(bar);
+    bar.addEventListener('click', async e => {
+      if(e.target.closest('[data-tip-x]')){ try{ localStorage.setItem('sosAppTipOff', Date.now()); }catch(err){} bar.remove(); return; }
+      if(e.target.closest('[data-tip-how]')){
+        if(deferred){ deferred.prompt(); await deferred.userChoice.catch(() => {}); deferred = null; return; }   // 안드로이드 크롬: 바로 설치 창
+        $('#install').scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+    });
+    window.addEventListener('appinstalled', () => bar.remove());
+  }
   // 안드로이드 크롬은 버튼 하나로 바로 설치할 수 있을 때가 있어요
-  let deferred = null;
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; $('#installBtn').hidden = false; });
   $('#installBtn').addEventListener('click', async () => {
     if(!deferred) return;
@@ -154,7 +172,7 @@ watchMeets(list => {
     const li = document.createElement('li'); li.className = 'meet-card';
     const body = document.createElement('div'); body.className = 'meet-body';
     const w = document.createElement('span'); w.className = 'op-when';
-    w.textContent = `${dayLabel(o.date)} ${o.slot || ''}${o.date===todayStr() ? ' · 오늘' : ''}`;
+    w.textContent = `${dayLabel(o.date)} ${meetWhen(o)}${o.date===todayStr() ? ' · 오늘' : ''}`;
     const t = document.createElement('p'); t.className = 'op-text'; t.textContent = o.text;   // 글은 textContent로만
     // 👀 참석자 — 시간 옆에 작게 (숫자는 아래 참석·미확정·불참 버튼 안에 보여요)
     const n = document.createElement('button'); n.type = 'button'; n.className = 'who-mini'; n.textContent = '👀 참석자';

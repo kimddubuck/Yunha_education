@@ -65,7 +65,7 @@ function meetCard(o, past){
   const today = todayStr(), cs = (meet.comments[o.id] || []).filter(c => !c.deleted);
   const live = !past && !o.cancelled;   // 홈 카드와 같은 모양 (큰 날짜·시간 + 👀 참석자). 다가오는 모임만 버튼 안에 숫자
   const w = document.createElement('span'); w.className = 'op-when';
-  w.textContent = `${dayLabel(o.date)} ${o.slot || ''}${o.date===today ? ' · 오늘' : ''}`;
+  w.textContent = `${dayLabel(o.date)} ${meetWhen(o)}${o.date===today ? ' · 오늘' : ''}`;
   const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
   const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
   // 👀 참석자 — 시간 줄 오른쪽 위 (누르면 누가 참석·불참했는지 닉네임 팝업). 지난 모임도 같은 모양
@@ -172,12 +172,25 @@ function renderMeets(){
 }
 
 /* ---------- 달력 + 시간 고르기 (common.js의 createPicker) ---------- */
-const meetPicker = createPicker($('#meetPicker'), {whenText: st => `${dayLabel(st.date)}${st.slot ? ' ' + st.slot : ''}에 모여요`});
+let meetEnd = null;   // 끝나는 시간 ('11시'). 시작 시간을 고르면 2시간 뒤로 먼저 골라 둬요
+const meetPicker = createPicker($('#meetPicker'), {
+  whenText: st => `${dayLabel(st.date)}${st.slot ? ' ' + st.slot + (meetEnd ? '~' + meetEnd : '') : ''}에 모여요`,
+  onChange: st => { const s = parseInt(st.slot); if(s && !(meetEnd && parseInt(meetEnd) > s && parseInt(meetEnd) <= s + 4)) meetEnd = Math.min(s + 2, 22) + '시'; if(!s) meetEnd = null; drawEnd(); meetPicker.render(); }
+});
+// ⏰ 끝나는 시간: 시작 1~4시간 뒤 (밤 10시까지)
+function drawEnd(){
+  const box = $('#meetEnd'), s = parseInt(meetPicker.state.slot);
+  if(!s){ box.innerHTML = '<p class="label">⏰ 끝나는 시간 <small class="hint">시작 시간을 먼저 골라 주세요</small></p>'; return; }
+  const opts = []; for(let h = s + 1; h <= Math.min(s + 4, 22); h++) opts.push(h);
+  box.innerHTML = '<p class="label">⏰ 끝나는 시간</p><div class="end-row">' + opts.map(h => `<button type="button" class="end-btn" data-end="${h}시" aria-pressed="${meetEnd === h + '시'}">~${h}시<small>${h - s}시간</small></button>`).join('') + '</div>';
+}
+$('#meetEnd').addEventListener('click', e => { const b = e.target.closest('[data-end]'); if(!b) return; meetEnd = b.dataset.end; drawEnd(); meetPicker.render(); });
+drawEnd();
 // SOS에서 '＋ 모임 만들기'를 누르면 고른 날짜·시간을 채워서 열어요
 function openMeetForm(date, slot){
   if(date && date >= todayStr() && date <= lastBookDay()){ meetPicker.state.date = date; const [y,m] = date.split('-').map(Number); meetPicker.state.month = {y,m}; }
-  if(slot) meetPicker.state.slot = slot;
-  meetPicker.render(); $('#meetForm').hidden = false;
+  if(slot){ meetPicker.state.slot = slot; meetEnd = Math.min(parseInt(slot) + 2, 22) + '시'; }
+  drawEnd(); meetPicker.render(); $('#meetForm').hidden = false;
   $('#meetForm').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -194,12 +207,16 @@ $('#meetForm').addEventListener('submit', async e => {
   if(!meet.col) return;
   $('#meetSend').disabled = true;
   try{
-    const ref = await meet.col.add({topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    const doc = {topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()};
+    if(meetEnd && parseInt(meetEnd) > parseInt(doc.slot)) doc.end = meetEnd;
+    let ref;
+    try{ ref = await meet.col.add(doc); }
+    catch(err){ if(!(doc.end && err && err.code === 'permission-denied')) throw err; delete doc.end; ref = await meet.col.add(doc); }   // 서버 규칙(v11) 게시 전이면 끝나는 시간 없이 저장해요
     $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
     if(ref && ref.id) addMyMeet(ref.id);
     // 🙋 연 사람은 처음부터 '참석'으로 (나중에 미확정·불참으로 바꿀 수 있어요). 규칙상 만들 때는 v 를 못 넣어서 바로 이어서 표시해요
     if(ref && ref.id) ref.update({['v.' + ME.uid]: {s: 'join', n: host}}).catch(() => {});
-    if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetPicker.state.slot, host);   // 방에 새 모임 알림
+    if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetWhen(doc), host);   // 방에 새 모임 알림
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
   }catch(err){ sosTrouble(err); $('#meetMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
   finally{ $('#meetSend').disabled = false; }

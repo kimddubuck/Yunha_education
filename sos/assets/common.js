@@ -108,6 +108,8 @@ function copCollection(){ const r = roomRef(); return r && r.collection('opinion
 
 // 모임 요청(topic 'meet') 중 오늘 이후 것을 가까운 순으로 cb에 넘겨요. 못 불러오면 null
 // 오늘 모임 중 시작 시간이 이미 지난 것 (예: 10시 40분이면 9시 모임). 그 시간 안(9시 30분)에는 아직 보여요
+// 모임 시간 글자: '9시' 또는 '9시~11시' (끝나는 시간이 있으면)
+function meetWhen(o){ return (o.slot || '') + (o.end ? '~' + o.end : ''); }
 function meetStarted(o){ return o.date === todayStr() && slotOrder(o.slot) < new Date().getHours(); }
 function watchMeets(cb){
   const col = copCollection(); if(!col){ cb(null); return; }
@@ -139,7 +141,7 @@ async function showVoters(o){
   const chips = list => list.length ? list.map(x => `<span class="who-chip">${esc(x)}</span>`).join('') : '<span class="who-none">없어요</span>';
   const body = VOTE_KINDS.map(([s, , label]) => `<p class="who-h">${label} ${v[s].count}명</p><div class="who-list">${chips(v[s].names.map(x => x.n))}${v[s].old ? `<span class="who-none">+ 예전 기록 ${v[s].old}명</span>` : ''}</div>`).join('')
     + `<p class="who-h">🤷 아직 답 안 함</p><div class="who-list">${chips(members.filter(m => !answered.has(m.uid)).map(m => m.nick))}</div>`;
-  sosInfo({icon: '🙌', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body});
+  sosInfo({icon: '🙌', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body});
 }
 
 // 홈 화면 설치(웹앱)용 서비스 워커 등록 — 캐시는 하지 않아요
@@ -768,7 +770,7 @@ function sosGoMeet(list){
 }
 function showMeetVote(o){
   const cnt = meetVotes(o);
-  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body: `<p class="go-nudge">🦸 구원자가 모임을 열었어요!</p>
+  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">🦸 구원자가 모임을 열었어요!</p>
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
     <p class="go-tip">👆 <b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊</p>
