@@ -623,6 +623,12 @@ function sosReport(kind, mid, cid){
         ${ME.owner && appeals.length ? '<div class="mem-appeal"><p class="who-h">🙋 다시 받아 달라는 부탁 <b class="mem-ap-n"></b></p><ul class="mem-list"></ul></div>' : ''}
         ${ownerBox(list)}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
+        ${ME.owner ? `<details class="mem-guide"><summary>🔍 중복 닉네임 관리 <small>방장만 보여요</small></summary>
+          <p>이름 옆 <b>로고</b>는 그 멤버가<br><b>어떤 브라우저로 들어왔는지</b>예요.</p>
+          <ul class="mem-legend">${['home', 'chrome', 'safari', 'samsung', 'kakao', 'insta', 'naver', 'band'].map(k => `<li${['kakao', 'insta', 'naver', 'band'].includes(k) ? ' class="warn"' : ''}>${IC[k]}<span>${BR[k]}</span></li>`).join('')}</ul>
+          <p>앱은 <b>브라우저마다 따로 로그인</b>돼요.<br>같은 사람이 카톡 링크와 크롬으로 각각<br>들어오면 멤버가 두 명으로 보여요.</p>
+          <p class="mem-guide-do">👉 비슷한 이름이 두 개면<br><b>노란 테두리(카톡 등)</b> 쪽을 내보내기 해 주세요</p>
+          <p class="mem-guide-sm">로고는 멤버가 앱을 한 번 열면 생겨요.<br>헷갈리면 단톡방에서 본인에게 먼저 물어봐 주세요.</p></details>` : ''}
         <ul class="mem-list">${sortMembers(list).map(row).join('')}</ul>
         ${ME.owner ? '<div class="mem-out"></div>' : ''}`});
     // 방장: 다시 받아 달라는 부탁(위쪽) + 내보낸 사람 목록(아래쪽) — 닉네임·부탁 글은 글자로만

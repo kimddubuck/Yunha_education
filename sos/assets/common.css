@@ -1051,3 +1051,18 @@ html,body{overflow-x:hidden}
 /* 방장·나 꼬리표가 붙은 줄은 자리가 좁아서 로고만 (이름이 잘리지 않게) */
 .mem-list li:has(.mem-tag) .mem-br i{display:none}
 .mem-list li:has(.mem-tag) .mem-br{padding:1px}
+/* 방장 멤버 창: 중복 닉네임 관리 안내 (접기) */
+.mem-guide{border:1.5px solid var(--line);border-radius:12px;padding:0 12px;margin:0 0 8px;text-align:left}
+.mem-guide summary{cursor:pointer;padding:11px 0;font-weight:800;font-size:14.5px;color:var(--fg)}
+.mem-guide summary small{font-weight:600;font-size:11.5px;color:var(--muted);margin-left:4px}
+.mem-guide[open]{padding-bottom:12px;border-color:#e0a400}
+.mem-guide p{margin:0 0 8px;font-size:13px;line-height:1.55;color:var(--muted)}
+.mem-guide p b{color:var(--fg)}
+.mem-guide .mem-guide-do{color:var(--fg);font-weight:700}
+.mem-guide .mem-guide-do b{color:#ffc83d}
+.mem-guide .mem-guide-sm{font-size:12px;margin:0}
+.mem-legend{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mem-legend li{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--fg)}
+.mem-legend li.warn{border-color:#e0a400;color:#ffc83d}
+.mem-legend svg{width:18px;height:18px;flex:none}
+.mem-guide .mem-legend{margin:0 0 10px!important;padding:0!important}
