@@ -1121,3 +1121,6 @@ html,body{overflow-x:hidden}
 .ops .act.cmt[aria-expanded="true"]{background:#f2b531!important}
 .ops .act.del.confirm{background:#e8382f!important}
 .ops .mod-row .mod-btn{background:#2f3639!important;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+/* 모임 카드 아래 버튼: 글자 크기 같게 · 높이 낮게 */
+.ops .meet-body > .act,.ops .act,.meet-card > .act,.ops .mod-row .mod-btn{min-height:32px!important;padding:4px 10px!important;margin-top:5px;font-size:13.5px!important;font-weight:800!important;line-height:1.3!important}
+.ops .mod-row{margin-top:5px;gap:5px}
