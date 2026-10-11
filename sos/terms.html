@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610110428">
+<link rel="manifest" href="manifest.webmanifest?v=202610110430">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610110428">
-<script src="assets/gate.js?v=202610110428"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610110430">
+<script src="assets/gate.js?v=202610110430"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -62,7 +62,7 @@
       <h2>👑 방장은 이렇게 해요</h2>
       <ul class="safe-short">
         <li>방을 만든 사람이 방장이에요.<br>멤버 관리와 방 지우기를 해요.</li>
-        <li>방장에게는 멤버의 <b>마지막 접속 시간</b>이<br>최근 순으로 보여요.<br>중복 기록·오래 안 온 멤버를 정리할 때 써요.</li>
+        <li>방장에게는 멤버의 <b>마지막 접속 시간</b>과<br><b>쓰는 브라우저</b>(크롬·카톡 등 로고)가 보여요.<br>중복 기록·오래 안 온 멤버를 정리할 때 써요.</li>
         <li>공동육아를 졸업하면 <b>👑 방장 넘기기</b>로<br>다른 멤버에게 넘겨 주세요.</li>
         <li>방장이 60일 넘게 안 들어오거나 나가면,<br>멤버 누구나 방장을 <b>이어받을</b> 수 있어요.</li>
         <li>실수로 내보내진 사람은<br><b>🙋 다시 받아 달라는 부탁</b>을<br>보낼 수 있어요.<br>방장은 👥 멤버의 빨간 <b>N</b>으로 보고<br>허용하거나 거절해요.</li>
@@ -75,6 +75,7 @@
       <ul class="safe-short">
         <li>키즈룸·커뮤니티·놀이터처럼<br><b>공용 공간</b>에서 만나요.</li>
         <li>아이는 <b>보호자가 직접</b> 돌봐요.</li>
+        <li>모임을 연 사람은 처음부터 <b>참석</b>으로 표시돼요.<br>못 가게 되면 미확정·불참으로 바꿔 주세요.</li>
         <li>모임 중 생긴 일은 참여한 사람들끼리<br>서로 존중하며 해결해 주세요.<br>운영자는 모임 자체에 책임지지 않아요.</li>
       </ul>
     </section>
@@ -83,11 +84,12 @@
       <h2>🔒 개인정보는 이렇게 다뤄요</h2>
       <ul class="safe-short">
         <li><b>실명·전화번호·이메일은 받지 않아요.</b><br>방에서 쓸 <b>닉네임</b>만 정해요.</li>
-        <li>서버에 남는 것: 방 이름, 닉네임,<br>마지막 접속 시간, SOS 요청 날짜·시간,<br>모임 글·참석·댓글,<br>내보낸 시각과 부탁 글<br>(30일 뒤 또는 허용·거절하면 지워져요)</li>
+        <li>서버에 남는 것: 방 이름, 닉네임,<br>마지막 접속 시간, 브라우저 종류,<br>SOS 요청 날짜·시간,<br>모임 글·참석·댓글,<br>내보낸 시각과 부탁 글<br>(30일 뒤 또는 허용·거절하면 지워져요)</li>
         <li>비밀번호는 저장하지 않아요.<br><b>우리 방 사람만</b> 기록을 볼 수 있어요.</li>
         <li>SOS·모임·댓글은 날짜가 지나고<br><b>7일 뒤 자동으로 지워져요.</b></li>
         <li>휴대폰마다 보이지 않는 로그인 번호가<br>하나 생겨요. 멤버인지 확인하는 데만 써요.</li>
         <li>알림을 켜면 <b>알림 주소</b>만<br>Google 알림 서버에 등록돼요.</li>
+        <li>운영자는 날짜별 <b>방문자 수 숫자</b>만 봐요.<br>누가 들어왔는지는 남기지 않아요.</li>
       </ul>
       <p class="hint">자세한 내용은 <a href="safety.html">🔒 개인정보 안내</a>에 있어요.</p>
     </section>
@@ -103,13 +105,13 @@
     <section class="safe-card">
       <h2>✉️ 문의 · 신고</h2>
       <p>운영자: <span data-contact></span><br>개인정보 안내는 <a href="safety.html">🔒 개인정보 페이지</a>에 있어요.</p>
-      <p class="hint">이 약관은 2026년 10월 8일부터 적용돼요.<br>바뀌면 앱 안에서 알려 드려요.</p>
+      <p class="hint">이 약관은 2026년 10월 11일부터 적용돼요.<br>바뀌면 앱 안에서 알려 드려요.</p>
     </section>
   </main>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610110428"></script>
+<script src="assets/common.js?v=202610110430"></script>
 </body>
 </html>
