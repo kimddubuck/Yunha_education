@@ -605,6 +605,9 @@ function gateCss(){
     #gate .g-chip.meet{background:var(--pick,#2a9095);color:var(--pick-fg,#fff)}
     #gate .g-chip.quiet, #gate .g-chip.gone{background:transparent;color:var(--muted,#736e75);font-weight:500}
     #gate .g-legend{font-size:12.5px!important;margin:0}
+    #gate .g-apptip{margin:0;padding:10px 12px;border-radius:12px;border:1.5px solid #e0a400;background:rgba(255,213,74,.08);font-size:13.5px!important;line-height:1.5;color:var(--fg,#22282a);text-align:center}
+    #gate .g-apptip b{color:#ffd54a}
+    #gate .g-apptip small{font-size:12px;color:var(--muted,#9aa)}
     #gate .g-listbox{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;border:1.5px solid var(--line,#e3e3e5);background:var(--bg,#fff);text-align:left}
     #gate .g-list-h{margin:0;font-weight:800;font-size:15px!important;color:var(--fg,#22282a)!important}
     #gate .g-list-h small{font-weight:500;color:var(--muted,#736e75);font-size:12px;margin-left:4px}
@@ -838,6 +841,7 @@ ${invite && !closable ? GATE_HOW_INVITE : ''}`;
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
       ${list}
       <p class="g-legend">🆘 = 1주일 안에 SOS 보낸 사람 · <img class="g-hero" src="assets/hero-up.svg" alt=""> = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
+      ${matchMedia('(display-mode: standalone)').matches || navigator.standalone ? '' : '<p class="g-apptip">📲 원활한 사용을 위해<br><b>홈 화면 앱 설치</b>를 권장해요<br><small>카톡 링크 대신 홈 화면 아이콘으로 열면<br>로그인이 안 섞이고 알림도 잘 와요</small></p>'}
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
 ${formHtml.replace(list, '')}
 ${GATE_PASTE}
