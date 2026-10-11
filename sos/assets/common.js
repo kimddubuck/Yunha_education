@@ -768,10 +768,10 @@ function sosGoMeet(list){
 }
 function showMeetVote(o){
   const cnt = meetVotes(o);
-  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body: `<p class="go-nudge">🦸 용기 낸 구원자가 모임을 열었어요!<br><b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요 👇</p>
+  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${o.slot || ''} 모임`, body: `<p class="go-nudge">🦸 구원자가 모임을 열었어요!<br><b>참석 · 미확정 · 불참</b> 중<br>하나를 꼭 눌러 주세요 👇</p>
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
-    <p class="go-tip"><b>못 가도 🙅 불참</b>을 눌러 주세요.<br>미리 알려 주면 주최자가 준비하기 편해요 😊</p>
+    <p class="go-tip"><b>못 가도 🙅 불참</b>을 눌러 주세요<br>미리 알려 주면<br>주최자가 준비하기 편해요 😊</p>
     <button type="button" class="go-later" data-pop="1">나중에 할게요</button>`});
   box.classList.add('hero-pop');
   if(o.host) box.querySelector('.go-host').textContent = `👑 ${o.host} 주최`;   // 글은 글자로만
