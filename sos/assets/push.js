@@ -151,7 +151,7 @@ async function pushNewMeet(meetId, date, slot, host){
     pushLS.set('sosPushMeetTopics', [...pushLS.get('sosPushMeetTopics', []), {t, room: ROOM.roomId}].slice(-30));
     pushSync(false).catch(() => {});
   }
-  pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 갈 수 있는지 눌러서 알려 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
+  pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 참석·미확정·불참 중 하나를 눌러 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
 }
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){
