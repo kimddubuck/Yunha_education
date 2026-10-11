@@ -24,7 +24,11 @@ function meetInit(){
     }, () => {});
     meet.col.where('date', '>=', dayStr(-30)).orderBy('date', 'desc').limit(300).onSnapshot(serverOnly(snap => {   // 많아도 최신 300개
       meet.items = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(o => o.topic==='meet' && o.date);
-      watchComments(); renderMeets();
+      watchComments();
+      const ch = location.hash.match(/^#c=([\w-]{1,40})$/);   // 홈의 '💬 댓글'로 왔으면 그 모임 댓글을 펼쳐요
+      if(ch && meet.items.some(o => o.id === ch[1])){ meet.open.add(ch[1]); history.replaceState(null, '', location.pathname);
+        renderMeets(); setTimeout(() => { const t = document.querySelector(`[data-toggle="${ch[1]}"]`); if(t) t.closest('li').scrollIntoView({block: 'start', behavior: 'smooth'}); }, 200); }
+      else renderMeets();
     }), err => { sosTrouble(err); $('#upSec').hidden = false; $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
   });
 }
@@ -92,17 +96,17 @@ function meetCard(o, past){
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
   cb.textContent = cs.length ? `💬 댓글 ${cs.length}개 보기` : '💬 댓글 남기기';
   if(meet.open.has(o.id)) cb.textContent = '💬 댓글 접기';
-  cb.className = 'join comment-toggle';
+  cb.className = 'join comment-toggle act cmt';
   row.append(jb, mb, nb); body.append(row);
   if(mine){ const h = document.createElement('p'); h.className = 'vote-hint'; h.textContent = '다시 누르면 취소돼요'; body.append(h); }
   body.append(cb);
   if(isMine(o)){   // ⏰ 연 사람은 끝나는 시간을 정하거나 바꿀 수 있어요
-    const t = document.createElement('button'); t.type = 'button'; t.className = 'join end-edit'; t.dataset.editMeet = o.id;
-    t.textContent = '✏️ 모임 수정하기 (날짜·시간·장소)';
+    const t = document.createElement('button'); t.type = 'button'; t.className = 'act edit'; t.dataset.editMeet = o.id;
+    t.textContent = '✏️ 모임 수정하기';
     body.appendChild(t);
   }
   if(isMine(o) || ME.owner){
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet' + (meet.confirm===o.id ? ' confirm' : ''); x.dataset.cancelMeet = o.id;
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet act del' + (meet.confirm===o.id ? ' confirm' : ''); x.dataset.cancelMeet = o.id;
     x.textContent = meet.cancelErr && meet.cancelErr.id===o.id ? meet.cancelErr.msg
       : meet.confirm===o.id ? '⚠️ 정말 취소할까요?\n한 번 더 누르면 취소돼요' : isMine(o) ? '🗑 내가 연 모임 취소하기' : '🗑 모임 취소하기 (방장)';
     body.appendChild(x);

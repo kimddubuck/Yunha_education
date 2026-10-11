@@ -1101,3 +1101,17 @@ html,body{overflow-x:hidden}
 .time-btn.r-mid{background:rgba(79,193,189,.22);border-color:rgba(79,193,189,.5);color:var(--fg)}
 .time-btn.r-start,.time-btn.r-end{background:var(--pick);border-color:var(--pick);color:var(--pick-fg,#0d1b1b)}
 .time-btn.r-start small,.time-btn.r-end small{color:inherit;font-weight:800}
+/* 모임 카드 아래 버튼들: 모양 통일 (꽉 찬 폭 · 같은 높이 · 둥근 네모) */
+.ops .meet-body > .act,.ops .act,.meet-card > .act{align-self:stretch;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;box-sizing:border-box;margin:6px 0 0;padding:8px 12px!important;min-height:40px;border:1.5px solid var(--line)!important;border-radius:12px!important;background:transparent!important;color:var(--fg);font:inherit;font-size:14px!important;font-weight:800!important;line-height:1.35;text-align:center;text-decoration:none;box-shadow:none!important;cursor:pointer}
+.ops .act.cmt{border-color:#f2b531!important;color:#ffd77a}
+.ops .act.cmt[aria-expanded="true"]{background:#f2b531!important;color:#3a2a00}
+.ops .act.edit{border-color:#4fc1bd!important;color:#7fe0dc}
+.ops .act.del{border-color:#e8382f!important;color:#ff7a70}
+.ops .act.del.confirm{background:#e8382f!important;color:#fff}
+.ops .mod-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.ops .mod-row .mod-btn{min-height:34px;border-radius:12px;font-size:12.5px;border-width:1.5px}
+.ops .mod-row .mod-btn:only-child,.ops .mod-row .mod-flag + .mod-btn:last-child{grid-column:1 / -1}
+.ops .mod-row .mod-flag{grid-column:1 / -1}
+.meet-card > .vote-hint{margin:4px 0 0}
+.meet-card > .act{grid-column:1 / -1}
+.ops .meet-body > .act,.ops .act,.meet-card > .act{min-height:36px;padding:6px 12px!important;margin-top:5px}
