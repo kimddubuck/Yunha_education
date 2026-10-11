@@ -197,6 +197,8 @@ $('#meetForm').addEventListener('submit', async e => {
     const ref = await meet.col.add({topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
     $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
     if(ref && ref.id) addMyMeet(ref.id);
+    // 🙋 연 사람은 처음부터 '참석'으로 (나중에 미확정·불참으로 바꿀 수 있어요). 규칙상 만들 때는 v 를 못 넣어서 바로 이어서 표시해요
+    if(ref && ref.id) ref.update({['v.' + ME.uid]: {s: 'join', n: host}}).catch(() => {});
     if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetPicker.state.slot, host);   // 방에 새 모임 알림
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
   }catch(err){ sosTrouble(err); $('#meetMsg').textContent = '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
