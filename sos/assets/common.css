@@ -1126,3 +1126,9 @@ html,body{overflow-x:hidden}
 .ops .mod-row{margin-top:5px;gap:5px}
 .app-tip.warn{border-color:#e8382f;background:rgba(232,56,47,.1)}
 .app-tip.warn p b{color:#ff8a80}
+/* 미설치 안내: 좁은 폰에서도 안 잘리게 버튼은 아래 한 줄로 */
+.app-tip{grid-template-columns:1fr;gap:3px}
+.app-tip p,.app-tip small{grid-column:1;min-width:0;white-space:normal;word-break:keep-all}
+.app-tip-btns{grid-column:1;grid-row:auto;flex-direction:row;gap:6px;margin-top:6px}
+.app-tip-btns .btn:first-child{flex:1}
+.app-tip-btns .btn{padding:6px 12px}
