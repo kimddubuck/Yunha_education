@@ -784,9 +784,16 @@ function mySosIn(o){
   const mine = sosMine((window.__sosData || {})[o.date]), s = parseInt(o.slot), e = o.end ? parseInt(o.end) : s + 1;
   return mine.some(h => h >= s && h < e);
 }
+// 모임 시간 안에 SOS 보낸 사람들 닉네임 (나는 '나'로 맨 앞에)
+function sosNamesIn(o){
+  const p = ((window.__sosData || {})[o.date] || {}).p || {}, s = parseInt(o.slot), e = o.end ? parseInt(o.end) : s + 1;
+  const ids = Object.keys(p).filter(id => (p[id].h || []).some(h => h >= s && h < e));
+  return ids.sort((a, b) => (b === ME.uid) - (a === ME.uid)).map(id => id === ME.uid ? '나' : (p[id].n || '이웃'));
+}
 function showMeetVote(o){
-  const cnt = meetVotes(o);
+  const cnt = meetVotes(o), sosN = sosNamesIn(o);
   const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">${mySosIn(o) ? '🆘 내가 SOS 보낸 시간에<br>구원자가 모임을 열었어요!' : '🦸 구원자가 모임을 열었어요!'}</p>
+    ${sosN.length ? `<div class="go-sos"><p>🆘 이 시간 SOS 보낸 이웃 <b>${sosN.length}명</b></p><div class="who-list">${sosN.map(n => `<span class="who-chip sos">${esc(n)}</span>`).join('')}</div></div>` : ''}
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}" aria-pressed="${((o.v || {})[ME.uid] || {}).s === s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
     <p class="go-tip">👆 <b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊</p>
