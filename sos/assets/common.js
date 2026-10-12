@@ -253,6 +253,7 @@ async function sosToggleHour(day, h, v){
   const hours = on ? mine.filter(x => x !== h) : [...mine, h].sort((x, y) => x - y);
   if(hours.length) await col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true});
   else await col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
+  if(typeof pushSosHours === 'function') pushSosHours(day, hours);
   if(!on && typeof pushSosCrowd === 'function') pushSosCrowd(day, h + '시', sosHourCount(v, h) + 1);   // 방 사람들에게 SOS 알림 (3명부터는 '몰렸어요')
   const nv = {...(v || {}), p: {...((v && v.p) || {})}};
   if(hours.length) nv.p[ME.uid] = {h: hours, n: ME.nick}; else delete nv.p[ME.uid];
@@ -330,9 +331,9 @@ function sosInit(){
     box.innerHTML = `<button type="button" class="sos-mine-h" data-mine-toggle aria-expanded="${open}">📌 내가 요청한 SOS <small>${list.length}개</small><span class="sos-mine-arrow" aria-hidden="true">${open ? '접기 ▲' : '펼치기 ▼'}</span></button>` + (open ? list.map(([d, h]) =>
       `<div class="sos-mine-row"><span>${dayLabel(d)} ${h}시</span><button type="button" class="sos-cancel" data-cancel="${d}|${h}">요청 취소</button></div>`).join('') : '');
   }
-  const put = (day, hours) => hours.length
+  const put = (day, hours) => { if(typeof pushSosHours === 'function') pushSosHours(day, hours); return hours.length
     ? col.doc(day).set({p: {[ME.uid]: {h: hours, n: ME.nick}}, ...ttl(day)}, {merge: true})
-    : col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()});
+    : col.doc(day).update({['p.' + ME.uid]: firebase.firestore.FieldValue.delete()}); };
   col = sosWatch((d, c, err) => { col = c; if(d) data = d; if(err) broken = true; picker.render(); draw(); });
   setInterval(draw, 60000);   // 켜 둔 채로 시간이 지나도 지난 SOS는 알아서 빠져요
   root.querySelector('.sos-mine').addEventListener('click', async e => {
@@ -400,7 +401,7 @@ function sosSummary(){
     sel = +b.dataset.sosDay; draw(last);
   });
   draw(null);
-  sosWatch((d, c, err) => { if(err) failed = true; draw(d); if(d) sosGoSos(d); });
+  sosWatch((d, c, err) => { if(err) failed = true; if(d) window.__sosData = d; draw(d); if(d) sosGoSos(d); });
   let hr = new Date().getHours();   // 켜 둔 채로 정각이 지나면 그 시간 칸도 막아요
   setInterval(() => { const h = new Date().getHours(); if(h !== hr){ hr = h; draw(last); } }, 60000);
 }
@@ -778,9 +779,14 @@ function sosGoMeet(list){
   if(!o){ if(typeof pushToast === 'function') pushToast('이미 지났거나 취소된 모임이에요'); return; }   // 이미 답한 모임도 띄워요 (바뀐 내용 확인 · 답 바꾸기)
   showMeetVote(o);
 }
+// 내가 이 모임 시간에 SOS를 보냈는지 (홈의 SOS 달력 데이터로)
+function mySosIn(o){
+  const mine = sosMine((window.__sosData || {})[o.date]), s = parseInt(o.slot), e = o.end ? parseInt(o.end) : s + 1;
+  return mine.some(h => h >= s && h < e);
+}
 function showMeetVote(o){
   const cnt = meetVotes(o);
-  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">🦸 구원자가 모임을 열었어요!</p>
+  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">${mySosIn(o) ? '🆘 내가 SOS 보낸 시간에<br>구원자가 모임을 열었어요!' : '🦸 구원자가 모임을 열었어요!'}</p>
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}" aria-pressed="${((o.v || {})[ME.uid] || {}).s === s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
     <p class="go-tip">👆 <b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊</p>
@@ -794,6 +800,7 @@ function showMeetVote(o){
     box.querySelectorAll('[data-go-vote]').forEach(x => { x.disabled = true; });
     try{
       await copCollection().doc(o.id).update({['v.' + ME.uid]: {s, n: ME.nick}});
+      if(typeof pushAttend === 'function') pushAttend(o, s);
       if(s === 'join' && o.uid !== ME.uid && typeof pushMeetJoin === 'function') pushMeetJoin(o, cnt.join.count + 1);   // 주최자에게 참석 알림
       box.remove();
       if(typeof pushToast === 'function') pushToast(s === 'join' ? '🙋 참석으로 알렸어요! 그날 만나요' : s === 'maybe' ? '🤔 미확정으로 알렸어요' : '🙅 불참으로 알렸어요');

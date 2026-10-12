@@ -229,7 +229,7 @@ $('#meetForm').addEventListener('submit', async e => {
       const meetEnd = meetPicker.state.end;
       ch.end = meetEnd && parseInt(meetEnd) > parseInt(slot) ? meetEnd : firebase.firestore.FieldValue.delete();
       await meet.col.doc(id).update(ch);
-      if(typeof pushEditMeet === 'function') pushEditMeet(id, date, meetWhen({slot, end: typeof ch.end === 'string' ? ch.end : ''}));
+      if(typeof pushEditMeet === 'function'){ const en = typeof ch.end === 'string' ? ch.end : ''; pushEditMeet(id, date, meetWhen({slot, end: en})); pushRemind(id, date, slot, en); }
       setEditMode(null); $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
       $('#meetMsg').textContent = '✏️ 모임을 고쳤어요. 방 사람들에게 알림을 보냈어요';
       return;
@@ -244,7 +244,12 @@ $('#meetForm').addEventListener('submit', async e => {
     if(ref && ref.id) addMyMeet(ref.id);
     // 🙋 연 사람은 처음부터 '참석'으로 (나중에 미확정·불참으로 바꿀 수 있어요). 규칙상 만들 때는 v 를 못 넣어서 바로 이어서 표시해요
     if(ref && ref.id) ref.update({['v.' + ME.uid]: {s: 'join', n: host}}).catch(() => {});
-    if(ref && ref.id && typeof pushNewMeet === 'function') pushNewMeet(ref.id, date, meetWhen(doc), host);   // 방에 새 모임 알림
+    if(ref && ref.id && typeof pushNewMeet === 'function'){
+      await pushNewMeet(ref.id, date, meetWhen(doc), host);   // 방 전체 → 이어서 그 시간 SOS 보낸 사람에게 따로 (같은 알림 자리를 바꿔요)
+      pushSosMeet(ref.id, date, doc.slot, doc.end);
+      pushAttend({id: ref.id, date}, 'join');   // 연 사람도 1시간 전 알림을 받아요
+      pushRemind(ref.id, date, doc.slot, doc.end);
+    }   // 방에 새 모임 알림
     $('#meetMsg').textContent = '모임을 열었어요! 용기 내 줘서 고마워요 💪';
   }catch(err){ sosTrouble(err); $('#meetMsg').textContent = editMeet && err && err.code === 'permission-denied' ? '⚠️ 수정이 막혔어요. 보안 규칙(v12)을 게시해 주세요.' : '저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
   finally{ $('#meetSend').disabled = false; }
@@ -282,7 +287,7 @@ $('#meetList').addEventListener('click', async e => {
     const id = cm.dataset.cancelMeet;
     if(meet.confirm !== id){ meet.confirm = id; renderMeets(); return; }   // 실수 방지: 두 번 눌러야 취소
     cm.disabled = true; cm.textContent = '취소하는 중…'; meet.cancelErr = null;
-    try{ await meet.col.doc(id).update({cancelled: true}); meet.confirm = null; }
+    try{ await meet.col.doc(id).update({cancelled: true}); meet.confirm = null; const co = meet.items.find(x => x.id === id); if(co && typeof pushRemind === 'function') pushRemind(id, co.date, co.slot, co.end, true); }
     catch(err){
       // 실패 문구는 버튼 위에 바로 보여 줘요 (목록 아래 문구는 다시 그릴 때 지워져서 안 보였어요)
       meet.cancelErr = {id, msg: err && err.code === 'permission-denied'
@@ -315,6 +320,7 @@ $('#meetList').addEventListener('click', async e => {
   b.disabled = true;
   try{
     await meet.col.doc(id).update(change);
+    if(o && typeof pushAttend === 'function') pushAttend(o, old === v ? null : v);
     // 새로 참석했으면 모임 주최자에게 알림 (내가 연 모임이면 안 보냄)
     if(v === 'join' && old !== 'join' && o && !isMine(o) && typeof pushMeetJoin === 'function') pushMeetJoin(o, meetVotes(o).join.count + 1);
   }

@@ -18,6 +18,22 @@ function pushSupported(){
 const pushIsIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
 const pushStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
+// 채널 이름: r = 방 전체, m = 모임 주최자, s = 그 날짜·시간에 SOS 보낸 사람, a = 그 모임에 참석·미확정한 사람
+const pushExtra = () => pushLS.get('sosPushExtra', []);
+async function sosTopic(day, h){ return 's' + (await sha256Hex('push:' + ROOM.key + ':sos:' + day + ':' + h)).slice(0, 40); }
+async function attTopic(meetId){ return 'a' + (await sha256Hex('push:' + ROOM.key + ':att:' + meetId)).slice(0, 40); }
+const endOfDay = day => new Date(day + 'T23:59:59').getTime();
+// 덤 채널 고치기: g(묶음 이름)의 채널을 topics 로 바꾸고 맞춰요 (알림을 켠 휴대폰만)
+async function pushSetExtra(g, topics, until){
+  if(!PUSH_VAPID || !ROOM) return;
+  const keep = pushExtra().filter(x => x.g !== g && x.until > Date.now());
+  pushLS.set('sosPushExtra', [...keep, ...topics.map(t => ({t, g, room: ROOM.roomId, until}))].slice(-200));
+  if(pushLS.get('sosPushOn', false)) pushSync(false).catch(() => {});
+}
+// 내가 그 날 SOS 보낸 시간들 → 그 시간 채널에 가입 (그 시간에 모임이 열리면 따로 알려 줘요)
+async function pushSosHours(day, hours){ pushSetExtra('s:' + ROOM.roomId + ':' + day, await Promise.all(hours.map(h => sosTopic(day, h))), endOfDay(day)); }
+// 모임에 참석·미확정 → 그 모임 채널에 가입 (1시간 전 알림)
+async function pushAttend(o, s){ pushSetExtra('a:' + ROOM.roomId + ':' + o.id, s === 'join' || s === 'maybe' ? [await attTopic(o.id)] : [], endOfDay(o.date)); }
 // 채널 이름: r = 방 전체, m = 모임 주최자
 async function roomTopic(room){ return 'r' + (await sha256Hex('push:' + room.key)).slice(0, 40); }
 async function meetTopic(meetId){ return 'm' + (await sha256Hex('push:' + ROOM.key + ':' + meetId)).slice(0, 40); }
@@ -79,7 +95,9 @@ async function pushSync(ask){
   // 내가 연 모임 채널: 예전엔 글자만, 지금은 {t, room} — 끈 방의 모임은 빼요
   const mine = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x)
     .filter(x => !x.room || pushRoomOn(x.room)).map(x => x.t);
-  const all = [...new Set([...want, ...mine])];
+  // 덤 채널: 내가 SOS 보낸 시간(s) · 내가 참석·미확정한 모임(a). 지난 건 빼요
+  const extra = pushExtra().filter(x => x.until > Date.now() && (!x.room || pushRoomOn(x.room))).map(x => x.t);
+  const all = [...new Set([...want, ...mine, ...extra])];
   const doneKey = 'sosPushTopics:' + token.slice(-12), done = pushLS.get(doneKey, []);
   const add = all.filter(t => !done.includes(t)), remove = done.filter(t => !all.includes(t));
   // 장부(done)에는 서버가 실제로 받아 준 채널만 적어요. 실패한 건 다음에 다시 해요 (20개씩 나눠 보내요)
@@ -115,10 +133,11 @@ async function pushOff(){
 //  (gate.js 가 방을 목록에서 빼기 전에 불러요. 마지막 방이라 ROOM 이 없어져도 알림이 계속 오지 않게)
 async function pushDropRoom(room){
   if(!PUSH_VAPID || !room) return;
+  const ex = pushExtra(); pushLS.set('sosPushExtra', ex.filter(x => x.room !== room.roomId));
   const meets = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x);
   pushLS.set('sosPushMeetTopics', meets.filter(x => x.room !== room.roomId));   // 토큰이 없어도 이 방의 모임 채널 기록은 지워요
   const token = pushLS.get('sosPushToken', ''); if(!token) return;
-  const drop = [await roomTopic(room), ...meets.filter(x => x.room === room.roomId).map(x => x.t)];
+  const drop = [await roomTopic(room), ...meets.filter(x => x.room === room.roomId).map(x => x.t), ...ex.filter(x => x.room === room.roomId).map(x => x.t)];
   const doneKey = 'sosPushTopics:' + token.slice(-12), now = new Set(pushLS.get(doneKey, []));
   const topics = drop.filter(t => now.has(t)); if(!topics.length) return;
   const r = await withTimeout(pushApi({ action: 'unsubscribe', token, topics }), 15000, '알림 채널 해지').catch(() => null);
@@ -135,7 +154,7 @@ async function pushNotify(to, title, body, link, tag){
   try{
     const user = await sosAuth(); if(!user) return;
     const idToken = await user.getIdToken();
-    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', title, body, link, tag, from: await pushMe() });
+    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', date: to.date || '', hours: to.hours || [], title, body, link, tag, from: await pushMe() });
     if(!r && pushLastError && !/429/.test(pushLastError)) pushToast('⚠️ 방 사람들에게 알림을 보내지 못했어요 (' + pushLastError.slice(0, 60) + ')');   // 베타: 원인을 화면에 보여 줘요
   }catch(e){ pushToast('⚠️ 알림을 보내지 못했어요 (인터넷 연결 확인)'); }
 }
@@ -151,12 +170,29 @@ async function pushNewMeet(meetId, date, slot, host){
     pushLS.set('sosPushMeetTopics', [...pushLS.get('sosPushMeetTopics', []), {t, room: ROOM.roomId}].slice(-30));
     pushSync(false).catch(() => {});
   }
-  pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 참석·미확정·불참 중 하나를 눌러 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
+  return pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 참석·미확정·불참 중 하나를 눌러 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
 }
 // ✏️ 모임이 바뀌면 방 사람들에게 알려요 (같은 모임 알림을 새 내용으로 바꿔요)
 function pushEditMeet(meetId, date, when){
   if(!PUSH_VAPID || !ROOM) return;
   pushNotify(TO_ROOM, `✏️ 모임이 바뀌었어요 · ${dayLabel(date)} ${when || ''}`.trim(), `${ROOM.name} · 바뀐 내용을 보고 참석·미확정·불참을 확인해 주세요`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
+}
+// 🆘→🙌 SOS 보낸 시간에 모임이 열리면, 그 시간에 SOS 보낸 사람들에게 따로 알려요 (같은 모임 알림을 이걸로 바꿔요)
+function pushSosMeet(meetId, date, slot, end){
+  if(!PUSH_VAPID || !ROOM) return;
+  const s = parseInt(slot), e = end ? parseInt(end) : s + 1, hours = []; for(let h = s; h < e && hours.length < 12; h++) hours.push(h);
+  pushNotify({kind: 'sos', date, hours}, `🆘 SOS 보낸 시간에 모임이 열렸어요!`, `${ROOM.name} · ${dayLabel(date)} ${slot}${end ? '~' + end : ''} · 참석 여부를 알려 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
+}
+// ⏰ 모임 1시간 전 알림 예약 (참석·미확정한 사람에게). 고치면 다시 예약, 취소하면 지워요
+async function pushRemind(meetId, date, slot, end, cancel){
+  if(!PUSH_VAPID || !ROOM) return;
+  try{
+    const user = await sosAuth(); if(!user) return;
+    const at = new Date(`${date}T${String(parseInt(slot)).padStart(2, '0')}:00:00`).getTime() - 3600e3;
+    await pushApi({ action: cancel ? 'unschedule' : 'schedule', key: ROOM.key, uid: user.uid, idToken: await user.getIdToken(), meetId, at,
+      title: `⏰ 1시간 뒤 모임이에요 · ${slot}${end ? '~' + end : ''}`, body: `${ROOM.name} · 늦지 않게 만나요! 못 가면 불참으로 바꿔 주세요`,
+      link: pushLink('index.html') + '&go=m' + meetId, tag: 'remind-' + meetId });
+  }catch(e){}
 }
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요
 async function pushSosCrowd(date, slot, count){

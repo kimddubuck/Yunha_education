@@ -6,7 +6,7 @@
    - 이름·전화번호는 받지도 보내지도 않아요. 알림 문구와 휴대폰 알림 주소(토큰)만 다뤄요.
    - 알림 보내기(notify)는 그 방의 멤버만: 앱이 보낸 로그인 증표로 Firestore 멤버 문서를 확인해요 (isMember). */
 
-const TOPIC = /^[rm][0-9a-f]{40}$/;
+const TOPIC = /^[rmsa][0-9a-f]{40}$/;   // r 방 · m 주최자 · s 그 날짜·시간 SOS 보낸 사람 · a 모임 참석·미확정한 사람
 const TOKEN = /^[A-Za-z0-9_:\-.]{100,4096}$/;
 const LINK = /^(index|meet)\.html\?r=[a-z0-9]{6,20}(&go=(s\d{4}-\d{2}-\d{2}-\d{1,2}|m[A-Za-z0-9]{1,40}))?$/;   // go = 눌렀을 때 바로 띄울 SOS 시간(s날짜-시) · 모임(m아이디)
 const KEY = /^[0-9a-f]{64}$/, UID = /^[A-Za-z0-9]{10,128}$/, IDTOKEN = /^[A-Za-z0-9_\-.]{100,4096}$/, MEET_ID = /^[A-Za-z0-9]{1,40}$/;
@@ -14,7 +14,7 @@ const LIMIT = 6, WINDOW_MIN = 10;   // 채널마다 10분에 6번까지만 (알�
 
 let cached = null;   // Google 출입증(access token)은 50분 동안 다시 써요
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   const url = new URL(request.url);
   const origin = request.headers.get('Origin');
   if (origin && origin !== url.origin) return json({ error: 'origin' }, 403);
@@ -23,7 +23,26 @@ export async function onRequestPost({ request, env }) {
   let b; try { b = await request.json(); } catch (e) { return json({ error: 'bad_json' }, 400); }
   const sa = JSON.parse(env.GOOGLE_SA);
 
+  // ⏰ 때가 된 1시간 전 알림이 있으면 보내요 (누가 앱을 쓸 때마다 + 외부 알람이 부를 때)
+  if (env.REMIND && b.action !== 'tick') { try { waitUntil(runDue(env, sa)); } catch (e) {} }
   try {
+    if (b.action === 'tick') {
+      if (!env.TICK_SECRET || b.secret !== env.TICK_SECRET) return json({ error: 'forbidden' }, 403);
+      return json({ ok: true, sent: env.REMIND ? await runDue(env, sa) : -1 });
+    }
+    // ⏰ 모임 1시간 전 알림 예약 · 지우기 (그 방 멤버만). 모임마다 하나 (고치면 덮어써요)
+    if (b.action === 'schedule' || b.action === 'unschedule') {
+      if (!env.REMIND) return json({ error: 'no_store' }, 503);
+      if (!KEY.test(b.key || '') || !UID.test(b.uid || '') || !IDTOKEN.test(b.idToken || '') || !MEET_ID.test(b.meetId || '')) return json({ error: 'bad_input' }, 400);
+      if (!(await isMember(sa.project_id, b.key, b.uid, b.idToken))) return json({ error: 'not_member' }, 403);
+      const id = 'rem:' + (await sha256(`${b.key}:${b.meetId}`)).slice(0, 32);
+      if (b.action === 'unschedule') { await env.REMIND.delete(id); return json({ ok: true }); }
+      const at = +b.at, title = String(b.title || '').slice(0, 40), body = String(b.body || '').slice(0, 120);
+      if (!(at > Date.now() - 600000 && at < Date.now() + 21 * 864e5) || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
+      const topic = 'a' + (await sha256(`push:${b.key}:att:${b.meetId}`)).slice(0, 40);
+      await env.REMIND.put(id, JSON.stringify({ at, topic, title, body, link: b.link, tag: String(b.tag || '').slice(0, 60) }), { expirationTtl: Math.max(60, Math.ceil((at - Date.now()) / 1000) + 2 * 86400) });
+      return json({ ok: true });
+    }
     if (b.action === 'subscribe' || b.action === 'unsubscribe') {
       if (!TOKEN.test(b.token || '') || !Array.isArray(b.topics) || b.topics.length > 20 || !b.topics.every(t => TOPIC.test(t)))
         return json({ error: 'bad_input' }, 400);
@@ -66,28 +85,58 @@ export async function onRequestPost({ request, env }) {
     //  - 채널 이름은 서버가 방 열쇠로 만들어요 (앱이 아무 채널이나 고를 수 없게)
     if (b.action === 'notify') {
       const title = String(b.title || '').slice(0, 40), body = String(b.body || '').slice(0, 120);
-      const kind = b.kind === 'meet' ? 'meet' : b.kind === 'room' ? 'room' : '';
+      const kind = ['meet', 'room', 'sos'].includes(b.kind) ? b.kind : '';
+      const hours = Array.isArray(b.hours) ? b.hours.map(Number).filter(h => Number.isInteger(h) && h >= 0 && h <= 23).slice(0, 12) : [];
       if (!KEY.test(b.key || '') || !UID.test(b.uid || '') || !IDTOKEN.test(b.idToken || '') || !kind
-        || (kind === 'meet' && !MEET_ID.test(b.meetId || '')) || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
+        || (kind === 'meet' && !MEET_ID.test(b.meetId || '')) || (kind === 'sos' && (!/^\d{4}-\d{2}-\d{2}$/.test(b.date || '') || !hours.length))
+        || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
       if (!(await isMember(sa.project_id, b.key, b.uid, b.idToken))) return json({ error: 'not_member' }, 403);
-      const topic = kind === 'room' ? 'r' + (await sha256(`push:${b.key}`)).slice(0, 40) : 'm' + (await sha256(`push:${b.key}:${b.meetId}`)).slice(0, 40);
+      // sos = 그 날짜·시간들에 SOS 보낸 사람들 채널 (여러 시간에 겹친 사람은 같은 tag 라 알림 하나로 보여요)
+      const topics = kind === 'room' ? ['r' + (await sha256(`push:${b.key}`)).slice(0, 40)]
+        : kind === 'meet' ? ['m' + (await sha256(`push:${b.key}:${b.meetId}`)).slice(0, 40)]
+        : await Promise.all(hours.map(async h => 's' + (await sha256(`push:${b.key}:sos:${b.date}:${h}`)).slice(0, 40)));
       const tag = String(b.tag || 'sos').slice(0, 60);
       // SOS 요청 알림과 그 밖의 알림(새 모임 등)은 횟수를 따로 세요 — SOS를 여러 번 눌러도 '새 모임' 알림이 밀리지 않게
-      if (!(await allow(topic + (tag.startsWith('sos-') ? ':sos' : '')))) return json({ error: 'rate_limited' }, 429);
-      const at = await accessToken(sa);
+      const room = 'r' + (await sha256(`push:${b.key}`)).slice(0, 40);
+      if (!(await allow((kind === 'sos' ? room + ':sosmeet' : topics[0]) + (tag.startsWith('sos-') ? ':sos' : '')))) return json({ error: 'rate_limited' }, 429);
       const data = { title, body, link: b.link, tag, sender: String(b.from || '').slice(0, 32) };
-      const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: { topic, webpush: { headers: { Urgency: 'high', TTL: '86400' }, data } } })
-      });
-      if(!r.ok){ const j = await r.json().catch(() => ({})); return json({ error: 'send_failed', detail: `fcm_${r.status} ${JSON.stringify(j.error && j.error.message || '').slice(0, 120)}` }, 502); }
+      for (const topic of topics) { const err = await send(sa, topic, data); if (err) return json({ error: 'send_failed', detail: err }, 502); }
       return json({ ok: true });
     }
     return json({ error: 'bad_action' }, 400);
   } catch (e) {
     return json({ error: 'server', detail: String(e && e.message || e).slice(0, 200) }, 500);
   }
+}
+
+async function send(sa, topic, data, ttl = '86400') {
+  const at = await accessToken(sa);
+  const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: { topic, webpush: { headers: { Urgency: 'high', TTL: ttl }, data } } })
+  });
+  if (r.ok) return '';
+  const j = await r.json().catch(() => ({}));
+  return `fcm_${r.status} ${JSON.stringify(j.error && j.error.message || '').slice(0, 120)}`;
+}
+// ⏰ 예약된 1시간 전 알림 중 때가 된 것을 보내고 지워요 (3분에 한 번만 살펴봐요)
+async function runDue(env, sa) {
+  const gate = new Request('https://rate.limit/remind-scan');
+  if (await caches.default.match(gate)) return 0;
+  await caches.default.put(gate, new Response('1', { headers: { 'Cache-Control': 'max-age=180' } }));
+  let sent = 0, cursor;
+  do {
+    const l = await env.REMIND.list({ prefix: 'rem:', cursor });
+    for (const k of l.keys) {
+      const v = await env.REMIND.get(k.name, 'json'); if (!v) continue;
+      if (v.at > Date.now()) continue;
+      await env.REMIND.delete(k.name);
+      if (v.at > Date.now() - 2 * 3600e3) { await send(sa, v.topic, { title: v.title, body: v.body, link: v.link, tag: v.tag, sender: '' }, '3600'); sent++; }   // 너무 늦은 건(모임 끝남) 버려요
+    }
+    cursor = l.list_complete ? null : l.cursor;
+  } while (cursor);
+  return sent;
 }
 
 // 보내는 사람이 그 방의 멤버인지: 본인의 로그인 증표로 본인 멤버 문서를 읽어요 (Firestore 보안 규칙이 남의 증표·남의 문서는 막아요)
