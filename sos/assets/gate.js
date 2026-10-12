@@ -342,7 +342,7 @@ function sosInstallHow(){
     : b.name === '삼성 인터넷' && !go
     ? ['아래쪽 <b>메뉴(≡)</b> 누르기', '<b>현재 페이지 추가 → 홈 화면</b> 누르기', '<b>추가</b> 누르기']
     : ['오른쪽 위 <b>점 3개(⋮)</b> 누르기', '<b>홈 화면에 추가</b> 또는 <b>앱 설치</b> 누르기', '<b>설치</b> 누르기'];
-  const head = go ? `<p class="pb-s">지금은 <b>${SOS_INAPP ? '앱 안 화면' : b.name}</b>${SOS_INAPP ? '이에요' : b.ie}.<br><b>${b.rec}</b>에서 설치해야 잘 돼요 👇</p>` : '';
+  const head = go ? `<p class="pb-s">지금은 <b>${SOS_KAKAO ? '카톡 안' : SOS_INAPP ? '앱 안 화면' : b.name}</b>${SOS_INAPP ? '이에요' : b.ie}.<br><b>${b.rec}</b>에서 설치해야 잘 돼요 👇</p>` : '';
   const box = document.createElement('div'); box.className = 'pop-back pop-beta-back';
   box.innerHTML = `<div class="pop-beta pop-how" role="dialog" aria-modal="true" aria-label="앱 설치 방법">
       <p class="pb-t">📲 홈 화면에 앱 설치하기</p>
