@@ -1138,3 +1138,11 @@ html,body{overflow-x:hidden}
 .go-sos p b{color:#ff8a80}
 .go-sos .who-list{max-height:76px;overflow-y:auto}
 .go-sos .who-chip{padding:2px 10px;font-size:13px;border-width:1px}
+/* 홈 카드 댓글 미리보기 */
+.cmt-pv{display:block;margin:8px 0 0;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line,#2f3639);text-decoration:none;color:var(--fg)}
+.cmt-pv p{margin:0;font-size:13.5px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmt-pv p+p{margin-top:2px}
+.cmt-pv b{color:var(--muted);font-weight:700;margin-right:6px}
+.meet-card > .cmt-pv{flex:0 0 100%;width:100%;min-width:0;box-sizing:border-box;margin:4px 0 0;padding:6px 12px}
+.cmt-pv b{font-size:12.5px}
+@media (max-width:340px){:is(.next-card,.up-sec) .meet-top .op-when{font-size:15px;letter-spacing:-.6px}:is(.next-card,.up-sec) .meet-top .who-mini{padding:3px 7px 4px;font-size:11px}}

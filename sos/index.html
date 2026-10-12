@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610121029">
+<link rel="manifest" href="manifest.webmanifest?v=202610121036">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610121029">
-<script src="assets/gate.js?v=202610121029"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610121036">
+<script src="assets/gate.js?v=202610121036"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -85,8 +85,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610121029"></script>
-<script src="assets/push.js?v=202610121029"></script>
+<script src="assets/common.js?v=202610121036"></script>
+<script src="assets/push.js?v=202610121036"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -171,6 +171,21 @@ sosSummary();
   window.addEventListener('appinstalled', () => { $('#install').hidden = true; });
 })();
 
+// 💬 홈 카드 댓글 미리보기 (최근 2개만, 모임마다 한 번만 구독)
+const homeCmt = { subs: {}, data: {} };
+function homeCmtDraw(id){
+  const pv = document.querySelector(`[data-cpv="${id}"]`); if(!pv) return;
+  const cs = homeCmt.data[id] || []; pv.hidden = !cs.length; pv.innerHTML = '';
+  cs.forEach(c => { const r = document.createElement('p'); const b = document.createElement('b'); b.textContent = c.n || '이웃'; const t = document.createElement('span'); t.textContent = c.text; r.append(b, t); pv.appendChild(r); });
+  const cm = pv.nextElementSibling; if(cm) cm.textContent = cs.length ? '💬 댓글 전체 보기 · 남기기' : '💬 댓글 보기 · 남기기';
+}
+function homeCmtWatch(id){
+  if(homeCmt.subs[id]){ homeCmtDraw(id); return; }
+  homeCmt.subs[id] = copCollection().doc(id).collection('comments').orderBy('createdAt', 'desc').limit(4).onSnapshot(snap => {
+    homeCmt.data[id] = snap.docs.map(d => d.data()).filter(c => !c.deleted && c.text).slice(0, 2).reverse();
+    homeCmtDraw(id);
+  }, () => {});
+}
 // 홈: 다가오는 모임 요청 3개
 watchMeets(list => {
   sosGoMeet(list);   // 🔔 새 모임 알림을 눌러 왔으면 그 모임 창을 띄워요
@@ -207,9 +222,12 @@ watchMeets(list => {
       row.appendChild(b);
     });
     li.append(dateBadge(o.date), body, row);   // 버튼 줄은 카드 전체 폭으로
+    const pv = document.createElement('a'); pv.className = 'cmt-pv'; pv.href = 'meet.html#c=' + o.id; pv.dataset.cpv = o.id; pv.hidden = true; li.appendChild(pv);
     const cm = document.createElement('a'); cm.className = 'act cmt'; cm.href = 'meet.html#c=' + o.id; cm.textContent = '💬 댓글 보기 · 남기기'; li.appendChild(cm);
     ul.appendChild(li);
+    homeCmtWatch(o.id);
   });
+  Object.keys(homeCmt.subs).forEach(id => { if(!list || !list.slice(0,3).some(o => o.id === id)){ homeCmt.subs[id](); delete homeCmt.subs[id]; delete homeCmt.data[id]; } });
   $('#nextEmpty').textContent = list.length ? '' : '아직 올라온 모임이 없어요.\nSOS가 몰린 시간을 보고 용기 내서 모임을 열어 보세요!';
   $('#nextNote').hidden = !list.length;
   $('#nextCount').hidden = !list.length; $('#nextCount').textContent = `${list.length}개`;
