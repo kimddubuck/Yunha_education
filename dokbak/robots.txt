@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dokbak.pages.dev/sitemap.xml
