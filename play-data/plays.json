@@ -1,6 +1,7 @@
 [
  {
   "id": "bw-card",
+  "status": "확정",
   "name": "흑백 초점책 보기",
   "ageMin": 0,
   "ageMax": 3,
@@ -8,6 +9,9 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "원인결과"
+  ],
   "skills": [
    "오감"
   ],
@@ -29,6 +33,7 @@
  },
  {
   "id": "face-talk",
+  "status": "확정",
   "name": "얼굴 보며 말 걸기",
   "ageMin": 0,
   "ageMax": 6,
@@ -36,6 +41,10 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "흉내역할",
+   "원인결과"
+  ],
   "skills": [
    "언어",
    "정서"
@@ -57,6 +66,7 @@
  },
  {
   "id": "tummy-time",
+  "status": "확정",
   "name": "터미타임 (엎드려 고개 들기)",
   "ageMin": 0,
   "ageMax": 6,
@@ -64,6 +74,9 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "몸으로도전"
+  ],
   "skills": [
    "대근육"
   ],
@@ -86,6 +99,7 @@
  },
  {
   "id": "baby-massage",
+  "status": "확정",
   "name": "베이비 마사지 놀이",
   "ageMin": 0,
   "ageMax": 12,
@@ -93,6 +107,9 @@
   "group": false,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "원인결과"
+  ],
   "skills": [
    "오감",
    "정서"
@@ -115,6 +132,7 @@
  },
  {
   "id": "rattle-follow",
+  "status": "확정",
   "name": "딸랑이 소리 찾기",
   "ageMin": 1,
   "ageMax": 6,
@@ -122,6 +140,10 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "소리만들기",
+   "숨기고찾기"
+  ],
   "skills": [
    "오감",
    "인지"
@@ -143,6 +165,7 @@
  },
  {
   "id": "kick-sock",
+  "status": "확정",
   "name": "발차기 딸랑이 양말",
   "ageMin": 3,
   "ageMax": 6,
@@ -150,6 +173,10 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "원인결과",
+   "소리만들기"
+  ],
   "skills": [
    "대근육",
    "인지"
@@ -171,6 +198,7 @@
  },
  {
   "id": "crinkle-cloth",
+  "status": "확정",
   "name": "바스락 천 잡기",
   "ageMin": 3,
   "ageMax": 9,
@@ -178,6 +206,10 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "소리만들기",
+   "당기고떼기"
+  ],
   "skills": [
    "오감",
    "소근육"
@@ -200,6 +232,7 @@
  },
  {
   "id": "mirror",
+  "status": "확정",
   "name": "거울 놀이",
   "ageMin": 3,
   "ageMax": 12,
@@ -207,6 +240,10 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "숨기고찾기",
+   "흉내역할"
+  ],
   "skills": [
    "정서",
    "인지"
@@ -228,6 +265,7 @@
  },
  {
   "id": "bubble-watch",
+  "status": "확정",
   "name": "비눗방울 보여 주기",
   "ageMin": 3,
   "ageMax": 24,
@@ -235,6 +273,9 @@
   "group": true,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "원인결과"
+  ],
   "skills": [
    "오감",
    "사회성"
@@ -256,6 +297,7 @@
  },
  {
   "id": "peekaboo",
+  "status": "확정",
   "name": "손수건 까꿍",
   "ageMin": 5,
   "ageMax": 18,
@@ -263,6 +305,9 @@
   "group": false,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "숨기고찾기"
+  ],
   "skills": [
    "인지",
    "정서"
@@ -284,6 +329,7 @@
  },
  {
   "id": "ziplock-sensory",
+  "status": "확정",
   "name": "지퍼백 촉감 놀이",
   "ageMin": 5,
   "ageMax": 24,
@@ -291,6 +337,10 @@
   "group": true,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "원인결과",
+   "변신"
+  ],
   "skills": [
    "오감",
    "소근육"
@@ -316,6 +366,7 @@
  },
  {
   "id": "hanky-pull",
+  "status": "확정",
   "name": "손수건 뽑기 상자",
   "ageMin": 6,
   "ageMax": 18,
@@ -323,6 +374,10 @@
   "group": false,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "당기고떼기",
+   "넣고빼기"
+  ],
   "skills": [
    "소근육",
    "인지"
@@ -345,6 +400,7 @@
  },
  {
   "id": "veggie-touch",
+  "status": "확정",
   "name": "채소 촉감 놀이",
   "ageMin": 6,
   "ageMax": 24,
@@ -352,6 +408,9 @@
   "group": true,
   "minutes": 15,
   "mess": 1,
+  "principles": [
+   "변신"
+  ],
   "skills": [
    "오감"
   ],
@@ -372,7 +431,45 @@
   ]
  },
  {
+  "id": "c-sensory-bottle",
+  "status": "후보",
+  "name": "페트병 반짝이 병",
+  "ageMin": 6,
+  "ageMax": 36,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "원인결과",
+   "변신"
+  ],
+  "skills": [
+   "오감"
+  ],
+  "materials": [
+   "작은 페트병",
+   "물",
+   "반짝이·작은 구슬",
+   "식용유 (선택)",
+   "글루건 또는 강력 테이프"
+  ],
+  "steps": [
+   "페트병에 물과 반짝이를 넣어요",
+   "뚜껑을 글루건으로 단단히 붙여요",
+   "흔들고 뒤집으며 천천히 가라앉는 걸 봐요"
+  ],
+  "tip": "식용유를 반 넣으면 물방울이 천천히 움직여요. 진정 효과도 있어요",
+  "safety": "뚜껑은 어른이 글루건으로 꼭 막아 열리지 않게 해요",
+  "keywords": [
+   "센서리 병",
+   "반짝이 병",
+   "진정병"
+  ]
+ },
+ {
   "id": "crawl-tunnel",
+  "status": "확정",
   "name": "터널·쿠션 산 넘기",
   "ageMin": 7,
   "ageMax": 24,
@@ -380,6 +477,10 @@
   "group": true,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "몸으로도전",
+   "숨기고찾기"
+  ],
   "skills": [
    "대근육"
   ],
@@ -402,6 +503,7 @@
  },
  {
   "id": "cup-stack",
+  "status": "확정",
   "name": "컵 쌓고 무너뜨리기",
   "ageMin": 7,
   "ageMax": 24,
@@ -409,6 +511,9 @@
   "group": true,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "쌓고무너뜨리기"
+  ],
   "skills": [
    "소근육",
    "인지"
@@ -430,6 +535,7 @@
  },
  {
   "id": "in-out",
+  "status": "확정",
   "name": "넣고 빼기 통 놀이",
   "ageMin": 7,
   "ageMax": 24,
@@ -437,6 +543,10 @@
   "group": false,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "넣고빼기",
+   "숨기고찾기"
+  ],
   "skills": [
    "소근육",
    "인지"
@@ -460,6 +570,7 @@
  },
  {
   "id": "kitchen-drum",
+  "status": "확정",
   "name": "주방 악기 놀이",
   "ageMin": 7,
   "ageMax": 36,
@@ -467,6 +578,10 @@
   "group": true,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "소리만들기",
+   "원인결과"
+  ],
   "skills": [
    "오감",
    "대근육"
@@ -490,6 +605,7 @@
  },
  {
   "id": "clap-song",
+  "status": "확정",
   "name": "짝짜꿍·곤지곤지·도리도리",
   "ageMin": 8,
   "ageMax": 18,
@@ -497,6 +613,9 @@
   "group": true,
   "minutes": 5,
   "mess": 0,
+  "principles": [
+   "흉내역할"
+  ],
   "skills": [
    "대근육",
    "언어",
@@ -520,6 +639,7 @@
  },
  {
   "id": "ricecake-sensory",
+  "status": "확정",
   "name": "떡뻥·쌀튀밥 촉감 놀이",
   "ageMin": 8,
   "ageMax": 30,
@@ -527,6 +647,10 @@
   "group": true,
   "minutes": 15,
   "mess": 2,
+  "principles": [
+   "옮기기",
+   "변신"
+  ],
   "skills": [
    "오감",
    "소근육"
@@ -549,7 +673,43 @@
   ]
  },
  {
+  "id": "c-chip-can-roll",
+  "status": "후보",
+  "name": "과자통 방울 굴리기",
+  "ageMin": 9,
+  "ageMax": 24,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "굴리고던지기",
+   "소리만들기"
+  ],
+  "skills": [
+   "대근육",
+   "오감"
+  ],
+  "materials": [
+   "원통 과자통 (뚜껑 있는 것)",
+   "방울 또는 숟가락",
+   "테이프"
+  ],
+  "steps": [
+   "통 안에 방울을 넣고 뚜껑을 테이프로 막아요",
+   "굴리면 소리가 나며 굴러가요",
+   "아기가 기어가서 잡게 해요"
+  ],
+  "tip": "기기 시작한 아기가 따라가게 만드는 놀이예요",
+  "safety": "뚜껑이 열리지 않게 테이프로 단단히 막아요",
+  "keywords": [
+   "과자통 놀이",
+   "기어가기 놀이"
+  ]
+ },
+ {
   "id": "ball-roll",
+  "status": "확정",
   "name": "공 굴려 주고받기",
   "ageMin": 9,
   "ageMax": 30,
@@ -557,6 +717,9 @@
   "group": true,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "굴리고던지기"
+  ],
   "skills": [
    "대근육",
    "사회성"
@@ -578,6 +741,7 @@
  },
  {
   "id": "box-house",
+  "status": "확정",
   "name": "박스 놀이방 (낙서 상자)",
   "ageMin": 9,
   "ageMax": 30,
@@ -585,6 +749,10 @@
   "group": true,
   "minutes": 20,
   "mess": 0,
+  "principles": [
+   "넣고빼기",
+   "감싸고풀기"
+  ],
   "skills": [
    "창의",
    "소근육",
@@ -611,6 +779,7 @@
  },
  {
   "id": "tape-peel",
+  "status": "확정",
   "name": "마스킹테이프 떼기",
   "ageMin": 10,
   "ageMax": 30,
@@ -618,6 +787,9 @@
   "group": false,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "당기고떼기"
+  ],
   "skills": [
    "소근육"
   ],
@@ -638,6 +810,7 @@
  },
  {
   "id": "box-train",
+  "status": "확정",
   "name": "박스 기차 태우기",
   "ageMin": 10,
   "ageMax": 36,
@@ -645,6 +818,10 @@
   "group": true,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "넣고빼기",
+   "옮기기"
+  ],
   "skills": [
    "대근육",
    "정서"
@@ -666,7 +843,112 @@
   ]
  },
  {
+  "id": "c-bubblewrap-road",
+  "status": "후보",
+  "name": "뽁뽁이 길 밟기",
+  "ageMin": 10,
+  "ageMax": 48,
+  "place": "실내",
+  "group": true,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "소리만들기",
+   "몸으로도전"
+  ],
+  "skills": [
+   "오감",
+   "대근육"
+  ],
+  "materials": [
+   "택배 뽁뽁이",
+   "마스킹테이프"
+  ],
+  "steps": [
+   "뽁뽁이를 바닥에 길게 이어 테이프로 붙여요",
+   "맨발로 걸어서 \"뽁뽁\" 소리를 내요",
+   "기어가기, 점프, 까치발로 바꿔 가요"
+  ],
+  "tip": "택배 오는 날의 공짜 놀이예요",
+  "safety": "뽁뽁이 조각을 입에 넣지 않게, 미끄러지지 않게 테이프를 단단히 붙여요",
+  "keywords": [
+   "뽁뽁이 놀이",
+   "에어캡 놀이"
+  ]
+ },
+ {
+  "id": "c-ball-in-tube",
+  "status": "후보",
+  "name": "긴 키친타월 심 공 넣기",
+  "ageMin": 12,
+  "ageMax": 30,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "넣고빼기",
+   "숨기고찾기",
+   "굴리고던지기"
+  ],
+  "skills": [
+   "인지",
+   "소근육"
+  ],
+  "materials": [
+   "키친타월 심 또는 긴 지관통",
+   "탁구공보다 큰 공"
+  ],
+  "steps": [
+   "심을 벽에 비스듬히 테이프로 붙여요",
+   "위에 공을 넣으면 아래로 \"쏙\" 나와요",
+   "아래에 바구니를 두고 받아요"
+  ],
+  "tip": "\"어디 갔지? 여기 나왔다!\" 숨고 나타나는 재미가 있어요",
+  "safety": "공은 입에 안 들어가는 크기로 써요",
+  "keywords": [
+   "공 넣기",
+   "휴지심 놀이"
+  ]
+ },
+ {
+  "id": "c-sticky-window",
+  "status": "후보",
+  "name": "창문 시트지 붙이기",
+  "ageMin": 12,
+  "ageMax": 36,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "당기고떼기",
+   "원인결과"
+  ],
+  "skills": [
+   "소근육",
+   "창의"
+  ],
+  "materials": [
+   "투명 시트지 (접착면)",
+   "마스킹테이프",
+   "색종이 조각·낙엽"
+  ],
+  "steps": [
+   "시트지를 끈끈한 면이 밖으로 오게 창문에 붙여요",
+   "색종이 조각과 낙엽을 붙여요",
+   "햇빛에 비치는 그림을 같이 봐요"
+  ],
+  "tip": "붙였다 뗐다 계속할 수 있어요",
+  "safety": "작은 조각은 입에 넣지 않게 꼭 지켜봐 주세요",
+  "keywords": [
+   "시트지 놀이",
+   "창문 놀이"
+  ]
+ },
+ {
   "id": "yogurt-paint",
+  "status": "확정",
   "name": "요거트 물감 핑거페인팅",
   "ageMin": 12,
   "ageMax": 36,
@@ -674,6 +956,9 @@
   "group": true,
   "minutes": 20,
   "mess": 2,
+  "principles": [
+   "변신"
+  ],
   "skills": [
    "오감",
    "창의"
@@ -698,6 +983,7 @@
  },
  {
   "id": "newspaper-snow",
+  "status": "확정",
   "name": "신문지 찢기·눈 뿌리기",
   "ageMin": 12,
   "ageMax": 48,
@@ -705,6 +991,10 @@
   "group": true,
   "minutes": 20,
   "mess": 2,
+  "principles": [
+   "변신",
+   "굴리고던지기"
+  ],
   "skills": [
    "소근육",
    "대근육",
@@ -728,6 +1018,7 @@
  },
  {
   "id": "balloon-tap",
+  "status": "확정",
   "name": "풍선 치기",
   "ageMin": 12,
   "ageMax": 60,
@@ -735,6 +1026,9 @@
   "group": true,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "굴리고던지기"
+  ],
   "skills": [
    "대근육",
    "사회성"
@@ -755,7 +1049,107 @@
   ]
  },
  {
+  "id": "c-blanket-kimbap",
+  "status": "후보",
+  "name": "이불 김밥 말기",
+  "ageMin": 12,
+  "ageMax": 72,
+  "place": "실내",
+  "group": true,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "감싸고풀기",
+   "흉내역할"
+  ],
+  "skills": [
+   "오감",
+   "정서"
+  ],
+  "materials": [
+   "얇은 이불"
+  ],
+  "steps": [
+   "이불을 펼치고 아이를 눕혀요 (머리는 밖으로)",
+   "\"단무지, 시금치~\" 재료를 말하며 간질여요",
+   "데굴데굴 말았다가 \"짠!\" 하고 풀어요"
+  ],
+  "tip": "엄마 아빠 몸으로 하는 스킨십 놀이예요",
+  "safety": "머리와 얼굴은 반드시 이불 밖에 두고, 꽉 조이지 않아요",
+  "keywords": [
+   "이불 김밥",
+   "몸놀이"
+  ]
+ },
+ {
+  "id": "c-clothespin-box",
+  "status": "후보",
+  "name": "상자 테두리 빨래집게 떼기",
+  "ageMin": 14,
+  "ageMax": 36,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "당기고떼기",
+   "꽂고잇기"
+  ],
+  "skills": [
+   "소근육"
+  ],
+  "materials": [
+   "빨래집게 10개",
+   "택배 상자"
+  ],
+  "steps": [
+   "상자 테두리에 빨래집게를 빙 둘러 꽂아요",
+   "아이가 하나씩 잡아 떼서 상자 안에 넣어요",
+   "익숙해지면 아이가 직접 꽂아요"
+  ],
+  "tip": "떼기가 꽂기보다 쉬워요. 떼기부터 시작해요",
+  "safety": "집게에 손가락이 세게 물리지 않게 힘 약한 집게를 써요",
+  "keywords": [
+   "빨래집게 놀이",
+   "집게 놀이"
+  ]
+ },
+ {
+  "id": "c-colander-straw",
+  "status": "후보",
+  "name": "채반 구멍 빨대 꽂기",
+  "ageMin": 14,
+  "ageMax": 36,
+  "place": "주방",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "꽂고잇기"
+  ],
+  "skills": [
+   "소근육",
+   "인지"
+  ],
+  "materials": [
+   "엎어 놓은 채반 또는 체",
+   "빨대 (반으로 자르기)"
+  ],
+  "steps": [
+   "채반을 엎어 놓아요",
+   "구멍에 빨대를 하나씩 꽂아요",
+   "다 꽂으면 고슴도치 완성! 하나씩 뽑아요"
+  ],
+  "tip": "구멍이 많아 계속 꽂을 수 있어서 집중을 오래 해요",
+  "safety": "빨대 끝으로 눈을 찌르지 않게 봐 줘요",
+  "keywords": [
+   "채반 놀이",
+   "빨대 꽂기"
+  ]
+ },
+ {
   "id": "straw-poke",
+  "status": "확정",
   "name": "빨대 꽂기",
   "ageMin": 14,
   "ageMax": 36,
@@ -763,6 +1157,10 @@
   "group": false,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "꽂고잇기",
+   "넣고빼기"
+  ],
   "skills": [
    "소근육",
    "인지"
@@ -786,6 +1184,7 @@
  },
  {
   "id": "noodle-sensory",
+  "status": "확정",
   "name": "삶은 국수 촉감 놀이",
   "ageMin": 15,
   "ageMax": 36,
@@ -793,6 +1192,10 @@
   "group": true,
   "minutes": 20,
   "mess": 2,
+  "principles": [
+   "변신",
+   "당기고떼기"
+  ],
   "skills": [
    "오감",
    "소근육"
@@ -816,6 +1219,7 @@
  },
  {
   "id": "sticker",
+  "status": "확정",
   "name": "스티커 붙이고 떼기",
   "ageMin": 15,
   "ageMax": 48,
@@ -823,6 +1227,9 @@
   "group": false,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "당기고떼기"
+  ],
   "skills": [
    "소근육",
    "인지"
@@ -844,7 +1251,43 @@
   ]
  },
  {
+  "id": "c-milk-carton-blocks",
+  "status": "후보",
+  "name": "우유팩 블록 쌓기",
+  "ageMin": 15,
+  "ageMax": 60,
+  "place": "실내",
+  "group": true,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "쌓고무너뜨리기",
+   "흉내역할"
+  ],
+  "skills": [
+   "대근육",
+   "창의"
+  ],
+  "materials": [
+   "씻어 말린 우유팩 여러 개",
+   "신문지",
+   "테이프"
+  ],
+  "steps": [
+   "우유팩에 신문지를 채우고 입구를 접어 막아요",
+   "테이프로 감아 튼튼한 블록을 만들어요",
+   "탑, 집, 기찻길을 쌓고 무너뜨려요"
+  ],
+  "tip": "가볍고 커서 어린 아기도 안전하게 쌓아요",
+  "safety": "",
+  "keywords": [
+   "우유팩 블록",
+   "재활용 놀이"
+  ]
+ },
+ {
   "id": "nursery-dance",
+  "status": "확정",
   "name": "동요 율동 (곰 세 마리 · 머리 어깨 무릎 발)",
   "ageMin": 15,
   "ageMax": 60,
@@ -852,6 +1295,9 @@
   "group": true,
   "minutes": 10,
   "mess": 0,
+  "principles": [
+   "흉내역할"
+  ],
   "skills": [
    "대근육",
    "언어",
@@ -873,7 +1319,309 @@
   ]
  },
  {
+  "id": "c-pillow-stones",
+  "status": "후보",
+  "name": "베개 징검다리",
+  "ageMin": 15,
+  "ageMax": 72,
+  "place": "실내",
+  "group": true,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "몸으로도전"
+  ],
+  "skills": [
+   "대근육"
+  ],
+  "materials": [
+   "베개·쿠션·방석"
+  ],
+  "steps": [
+   "바닥에 쿠션을 띄엄띄엄 놓아요",
+   "\"바닥은 바다!\" 쿠션만 밟고 건너요",
+   "간격을 넓히거나 한 발로 도전해요"
+  ],
+  "tip": "",
+  "safety": "미끄러운 바닥에서는 미끄럼 방지 매트 위에서 해요",
+  "keywords": [
+   "징검다리 놀이",
+   "쿠션 놀이"
+  ]
+ },
+ {
+  "id": "c-hairtie-bottle",
+  "status": "후보",
+  "name": "페트병 머리끈 끼우기",
+  "ageMin": 18,
+  "ageMax": 48,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "당기고떼기",
+   "꽂고잇기"
+  ],
+  "skills": [
+   "소근육"
+  ],
+  "materials": [
+   "빈 페트병",
+   "굵은 머리끈 여러 개"
+  ],
+  "steps": [
+   "페트병을 세워 두고 머리끈을 늘려 끼워요",
+   "아이가 끼운 머리끈을 빼요",
+   "색깔 순서대로 끼우기에 도전해요"
+  ],
+  "tip": "머리끈을 늘리는 힘이 손가락 힘을 키워요",
+  "safety": "머리끈이 튕겨 얼굴에 맞지 않게, 입에 넣지 않게 봐 줘요",
+  "keywords": [
+   "머리끈 놀이",
+   "페트병 놀이"
+  ]
+ },
+ {
+  "id": "c-measure-pour",
+  "status": "후보",
+  "name": "계량컵 쌀 붓기",
+  "ageMin": 18,
+  "ageMax": 48,
+  "place": "주방",
+  "group": false,
+  "minutes": 15,
+  "mess": 2,
+  "principles": [
+   "옮기기",
+   "넣고빼기"
+  ],
+  "skills": [
+   "소근육",
+   "인지"
+  ],
+  "materials": [
+   "계량컵·국자·깔때기",
+   "쌀 또는 마른 콩 (큰 아이만)",
+   "큰 쟁반"
+  ],
+  "steps": [
+   "쟁반 위 큰 그릇에 쌀을 담아요",
+   "계량컵으로 떠서 다른 그릇에 부어요",
+   "깔때기로 페트병에 넣어 봐요"
+  ],
+  "tip": "쟁반 밖으로 안 흘리기가 미션이에요",
+  "safety": "콩·쌀은 코나 귀에 넣지 않게, 3세 미만은 꼭 옆에서 지켜봐요",
+  "keywords": [
+   "쌀놀이",
+   "붓기 놀이",
+   "주방놀이"
+  ]
+ },
+ {
+  "id": "c-pot-lids",
+  "status": "후보",
+  "name": "냄비 뚜껑 짝 맞추기",
+  "ageMin": 18,
+  "ageMax": 48,
+  "place": "주방",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "분류짝맞추기",
+   "소리만들기"
+  ],
+  "skills": [
+   "인지"
+  ],
+  "materials": [
+   "크기가 다른 냄비와 뚜껑"
+  ],
+  "steps": [
+   "냄비와 뚜껑을 따로 섞어 놓아요",
+   "맞는 뚜껑을 찾아 덮어요",
+   "다 맞추면 뚜껑으로 심벌즈 \"챙!\""
+  ],
+  "tip": "",
+  "safety": "무거운 무쇠 냄비는 빼고, 손 끼임 주의",
+  "keywords": [
+   "냄비 놀이",
+   "주방놀이"
+  ]
+ },
+ {
+  "id": "c-shoe-line",
+  "status": "후보",
+  "name": "신발 짝 맞춰 줄 세우기",
+  "ageMin": 18,
+  "ageMax": 48,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "분류짝맞추기"
+  ],
+  "skills": [
+   "인지"
+  ],
+  "materials": [
+   "현관 신발들"
+  ],
+  "steps": [
+   "신발을 다 섞어 놓아요",
+   "짝을 찾아 나란히 놓아요",
+   "큰 신발부터 작은 신발까지 줄 세워요"
+  ],
+  "tip": "크기 비교 (크다·작다) 말을 같이 배워요",
+  "safety": "",
+  "keywords": [
+   "신발 정리 놀이",
+   "짝맞추기"
+  ]
+ },
+ {
+  "id": "c-sponge-squeeze",
+  "status": "후보",
+  "name": "스펀지 물 짜서 옮기기",
+  "ageMin": 18,
+  "ageMax": 60,
+  "place": "욕실",
+  "group": false,
+  "minutes": 15,
+  "mess": 1,
+  "principles": [
+   "옮기기",
+   "원인결과"
+  ],
+  "skills": [
+   "소근육",
+   "오감"
+  ],
+  "materials": [
+   "스펀지·수세미",
+   "그릇 2개",
+   "물"
+  ],
+  "steps": [
+   "한쪽 그릇에 물을 담아요",
+   "스펀지로 물을 적셔요",
+   "빈 그릇 위에서 꾹 짜서 옮겨요"
+  ],
+  "tip": "목욕 시간에 하면 정리가 필요 없어요",
+  "safety": "물놀이는 어른이 늘 옆에 있어요",
+  "keywords": [
+   "스펀지 놀이",
+   "물놀이"
+  ]
+ },
+ {
+  "id": "c-tape-road",
+  "status": "후보",
+  "name": "마스킹테이프 자동차 길",
+  "ageMin": 18,
+  "ageMax": 60,
+  "place": "실내",
+  "group": true,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "흉내역할",
+   "옮기기"
+  ],
+  "skills": [
+   "창의",
+   "대근육"
+  ],
+  "materials": [
+   "마스킹테이프",
+   "장난감 자동차",
+   "상자 (주차장)"
+  ],
+  "steps": [
+   "바닥에 테이프로 도로를 길게 붙여요",
+   "횡단보도, 주차장, 터널을 같이 만들어요",
+   "자동차를 몰고 동네를 다녀요"
+  ],
+  "tip": "놀이 끝나고 테이프 떼기까지 놀이예요",
+  "safety": "",
+  "keywords": [
+   "테이프 도로",
+   "자동차 놀이"
+  ]
+ },
+ {
+  "id": "c-tube-ramp",
+  "status": "후보",
+  "name": "벽 휴지심 미끄럼틀",
+  "ageMin": 18,
+  "ageMax": 60,
+  "place": "실내",
+  "group": true,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "굴리고던지기",
+   "원인결과"
+  ],
+  "skills": [
+   "인지",
+   "소근육"
+  ],
+  "materials": [
+   "휴지심·키친타월 심 여러 개",
+   "마스킹테이프",
+   "작은 공 또는 양말 뭉치"
+  ],
+  "steps": [
+   "휴지심을 세로로 반 갈라 길을 만들어요",
+   "벽에 지그재그로 테이프로 붙여요",
+   "맨 위에서 공을 넣어 굴러 내려오게 해요"
+  ],
+  "tip": "아이가 길 모양을 바꿔 보게 하면 실험 놀이가 돼요",
+  "safety": "공은 입에 안 들어가는 크기로 써요",
+  "keywords": [
+   "휴지심 놀이",
+   "벽 미끄럼틀",
+   "공 굴리기"
+  ]
+ },
+ {
+  "id": "c-cup-shell",
+  "status": "후보",
+  "name": "컵 세 개 숨은 공 찾기",
+  "ageMin": 18,
+  "ageMax": 72,
+  "place": "실내",
+  "group": true,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "숨기고찾기"
+  ],
+  "skills": [
+   "인지"
+  ],
+  "materials": [
+   "안 비치는 컵 3개",
+   "작은 장난감"
+  ],
+  "steps": [
+   "컵 하나 밑에 장난감을 숨겨요",
+   "천천히 컵 위치를 바꿔요",
+   "\"어디 있게?\" 아이가 골라요"
+  ],
+  "tip": "어리면 컵 2개, 천천히. 크면 컵 3개, 빠르게",
+  "safety": "",
+  "keywords": [
+   "컵 숨기기",
+   "숨은 공 찾기"
+  ]
+ },
+ {
   "id": "flour-dough",
+  "status": "확정",
   "name": "밀가루 반죽 놀이",
   "ageMin": 18,
   "ageMax": 72,
@@ -881,6 +1629,9 @@
   "group": true,
   "minutes": 25,
   "mess": 2,
+  "principles": [
+   "변신"
+  ],
   "skills": [
    "오감",
    "소근육",
@@ -907,7 +1658,75 @@
   ]
  },
  {
+  "id": "c-laundry-hoop",
+  "status": "후보",
+  "name": "빨래 바구니 농구",
+  "ageMin": 18,
+  "ageMax": 84,
+  "place": "실내",
+  "group": true,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "굴리고던지기"
+  ],
+  "skills": [
+   "대근육"
+  ],
+  "materials": [
+   "빨래 바구니",
+   "양말 뭉치 또는 신문지 공"
+  ],
+  "steps": [
+   "바구니를 벽 앞에 놓아요",
+   "선을 정해 양말 공을 던져 넣어요",
+   "들어가면 한 걸음씩 뒤로 가요"
+  ],
+  "tip": "다 하고 \"양말 정리\"까지 하면 끝!",
+  "safety": "",
+  "keywords": [
+   "양말 농구",
+   "던지기 놀이"
+  ]
+ },
+ {
+  "id": "c-muffin-sort",
+  "status": "후보",
+  "name": "머핀틀 색깔 분류",
+  "ageMin": 20,
+  "ageMax": 48,
+  "place": "주방",
+  "group": false,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "분류짝맞추기",
+   "옮기기"
+  ],
+  "skills": [
+   "인지",
+   "소근육"
+  ],
+  "materials": [
+   "머핀틀 또는 얼음틀",
+   "색깔 있는 작은 물건 (뚜껑·블록)",
+   "집게 또는 숟가락"
+  ],
+  "steps": [
+   "머핀틀 칸 바닥에 색종이를 깔아요",
+   "같은 색 물건을 칸에 넣어요",
+   "집게로 옮기면 더 어려워져요"
+  ],
+  "tip": "",
+  "safety": "작은 조각은 입에 넣지 않게 꼭 지켜봐 주세요",
+  "keywords": [
+   "머핀틀 놀이",
+   "색깔 분류"
+  ]
+ },
+ {
   "id": "egg-carton",
+  "status": "확정",
   "name": "계란판 종이빨대 꽂기",
   "ageMin": 20,
   "ageMax": 48,
@@ -915,6 +1734,10 @@
   "group": false,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "꽂고잇기",
+   "분류짝맞추기"
+  ],
   "skills": [
    "소근육",
    "인지"
@@ -939,6 +1762,7 @@
  },
  {
   "id": "pompom-sort",
+  "status": "확정",
   "name": "폼폼이 색깔 분류",
   "ageMin": 20,
   "ageMax": 48,
@@ -946,6 +1770,10 @@
   "group": false,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "분류짝맞추기",
+   "옮기기"
+  ],
   "skills": [
    "인지",
    "소근육"
@@ -969,7 +1797,76 @@
   ]
  },
  {
+  "id": "c-sieve-snow",
+  "status": "후보",
+  "name": "체로 밀가루 눈 내리기",
+  "ageMin": 20,
+  "ageMax": 60,
+  "place": "주방",
+  "group": true,
+  "minutes": 15,
+  "mess": 2,
+  "principles": [
+   "변신",
+   "원인결과"
+  ],
+  "skills": [
+   "오감"
+  ],
+  "materials": [
+   "체",
+   "밀가루",
+   "검은 쟁반 또는 색종이"
+  ],
+  "steps": [
+   "검은 쟁반 위에서 체를 톡톡 쳐요",
+   "밀가루 눈이 쌓이면 손가락으로 그림을 그려요",
+   "장난감을 놓고 눈을 뿌려 숨겨 봐요"
+  ],
+  "tip": "검은 바탕 위에서 하면 눈이 잘 보여요",
+  "safety": "밀가루를 들이마시지 않게 얼굴 가까이에서 털지 않아요",
+  "keywords": [
+   "밀가루 놀이",
+   "눈 내리기"
+  ]
+ },
+ {
+  "id": "c-sock-match",
+  "status": "후보",
+  "name": "양말 짝 찾기 빨래 놀이",
+  "ageMin": 20,
+  "ageMax": 60,
+  "place": "실내",
+  "group": true,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "분류짝맞추기",
+   "흉내역할"
+  ],
+  "skills": [
+   "인지",
+   "언어"
+  ],
+  "materials": [
+   "빨래한 양말 여러 켤레",
+   "빨래 바구니"
+  ],
+  "steps": [
+   "양말을 바닥에 다 쏟아요",
+   "같은 짝을 찾아 나란히 놓아요",
+   "\"아빠 거, 내 거\" 주인도 찾아요"
+  ],
+  "tip": "진짜 집안일을 도운 기분이라 아이가 뿌듯해해요",
+  "safety": "",
+  "keywords": [
+   "양말 짝맞추기",
+   "빨래 놀이"
+  ]
+ },
+ {
   "id": "veggie-stamp",
+  "status": "확정",
   "name": "채소 도장 찍기",
   "ageMin": 20,
   "ageMax": 60,
@@ -977,6 +1874,10 @@
   "group": true,
   "minutes": 20,
   "mess": 2,
+  "principles": [
+   "변신",
+   "원인결과"
+  ],
   "skills": [
    "창의",
    "오감"
@@ -1000,7 +1901,111 @@
   ]
  },
  {
+  "id": "c-velcro-dress",
+  "status": "후보",
+  "name": "찍찍이 옷 입히기",
+  "ageMin": 24,
+  "ageMax": 48,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "당기고떼기",
+   "흉내역할"
+  ],
+  "skills": [
+   "소근육",
+   "인지"
+  ],
+  "materials": [
+   "두꺼운 종이 인형",
+   "천 조각",
+   "찍찍이 (벨크로)"
+  ],
+  "steps": [
+   "종이 인형과 천 옷에 찍찍이를 붙여요",
+   "옷을 붙였다 떼며 입혀요",
+   "날씨에 맞는 옷 고르기를 해요"
+  ],
+  "tip": "\"찍\" 떼는 소리와 손맛이 좋아요",
+  "safety": "",
+  "keywords": [
+   "찍찍이 놀이",
+   "옷 입히기"
+  ]
+ },
+ {
+  "id": "c-fridge-puzzle",
+  "status": "후보",
+  "name": "냉장고 자석 그림 퍼즐",
+  "ageMin": 24,
+  "ageMax": 60,
+  "place": "주방",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "분류짝맞추기",
+   "당기고떼기"
+  ],
+  "skills": [
+   "인지",
+   "소근육"
+  ],
+  "materials": [
+   "과자 상자 그림면",
+   "자석 시트 또는 큰 냉장고 자석",
+   "가위 (어른)"
+  ],
+  "steps": [
+   "과자 상자 그림을 4~6조각으로 잘라요",
+   "뒤에 자석을 붙여요",
+   "냉장고에서 그림을 맞춰요"
+  ],
+  "tip": "엄마가 요리하는 동안 옆에서 할 수 있어요",
+  "safety": "작은 자석은 삼키면 아주 위험해요. 크고 단단히 붙은 것만 써요",
+  "keywords": [
+   "자석 퍼즐",
+   "냉장고 놀이"
+  ]
+ },
+ {
+  "id": "c-towel-fold",
+  "status": "후보",
+  "name": "수건 개기 도우미",
+  "ageMin": 24,
+  "ageMax": 60,
+  "place": "실내",
+  "group": false,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "흉내역할",
+   "분류짝맞추기"
+  ],
+  "skills": [
+   "소근육",
+   "정서"
+  ],
+  "materials": [
+   "마른 수건·손수건"
+  ],
+  "steps": [
+   "엄마가 반으로 접는 걸 보여 줘요",
+   "아이가 손수건부터 따라 접어요",
+   "다 접은 걸 바구니에 차곡차곡 쌓아요"
+  ],
+  "tip": "삐뚤어도 칭찬해 주면 다음에 또 도와줘요",
+  "safety": "",
+  "keywords": [
+   "빨래 개기",
+   "집안일 놀이"
+  ]
+ },
+ {
   "id": "ice-rescue",
+  "status": "확정",
   "name": "얼음 속 장난감 구출",
   "ageMin": 24,
   "ageMax": 60,
@@ -1008,6 +2013,10 @@
   "group": true,
   "minutes": 20,
   "mess": 2,
+  "principles": [
+   "감싸고풀기",
+   "변신"
+  ],
   "skills": [
    "오감",
    "인지"
@@ -1032,6 +2041,7 @@
  },
  {
   "id": "box-car",
+  "status": "확정",
   "name": "박스 자동차 만들기",
   "ageMin": 24,
   "ageMax": 72,
@@ -1039,6 +2049,10 @@
   "group": true,
   "minutes": 30,
   "mess": 1,
+  "principles": [
+   "흉내역할",
+   "넣고빼기"
+  ],
   "skills": [
    "창의",
    "소근육"
@@ -1063,7 +2077,146 @@
   ]
  },
  {
+  "id": "c-binoculars",
+  "status": "후보",
+  "name": "휴지심 망원경 산책",
+  "ageMin": 24,
+  "ageMax": 72,
+  "place": "실외",
+  "group": true,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "숨기고찾기",
+   "흉내역할"
+  ],
+  "skills": [
+   "언어",
+   "인지"
+  ],
+  "materials": [
+   "휴지심 2개",
+   "테이프",
+   "끈"
+  ],
+  "steps": [
+   "휴지심 두 개를 붙여 망원경을 만들어요",
+   "목에 걸고 산책을 나가요",
+   "\"빨간 거 찾았다!\" 찾은 걸 말해요"
+  ],
+  "tip": "찾을 것 목록을 그림으로 주면 미션 놀이가 돼요",
+  "safety": "끈은 짧게, 목에 감기지 않게 해요",
+  "keywords": [
+   "휴지심 망원경",
+   "산책 놀이"
+  ]
+ },
+ {
+  "id": "c-ice-paint",
+  "status": "후보",
+  "name": "얼음 물감 그림",
+  "ageMin": 24,
+  "ageMax": 72,
+  "place": "실외",
+  "group": true,
+  "minutes": 20,
+  "mess": 2,
+  "principles": [
+   "변신"
+  ],
+  "skills": [
+   "오감",
+   "창의"
+  ],
+  "materials": [
+   "얼음틀",
+   "물+식용색소 또는 물감",
+   "나무젓가락",
+   "두꺼운 종이"
+  ],
+  "steps": [
+   "색물에 젓가락을 꽂아 얼려요",
+   "얼음을 들고 종이에 문질러요",
+   "녹으면서 색이 번지는 걸 봐요"
+  ],
+  "tip": "더운 날 베란다나 놀이터에서 하기 좋아요",
+  "safety": "얼음을 입에 넣지 않게, 차가우면 장갑을 껴요",
+  "keywords": [
+   "얼음 물감",
+   "여름 미술놀이"
+  ]
+ },
+ {
+  "id": "c-rubber-guitar",
+  "status": "후보",
+  "name": "상자 고무줄 기타",
+  "ageMin": 24,
+  "ageMax": 72,
+  "place": "실내",
+  "group": false,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "소리만들기",
+   "원인결과"
+  ],
+  "skills": [
+   "오감",
+   "창의"
+  ],
+  "materials": [
+   "뚜껑 없는 작은 상자 또는 빈 반찬통",
+   "굵기가 다른 고무줄"
+  ],
+  "steps": [
+   "상자에 고무줄을 여러 개 걸어요",
+   "손가락으로 튕겨 소리를 들어요",
+   "굵은 줄과 얇은 줄 소리를 비교해요"
+  ],
+  "tip": "두꺼운 줄이 낮은 소리가 나요. 이것도 과학이에요",
+  "safety": "고무줄이 끊어져 얼굴에 튀지 않게 너무 세게 당기지 않아요",
+  "keywords": [
+   "고무줄 기타",
+   "악기 만들기"
+  ]
+ },
+ {
+  "id": "c-tape-web",
+  "status": "후보",
+  "name": "문틀 테이프 거미줄",
+  "ageMin": 24,
+  "ageMax": 72,
+  "place": "실내",
+  "group": true,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "당기고떼기",
+   "굴리고던지기"
+  ],
+  "skills": [
+   "대근육",
+   "소근육"
+  ],
+  "materials": [
+   "넓은 테이프 (박스테이프)",
+   "신문지 공 또는 휴지 공"
+  ],
+  "steps": [
+   "문틀에 테이프를 끈끈한 면이 밖으로 오게 거미줄처럼 붙여요",
+   "신문지 공을 던져 거미줄에 붙여요",
+   "다 붙으면 하나씩 떼어 내요"
+  ],
+  "tip": "던지고 붙고 떼는 세 가지 놀이가 한 번에 돼요",
+  "safety": "테이프는 아이 키보다 높게 붙이고, 머리카락에 붙지 않게 해요",
+  "keywords": [
+   "테이프 거미줄",
+   "거미줄 놀이"
+  ]
+ },
+ {
   "id": "kinetic-sand",
+  "status": "확정",
   "name": "모래·키네틱샌드 놀이",
   "ageMin": 24,
   "ageMax": 72,
@@ -1071,6 +2224,10 @@
   "group": true,
   "minutes": 25,
   "mess": 2,
+  "principles": [
+   "변신",
+   "숨기고찾기"
+  ],
   "skills": [
    "오감",
    "창의"
@@ -1094,6 +2251,7 @@
  },
  {
   "id": "shadow",
+  "status": "확정",
   "name": "손전등 그림자 놀이",
   "ageMin": 24,
   "ageMax": 72,
@@ -1101,6 +2259,10 @@
   "group": true,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "원인결과",
+   "흉내역할"
+  ],
   "skills": [
    "창의",
    "인지"
@@ -1123,6 +2285,7 @@
  },
  {
   "id": "role-play",
+  "status": "확정",
   "name": "역할놀이 (병원·마트·요리사)",
   "ageMin": 24,
   "ageMax": 84,
@@ -1130,6 +2293,9 @@
   "group": true,
   "minutes": 20,
   "mess": 1,
+  "principles": [
+   "흉내역할"
+  ],
   "skills": [
    "언어",
    "사회성",
@@ -1153,7 +2319,250 @@
   ]
  },
  {
+  "id": "c-comb-paint",
+  "status": "후보",
+  "name": "머리빗 물감 그리기",
+  "ageMin": 30,
+  "ageMax": 72,
+  "place": "실내",
+  "group": false,
+  "minutes": 15,
+  "mess": 2,
+  "principles": [
+   "변신",
+   "원인결과"
+  ],
+  "skills": [
+   "창의"
+  ],
+  "materials": [
+   "안 쓰는 빗·포크",
+   "물감",
+   "종이"
+  ],
+  "steps": [
+   "종이에 물감을 몇 군데 짜요",
+   "빗으로 쓱 긁어 무늬를 만들어요",
+   "포크, 칫솔로 다른 무늬도 만들어요"
+  ],
+  "tip": "붓 대신 생활 도구를 쓰면 무늬가 새로워요",
+  "safety": "물감은 먹지 않게 해요",
+  "keywords": [
+   "빗 그림",
+   "도구 그림 놀이"
+  ]
+ },
+ {
+  "id": "c-icecube-dropper",
+  "status": "후보",
+  "name": "얼음틀 색물 옮기기",
+  "ageMin": 30,
+  "ageMax": 72,
+  "place": "주방",
+  "group": false,
+  "minutes": 15,
+  "mess": 1,
+  "principles": [
+   "옮기기",
+   "변신"
+  ],
+  "skills": [
+   "소근육",
+   "인지"
+  ],
+  "materials": [
+   "얼음틀",
+   "스포이트 또는 약 먹이는 주사기",
+   "물",
+   "식용색소 2~3가지"
+  ],
+  "steps": [
+   "컵에 색물을 만들어요",
+   "스포이트로 얼음틀 칸에 옮겨요",
+   "두 색을 섞어 새 색이 되는지 봐요"
+  ],
+  "tip": "다 하고 그대로 얼리면 다음 날 색 얼음 놀이로 이어져요",
+  "safety": "색물은 마시지 않게 해요",
+  "keywords": [
+   "스포이트 놀이",
+   "색깔 섞기"
+  ]
+ },
+ {
+  "id": "c-rubber-glove-cow",
+  "status": "후보",
+  "name": "고무장갑 젖소 젖 짜기",
+  "ageMin": 30,
+  "ageMax": 72,
+  "place": "욕실",
+  "group": true,
+  "minutes": 15,
+  "mess": 2,
+  "principles": [
+   "원인결과",
+   "흉내역할"
+  ],
+  "skills": [
+   "소근육",
+   "오감"
+  ],
+  "materials": [
+   "고무장갑",
+   "물",
+   "압정 (어른)",
+   "빨래집게"
+  ],
+  "steps": [
+   "고무장갑에 물을 넣고 입구를 묶어요",
+   "손가락 끝에 아주 작은 구멍을 내요",
+   "빨래집게로 걸고 손가락을 짜서 우유 짜기!"
+  ],
+  "tip": "물에 흰 물감을 조금 타면 진짜 우유 같아요",
+  "safety": "구멍은 어른이 내고, 압정은 바로 치워요",
+  "keywords": [
+   "젖소 놀이",
+   "고무장갑 놀이"
+  ]
+ },
+ {
+  "id": "c-foil-sculpt",
+  "status": "후보",
+  "name": "쿠킹호일 조물조물",
+  "ageMin": 30,
+  "ageMax": 84,
+  "place": "실내",
+  "group": false,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "변신",
+   "감싸고풀기"
+  ],
+  "skills": [
+   "창의",
+   "소근육"
+  ],
+  "materials": [
+   "쿠킹호일"
+  ],
+  "steps": [
+   "호일을 뭉쳐 공·뱀·사람을 만들어요",
+   "작은 장난감을 호일로 싸서 모양을 떠요",
+   "살살 풀어 \"속에 뭐가 있게?\" 맞혀요"
+  ],
+  "tip": "구겨도 다시 펴지는 게 신기해서 오래 놀아요",
+  "safety": "호일 조각을 입에 넣지 않게, 가장자리에 손 베이지 않게 해요",
+  "keywords": [
+   "호일 놀이",
+   "쿠킹호일 만들기"
+  ]
+ },
+ {
+  "id": "c-hanky-parachute",
+  "status": "후보",
+  "name": "손수건 낙하산",
+  "ageMin": 30,
+  "ageMax": 84,
+  "place": "실내",
+  "group": true,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "굴리고던지기",
+   "원인결과"
+  ],
+  "skills": [
+   "인지"
+  ],
+  "materials": [
+   "손수건",
+   "실 4가닥",
+   "작은 인형"
+  ],
+  "steps": [
+   "손수건 네 귀퉁이에 실을 묶어요",
+   "실 끝을 모아 인형을 묶어요",
+   "높은 곳에서 떨어뜨려 천천히 내려오는 걸 봐요"
+  ],
+  "tip": "종이랑 같이 떨어뜨려 누가 늦게 떨어지나 비교해요",
+  "safety": "높은 곳에 오를 땐 어른이 해요. 비닐봉지로는 하지 않아요",
+  "keywords": [
+   "낙하산 만들기",
+   "과학놀이"
+  ]
+ },
+ {
+  "id": "c-ladle-relay",
+  "status": "후보",
+  "name": "국자로 공 나르기 릴레이",
+  "ageMin": 30,
+  "ageMax": 84,
+  "place": "실내",
+  "group": true,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "옮기기",
+   "몸으로도전"
+  ],
+  "skills": [
+   "대근육",
+   "사회성"
+  ],
+  "materials": [
+   "국자",
+   "말랑한 공 또는 양말 공",
+   "바구니 2개"
+  ],
+  "steps": [
+   "출발선 바구니에서 국자로 공을 떠요",
+   "떨어뜨리지 않게 걸어서 반대편 바구니에 넣어요",
+   "팀을 나눠 릴레이로 해요"
+  ],
+  "tip": "어린 아이는 큰 냄비 국자, 큰 아이는 숟가락으로 난이도를 바꿔요",
+  "safety": "",
+  "keywords": [
+   "국자 놀이",
+   "릴레이 게임"
+  ]
+ },
+ {
+  "id": "c-paper-bag-guess",
+  "status": "후보",
+  "name": "종이봉투 속 물건 맞히기",
+  "ageMin": 30,
+  "ageMax": 84,
+  "place": "실내",
+  "group": true,
+  "minutes": 10,
+  "mess": 0,
+  "principles": [
+   "숨기고찾기",
+   "분류짝맞추기"
+  ],
+  "skills": [
+   "오감",
+   "언어"
+  ],
+  "materials": [
+   "종이봉투",
+   "집 물건 (숟가락·양말·귤)"
+  ],
+  "steps": [
+   "봉투에 물건을 몰래 넣어요",
+   "보지 않고 손으로 만져 맞혀요",
+   "\"딱딱해, 동그래\" 느낌을 말로 해 봐요"
+  ],
+  "tip": "모임에서 돌아가며 하면 다 같이 웃어요",
+  "safety": "날카로운 물건은 넣지 않아요",
+  "keywords": [
+   "촉감 상자",
+   "물건 맞히기"
+  ]
+ },
+ {
   "id": "scissors",
+  "status": "확정",
   "name": "가위질 놀이",
   "ageMin": 36,
   "ageMax": 72,
@@ -1161,6 +2570,9 @@
   "group": false,
   "minutes": 15,
   "mess": 1,
+  "principles": [
+   "변신"
+  ],
   "skills": [
    "소근육"
   ],
@@ -1183,6 +2595,7 @@
  },
  {
   "id": "blow-paint",
+  "status": "확정",
   "name": "빨대로 물감 불기",
   "ageMin": 36,
   "ageMax": 84,
@@ -1190,6 +2603,10 @@
   "group": true,
   "minutes": 15,
   "mess": 2,
+  "principles": [
+   "원인결과",
+   "변신"
+  ],
   "skills": [
    "창의",
    "오감"
@@ -1214,6 +2631,7 @@
  },
  {
   "id": "pasta-necklace",
+  "status": "확정",
   "name": "마카로니 목걸이 꿰기",
   "ageMin": 36,
   "ageMax": 84,
@@ -1221,6 +2639,9 @@
   "group": false,
   "minutes": 20,
   "mess": 1,
+  "principles": [
+   "꽂고잇기"
+  ],
   "skills": [
    "소근육",
    "창의"
@@ -1244,6 +2665,7 @@
  },
  {
   "id": "treasure-hunt",
+  "status": "확정",
   "name": "보물찾기",
   "ageMin": 36,
   "ageMax": 84,
@@ -1251,6 +2673,9 @@
   "group": true,
   "minutes": 20,
   "mess": 0,
+  "principles": [
+   "숨기고찾기"
+  ],
   "skills": [
    "인지",
    "사회성"
@@ -1273,6 +2698,7 @@
  },
  {
   "id": "bottle-bowling",
+  "status": "확정",
   "name": "페트병 볼링",
   "ageMin": 36,
   "ageMax": 96,
@@ -1280,6 +2706,10 @@
   "group": true,
   "minutes": 20,
   "mess": 0,
+  "principles": [
+   "굴리고던지기",
+   "쌓고무너뜨리기"
+  ],
   "skills": [
    "대근육",
    "인지"
@@ -1302,7 +2732,76 @@
   ]
  },
  {
+  "id": "c-flashlight-tag",
+  "status": "후보",
+  "name": "손전등 술래잡기",
+  "ageMin": 36,
+  "ageMax": 96,
+  "place": "실내",
+  "group": true,
+  "minutes": 15,
+  "mess": 0,
+  "principles": [
+   "숨기고찾기",
+   "몸으로도전"
+  ],
+  "skills": [
+   "대근육",
+   "사회성"
+  ],
+  "materials": [
+   "손전등",
+   "어두운 방"
+  ],
+  "steps": [
+   "방을 어둡게 하고 술래가 손전등을 들어요",
+   "나머지는 숨거나 살금살금 움직여요",
+   "불빛에 비치면 다음 술래!"
+  ],
+  "tip": "",
+  "safety": "어두운 곳에 걸려 넘어질 물건을 먼저 치워요",
+  "keywords": [
+   "손전등 놀이",
+   "술래잡기"
+  ]
+ },
+ {
+  "id": "c-tube-domino",
+  "status": "후보",
+  "name": "휴지심 도미노",
+  "ageMin": 36,
+  "ageMax": 96,
+  "place": "실내",
+  "group": true,
+  "minutes": 20,
+  "mess": 0,
+  "principles": [
+   "쌓고무너뜨리기",
+   "원인결과"
+  ],
+  "skills": [
+   "인지",
+   "소근육"
+  ],
+  "materials": [
+   "휴지심 많이",
+   "책 (선택)"
+  ],
+  "steps": [
+   "휴지심을 간격 맞춰 줄 세워요",
+   "첫 번째를 톡 밀어 와르르 넘어뜨려요",
+   "곡선, 갈림길로 길을 바꿔 봐요"
+  ],
+  "tip": "모임 때 모은 휴지심으로 하면 길이 길어져요",
+  "safety": "",
+  "keywords": [
+   "휴지심 도미노",
+   "도미노 놀이"
+  ]
+ },
+ {
   "id": "cup-tower",
+  "status": "확정",
   "name": "종이컵 탑 쌓기 대회",
   "ageMin": 36,
   "ageMax": 96,
@@ -1310,6 +2809,9 @@
   "group": true,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "쌓고무너뜨리기"
+  ],
   "skills": [
    "소근육",
    "사회성"
@@ -1331,6 +2833,7 @@
  },
  {
   "id": "nature-crown",
+  "status": "확정",
   "name": "낙엽·솔방울 자연물 놀이",
   "ageMin": 36,
   "ageMax": 96,
@@ -1338,6 +2841,10 @@
   "group": true,
   "minutes": 30,
   "mess": 1,
+  "principles": [
+   "분류짝맞추기",
+   "꽂고잇기"
+  ],
   "skills": [
    "오감",
    "창의"
@@ -1362,6 +2869,7 @@
  },
  {
   "id": "red-light",
+  "status": "확정",
   "name": "무궁화꽃이 피었습니다",
   "ageMin": 36,
   "ageMax": 96,
@@ -1369,6 +2877,9 @@
   "group": true,
   "minutes": 20,
   "mess": 0,
+  "principles": [
+   "몸으로도전"
+  ],
   "skills": [
    "대근육",
    "사회성"
@@ -1390,6 +2901,7 @@
  },
  {
   "id": "rice-ball",
+  "status": "확정",
   "name": "주먹밥 만들기 요리 놀이",
   "ageMin": 36,
   "ageMax": 96,
@@ -1397,6 +2909,10 @@
   "group": true,
   "minutes": 30,
   "mess": 1,
+  "principles": [
+   "변신",
+   "흉내역할"
+  ],
   "skills": [
    "소근육",
    "사회성"
@@ -1422,6 +2938,7 @@
  },
  {
   "id": "sock-puppet",
+  "status": "확정",
   "name": "양말 인형극",
   "ageMin": 36,
   "ageMax": 96,
@@ -1429,6 +2946,9 @@
   "group": true,
   "minutes": 30,
   "mess": 1,
+  "principles": [
+   "흉내역할"
+  ],
   "skills": [
    "언어",
    "창의",
@@ -1453,6 +2973,7 @@
  },
  {
   "id": "market",
+  "status": "확정",
   "name": "시장 놀이 (사고팔기)",
   "ageMin": 48,
   "ageMax": 96,
@@ -1460,6 +2981,9 @@
   "group": true,
   "minutes": 30,
   "mess": 1,
+  "principles": [
+   "흉내역할"
+  ],
   "skills": [
    "사회성",
    "인지",
@@ -1485,6 +3009,7 @@
  },
  {
   "id": "mission-card",
+  "status": "확정",
   "name": "미션 카드 놀이",
   "ageMin": 48,
   "ageMax": 96,
@@ -1492,6 +3017,10 @@
   "group": true,
   "minutes": 20,
   "mess": 0,
+  "principles": [
+   "숨기고찾기",
+   "분류짝맞추기"
+  ],
   "skills": [
    "인지",
    "사회성"
@@ -1513,6 +3042,7 @@
  },
  {
   "id": "paper-plane",
+  "status": "확정",
   "name": "종이비행기 멀리 날리기",
   "ageMin": 48,
   "ageMax": 96,
@@ -1520,6 +3050,9 @@
   "group": true,
   "minutes": 20,
   "mess": 0,
+  "principles": [
+   "굴리고던지기"
+  ],
   "skills": [
    "소근육",
    "사회성"
@@ -1542,6 +3075,7 @@
  },
  {
   "id": "sink-float",
+  "status": "확정",
   "name": "뜨는 것 · 가라앉는 것",
   "ageMin": 48,
   "ageMax": 96,
@@ -1549,6 +3083,10 @@
   "group": true,
   "minutes": 15,
   "mess": 1,
+  "principles": [
+   "원인결과",
+   "분류짝맞추기"
+  ],
   "skills": [
    "인지"
   ],
@@ -1570,6 +3108,7 @@
  },
  {
   "id": "volcano",
+  "status": "확정",
   "name": "베이킹소다 화산 실험",
   "ageMin": 48,
   "ageMax": 96,
@@ -1577,6 +3116,10 @@
   "group": true,
   "minutes": 20,
   "mess": 2,
+  "principles": [
+   "변신",
+   "원인결과"
+  ],
   "skills": [
    "인지",
    "오감"
@@ -1603,6 +3146,7 @@
  },
  {
   "id": "story-relay",
+  "status": "확정",
   "name": "동화 이어 만들기",
   "ageMin": 60,
   "ageMax": 96,
@@ -1610,6 +3154,9 @@
   "group": true,
   "minutes": 15,
   "mess": 0,
+  "principles": [
+   "흉내역할"
+  ],
   "skills": [
    "언어",
    "창의",
