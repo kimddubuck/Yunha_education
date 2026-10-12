@@ -191,7 +191,7 @@ async function pushRemind(meetId, date, slot, end, cancel){
     const at = new Date(`${date}T${String(parseInt(slot)).padStart(2, '0')}:00:00`).getTime() - 3600e3;
     await pushApi({ action: cancel ? 'unschedule' : 'schedule', key: ROOM.key, uid: user.uid, idToken: await user.getIdToken(), meetId, at,
       title: `⏰ 1시간 뒤 모임이에요 · ${slot}${end ? '~' + end : ''}`, body: `${ROOM.name} · 늦지 않게 만나요! 못 가면 불참으로 바꿔 주세요`,
-      link: pushLink('index.html') + '&go=m' + meetId, tag: 'remind-' + meetId });
+      link: pushLink('index.html') + '&go=r' + meetId, tag: 'remind-' + meetId });
   }catch(e){}
 }
 // 🆘 SOS 요청이 들어오면 방 사람들에게 알려요 (보낸 사람 빼고). 같은 날짜·시간은 알림 하나로 바뀌어요

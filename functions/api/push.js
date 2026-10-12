@@ -8,7 +8,7 @@
 
 const TOPIC = /^[rmsa][0-9a-f]{40}$/;   // r 방 · m 주최자 · s 그 날짜·시간 SOS 보낸 사람 · a 모임 참석·미확정한 사람
 const TOKEN = /^[A-Za-z0-9_:\-.]{100,4096}$/;
-const LINK = /^(index|meet)\.html\?r=[a-z0-9]{6,20}(&go=(s\d{4}-\d{2}-\d{2}-\d{1,2}|m[A-Za-z0-9]{1,40}))?$/;   // go = 눌렀을 때 바로 띄울 SOS 시간(s날짜-시) · 모임(m아이디)
+const LINK = /^(index|meet)\.html\?r=[a-z0-9]{6,20}(&go=(s\d{4}-\d{2}-\d{2}-\d{1,2}|[mr][A-Za-z0-9]{1,40}))?$/;   // go = 눌렀을 때 바로 띄울 SOS 시간(s날짜-시) · 모임(m아이디 · r=1시간 전 알림)
 const KEY = /^[0-9a-f]{64}$/, UID = /^[A-Za-z0-9]{10,128}$/, IDTOKEN = /^[A-Za-z0-9_\-.]{100,4096}$/, MEET_ID = /^[A-Za-z0-9]{1,40}$/;
 const LIMIT = 6, WINDOW_MIN = 10;   // 채널마다 10분에 6번까지만 (알림 폭탄 방지)
 
