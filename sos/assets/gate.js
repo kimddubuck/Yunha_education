@@ -331,6 +331,39 @@ function sosBetaInfo(){
   document.addEventListener('keydown', key);
   document.body.appendChild(box); box.querySelector('.pb-ok').focus();
 }
+// 📲 설치 방법 팝업 (방 목록의 '홈 화면 앱 설치를 권장해요'를 누르면). 브라우저마다 순서가 달라요
+let sosBip = null; window.addEventListener('beforeinstallprompt', e => { sosBip = e; });   // 안드로이드 크롬: 바로 설치 창
+function sosInstallHow(){
+  if(document.querySelector('.pop-how')) return;
+  const b = sosBrowser(), and = /android/i.test(SOS_UA);
+  const go = SOS_INAPP || (!b.best && (b.apple || and));   // 앱 안 화면 · 추천 아닌 브라우저 → 먼저 크롬/사파리로
+  const steps = b.apple
+    ? ['아래쪽 <b>공유 버튼(⬆︎)</b> 누르기', '<b>홈 화면에 추가</b> 누르기<br><small>안 보이면 목록을 아래로 내려 보세요</small>', '오른쪽 위 <b>추가</b> 누르기']
+    : b.name === '삼성 인터넷' && !go
+    ? ['아래쪽 <b>메뉴(≡)</b> 누르기', '<b>현재 페이지 추가 → 홈 화면</b> 누르기', '<b>추가</b> 누르기']
+    : ['오른쪽 위 <b>점 3개(⋮)</b> 누르기', '<b>홈 화면에 추가</b> 또는 <b>앱 설치</b> 누르기', '<b>설치</b> 누르기'];
+  const head = go ? `<p class="pb-s">지금은 <b>${SOS_INAPP ? '앱 안 화면' : b.name}</b>${SOS_INAPP ? '이에요' : b.ie}.<br><b>${b.rec}</b>에서 설치해야 잘 돼요 👇</p>` : '';
+  const box = document.createElement('div'); box.className = 'pop-back pop-beta-back';
+  box.innerHTML = `<div class="pop-beta pop-how" role="dialog" aria-modal="true" aria-label="앱 설치 방법">
+      <p class="pb-t">📲 홈 화면에 앱 설치하기</p>
+      ${head}
+      ${go ? `<button type="button" class="pb-go">${b.rec}${b.rec === '크롬' ? '으로' : '로'} 열기</button><p class="pb-s pb-then">${b.rec}에서 열리면 이렇게 설치해요</p>` : ''}
+      <ol class="pb-l pb-steps">${steps.map(x => `<li>${x}</li>`).join('')}</ol>
+      ${!go && sosBip ? '<button type="button" class="pb-go" data-bip>바로 설치하기</button>' : ''}
+      <p class="pb-m">설치하면 홈 화면에 <b>앱 아이콘</b>이 생겨요.<br>앞으로는 <b>그 아이콘으로</b> 열어 주세요.<br>로그인이 안 섞이고 <b>알림도 잘 와요</b> 🔔</p>
+      <button type="button" class="pb-ok">확인</button>
+    </div>`;
+  const close = () => { box.remove(); document.removeEventListener('keydown', key); };
+  const key = e => { if(e.key === 'Escape') close(); };
+  box.addEventListener('click', async e => {
+    if(e.target === box || e.target.closest('.pb-ok')){ close(); return; }
+    if(e.target.closest('[data-bip]') && sosBip){ sosBip.prompt(); await sosBip.userChoice.catch(() => {}); sosBip = null; close(); return; }
+    if(e.target.closest('.pb-go')){ try{ const L = sosEscapeLinks(sosEscapeTarget()); sosGo(b.apple ? (SOS_KAKAO ? L.kakaoOut : L.safari) : L.chrome); }catch(err){} }
+  });
+  document.addEventListener('keydown', key);
+  document.body.appendChild(box); box.querySelector('.pb-ok').focus();
+}
+document.addEventListener('click', e => { if(e.target.closest('#gate .g-apptip')){ e.preventDefault(); e.stopPropagation(); sosInstallHow(); } }, true);
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-demo')){ e.preventDefault(); e.stopPropagation(); sosBetaInfo(); } }, true);
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-share')){ e.preventDefault(); e.stopPropagation(); sosShareApp(); } }, true);
 // 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
@@ -537,6 +570,13 @@ function gateCss(){
     .pop-beta .pb-l li{margin:1px 0}
     .pop-beta .pb-m{margin-top:8px;font-size:12px;color:var(--muted,#736e75);white-space:nowrap}
     .pop-beta .pb-m a{color:var(--accent-ink,#1c7276)}
+    .pop-beta.pop-how{width:min(300px,100%)}
+    .pop-how .pb-s{white-space:normal}.pop-how .pb-s b{color:var(--fg,#22282a)}
+    .pop-how .pb-steps{padding-left:20px;white-space:normal}.pop-how .pb-steps li{margin:4px 0}.pop-how .pb-steps small{color:var(--muted,#736e75)}
+    .pop-how .pb-steps b,.pop-how .pb-m b{color:#ffd54a}
+    .pop-how .pb-m{white-space:normal;line-height:1.55}
+    .pop-how .pb-then{margin-top:10px;font-size:12px}
+    .pop-how .pb-go{display:block;width:100%;margin:10px 0 0;padding:10px;border:0;border-radius:12px;background:#ffd54a;color:#1b1b1b;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
     .pop-beta .pb-ok{display:block;width:100%;margin-top:12px;padding:8px;border:0;border-radius:10px;background:var(--tag,#efefef);color:var(--fg,#22282a);font:inherit;font-weight:700;font-size:13px;cursor:pointer}
     #gate .g-demo{display:inline-block;vertical-align:middle;margin-left:6px;padding:2px 8px!important;border-radius:999px!important;border:1px solid var(--muted,#736e75)!important;background:transparent!important;color:var(--muted,#736e75)!important;font-size:11.5px!important;font-weight:700!important;letter-spacing:-.2px;white-space:nowrap;position:relative;top:-2px;cursor:pointer}
     #gate p{margin:0;color:var(--muted,#6b7570);font-size:14px}
@@ -613,6 +653,8 @@ function gateCss(){
     #gate .g-apptip{margin:0;padding:10px 12px;border-radius:12px;border:1.5px solid #e0a400;background:rgba(255,213,74,.08);font-size:13.5px!important;line-height:1.5;color:var(--fg,#22282a);text-align:center}
     #gate .g-apptip b{color:#ffd54a}
     #gate .g-apptip small{font-size:12px;color:var(--muted,#9aa)}
+    #gate .g-apptip{cursor:pointer}
+    #gate .g-apptip-go{display:inline-block;margin-top:6px;padding:4px 12px;border-radius:999px;background:#ffd54a;color:#1b1b1b;font-size:12.5px;font-weight:800}
     #gate .g-listbox{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;border:1.5px solid var(--line,#e3e3e5);background:var(--bg,#fff);text-align:left}
     #gate .g-list-h{margin:0;font-weight:800;font-size:15px!important;color:var(--fg,#22282a)!important}
     #gate .g-list-h small{font-weight:500;color:var(--muted,#736e75);font-size:12px;margin-left:4px}
@@ -847,7 +889,7 @@ ${invite && !closable ? GATE_HOW_INVITE : ''}`;
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
       ${list}
       <p class="g-legend">🆘 = 1주일 안에 SOS 보낸 사람 · <img class="g-hero" src="assets/hero-up.svg" alt=""> = 다가오는 모임${bells ? '<br>🔔 = 알림 켜짐 · 🔕 = 꺼짐 (눌러서 방마다 켜고 끄기)' : ''}</p>
-      ${matchMedia('(display-mode: standalone)').matches || navigator.standalone ? '' : '<p class="g-apptip">📲 원활한 사용을 위해<br><b>홈 화면 앱 설치</b>를 권장해요<br><small>카톡 링크 대신 홈 화면 아이콘으로 열면<br>로그인이 안 섞이고 알림도 잘 와요</small></p>'}
+      ${matchMedia('(display-mode: standalone)').matches || navigator.standalone ? '' : '<p class="g-apptip" role="button" tabindex="0">📲 원활한 사용을 위해<br><b>홈 화면 앱 설치</b>를 권장해요<br><small>카톡 링크 대신 홈 화면 아이콘으로 열면<br>로그인이 안 섞이고 알림도 잘 와요</small><span class="g-apptip-go">👉 설치 방법 보기</span></p>'}
       <details class="how-to g-more"><summary>＋ 새 방 만들기 · 🔗 초대 링크</summary>
 ${formHtml.replace(list, '')}
 ${GATE_PASTE}
