@@ -17,3 +17,10 @@
 - `/plays/<id>.html` 놀이 하나 (검색 유입용, HowTo 구조화 데이터 포함)
 - `/age/<개월>.html` 개월수별 · `/principles.html`, `/principles/pNN.html` 놀이 원리
 - `/about.html` `/privacy.html` `/terms.html` (광고 승인 필수) · `sitemap.xml` `robots.txt`
+
+## 꿀팁 가이드 글 (어린이집 · 앞으로 유아식 등)
+- `dokbak-dev/guides/<이름>.json` 하나 = 사이트의 `/<slug>/` 묶음 하나 (목록 + 주제마다 한 페이지)
+- 형식은 어린이집 체크리스트의 guide.js와 같아요: sections[{id, title, blocks}], 블록은 p · list(b,t) · table · timeline · ask · note
+- 근거 표시 `v`: 없으면 공식 원문에서 확인 · "i" 간접 확인(기사·검색 요약) · "x" 근거 미확인. 새 글은 원문을 못 봤으면 꼭 붙여요.
+- `daycare.json`은 kimddubuck/daycare-checklist의 guide.js(0c0a1bf)를 변환한 것. 그쪽 글이 바뀌면 다시 변환해요.
+- 놀이 연구 목록: `dokbak-dev/research.json` → `/research.html`

@@ -70,7 +70,7 @@ def in_band(p, lo, hi):
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
-  nav = [('', '홈'), ('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리')]
+  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집')]
   navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if active == h else ""}>{t}</a>' for h, t in nav)
   return f'''<!doctype html>
 <html lang="ko">
@@ -219,7 +219,7 @@ draw();
   for k, (ic, why, frm) in PR.items():
     lst = [p for p in rows if k in p['principles']]
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../principles.html">놀이 원리</a> › {pn(k)}</p>
-<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">놀이 원리 · {age(frm)}부터</span><h1 style="font-size:clamp(26px,5vw,36px)">{ic} {pn(k)}</h1><p>{why}</p></div>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">놀이 원리 · 대략 {age(frm)}부터</span><h1 style="font-size:clamp(26px,5vw,36px)">{ic} {pn(k)}</h1><p>{why}</p></div>
 <div class="cards">{''.join(card(p, '../') for p in lst) or '<p class="none">준비 중이에요.</p>'}</div></section></div>'''
     files[f'principles/{PR_SLUG[k]}.html'] = page(f'{pn(k)} 놀이 · 아이가 좋아하는 이유 | 오늘도 독박육아', f'{why}. {pn(k)} 원리로 하는 엄마표 놀이 {len(lst)}가지.', body, f'principles/{PR_SLUG[k]}.html', 'principles.html')
   body = f'''<div class="wrap"><section class="blk prose" style="max-width:none">
@@ -227,11 +227,12 @@ draw();
 <h2>아이가 빠지는 놀이의 5가지 조건</h2>
 <ol class="rules"><li><b>결과가 바로</b> 보여요</li><li><b>몇 번이고</b> 다시 할 수 있어요</li><li><b>조금 어렵지만</b> 할 만해요</li><li><b>진짜 어른 물건</b>이에요</li><li><b>아이 몸에 맞는</b> 작은 세상이에요</li></ol>
 <h2>14가지 놀이 원리</h2>
-<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{age(v[2])}부터 · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items())}</div>
+<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">대략 {age(v[2])}부터 · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items())}</div>
 <h2>새 놀이 만드는 공식</h2>
 <p><b>원리 1~2개 + 집에 있는 물건 1~2개 + 아이 나이에 맞는 난이도</b></p>
 <ul><li>꽂고 잇기 + 채반 → 채반 구멍에 빨대 꽂기</li><li>당기고 떼기 + 빨래집게 + 상자 → 상자 테두리 빨래집게 떼기</li><li>굴리고 던지기 + 휴지심 + 벽 → 벽에 휴지심 미끄럼틀 붙여 공 굴리기</li></ul>
 <p>어리면 <b>크게·적게·느리게</b>, 크면 <b>작게·많게·규칙 더하기</b>로 난이도를 바꿔요.</p>
+<div class="box why"><h2>📚 이 원리는 어디서 왔나요?</h2><p>공식으로 정해진 분류는 아니에요. 놀이 도식(스키마) 이론, 피아제의 대상영속성, 사회적 놀이 단계, 안내된 놀이 연구 같은 아동발달 연구를 바탕으로 엄마표 놀이에 쓰기 좋게 <b>우리가 묶고 이름 붙인 것</b>이에요. 개월수는 대략적인 기준이고 아이마다 달라요.</p><p style="margin-top:8px"><a class="btn ghost" href="research.html">참고한 연구 보기</a></p></div>
 <h2>⚠️ 생활 물건으로 놀 때 안전 원칙</h2>
 <ul><li>3세 미만은 휴지심 구멍(지름 약 3.5cm)에 들어가는 크기는 질식 위험이 있어요. 꼭 지켜보거나 빼 주세요.</li><li>비닐봉지·랩·고무줄·끈은 얼굴이나 목에 닿지 않게 하고, 놀이가 끝나면 바로 치워요.</li><li>칼·가위·글루건으로 하는 준비는 어른만 해요.</li><li>물놀이는 얕은 물이라도 어른이 늘 옆에 있어요.</li></ul>
 </section></div>'''
@@ -279,6 +280,14 @@ draw();
   <div class="sh"><span class="ey">놀이 원리</span><h2>🧠 원리를 알면 집 물건이 다 장난감</h2><p>넣고 빼기, 당기고 떼기, 쌓고 무너뜨리기… 아이가 빠지는 데엔 이유가 있어요.</p></div>
   <div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><h3>{PR[k][0]} {pn(k)}</h3><p>{PR[k][1]}</p></a>' for k in list(PR)[:6])}</div>
   <p style="margin-top:12px"><a class="btn ghost" href="principles.html">14가지 원리 모두 보기</a></p>
+</div></section>
+
+<section class="blk"><div class="wrap">
+  <div class="sh"><span class="ey">육아 정보</span><h2>📖 알아 두면 덜 헤매요</h2></div>
+  <div class="prs">
+    <a class="pr" href="daycare/"><span class="meta">21가지 주제 · 방문 체크리스트</span><h3>🏫 어린이집 기초 알기</h3><p>반 편성, 선생님 1명당 아이 수, 하루 일과, 비용, 입소 순서까지. 처음 보내는 분을 위해 정리했어요.</p></a>
+    <a class="pr" href="research.html"><span class="meta">미국소아과학회 · 누리과정 등</span><h3>📚 놀이에 대한 연구</h3><p>놀이가 왜 중요한지, 아이는 어떻게 노는지. 세계 연구와 우리나라 공공 자료를 쉽게 풀었어요.</p></a>
+  </div>
 </div></section>
 
 <section class="blk"><div class="wrap">
@@ -340,6 +349,64 @@ segs(); render();
 <h2>2. 놀이 정보</h2><p>놀이는 일반적인 참고 정보예요. 아이의 나이·발달·건강에 맞는지는 보호자가 판단해 주세요. 모든 놀이는 어른이 옆에서 지켜볼 때 해 주세요. 놀이 중 생긴 사고에 대해 사이트가 책임지기 어려워요.</p>
 <h2>3. 바뀔 수 있어요</h2><p>약관이 바뀌면 이 페이지에 알려 드려요.</p>
 <h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {datetime.date.today():%Y년 %m월 %d일}</p>'''), 'terms.html')
+
+
+  # ── 참고한 연구
+  rs = json.load(open(os.path.join(DEV, 'research.json'), encoding='utf-8'))
+  def ritem(it):
+    name = f'<a href="{e(it["url"])}" rel="noopener">{e(it["name"])}</a>' if it['url'] else e(it['name'])
+    return f'<div class="box ref"><h3>{name}</h3><p class="who">{e(it["who"])}</p><p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p></div>'
+  groups = ''.join(f'<h2>{e(g["title"])}</h2>' + ''.join(ritem(it) for it in g['items']) for g in rs['groups'])
+  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › <a href="principles.html">놀이 원리</a> › 참고한 연구</p><section class="blk prose" style="padding-top:12px">
+<h1>📚 놀이에 대한 연구와 자료</h1><p>{e(rs["intro"])}</p>
+{groups}
+<p class="src">{e(rs["checked"])}</p></section></div>'''
+  files['research.html'] = page('놀이 연구와 자료 · 놀이가 왜 중요할까 | 오늘도 독박육아', '미국소아과학회 놀이 보고서, 놀이 도식 이론, 사회적 놀이 단계, 안내된 놀이 연구, 누리과정까지. 엄마표 놀이의 바탕이 된 연구를 쉽게 정리했어요.', body, 'research.html', 'principles.html')
+
+  # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
+  VB = {'x': '근거 미확인', 'i': '간접 확인'}
+  vb = lambda v: f'<span class="vb {v}">{VB[v]}</span>' if v in VB else ''
+  def gblock(b):
+    mark = f'<p class="vline">{vb(b["v"])}{e(b.get("vt", ""))}</p>' if b.get('v') else ''
+    if 'p' in b: return f'<p>{e(b["p"])}</p>'
+    if 'note' in b: return f'<p class="gnote">{vb(b.get("v"))}{e(b["note"])}</p>'
+    if 'list' in b: return mark + '<ul class="glist">' + ''.join(f'<li><b>{e(x["b"])}{vb(x.get("v"))}</b> {e(x.get("t", ""))}</li>' for x in b['list']) + '</ul>'
+    if 'table' in b:
+      head = ''.join(f'<th>{e(h)}</th>' for h in b['table']['head'])
+      rows_ = ''.join('<tr>' + ''.join(f'<td>{e(c)}</td>' for c in r) + '</tr>' for r in b['table']['rows'])
+      return mark + f'<div class="tablewrap"><table class="gtable"><thead><tr>{head}</tr></thead><tbody>{rows_}</tbody></table></div>'
+    if 'timeline' in b: return mark + '<ol class="timeline">' + ''.join(f'<li><time>{e(t)}</time><span>{e(x)}</span></li>' for t, x in b['timeline']) + '</ol>'
+    if 'ask' in b: return '<div class="ask"><h3>🙋 방문해서 물어보세요</h3><ul>' + ''.join(f'<li>{e(q)}</li>' for q in b['ask']) + '</ul></div>'
+    return ''
+  LEGEND = f'<div class="vlegend"><p>표시가 없는 내용은 정부 지침·법령 원문에서 확인한 것이에요.</p><p>{vb("i")} 원문이 아니라 기사, 검색 요약, 개편 전 자료로만 확인한 내용이에요.</p><p>{vb("x")} 근거를 확인하지 못했어요. 흔한 관행이나 정리한 사람의 해석이라 틀릴 수 있어요.</p></div>'
+  for gf in sorted(f for f in os.listdir(os.path.join(DEV, 'guides')) if f.endswith('.json')):
+    G = json.load(open(os.path.join(DEV, 'guides', gf), encoding='utf-8'))
+    sl = G['slug']; os.makedirs(os.path.join(OUT, sl), exist_ok=True)
+    tool = ''
+    if G.get('tool'):
+      tool = f'<div class="bridge tool"><p><b>🧰 {e(G["tool"]["name"])}</b><br>{e(G["tool"]["desc"])}</p><a class="btn teal" href="{e(G["tool"]["url"])}" rel="noopener">열기</a></div>'
+    secs = G['sections']
+    for i, sec in enumerate(secs):
+      prv = secs[i - 1] if i else None
+      nxt = secs[i + 1] if i + 1 < len(secs) else None
+      pager = '<div class="pager">' + (f'<a href="{prv["id"]}.html">‹ {e(prv["title"])}</a>' if prv else '<span></span>') + (f'<a href="{nxt["id"]}.html">{e(nxt["title"])} ›</a>' if nxt else '') + '</div>'
+      blocks = ''.join(gblock(b) for b in sec['blocks'])
+      body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="./">{e(G["title"])}</a> › {e(sec["title"])}</p>
+<article class="blk prose guide" style="padding-top:12px"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1>{e(sec["title"])}</h1>
+{blocks}
+{LEGEND}<p class="src">{e(G["source"])}</p>{pager}{tool}</article></div>'''
+      first = next((b for b in sec['blocks'] if 'p' in b or 'list' in b), None)
+      if first and 'p' in first: d = first['p']
+      elif first: d = ' '.join(x['b'] for x in first['list'][:3])
+      else: d = G['desc']
+      files[f'{sl}/{sec["id"]}.html'] = page(f'{sec["title"]} · {G["title"]} | 오늘도 독박육아', d[:150], body, f'{sl}/{sec["id"]}.html', f'{sl}/')
+    cards = ''.join(f'<a class="pr" href="{s2["id"]}.html"><h3>{e(s2["title"])}</h3></a>' for s2 in secs)
+    body = f'''<div class="wrap"><section class="blk prose" style="max-width:none">
+<div class="sh"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1 style="font-size:clamp(26px,5vw,36px)">{e(G["title"])}</h1><p>{e(G["intro"])}</p></div>
+{tool}
+<div class="prs" style="margin-top:14px">{cards}</div>
+<p class="src">{e(G["source"])}</p></section></div>'''
+    files[f'{sl}/index.html'] = page(f'{G["title"]} | 오늘도 독박육아', G['desc'], body, f'{sl}/index.html', f'{sl}/')
 
   # ── 쓰기 + sitemap
   for path, txt in files.items():
