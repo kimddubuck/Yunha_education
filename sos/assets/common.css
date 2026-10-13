@@ -1169,3 +1169,5 @@ main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn):not(.a
 .app-tip{border-color:var(--line);background:var(--tag)}
 .app-tip p b{color:var(--fg)}
 .app-tip-btns .btn:first-child{background:var(--pick);border-color:var(--pick);color:var(--pick-fg)}
+/* 선택한 날짜·시간(흰 칸) 안의 'N명'도 빨간 글자로 */
+.cal-day.on small,.time-btn[aria-pressed="true"] small,.time-btn[aria-pressed="true"] b{color:#d0241b}
