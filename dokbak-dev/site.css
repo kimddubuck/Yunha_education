@@ -281,3 +281,4 @@ footer p{font-size:14px;color:var(--soft)}
 .nav a:hover{filter:brightness(1.08)}
 .nav a[aria-current="page"]{background:var(--teal);color:var(--on-teal);border-color:var(--teal)}
 @media (max-width:380px){.nav{gap:5px}.nav a{padding:5px 10px;font-size:13px}}
+@media (max-width:340px){.nav{gap:4px}.nav a{padding:5px 8px;font-size:12.5px;letter-spacing:-.3px}}
