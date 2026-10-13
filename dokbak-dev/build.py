@@ -90,7 +90,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 {extra_head}</head>
 <body>
 <header class="top"><div class="wrap">
-  <a class="logo" href="{up}./"><i>☕</i><b>오늘도 독박육아</b></a>
+  <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
   <nav class="nav" aria-label="메뉴">{navh}</nav>
   <a class="top-sos" href="{APP}"><i>🆘 </i>공동육아 SOS</a>
 </div></header>
@@ -98,7 +98,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 {body}
 </main>
 <footer><div class="wrap">
-  <a class="logo" href="{up}./"><i>☕</i><b>오늘도 독박육아</b></a>
+  <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
   <p>독박육아 하는 날을 덜 외롭게.<br>집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
   <div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
 </div></footer>
@@ -240,34 +240,20 @@ draw();
 
   # ── 홈
   feat = [p for p in rows if p['group']][:6]
-  body = f'''<section class="hero"><div class="wrap">
-  <div>
-    <h1>오늘도 혼자 버티는 날,<br><em>뭐 하고 놀지</em>부터 정해요</h1>
-    <p class="lead">아기 개월수만 고르면 집에 있는 물건으로<br>바로 할 수 있는 놀이를 골라 드려요.</p>
-    <div class="chips" id="heroChips"></div>
-  </div>
-  <aside class="clock" aria-label="독박육아 하루">
-    <h3>⏰ 독박육아 하루, 고비는 여기</h3>
-    <div class="tl">
-      <div><b>07:00</b><span>기상 · 아침밥 전쟁</span></div>
-      <div><b>10:00</b><span>낮잠 · 커피 한 잔의 기적</span></div>
-      <div class="hard"><b>15:00</b><span>체력 바닥 · 놀거리 바닥</span></div>
-      <div class="hard"><b>17:00</b><span>저녁 준비 + 칭얼 최고조</span></div>
-      <div><b>20:30</b><span>재우기 · 오늘도 해냈다</span></div>
-    </div>
-  </aside>
-</div></section>
-
-<section class="blk" id="reco"><div class="wrap">
-  <div class="sh"><span class="ey">놀이 추천기</span><h2>🧸 오늘 뭐 하고 놀지?</h2><p>개월수와 장소를 고르면 놀이 3개를 골라 드려요.</p></div>
+  body = f'''<section class="hero" id="reco"><div class="wrap">
+  <h1>오늘도 혼자 버티는 날,<br><em>뭐 하고 놀지</em>부터 정해요</h1>
+  <p class="lead">나이와 장소만 고르면 집에 있는 물건으로<br>바로 할 수 있는 놀이 3개를 골라 드려요.</p>
   <div class="reco">
     <div class="form">
-      <div class="field"><span>아기 나이</span><div class="seg" data-k="b"></div></div>
-      <div class="field"><span>어디서?</span><div class="seg" data-k="p"></div></div>
-      <div class="field"><span>몇 명이?</span><div class="seg" data-k="g"></div></div>
-      <button type="button" class="btn ghost" id="shuffle">🔄 다른 놀이 보기</button>
+      <div class="field"><span>아기 나이</span><div class="seg g5" data-k="b"></div></div>
+      <div class="field"><span>어디서</span><div class="seg g5" data-k="p"></div></div>
+      <div class="field"><span>몇 명이</span><div class="seg g2" data-k="g"></div></div>
     </div>
-    <div class="out"><div class="cards" id="reco3" style="grid-template-columns:1fr"></div>{SOS_BRIDGE}</div>
+    <div class="out">
+      <div class="cards" id="reco3" style="grid-template-columns:1fr"></div>
+      <div class="out-btns"><button type="button" class="btn ghost" id="shuffle">🔄 다른 놀이 보기</button><a class="btn ghost" id="moreLink" href="plays/">전체 보기 ›</a></div>
+      {SOS_BRIDGE}
+    </div>
   </div>
 </div></section>
 
@@ -300,7 +286,8 @@ draw();
 const PLAYS = {json.dumps(mini, ensure_ascii=False)};
 const B = {json.dumps([[s, n.split(" (")[0], a, b] for s, n, a, b in BANDS], ensure_ascii=False)};
 const ICON = {json.dumps(PLACE_ICON, ensure_ascii=False)};
-const OPT = {{b: B.map(x => [x[0], x[1]]), p: [['', '어디든'], ['실내', '🏠 집'], ['실외', '🌳 밖'], ['욕실', '🛁 욕실'], ['주방', '🍳 주방']], g: [['', '우리 아이만'], ['1', '👨‍👩‍👧 여럿이']]}};
+const LBL = {{'0-3m': ['0~3', '개월'], '4-6m': ['4~6', '개월'], '7-9m': ['7~9', '개월'], '10-12m': ['10~12', '개월'], '13-18m': ['13~18', '개월'], '19-24m': ['19~24', '개월'], '2y': ['2~3', '세'], '3y': ['3~4', '세'], '4y': ['4~5', '세'], '5y': ['5~7', '세']}};
+const OPT = {{b: B.map(x => [x[0], `<b>${{LBL[x[0]][0]}}</b><small>${{LBL[x[0]][1]}}</small>`]), p: [['', '<b>어디든</b>'], ['실내', '<b>🏠</b><small>집</small>'], ['실외', '<b>🌳</b><small>밖</small>'], ['욕실', '<b>🛁</b><small>욕실</small>'], ['주방', '<b>🍳</b><small>주방</small>']], g: [['', '<b>우리 아이만</b>'], ['1', '<b>👨‍👩‍👧 여럿이</b>']]}};
 const st = {{b: '13-18m', p: '', g: '', seed: 0}};
 try{{ const m = localStorage.getItem('dokbakBand'); if(m && B.some(x => x[0] === m)) st.b = m; }}catch(err){{}}
 const esc = s => String(s).replace(/[&<>"]/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}}[c]));
@@ -320,13 +307,11 @@ function pick(){{
 }}
 function render(){{
   const list = pick();
+  document.getElementById('moreLink').href = 'plays/?b=' + st.b + (st.p ? '&p=' + st.p : '') + (st.g ? '&g=1' : '');
   document.getElementById('reco3').innerHTML = list.map(p => `<a class="card" href="plays/${{p.id}}.html"><span class="meta">${{p.a}} · ${{ICON[p.place]}} ${{p.place}}${{p.group ? ' · 👨‍👩‍👧 여럿이' : ''}}</span><h3>${{esc(p.name)}}</h3><p>${{esc(p.s)}}</p></a>`).join('') || '<p class="none">이 조합에 맞는 놀이를 아직 못 모았어요. 장소를 바꿔 보세요.</p>';
 }}
 document.querySelector('.form').addEventListener('click', ev => {{ const b = ev.target.closest('.seg button'); if(!b) return; const k = b.closest('.seg').dataset.k; st[k] = b.dataset.v; st.seed = 0; if(k === 'b') try{{ localStorage.setItem('dokbakBand', st.b); }}catch(err){{}} segs(); render(); }});
 document.getElementById('shuffle').onclick = () => {{ st.seed++; render(); }};
-const hc = document.getElementById('heroChips');
-hc.innerHTML = B.slice(0, 8).map(x => `<button type="button" class="chip" data-v="${{x[0]}}">${{x[1]}}</button>`).join('');
-hc.onclick = ev => {{ const b = ev.target.closest('button'); if(!b) return; st.b = b.dataset.v; st.seed = 0; try{{ localStorage.setItem('dokbakBand', st.b); }}catch(err){{}} segs(); render(); document.getElementById('reco').scrollIntoView({{behavior: 'smooth'}}); }};
 segs(); render();
 </script>'''
   files['index.html'] = page('오늘도 독박육아 · 개월수별 엄마표 놀이', '독박육아 하는 날, 아기 개월수만 고르면 집에 있는 물건으로 바로 할 수 있는 엄마표 놀이를 골라 드려요. 같이 키우는 공동육아 SOS까지.', body, 'index.html', '')

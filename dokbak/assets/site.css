@@ -217,3 +217,33 @@ footer p{font-size:14px;color:var(--soft)}
 @media (max-width:420px){.timeline li{grid-template-columns:1fr;gap:0}}
 @media (max-width:380px){.nav a{padding:5px 7px;font-size:14px}.nav{gap:0}}
 .top-sos i{font-style:normal}@media (max-width:340px){.top-sos i{display:none}.logo b{font-size:17px}}
+
+/* ── 첫 화면 압축: 제목 아래 바로 추천기 */
+.hero{padding-block:22px 10px}
+.hero .wrap{display:block}
+.hero h1{font-size:clamp(27px,6.2vw,44px)}
+.hero .lead{margin:8px 0 14px;font-size:15.5px;text-wrap:pretty}
+.hero .reco{padding:14px;gap:16px}
+@media (min-width:761px){.hero .reco{grid-template-columns:300px 1fr}}
+.logo img{width:30px;height:30px;border-radius:9px;display:block}
+.logo i{display:none}
+
+/* 버튼 격자: 같은 폭으로 줄 맞춤 */
+.form{gap:10px}
+.field>span{font-size:14px;color:var(--soft)}
+.seg.g5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.seg.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.seg.g5 button,.seg.g2 button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:5px 2px;min-height:44px;line-height:1.15;border-radius:11px}
+.seg.g5 b{font-family:var(--display);font-weight:400;font-size:15px}
+.seg.g5 small{font-size:11px;opacity:.8}
+.seg.g2 b{font-family:var(--display);font-weight:400;font-size:15px}
+.seg button[aria-pressed="true"] small{opacity:.95}
+.out-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.out-btns .btn{padding:8px 10px;font-size:14px}
+.out .card{padding:10px 14px;gap:3px}
+.out .card h3{font-size:17px}
+.out .card p{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 문장 줄맞춤 */
+.sh p,.card p,.pr p,.lead,.bridge p{text-wrap:pretty}
+.sh h2,.card h3,.pr h3{text-wrap:balance}
