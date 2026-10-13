@@ -259,3 +259,16 @@ footer p{font-size:14px;color:var(--soft)}
 .out-btns .btn{padding:7px 10px;font-size:13.5px}
 .out .card h3{font-size:16px}
 @media (max-width:340px){.seg.g4 button,.seg.g5 button,.seg.g2 button{font-size:11.5px;letter-spacing:-.5px}}
+
+/* ── 노션식 무채색 (C): 포인트는 흰/검정, 링크만 파랑, SOS 빨강 유지 */
+:root{--teal:#1f2326;--teal-ink:#4a5056;--teal-tint:#eceef0;--sun:#e3e5e8;--sun-tint:#f1f2f4;--sun-ink:#1f2326;--link:#2f7be8;--on-teal:#ffffff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--teal:#e9ebee;--teal-ink:#c9ccd0;--teal-tint:#262a2e;--sun:#3a3f44;--sun-tint:#2a2e32;--sun-ink:#e9ebee;--link:#8fb8ff;--on-teal:#15181a}}
+:root[data-theme="dark"]{--teal:#e9ebee;--teal-ink:#c9ccd0;--teal-tint:#262a2e;--sun:#3a3f44;--sun-tint:#2a2e32;--sun-ink:#e9ebee;--link:#8fb8ff;--on-teal:#15181a}
+.btn.teal,.seg button[aria-pressed="true"]{color:var(--on-teal)}
+.band{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.band .btn.w{background:var(--teal);color:var(--on-teal)}
+.band .btn.o{border-color:var(--line);color:var(--ink)}
+.box.ref h3 a,.prose a,.crumb a,.pager a{color:var(--link)}
+.hero h1 em{background:linear-gradient(transparent 62%,var(--sun) 62%)}
+.ph .d span.h{background:#fde9e8}
+.ph .m{border-color:#9aa0a6}.ph .b{background:#1f2326}
