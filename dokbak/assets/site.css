@@ -178,7 +178,7 @@ footer p{font-size:14px;color:var(--soft)}
   .filters .seg::-webkit-scrollbar{display:none}
   .filters .row>span{min-width:34px;font-size:15px}
 }
-@media (max-width:400px){.top-sos span{display:none}.logo b{font-size:19px}.logo i{width:30px;height:30px}}
+@media (max-width:400px){.logo b{font-size:18px}.logo i{width:28px;height:28px;font-size:16px}.logo{gap:6px}.top-sos{font-size:13px;padding:5px 9px}}
 
 /* 참고 연구 */
 .box.ref h3{font-size:18px}
@@ -216,3 +216,4 @@ footer p{font-size:14px;color:var(--soft)}
 .bridge.tool b{color:var(--teal-ink)}
 @media (max-width:420px){.timeline li{grid-template-columns:1fr;gap:0}}
 @media (max-width:380px){.nav a{padding:5px 7px;font-size:14px}.nav{gap:0}}
+.top-sos i{font-style:normal}@media (max-width:340px){.top-sos i{display:none}.logo b{font-size:17px}}

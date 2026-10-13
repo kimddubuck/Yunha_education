@@ -92,7 +92,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <header class="top"><div class="wrap">
   <a class="logo" href="{up}./"><i>☕</i><b>오늘도 독박육아</b></a>
   <nav class="nav" aria-label="메뉴">{navh}</nav>
-  <a class="top-sos" href="{APP}">🆘 <span>공동육아 </span>SOS</a>
+  <a class="top-sos" href="{APP}"><i>🆘 </i>공동육아 SOS</a>
 </div></header>
 <main>
 {body}
