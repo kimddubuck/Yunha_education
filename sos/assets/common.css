@@ -1152,8 +1152,6 @@ html,body{overflow-x:hidden}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pick:#e9ebee;--pick-fg:#15181a;--accent-ink:#e6e8eb;--link:#8fb8ff}}
 main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn):not(.act),.sos-hint a,.comment-nick{color:var(--link)}
 /* 색 테두리·반짝이·그라데이션 → 옅은 회색 선 */
-.next-card{border:1px solid var(--line);animation:none;box-shadow:none}
-.next-card::before{display:none}
 .cover::before{background:var(--line);height:1px}
 .sos-brave{border:1px solid var(--line)}
 .brave-star{display:none}
@@ -1170,7 +1168,6 @@ main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn):not(.a
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.next-card,.up-sec) .ops > li{background:var(--accent-soft);border:1px solid var(--line);box-shadow:none}:root:not([data-theme="light"]) :is(.next-card,.up-sec) .meet-top .op-when{color:var(--fg);text-shadow:none}}
 .next-card h2,.cover .eyebrow,.safe-hero h1{color:var(--fg)}
 /* 남은 노란 반짝이·빛·강조 → 무채색 */
-.next-star{display:none}
 .sos-brave{animation:none!important;box-shadow:none!important;background:var(--bg)!important}
 .sos-brave::before{display:none}
 .mem-dup-tip{background:var(--tag)}
