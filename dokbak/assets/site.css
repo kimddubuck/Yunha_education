@@ -275,3 +275,9 @@ footer p{font-size:14px;color:var(--soft)}
 /* 제목 노란 줄긋기 · 로고는 앱 아이콘과 같은 결 */
 .hero h1 em{background:linear-gradient(transparent 60%,#ffd54a 60%)}
 .logo img{width:32px;height:32px;border-radius:9px}
+/* 메뉴: 회색 바탕 동그란 버튼 */
+.nav{gap:6px;padding:2px 0 4px}
+.nav a{background:var(--teal-tint);color:var(--ink);border:1px solid var(--line);padding:6px 13px;font-size:14px;font-weight:700;border-radius:999px}
+.nav a:hover{filter:brightness(1.08)}
+.nav a[aria-current="page"]{background:var(--teal);color:var(--on-teal);border-color:var(--teal)}
+@media (max-width:380px){.nav{gap:5px}.nav a{padding:5px 10px;font-size:13px}}
