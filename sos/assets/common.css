@@ -1169,3 +1169,12 @@ main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn):not(.a
 :is(.next-card,.up-sec) .meet-top .op-when,:root[data-theme="dark"] :is(.next-card,.up-sec) .meet-top .op-when{color:var(--fg);text-shadow:none;-webkit-text-stroke:0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(.next-card,.up-sec) .ops > li{background:var(--accent-soft);border:1px solid var(--line);box-shadow:none}:root:not([data-theme="light"]) :is(.next-card,.up-sec) .meet-top .op-when{color:var(--fg);text-shadow:none}}
 .next-card h2,.cover .eyebrow,.safe-hero h1{color:var(--fg)}
+/* 남은 노란 반짝이·빛·강조 → 무채색 */
+.next-star{display:none}
+.sos-brave{animation:none!important;box-shadow:none!important;background:var(--bg)!important}
+.sos-brave::before{display:none}
+.mem-dup-tip{background:var(--tag)}
+.sos-nudge b,.sos-sub-s b,.hero-pop .go-tip b{color:var(--fg)}
+.app-tip{border-color:var(--line);background:var(--tag)}
+.app-tip p b{color:var(--fg)}
+.app-tip-btns .btn:first-child{background:var(--pick);border-color:var(--pick);color:var(--pick-fg)}
