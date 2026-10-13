@@ -245,7 +245,7 @@ draw();
   <p class="lead">나이와 장소만 고르면 집에 있는 물건으로<br>바로 할 수 있는 놀이 3개를 골라 드려요.</p>
   <div class="reco">
     <div class="form">
-      <div class="field"><span>아기 나이</span><div class="seg g5" data-k="b"></div></div>
+      <div class="field"><span>아기 나이</span><div class="seg g4" data-k="b"></div></div>
       <div class="field"><span>어디서</span><div class="seg g5" data-k="p"></div></div>
       <div class="field"><span>몇 명이</span><div class="seg g2" data-k="g"></div></div>
     </div>
@@ -287,7 +287,7 @@ const PLAYS = {json.dumps(mini, ensure_ascii=False)};
 const B = {json.dumps([[s, n.split(" (")[0], a, b] for s, n, a, b in BANDS], ensure_ascii=False)};
 const ICON = {json.dumps(PLACE_ICON, ensure_ascii=False)};
 const LBL = {{'0-3m': ['0~3', '개월'], '4-6m': ['4~6', '개월'], '7-9m': ['7~9', '개월'], '10-12m': ['10~12', '개월'], '13-18m': ['13~18', '개월'], '19-24m': ['19~24', '개월'], '2y': ['2~3', '세'], '3y': ['3~4', '세'], '4y': ['4~5', '세'], '5y': ['5~7', '세']}};
-const OPT = {{b: B.map(x => [x[0], `<b>${{LBL[x[0]][0]}}</b><small>${{LBL[x[0]][1]}}</small>`]), p: [['', '<b>어디든</b>'], ['실내', '<b>🏠</b><small>집</small>'], ['실외', '<b>🌳</b><small>밖</small>'], ['욕실', '<b>🛁</b><small>욕실</small>'], ['주방', '<b>🍳</b><small>주방</small>']], g: [['', '<b>우리 아이만</b>'], ['1', '<b>👨‍👩‍👧 여럿이</b>']]}};
+const OPT = {{b: B.map(x => [x[0], LBL[x[0]].join('')]), p: [['', '어디든'], ['실내', '🏠 집'], ['실외', '🌳 밖'], ['욕실', '🛁 욕실'], ['주방', '🍳 주방']], g: [['', '우리 아이만'], ['1', '👨‍👩‍👧 여럿이']]}};
 const st = {{b: '13-18m', p: '', g: '', seed: 0}};
 try{{ const m = localStorage.getItem('dokbakBand'); if(m && B.some(x => x[0] === m)) st.b = m; }}catch(err){{}}
 const esc = s => String(s).replace(/[&<>"]/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}}[c]));
