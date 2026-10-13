@@ -272,3 +272,6 @@ footer p{font-size:14px;color:var(--soft)}
 .hero h1 em{background:linear-gradient(transparent 62%,var(--sun) 62%)}
 .ph .d span.h{background:#fde9e8}
 .ph .m{border-color:#9aa0a6}.ph .b{background:#1f2326}
+/* 제목 노란 줄긋기 · 로고는 앱 아이콘과 같은 결 */
+.hero h1 em{background:linear-gradient(transparent 60%,#ffd54a 60%)}
+.logo img{width:32px;height:32px;border-radius:9px}
