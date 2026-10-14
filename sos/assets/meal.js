@@ -2,7 +2,7 @@
    - 방 사람만 봐요. 올린 사람과 방장만 지울 수 있어요. 올린 날부터 1달 뒤 자동으로 지워져요.
    - 사진은 휴대폰에서 작게 줄여(긴 쪽 360px, 한 장 약 20KB) 문서 안에 글자(data URL)로 넣어요.
    - 저장: rooms/{방 열쇠}/meals/{id} = {uid, n, img, slot, memo?, mo?, date, createdAt, expireAt} */
-const MEAL_SLOTS = [['b', '🌅 아침'], ['s1', '🍪 오전 간식'], ['l', '🍚 점심'], ['s2', '🍎 오후 간식'], ['d', '🌙 저녁']];
+const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '🍚 점심'], ['d', '🌙 저녁']];   // 간식은 빼고 끼니만 (서버 규칙에는 s1·s2가 남아 있어도 괜찮아요)
 const MEAL_DAYS = 30;          // 1달 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
 const MY_MEALS = 'sosMyMeals'; // 내가 올린 사진 위치 (탈퇴·방 빼기 때 지우려고 기억)
 const meal = { date: todayStr(), docs: [], unsub: null, onlyMine: false, broken: false };
