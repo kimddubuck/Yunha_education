@@ -378,22 +378,39 @@ segs(); render();
 
   # ── 참고한 연구
   rs = json.load(open(os.path.join(DEV, 'research.json'), encoding='utf-8'))
-  def ritem(it):
-    name = f'<a href="{e(it["url"])}" rel="noopener">{e(it["name"])}</a>' if it['url'] else e(it['name'])
-    ppl = f'<p class="ppl">👤 <b>누구예요?</b> {e(it["people"])}</p>' if it.get('people') else ''
-    return f'<div class="box ref"><h3>{name}</h3><p class="who">{e(it["who"])}</p>{ppl}<p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p></div>'
-  rgroups = lambda gs: ''.join(f'<h2>{e(g["title"])}</h2>' + ''.join(ritem(it) for it in g['items']) for g in gs)
+  def badge(big, small=''):
+    return f'<span class="bd-badge"><b>{e(big)}</b>{f"<small>{e(small)}</small>" if small else ""}</span>'
+  def brow(href, title, meta, bdg):
+    return f'<a class="bd-row" href="{href}"><span class="bd-main"><span class="bd-t">{e(title)}</span><span class="bd-meta">{e(meta)}</span></span>{bdg}</a>'
+  def rboard(gs, folder):
+    return ''.join(f'<p class="bd-cat">{e(g["title"])}</p><div class="bd">' + ''.join(brow(f'{folder}/{it["id"]}.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind'])) for it in g['items']) + '</div>' for g in gs)
+  def rposts(gs, folder, list_href, list_name):
+    items = [it for g in gs for it in g['items']]
+    for i, it in enumerate(items):
+      prv = items[i - 1] if i else None; nxt = items[i + 1] if i + 1 < len(items) else None
+      pager = '<div class="pager">' + (f'<a href="{prv["id"]}.html">‹ 이전 글</a>' if prv else '<span></span>') + f'<a href="../{list_href}">☰ 목록</a>' + (f'<a href="{nxt["id"]}.html">다음 글 ›</a>' if nxt else '<span></span>') + '</div>'
+      orig = f'<a href="{e(it["url"])}" rel="noopener">{e(it["name"])}</a>' if it['url'] else e(it['name'])
+      ppl = f'<p class="ppl">👤 <b>누구예요?</b> {e(it["people"])}</p>' if it.get('people') else ''
+      when = f' · {e(it["yr"])}' if it['yr'] else ''
+      body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../{list_href}">{list_name}</a></p>
+<article class="blk prose post" style="padding-top:12px"><h1>{e(it["t"])}</h1><p class="post-meta">{e(it["src"])}{when} · {e(it["kind"])}</p>
+<p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p>{ppl}
+<div class="box ref"><p class="who" style="margin:0">📄 원문: {orig}<br>{e(it["who"])}</p></div>
+<p class="src">{e(rs["checked"])}</p>{pager}</article></div>'''
+      files[f'{folder}/{it["id"]}.html'] = page(f'{it["t"]} · {list_name} | 오늘도 독박육아', it['sum'][:150], body, f'{folder}/{it["id"]}.html', list_href)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 교육</p><section class="blk prose" style="padding-top:12px">
 <h1>📚 놀이·교육 연구</h1><p>{e(rs["intro"])}</p>
-{rgroups(rs['groups'])}
+{rboard(rs['groups'], 'research')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="food.html">🥄 이유식·유아식 연구도 보기</a></p></section></div>'''
   files['research.html'] = page('놀이·교육 연구 · 놀이가 왜 중요할까 | 오늘도 독박육아', '미국소아과학회 놀이 보고서, 놀이 도식 이론, 사회적 놀이 단계, 안내된 놀이 연구, 누리과정까지. 엄마표 놀이의 바탕이 된 연구를 쉽게 정리했어요.', body, 'research.html', 'research.html')
+  rposts(rs['groups'], 'research', 'research.html', '교육')
   fd = rs['food']
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 이유식</p><section class="blk prose" style="padding-top:12px">
 <h1>🥄 이유식·유아식 연구</h1><p>{e(fd["intro"])}</p>
-{rgroups(fd['groups'])}
+{rboard(fd['groups'], 'food')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="research.html">📚 놀이·교육 연구도 보기</a></p></section></div>'''
   files['food.html'] = page('이유식·유아식 연구 · 언제 시작하고 뭘 먹일까 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
+  rposts(fd['groups'], 'food', 'food.html', '이유식')
 
   # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
   VB = {'x': '근거 미확인', 'i': '간접 확인'}
@@ -441,11 +458,26 @@ segs(); render();
       elif first: d = ' '.join(x['b'] for x in first['list'][:3])
       else: d = G['desc']
       files[f'{sl}/{sec["id"]}.html'] = page(f'{sec["title"]} · {G["title"]} | 오늘도 독박육아', d[:150], body, f'{sl}/{sec["id"]}.html', f'{sl}/')
-    cards = ''.join(f'<a class="pr" href="{s2["id"]}.html"><h3>{e(s2["title"])}</h3></a>' for s2 in secs)
+    def gcount(sec):
+      n = 0
+      for b in sec['blocks']:
+        if 'list' in b: n += len(b['list'])
+        elif 'table' in b: n += len(b['table']['rows'])
+        elif 'timeline' in b: n += len(b['timeline'])
+        elif 'p' in b or 'note' in b: n += 1
+      return n
+    def gprev(sec):
+      for b in sec['blocks']:
+        if 'p' in b: return b['p']
+        if 'list' in b: return ' · '.join(x['b'] for x in b['list'][:4])
+        if 'table' in b: return ' · '.join(b['table']['head'])
+        if 'note' in b: return b['note']
+      return '방문해서 물어볼 것'
+    cards = '<div class="bd">' + ''.join(brow(f'{s2["id"]}.html', s2['title'], gprev(s2), badge(str(gcount(s2)), '항목') if gcount(s2) else badge('Q&A')) for s2 in secs) + '</div>'
     body = f'''<div class="wrap"><section class="blk prose" style="max-width:none">
 <div class="sh"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1 style="font-size:clamp(26px,5vw,36px)">{e(G["title"])}</h1><p>{e(G["intro"])}</p></div>
 {tool}
-<div class="prs" style="margin-top:14px">{cards}</div>
+<div style="margin-top:14px">{cards}</div>
 {DAYCARE_SRC if sl == 'daycare' else ''}
 <p class="src">{e(G["source"])}</p>
 {'<p style="margin-top:12px"><a class="btn ghost" href="../brands.html">🏢 프뢰벨·몬테소리·눈높이… 이름 풀이</a></p>' if sl == 'daycare' else ''}</section></div>'''
@@ -466,6 +498,7 @@ segs(); render();
 
   # ── 쓰기 + sitemap
   for path, txt in files.items():
+    os.makedirs(os.path.dirname(os.path.join(OUT, path)), exist_ok=True)
     open(os.path.join(OUT, path), 'w', encoding='utf-8').write(txt)
   today = datetime.date.today().isoformat()
   urls = ''.join(f'<url><loc>{BASE}/{p.replace("index.html", "")}</loc><lastmod>{today}</lastmod></url>' for p in sorted(files))

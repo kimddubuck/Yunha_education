@@ -329,3 +329,18 @@ footer p{font-size:14px;color:var(--soft)}
 @media (max-width:440px){.nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.nav a{font-size:13.5px;letter-spacing:-.2px;padding:6px 0}}
 /* 탭이 6개라 1000px까지는 탭을 로고 아래 한 줄로 내려요 */
 @media (max-width:1000px){.top-sos{margin-left:auto}.nav{order:3;margin-left:0;width:100%}}
+/* 게시판 목록: 제목 + 한 줄 설명 + 오른쪽 회색 배지 */
+.bd{border-top:1px solid var(--line)}
+.bd-cat{font-size:14px;font-weight:700;color:var(--soft);margin:22px 0 2px}
+.bd-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.bd-row:hover .bd-t{text-decoration:underline}
+.bd-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bd-t{font-size:16.5px;font-weight:700;line-height:1.4;text-wrap:pretty;word-break:keep-all}
+.bd-meta{font-size:13.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-badge{flex:none;width:56px;height:56px;border-radius:14px;background:var(--paper);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.bd-badge b{font-size:15px;line-height:1.1}
+.bd-badge small{font-size:11.5px;color:var(--soft)}
+.post h1{font-size:clamp(24px,5.5vw,32px);line-height:1.3}
+.post-meta{font-size:14px;color:var(--soft);margin:-4px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.pager a{white-space:nowrap}
+.prose a.bd-row,a.bd-row,.bd-row .bd-t,.bd-badge b{color:var(--ink);text-decoration:none}
