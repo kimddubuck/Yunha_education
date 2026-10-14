@@ -477,7 +477,7 @@ segs(); render();
 <div class="box mlinks"><h2>🌙 밤·휴일에 아이가 아프면</h2>
 <p><a href="https://www.e-gen.or.kr/moonlight/main.do" rel="noopener">달빛어린이병원 찾기 (응급의료포털)</a><br><small>보건복지부가 지정한 야간·휴일 소아 진료 병원이에요. 평일 밤 11~12시, 주말·휴일 오후 6시까지 문을 열어요. 병원마다 다르니 가기 전 꼭 전화해 주세요.</small></p>
 <p><a href="https://www.e-gen.or.kr/" rel="noopener">응급의료포털 (응급실·문 연 병원)</a><br><small>위급하면 바로 <b>119</b>에 전화하세요.</small></p></div>
-<p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과), 국립중앙의료원 전국 약국 정보(오늘 영업시간). 공공데이터라 실제와 다를 수 있어요. <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap</p>
+<p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과)·의료기관별상세정보서비스(진료시간), 국립중앙의료원 전국 약국 정보(오늘 영업시간). 병원·약국이 신고한 시간이라 <b>임시 휴진·공휴일은 반영되지 않을 수 있어요.</b> <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap</p>
 </section></div>
 <script src="assets/leaflet/leaflet.js"></script><script src="assets/map.js?v={V}"></script>'''
   files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')

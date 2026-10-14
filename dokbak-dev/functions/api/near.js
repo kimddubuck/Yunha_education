@@ -3,10 +3,12 @@
    - 공공데이터 인증키는 Cloudflare 설정의 비밀 변수 DATA_GO_KR_KEY 에만 있어요 (코드·저장소에는 없어요).
    - 위치는 저장하지 않아요. 같은 동네(약 100m 단위) 결과는 잠깐 캐시해서 공공 API 호출을 줄여요.
    - peds  = 건강보험심사평가원 병원정보서비스 getHospBasisList (진료과 11 소아청소년과, 좌표 반경)
+             + 의료기관별상세정보서비스 getDtlInfo2.8 (가까운 15곳의 요일별 진료시간 · 점심시간, 하루 캐시)
    - pharm = 국립중앙의료원 전국 약국 정보 조회 getParmacyLcinfoInqire (거리순 + 오늘 영업시간) */
 
 const HOSP = 'https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList';
 const PHARM = 'https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyLcinfoInqire';
+const DETAIL = 'https://apis.data.go.kr/B551182/MadmDtlInfoService2.8/getDtlInfo2.8';   // 요일별 진료시간 (병원마다 ykiho 로 하나씩)
 const TTL = { peds: 6 * 3600, pharm: 600 };   // 소아과 목록은 6시간, 약국(오늘 영업시간)은 10분
 
 export async function onRequestGet({ request, env, waitUntil }) {
@@ -69,10 +71,36 @@ async function peds(key, lat, lon) {
     items = await call(HOSP, key, { xPos: lon, yPos: lat, radius, dgsbjtCd: '11', numOfRows: 60, pageNo: 1 });
     if (items.length >= 5) break;
   }
-  return items.map(h => ({ n: h.yadmNm, a: h.addr, t: h.telno || '', k: h.clCdNm || '', la: num(h.YPos), lo: num(h.XPos) }))
+  const rows = items.map(h => ({ n: h.yadmNm, a: h.addr, t: h.telno || '', k: h.clCdNm || '', y: h.ykiho || '', la: num(h.YPos), lo: num(h.XPos) }))
     .filter(h => h.n && h.la != null && h.lo != null)
     .map(h => ({ ...h, d: dist(lat, lon, h.la, h.lo) }))
     .sort((x, y) => x.d - y.d).slice(0, 50);
+  // 가까운 15곳만 진료시간을 붙여요 (5곳씩 나눠서, 실패해도 목록은 그대로)
+  const near = rows.filter(r => r.y).slice(0, 15);
+  for (let i = 0; i < near.length; i += 5) await Promise.all(near.slice(i, i + 5).map(async r => {
+    try { const w = await hours(key, r.y); if (w) Object.assign(r, w); } catch (e) {}
+  }));
+  rows.forEach(r => { delete r.y; });
+  return rows;
+}
+
+// 🕘 요일별 진료시간: h = {0:[시작,끝], …} (0=월 … 6=일, 'HHMM' 숫자), l = 점심시간 안내 글. 병원별로 하루 캐시
+const pad4 = v => { const d = String(v == null ? '' : v).replace(/\D/g, ''); return d ? Number(d.padStart(4, '0')) : null; };
+async function hours(key, ykiho) {
+  const ck = new Request(`https://cache.local/dtl/${encodeURIComponent(ykiho)}`), cache = caches.default;
+  const hit = await cache.match(ck); if (hit) return hit.json();
+  const items = await call(DETAIL, key, { ykiho, numOfRows: 10, pageNo: 1 });
+  const d = items[0]; let out = null;
+  if (d) {
+    const h = {};
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((day, i) => {
+      const a = pad4(d[`trmt${day}Start`]), b = pad4(d[`trmt${day}End`]);
+      if (a != null && b != null && b > a) h[i] = [a, b];
+    });
+    out = { ...(Object.keys(h).length ? { h } : {}), ...(d.lunchWeek ? { l: String(d.lunchWeek).slice(0, 40) } : {}) };
+  }
+  await cache.put(ck, new Response(JSON.stringify(out), { headers: { 'Cache-Control': 'public, max-age=86400', 'Content-Type': 'application/json' } }));
+  return out;
 }
 
 // 💊 약국: 거리순 + 오늘 영업 시작·끝 (HHMM). '지금 영업 중'은 화면에서 현재 시각으로 계산해요
