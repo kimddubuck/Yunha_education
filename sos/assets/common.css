@@ -1179,10 +1179,11 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 /* ── 🍚 식단 */
 .meal-sec{padding-top:6px}
 .meal-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.meal-top h2{margin:0;font-size:19px}
+.meal-top h2{margin:0;font-size:19px;white-space:nowrap;min-width:0}
 .meal-seg{display:flex;gap:2px;background:var(--tag);border-radius:999px;padding:3px}
-.meal-seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;cursor:pointer}
+.meal-seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:5px 10px;white-space:nowrap;border-radius:999px;cursor:pointer}
 .meal-seg button[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg)}
+@media (max-width:340px){.meal-top h2{font-size:17px}.meal-seg button{padding:5px 8px;font-size:12.5px}}
 .meal-note{margin:8px 0 10px;line-height:1.55;text-wrap:pretty}
 .meal-date{display:flex;align-items:center;gap:8px;margin:0 0 12px}
 .meal-date b{flex:1;text-align:center;font-size:16px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
