@@ -1174,3 +1174,4 @@ main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn):not(.a
 /* 👀 참석자: 버튼으로 보이게 테두리 */
 .who-mini{border:1.5px solid color-mix(in srgb,var(--fg) 35%,transparent)!important;background:var(--bg)!important;padding:4px 11px 5px!important;border-radius:999px}
 .who-mini:active{transform:translateY(1px)}
+main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
