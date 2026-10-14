@@ -361,3 +361,35 @@ footer p{font-size:14px;color:var(--soft)}
 .endbox{margin-top:22px;border-left:4px solid var(--ink)}
 .endbox p:last-child{margin:0}
 .bd-badge.wide{width:84px;min-width:0;padding:0 4px}.bd-badge.wide b{font-size:12px;letter-spacing:-.3px}
+/* 🗺 육아 지도 */
+.mlead{margin:4px 0 10px}
+.mbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:6px 0 10px}
+.mseg{display:flex;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
+.mseg button{border:0;background:none;color:var(--soft);font:inherit;font-size:14px;font-weight:700;padding:7px 14px;border-radius:999px;cursor:pointer}
+.mseg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.mloc{border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:14px;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer}
+.mapwrap{position:relative}
+#map{height:min(56vh,460px);border-radius:16px;border:1px solid var(--line);z-index:0}
+.again{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:500;border:0;background:var(--ink);color:var(--bg);font:inherit;font-size:13.5px;font-weight:700;padding:8px 14px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer}
+.msay{margin:10px 0 4px;font-size:14px;color:var(--soft)}
+.mlist{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.mlist li{padding:12px 2px;border-bottom:1px solid var(--line)}
+.mname{border:0;background:none;padding:0;font:inherit;font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}
+.md{font-size:13px;color:var(--soft);margin-left:4px}
+.ma{margin:4px 0 6px;font-size:13.5px;color:var(--soft)}
+.mtag{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--soft);margin-top:4px}
+.mtag.on{background:#e7f6ec;color:#1d7a3e;border-color:#bfe5cc}
+.mtag.off{color:var(--soft)}
+.mrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.mbtn{display:inline-block;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink)!important;text-decoration:none}
+.mnone{color:var(--soft);font-size:14px}
+.mpin{background:none;border:0}
+.mpin span{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#fff;border:2px solid #e8382f;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.mpin span{font-size:16px}
+.mpin.off span{border-color:#9aa0a6;filter:grayscale(1);opacity:.75}
+.mlinks{margin-top:16px}.mlinks h2{font-size:17px;margin:0 0 8px}.mlinks p{margin:0 0 8px}
+.leaflet-popup-content{font-size:13.5px;line-height:1.5}
+.leaflet-popup-content .mbtn{color:#222!important;background:#f3f3f3;border-color:#ddd}
+@media (max-width:640px){.nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.mpin i{transform:rotate(45deg);font-style:normal;line-height:1}
+@media (max-width:1440px){.top-sos{margin-left:auto}.nav{order:3;margin-left:0;width:100%}}

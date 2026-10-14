@@ -117,7 +117,7 @@ def endbox(x):
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
-  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육'), ('tips.html', '육아 상식'), ('support.html', '지원')]
+  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육'), ('tips.html', '육아 상식'), ('support.html', '지원'), ('map.html', '육아 지도')]
   nav = [(h, t) for h, t in nav if h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))]
   navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if active == h else ""}>{t}</a>' for h, t in nav)
   return f'''<!doctype html>
@@ -181,6 +181,10 @@ def build():
   for d in ('assets', 'plays', 'age', 'principles'): os.makedirs(os.path.join(OUT, d), exist_ok=True)
   shutil.copy(os.path.join(DEV, 'site.css'), os.path.join(OUT, 'assets', 'site.css'))
   shutil.copy(os.path.join(DEV, 'icon.svg'), os.path.join(OUT, 'assets', 'icon.svg'))
+  # 🗺 육아 지도: 지도 라이브러리(Leaflet, BSD-2) · 지도 스크립트 · 공공데이터 심부름꾼 함수(Cloudflare Pages Functions)
+  shutil.copytree(os.path.join(DEV, 'vendor', 'leaflet'), os.path.join(OUT, 'assets', 'leaflet'))
+  shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
+  shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   files = {}
 
   # ── 놀이 하나하나 (검색으로 들어오는 페이지)
@@ -461,6 +465,22 @@ segs(); render();
 <h2>📚 출처</h2>{srcs}
 <p class="src">자료에 적힌 내용만 옮겼어요. 아이마다 다를 수 있으니 걱정되면 소아과 의사와 상의하세요.</p>{pager}</article></div>'''
       files[f'{slug}/{c["id"]}.html'] = page(f'{c["t"]} · {bname} | 오늘도 독박육아', c['lead'][:150], body, f'{slug}/{c["id"]}.html', f'{slug}.html')
+
+  # ── 🗺 육아 지도 (내 주변 소아청소년과 · 문 연 약국)
+  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 육아 지도</p><section class="blk prose" style="padding-top:12px;max-width:none">
+<h1>🗺 육아 지도</h1><p class="mlead">아이가 아플 때, 내 주변 <b>소아청소년과</b>와 <b>지금 문 연 약국</b>을 찾아요.</p>
+<div class="mbar"><div class="mseg" role="group" aria-label="찾을 곳"><button type="button" data-kind="peds" aria-pressed="true">🏥 소아과</button><button type="button" data-kind="pharm" aria-pressed="false">💊 약국</button></div>
+<button type="button" class="mloc" id="locate">📍 내 위치</button></div>
+<div class="mapwrap"><div id="map" aria-label="육아 지도"></div><button type="button" class="again" id="again" hidden>🔄 여기서 다시 찾기</button></div>
+<p class="msay" id="msay" aria-live="polite"></p>
+<ul class="mlist" id="mlist"></ul>
+<div class="box mlinks"><h2>🌙 밤·휴일에 아이가 아프면</h2>
+<p><a href="https://www.e-gen.or.kr/moonlight/main.do" rel="noopener">달빛어린이병원 찾기 (응급의료포털)</a><br><small>보건복지부가 지정한 야간·휴일 소아 진료 병원이에요. 평일 밤 11~12시, 주말·휴일 오후 6시까지 문을 열어요. 병원마다 다르니 가기 전 꼭 전화해 주세요.</small></p>
+<p><a href="https://www.e-gen.or.kr/" rel="noopener">응급의료포털 (응급실·문 연 병원)</a><br><small>위급하면 바로 <b>119</b>에 전화하세요.</small></p></div>
+<p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과), 국립중앙의료원 전국 약국 정보(오늘 영업시간). 공공데이터라 실제와 다를 수 있어요. <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap</p>
+</section></div>
+<script src="assets/leaflet/leaflet.js"></script><script src="assets/map.js?v={V}"></script>'''
+  files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')
 
   # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
   VB = {'x': '근거 미확인', 'i': '간접 확인'}
