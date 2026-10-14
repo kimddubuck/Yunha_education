@@ -83,7 +83,7 @@ function dayKind(ymd){ const [y,m,d] = ymd.split('-').map(Number), w = new Date(
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
-const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['terms.html','safety','📜','이용약관']];
+const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','🍚','식단'],['terms.html','safety','📜','이용약관']];
 (function renderNav(){
   const nav = document.getElementById('siteNav'); if(!nav) return;
   const cur = nav.dataset.page;
@@ -755,6 +755,8 @@ async function cleanupExpired(){
   }
   const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
   await Promise.all(sos.docs.map(d => del(d.ref)));
+  const meals = await r.collection('meals').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 🍚 1달 지난 식단 사진
+  await Promise.all(meals.docs.map(d => del(d.ref)));
 }
 if(TTL_READY && typeof ROOM !== 'undefined' && ROOM) window.addEventListener('load', () => {
   const k = 'sosCleaned:' + ROOM.roomId;

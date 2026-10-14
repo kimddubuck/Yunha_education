@@ -405,6 +405,7 @@ function sosKicked(){ try{ return JSON.parse(localStorage.getItem(KICKED_KEY) ||
 async function sosDeleteMe(){
   sosLeaving = true;
   const user = await sosAuth(), db = sosDb();
+  if(user && db) await sosDeleteMyMeals(db, user.uid, [...sosRooms(), ...sosKicked()]);   // 🍚 내가 올린 식단 사진 모두
   if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
     const me = db.collection('rooms').doc(r.key).collection('members').doc(user.uid);
     try{ await me.delete(); }
@@ -414,9 +415,21 @@ async function sosDeleteMe(){
   try{ if(user) await user.delete(); }catch(e){ try{ await firebase.auth().signOut(); }catch(err){} }
   try{ localStorage.clear(); sessionStorage.clear(); }catch(e){}
 }
-// 이 방에서 나가기: 내 닉네임을 멤버에서 빼고 이 휴대폰 목록에서도 빼요
+// 🍚 내가 올린 식단 사진 지우기: 방마다 내 uid로 찾아 지우고(멤버일 때), 이 휴대폰에 기억해 둔 위치도 지워요(내보내진 방까지)
+async function sosDeleteMyMeals(db, uid, rooms){
+  const del = ref => ref.delete().catch(() => {});
+  for(const r of rooms){
+    try{ const q = await db.collection('rooms').doc(r.key).collection('meals').where('uid', '==', uid).get(); await Promise.all(q.docs.map(d => del(d.ref))); }catch(e){}
+  }
+  let saved = []; try{ saved = JSON.parse(localStorage.getItem('sosMyMeals') || '[]'); }catch(e){}
+  const keys = new Set(rooms.map(r => r.key));
+  await Promise.all(saved.filter(m => keys.has(m.key)).map(m => del(db.collection('rooms').doc(m.key).collection('meals').doc(m.id))));
+  try{ localStorage.setItem('sosMyMeals', JSON.stringify(saved.filter(m => !keys.has(m.key)))); }catch(e){}
+}
+// 이 방에서 나가기: 내 식단 사진을 지우고, 내 닉네임을 멤버에서 빼고 이 휴대폰 목록에서도 빼요
 async function sosLeaveRoom(){
   sosLeaving = true;
+  try{ if(await sosReady()) await sosDeleteMyMeals(sosDb(), ME.uid, [ROOM]); }catch(e){}
   try{ if(await sosReady()) await roomRef().collection('members').doc(ME.uid).delete(); }catch(e){}
   try{ if(typeof pushDropRoom === 'function') await pushDropRoom(ROOM); }catch(e){}   // 이 방 알림 채널에서 빠져요
   forgetRoom(ROOM.roomId);
@@ -454,7 +467,7 @@ async function deleteRoom(){
       paths.push(d.ref.path);
       (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path));
     }
-    for(const name of ['sos', 'plays', 'reports', 'members']) (await room.collection(name).get()).docs.forEach(d => paths.push(d.ref.path));
+    for(const name of ['sos', 'plays', 'reports', 'meals', 'members']) (await room.collection(name).get()).docs.forEach(d => paths.push(d.ref.path));
     paths.push(room.collection('private').doc('owner').path);
     job = {roomId: ROOM.roomId, key: ROOM.key, k: ROOM.owner || '', paths, marked: false};
     setPendingDelete(ROOM.roomId, job);

@@ -1175,3 +1175,47 @@ main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn):not(.a
 .who-mini{border:1.5px solid color-mix(in srgb,var(--fg) 35%,transparent)!important;background:var(--bg)!important;padding:4px 11px 5px!important;border-radius:999px}
 .who-mini:active{transform:translateY(1px)}
 main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
+
+/* ── 🍚 식단 */
+.meal-sec{padding-top:6px}
+.meal-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.meal-top h2{margin:0;font-size:19px}
+.meal-seg{display:flex;gap:2px;background:var(--tag);border-radius:999px;padding:3px}
+.meal-seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;cursor:pointer}
+.meal-seg button[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg)}
+.meal-note{margin:8px 0 10px;line-height:1.55;text-wrap:pretty}
+.meal-date{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+.meal-date b{flex:1;text-align:center;font-size:16px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.meal-nav{width:44px;height:40px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);font-size:22px;line-height:1;cursor:pointer}
+.meal-nav:disabled{opacity:.3;cursor:default}
+.meal-slot{margin:0 0 14px}
+.meal-slot h3{margin:0 0 6px;font-size:15px}
+.meal-slot h3 small{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px}
+.meal-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.meal-card{position:relative;margin:0;border-radius:12px;overflow:hidden;background:var(--tag);cursor:pointer;aspect-ratio:1/1.22;display:flex;flex-direction:column}
+.meal-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;flex:none}
+.meal-card figcaption{padding:4px 7px 5px;font-size:11.5px;line-height:1.35;color:var(--muted);min-width:0;overflow:hidden}
+.meal-card figcaption b{color:var(--fg);font-weight:700}
+.meal-card figcaption span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meal-del{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;padding:0;cursor:pointer}
+.meal-add{aspect-ratio:1/1.22;border:1.5px dashed var(--line);border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.meal-add small{font-size:11.5px;font-weight:600}
+.meal-wait{text-align:center;padding:20px 0;line-height:1.6}
+.meal-prev,.meal-big{width:100%;border-radius:12px;display:block;margin:0 0 8px}
+.meal-big{max-height:60vh;object-fit:contain;background:#000}
+.meal-size{margin:0 0 8px;text-align:center;font-size:12px}
+.meal-in{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);margin:0 0 8px}
+.meal-mo{display:flex;align-items:center;gap:8px;font-size:14px;margin:0 0 8px}
+.meal-mo select{flex:1;font:inherit;font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.meal-rule{margin:0 0 10px;font-size:12.5px;line-height:1.6;text-align:left}
+.meal-meta{margin:0 0 4px;font-size:13px;color:var(--muted);text-align:center}
+.meal-memo{margin:0 0 10px;font-size:15px;text-align:center}
+.meal-card figcaption b,.meal-card figcaption span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meal-slot.empty{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.meal-slot.empty h3{margin:0}
+.meal-add1{flex:none;border:1.5px dashed var(--line);border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:7px 14px;cursor:pointer}
+.meal-none{margin:0;font-size:12.5px}
+.meal-prev{max-height:34vh;object-fit:contain;background:#000}
+.meal-card{aspect-ratio:auto}
+.meal-add{aspect-ratio:auto;min-height:100%}
+.nw{white-space:nowrap}
