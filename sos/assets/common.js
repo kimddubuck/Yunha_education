@@ -249,10 +249,17 @@ async function showVoters(o){
   sosInfo({icon: '🙌', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body});
 }
 
-// ❤️ 좋아요 (v17): 글의 lk 지도에 내 칸(key)만 넣고 빼요. 모임·식단은 내 uid, 익명게시판은 글마다 다른 지문
-//    누른 사람 목록은 보여 주지 않고 숫자만 보여요. 글이 지워지면 같이 사라져요
+// ❤️ 좋아요 (v17): 글의 lk 지도에 내 칸(key)만 넣고 빼요.
+//    모임·식단: 칸 이름은 내 uid, 값은 내 닉네임 → 누가 눌렀는지 이름이 보여요 (likeWho)
+//    익명게시판: 칸 이름은 글마다 다른 지문, 값은 true → 숫자만 보이고 누가 눌렀는지 안 남아요. 글이 지워지면 같이 사라져요
 function likeCount(d){ return Object.keys((d && d.lk) || {}).length; }
+function likeNames(d){ return Object.values((d && d.lk) || {}).filter(v => typeof v === 'string' && v); }
+function likeWho(d){
+  const names = likeNames(d); if(!names.length) return null;
+  const p = document.createElement('p'); p.className = 'like-who'; p.textContent = '❤️ ' + names.join(', '); return p;
+}
 function likeBtn(d, key, ref, opts = {}){
+  const val = opts.val || true;
   const b = document.createElement('button'); b.type = 'button'; b.className = 'like' + (opts.cls ? ' ' + opts.cls : '');
   const paint = () => { const on = !!((d.lk || {})[key]), n = likeCount(d); b.setAttribute('aria-pressed', on);
     b.innerHTML = `<span class="lk-ic">${on ? '❤️' : '🤍'}</span><b>${n}</b>`; b.setAttribute('aria-label', `${on ? '좋아요 취소' : '좋아요'} (지금 ${n}명)`); };
@@ -260,9 +267,9 @@ function likeBtn(d, key, ref, opts = {}){
   b.addEventListener('click', async () => {
     if(!ME.uid || !key || b.disabled) return;
     const on = !!((d.lk || {})[key]); b.disabled = true;
-    d.lk = {...(d.lk || {})}; if(on) delete d.lk[key]; else d.lk[key] = true; paint();   // 먼저 그리고 저장해요
-    try{ await ref.update({['lk.' + key]: on ? firebase.firestore.FieldValue.delete() : true}); }
-    catch(err){ if(on) d.lk[key] = true; else delete d.lk[key]; paint(); sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 좋아요를 저장하지 못했어요'); }
+    d.lk = {...(d.lk || {})}; if(on) delete d.lk[key]; else d.lk[key] = val; paint();   // 먼저 그리고 저장해요
+    try{ await ref.update({['lk.' + key]: on ? firebase.firestore.FieldValue.delete() : val}); }
+    catch(err){ if(on) d.lk[key] = val; else delete d.lk[key]; paint(); sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 좋아요를 저장하지 못했어요'); }
     b.disabled = false;
   });
   return b;

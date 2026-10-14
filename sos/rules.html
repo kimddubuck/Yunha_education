@@ -43,13 +43,14 @@ service cloud.firestore {
 
     // 자동 삭제 시각(expireAt): 날짜 칸이어야 하고, 너무 먼 미래는 안 됨 (예약은 1주일까지라 20일이면 넉넉)
     // v16: 📷 사진(작게 줄인 data URL, 최대 80KB)·🔗 링크(http/https, 300자) 첨부 — 모임 글·익명게시판 글
-    // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기(true)·빼기. 모임·식단은 내 uid, 익명게시판은 글마다 다른 지문(uid+&#x27;/&#x27;+글 번호의 sha256)
-    function likeMine(me) {
+    // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기.
+    //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+&#x27;/&#x27;+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
+    function likeMine(me, val) {
       let nl = request.resource.data.get(&#x27;lk&#x27;, {});
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;lk&#x27;])
         &amp;&amp; nl is map
         &amp;&amp; nl.diff(resource.data.get(&#x27;lk&#x27;, {})).affectedKeys().hasOnly([me])
-        &amp;&amp; (!(me in nl) || nl[me] == true);
+        &amp;&amp; (!(me in nl) || nl[me] == val);
     }
     function attachOk(d) {
       return (!(&#x27;img&#x27; in d) || (d.img is string &amp;&amp; d.img.size() &lt;= 80000 &amp;&amp; (d.img == &#x27;&#x27; || d.img.matches(&#x27;^data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+$&#x27;))))
@@ -279,7 +280,7 @@ service cloud.firestore {
             &amp;&amp; request.resource.data.cancelled == true &amp;&amp; resource.data.topic == &#x27;meet&#x27;
             &amp;&amp; (resource.data.get(&#x27;uid&#x27;, &#x27;&#x27;) == &#x27;&#x27; || resource.data.uid == request.auth.uid || isOwner(roomKey)))
           || voteMine()
-          || likeMine(request.auth.uid)
+          || likeMine(request.auth.uid, myNick(roomKey))
           // v12: ✏️ 연 사람이 모임 고치기 (날짜·시작·끝나는 시간·장소 글 · 지울 날짜). 취소된 모임은 못 고쳐요
           || (resource.data.get(&#x27;uid&#x27;, &#x27;&#x27;) == request.auth.uid &amp;&amp; resource.data.topic == &#x27;meet&#x27; &amp;&amp; !resource.data.get(&#x27;cancelled&#x27;, false)
             &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;text&#x27;, &#x27;date&#x27;, &#x27;slot&#x27;, &#x27;end&#x27;, &#x27;expireAt&#x27;, &#x27;img&#x27;, &#x27;url&#x27;])
@@ -377,7 +378,7 @@ service cloud.firestore {
       //  사진은 휴대폰에서 작게 줄인 글자(data URL)로 문서 안에 넣어요 (한 장 약 20KB, 최대 80KB)
       match /meals/{id} {
         allow read: if canUse(roomKey);
-        allow update: if canUse(roomKey) &amp;&amp; likeMine(request.auth.uid);   // v17: ❤️ 좋아요만
+        allow update: if canUse(roomKey) &amp;&amp; likeMine(request.auth.uid, myNick(roomKey));   // v17: ❤️ 좋아요만
         allow delete: if roomDeleted(roomKey) || expired()
           || (request.auth != null &amp;&amp; resource.data.uid == request.auth.uid)
           || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
@@ -447,7 +448,7 @@ service cloud.firestore {
           &amp;&amp; request.resource.data.get(&#x27;img&#x27;, &#x27;&#x27;) == &#x27;&#x27; &amp;&amp; request.resource.data.get(&#x27;url&#x27;, &#x27;&#x27;) == &#x27;&#x27;)
           // v17: ❤️ 좋아요 — 누가 눌렀는지 안 남게 글마다 다른 지문으로
           || (canUse(roomKey) &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
-            &amp;&amp; likeMine(hashing.sha256(request.auth.uid + &#x27;/&#x27; + id).toHexString().lower()));
+            &amp;&amp; likeMine(hashing.sha256(request.auth.uid + &#x27;/&#x27; + id).toHexString().lower(), true));
         allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
 
         match /comments/{cid} {

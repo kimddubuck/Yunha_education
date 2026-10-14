@@ -411,7 +411,7 @@ async function sosDeleteMe(){
     await Promise.all(Object.entries(ik).map(([path, k]) => db.doc(path).update({...(path.includes('/comments/') ? {} : {t: ''}), b: '', img: '', url: '', deleted: true, k}).catch(() => {}))); }
   // ❤️ 내가 누른 좋아요(모임·식단) 빼기. 익명게시판 좋아요는 글마다 다른 지문이라 누가 눌렀는지 알 수 없고, 글과 함께 3일 안에 사라져요
   if(user && db) for(const r of sosRooms()) for(const col of ['opinions', 'meals']){
-    try{ const q = await db.collection('rooms').doc(r.key).collection(col).where('lk.' + user.uid, '==', true).get();
+    try{ const q = await db.collection('rooms').doc(r.key).collection(col).where('lk.' + user.uid, '>', '').get();
       await Promise.all(q.docs.map(d => d.ref.update({['lk.' + user.uid]: firebase.firestore.FieldValue.delete()}).catch(() => {}))); }catch(e){}
   }
   if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
