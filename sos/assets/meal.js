@@ -8,7 +8,7 @@ const MEAL_IC = {
   l: '<svg class="meal-badge" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#3d8bfd"/><circle cx="12" cy="12" r="4.2" fill="#ffe14d"/><path d="M12 3.6v2M12 18.4v2M3.6 12h2M18.4 12h2M6 6l1.4 1.4M16.6 16.6L18 18M18 6l-1.4 1.4M7.4 16.6L6 18" stroke="#ffe14d" stroke-width="1.7" stroke-linecap="round"/></svg>',
   d: '<svg class="meal-badge" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#3b3f8f"/><path d="M14.5 5.5a6.8 6.8 0 1 0 4 11.6A7.6 7.6 0 0 1 14.5 5.5z" fill="#ffe9a8"/><circle cx="17.5" cy="7" r="1" fill="#fff"/><circle cx="19.2" cy="11" r=".7" fill="#fff"/></svg>'
 };
-const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '🍚 점심'], ['d', '🌙 저녁']];   // 간식은 빼고 끼니만 (서버 규칙에는 s1·s2가 남아 있어도 괜찮아요)
+const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '☀️ 점심'], ['d', '🌙 저녁']];   // 간식은 빼고 끼니만 (서버 규칙에는 s1·s2가 남아 있어도 괜찮아요)
 const MEAL_DAYS = 7;           // 1주일치만 보고 1주일 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
 const MY_MEALS = 'sosMyMeals'; // 내가 올린 사진 위치 (탈퇴·방 빼기 때 지우려고 기억)
 const meal = { date: todayStr(), docs: [], unsub: null, onlyMine: false, broken: false };

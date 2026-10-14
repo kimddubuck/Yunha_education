@@ -542,7 +542,7 @@ const GATE_STORY = `        <div class="g-tool">
               <span class="g-ding" aria-hidden="true">🔔 띵동!</span>
               <img src="assets/icon.svg" alt="" width="40" height="40">
               <p class="g-ft">공동육아 SOS</p>
-              <p class="g-fs">🆘 SOS 요청<br>🙌 모임 날짜<br>🔔 새 모임 알림<br><b>약속은 여기서</b></p>
+              <p class="g-fs">🆘 SOS 요청<br>🙌 모임 날짜<br>🔔 새 모임 알림<br>🍚 우리 아이 식단<br><b>약속은 여기서</b></p>
             </div>
           </div>
           <p class="g-fnick">🙋 가입 없이 <b>닉네임</b>만 정하면 끝</p>
@@ -560,6 +560,7 @@ const GATE_STORY = `        <div class="g-tool">
           <li>🆘 <b>힘든 날</b>엔 SOS만 꾹</li>
           <li>👀 SOS가 <b>몰린 시간</b>은 모두가 봐요</li>
           <li>🙌 <b>용기 낸 한 명</b>이 모임을 열어요</li>
+          <li>🍚 오늘 뭐 먹이지? 이웃 <b>식단 사진</b> 보고 골라요</li>
           <li>💬 대화는 <b>원래 단톡방·밴드</b>에서 그대로</li>
           <li>🙋 가입 없이 <b>링크 + 비밀번호 + 닉네임</b>만</li>
           <li>📲 다운로드 없이 <b>홈 화면 바로가기</b>로 앱처럼</li>
@@ -758,7 +759,7 @@ function showIntro(){
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
 ${GATE_STORY}
       <button type="button" class="g-ok">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(19장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
       <a class="g-link" href="index.html#install">📲 홈 화면에 설치하는 방법 보기</a>
     </div>`;
   const close = () => { box.remove(); document.removeEventListener('keydown', esc); };
@@ -788,8 +789,9 @@ const GATE_HOW_INVITE = `      <div class="g-guide">
           <li>독박 예정인 날엔 <b>🆘 SOS 요청</b>만 꾹</li>
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
+          <li>오늘 뭐 먹이지? <b>🍚 식단</b> 탭에서 이웃 식단을 구경해요.</li>
         </ol>
-        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(19장)</small></a>
+        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
       </div>`;
 
 // 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
@@ -920,7 +922,7 @@ ${GATE_PASTE}
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(19장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
 ${GATE_EXTRA}
     </div>
     <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>
