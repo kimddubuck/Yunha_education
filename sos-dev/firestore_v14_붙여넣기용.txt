@@ -1,0 +1,331 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function expireOk(d) {
+      return !('expireAt' in d) || (d.expireAt is timestamp && d.expireAt <= request.time + duration.value(20, 'd'));
+    }
+    function expired() {
+      return resource.data.get('expireAt', null) is timestamp && resource.data.expireAt < request.time;
+    }
+    function roomDeleted(roomKey) {
+      return get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('deleted', false) == true;
+    }
+    function roomAlive(roomKey) {
+      return exists(/databases/$(database)/documents/rooms/$(roomKey))
+        && get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('deleted', false) == false;
+    }
+    function meDoc(roomKey) { return /databases/$(database)/documents/rooms/$(roomKey)/members/$(request.auth.uid); }
+    function isMember(roomKey) {
+      return request.auth != null && exists(meDoc(roomKey)) && get(meDoc(roomKey)).data.get('on', false) == true;
+    }
+    function canUse(roomKey) { return roomAlive(roomKey) && isMember(roomKey); }
+    function myNick(roomKey) { return get(meDoc(roomKey)).data.nick; }
+    function isOwner(roomKey) {
+      return request.auth != null && get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('ou', '') == request.auth.uid;
+    }
+    function nickOk(n) { return n is string && n.size() >= 1 && n.size() <= 20; }
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in ['여기에_내_번호'];
+    }
+    function ownerGone(roomKey, ou) {
+      let p = /databases/$(database)/documents/rooms/$(roomKey)/members/$(ou);
+      return !exists(p) || get(p).data.get('on', false) == false
+        || get(p).data.get('seen', get(p).data.joinedAt) < request.time - duration.value(60, 'd');
+    }
+    match /stats/{day} {
+      allow read: if isAdmin();
+      allow create: if day.matches('^20[0-9]{2}-[01][0-9]-[0-3][0-9]$')
+        && request.resource.data.keys().hasOnly(['p', 'v'])
+        && request.resource.data.p == 1 && request.resource.data.v in [0, 1];
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['p', 'v'])
+        && request.resource.data.p == resource.data.p + 1
+        && request.resource.data.v in [resource.data.v, resource.data.v + 1];
+    }
+    match /rooms/{roomKey} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow delete: if isAdmin() && resource.data.get('deleted', false) == true;
+      allow create: if roomKey.matches('^[0-9a-f]{64}$')
+        && request.resource.data.keys().hasOnly(['name', 'oh', 'ou', 'createdAt'])
+        && (!('ou' in request.resource.data) || (request.auth != null && request.resource.data.ou == request.auth.uid))
+        && (!('oh' in request.resource.data)
+            || (request.resource.data.oh is string && request.resource.data.oh.size() == 64))
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 30
+        && request.resource.data.createdAt == request.time;
+      allow update: if (resource.data.get('deleted', false) == false
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted', 'name', 'k'])
+        && request.resource.data.deleted == true
+        && request.resource.data.name == ''
+        && request.resource.data.k is string
+        && (!('oh' in resource.data)
+            || hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.oh))
+        || (resource.data.get('deleted', false) == false
+          && !('ou' in resource.data) && ('oh' in resource.data)
+          && request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ou'])
+          && request.resource.data.ou == request.auth.uid
+          && getAfter(/databases/$(database)/documents/rooms/$(roomKey)/private/owner).data.uid == request.auth.uid)
+        || (isAdmin() && resource.data.get('deleted', false) == false
+          && resource.data.get('createdAt', request.time) < request.time - duration.value(7, 'd')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted', 'name'])
+          && request.resource.data.deleted == true && request.resource.data.name == '')
+        || (resource.data.get('deleted', false) == false && isMember(roomKey) && isOwner(roomKey)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['oh'])
+          && request.resource.data.oh is string && request.resource.data.oh.size() == 64)
+        || (resource.data.get('deleted', false) == false && isMember(roomKey) && isOwner(roomKey)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['po'])
+          && (!('po' in request.resource.data)
+              || (request.resource.data.po is string && request.resource.data.po != request.auth.uid
+                && get(/databases/$(database)/documents/rooms/$(roomKey)/members/$(request.resource.data.po)).data.get('on', false) == true)))
+        || (resource.data.get('po', '') == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['po'])
+          && !('po' in request.resource.data))
+        || (resource.data.get('deleted', false) == false && isMember(roomKey)
+          && ('ou' in resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ou', 'oh', 'po'])
+          && request.resource.data.ou == request.auth.uid
+          && request.resource.data.oh is string && request.resource.data.oh.size() == 64
+          && !('po' in request.resource.data)
+          && (resource.data.get('po', '') == request.auth.uid || ownerGone(roomKey, resource.data.ou)));
+      match /private/{doc} {
+        allow read, update: if false;
+        allow delete: if roomDeleted(roomKey);
+        allow create: if doc == 'owner' && roomAlive(roomKey)
+          && request.auth != null
+          && request.resource.data.keys().hasOnly(['k', 'uid'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.k is string
+          && hashing.sha256(request.resource.data.k).toHexString().lower() == get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('oh', '');
+      }
+      match /members/{uid} {
+        allow get: if request.auth != null && request.auth.uid == uid;
+        allow read: if canUse(roomKey) || isAdmin();
+        allow create: if roomAlive(roomKey)
+          && request.auth != null && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['nick', 'on', 'joinedAt'])
+          && nickOk(request.resource.data.nick)
+          && request.resource.data.on == true
+          && request.resource.data.joinedAt == request.time;
+        allow update: if roomAlive(roomKey) && request.auth != null && (
+          (request.auth.uid == uid && resource.data.on == true
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick', 'seen', 'br'])
+            && nickOk(request.resource.data.nick)
+            && (!('br' in request.resource.data) || request.resource.data.br in ['kakao', 'insta', 'naver', 'band', 'inapp', 'home', 'chrome', 'safari', 'samsung', 'whale', 'other'])
+            && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['seen']) || request.resource.data.seen == request.time))
+          || (isOwner(roomKey) && request.auth.uid != uid && resource.data.on == true
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['on', 'kickedAt'])
+            && request.resource.data.on == false
+            && (!('kickedAt' in request.resource.data) || request.resource.data.kickedAt == request.time))
+          || (isOwner(roomKey) && request.auth.uid != uid && resource.data.on == false && !('kickedAt' in resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['kickedAt'])
+            && request.resource.data.kickedAt == request.time)
+          || (request.auth.uid == uid && resource.data.on == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick', 'ap'])
+            && request.resource.data.nick == '(정보 지움)' && !('ap' in request.resource.data))
+          || (request.auth.uid == uid && resource.data.on == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ap', 'apAt'])
+            && request.resource.data.ap is string && request.resource.data.ap.size() > 0 && request.resource.data.ap.size() <= 200
+            && request.resource.data.apAt == request.time
+            && (!('apAt' in resource.data) || request.time > resource.data.apAt + duration.value(1, 'h')))
+          || (isOwner(roomKey) && request.auth.uid != uid && resource.data.on == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ap'])
+            && !('ap' in request.resource.data)));
+        allow delete: if roomDeleted(roomKey)
+          || (request.auth != null && request.auth.uid == uid && resource.data.on == true)
+          || (canUse(roomKey) && isOwner(roomKey) && request.auth.uid != uid);
+      }
+      match /joinlog/{uid} {
+        allow get: if request.auth != null && request.auth.uid == uid;
+        allow read: if isAdmin();
+        allow create: if roomAlive(roomKey) && request.auth != null && request.auth.uid == uid
+          && isMember(roomKey)
+          && request.resource.data.keys().hasOnly(['at'])
+          && request.resource.data.at == get(meDoc(roomKey)).data.joinedAt;
+      }
+      match /opinions/{id} {
+        allow read: if canUse(roomKey) || isAdmin();
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['topic', 'text', 'play', 'date', 'slot', 'end', 'host', 'uid', 'expireAt', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.host == myNick(roomKey)
+          && expireOk(request.resource.data)
+          && request.resource.data.topic in ['habit', 'dev', 'meet', 'free']
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500
+          && (!('play' in request.resource.data)
+              || (request.resource.data.play is string && request.resource.data.play.size() <= 40))
+          && (!('date' in request.resource.data)
+              || (request.resource.data.date is string && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+          && (!('slot' in request.resource.data)
+              || request.resource.data.slot in ['9시', '10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시'])
+          && (!('end' in request.resource.data)
+              || request.resource.data.end in ['10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시', '21시', '22시'])
+          && (!('host' in request.resource.data)
+              || (request.resource.data.host is string && request.resource.data.host.size() > 0 && request.resource.data.host.size() <= 20))
+          && request.resource.data.createdAt == request.time;
+        function voteMine() {
+          let nv = request.resource.data.get('v', {});
+          let me = request.auth.uid;
+          return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['v'])
+            && nv.diff(resource.data.get('v', {})).affectedKeys().hasOnly([me])
+            && (!(me in nv)
+                || (nv[me] is map && nv[me].keys().hasOnly(['s', 'n'])
+                    && nv[me].s in ['join', 'maybe', 'no'] && nv[me].n == myNick(roomKey)));
+        }
+        allow update: if canUse(roomKey) && (
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cancelled'])
+            && request.resource.data.cancelled == true && resource.data.topic == 'meet'
+            && (resource.data.get('uid', '') == '' || resource.data.uid == request.auth.uid || isOwner(roomKey)))
+          || voteMine()
+          || (resource.data.get('uid', '') == request.auth.uid && resource.data.topic == 'meet' && !resource.data.get('cancelled', false)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'date', 'slot', 'end', 'expireAt'])
+            && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+            && request.resource.data.date is string && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && request.resource.data.slot in ['9시', '10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시']
+            && (!('end' in request.resource.data) || request.resource.data.end in ['10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시', '21시', '22시'])
+            && expireOk(request.resource.data)));
+        match /comments/{cid} {
+          function meetGone() {
+            let p = /databases/$(database)/documents/rooms/$(roomKey)/opinions/$(id);
+            return !exists(p) || (get(p).data.get('expireAt', null) is timestamp && get(p).data.expireAt < request.time);
+          }
+          allow read: if canUse(roomKey) || isAdmin();
+          allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && (isOwner(roomKey) || meetGone()));
+          allow create: if canUse(roomKey)
+            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt', 'to'])
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.n == myNick(roomKey)
+            && expireOk(request.resource.data)
+            && (!('to' in request.resource.data)
+                || (request.resource.data.to is string && request.resource.data.to.size() >= 1 && request.resource.data.to.size() <= 40))
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 300
+            && (!('kh' in request.resource.data)
+                || (request.resource.data.kh is string && request.resource.data.kh.size() == 64))
+            && request.resource.data.createdAt == request.time;
+          allow update: if canUse(roomKey)
+            && resource.data.get('kh', '') != ''
+            && resource.data.get('deleted', false) == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt'])
+            && request.resource.data.k is string
+            && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+            && request.resource.data.kh is string
+            && request.resource.data.kh.size() == 64
+            && request.resource.data.kh != resource.data.kh
+            && request.resource.data.text is string
+            && request.resource.data.text.size() <= 300
+            && ((request.resource.data.get('deleted', false) == true && request.resource.data.text == '')
+                || (request.resource.data.get('deleted', false) == false && request.resource.data.text.size() > 0))
+            && request.resource.data.editedAt == request.time;
+        }
+      }
+      match /reports/{rid} {
+        allow read: if (canUse(roomKey) && isOwner(roomKey)) || isAdmin();
+        allow delete: if roomDeleted(roomKey) || (canUse(roomKey) && isOwner(roomKey));
+        allow update: if false;
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['kind', 'mid', 'cid', 'reason', 'uid', 'n', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.n == myNick(roomKey)
+          && request.resource.data.kind in ['meet', 'comment']
+          && request.resource.data.mid is string && request.resource.data.mid.size() <= 40
+          && (!('cid' in request.resource.data) || (request.resource.data.cid is string && request.resource.data.cid.size() <= 40))
+          && request.resource.data.reason in ['욕설·비하', '광고·홍보', '개인정보 노출', '불쾌한 내용', '기타']
+          && request.resource.data.createdAt == request.time;
+      }
+      match /sos/{day} {
+        function entryOk(e) {
+          return e is map && e.keys().hasOnly(['h', 'n'])
+            && e.h is list && e.h.size() >= 1 && e.h.size() <= 13
+            && e.h.hasOnly([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+            && e.n == myNick(roomKey);
+        }
+        allow read: if canUse(roomKey) || isAdmin();
+        allow delete: if roomDeleted(roomKey) || expired();
+        allow create: if canUse(roomKey)
+          && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && expireOk(request.resource.data)
+          && request.resource.data.keys().hasOnly(['p', 'expireAt'])
+          && request.resource.data.p.keys().hasOnly([request.auth.uid])
+          && entryOk(request.resource.data.p[request.auth.uid]);
+        allow update: if canUse(roomKey)
+          && expireOk(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['p', 'expireAt'])
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['expireAt'])
+              || (request.resource.data.get('expireAt', null) is timestamp && request.resource.data.expireAt > request.time))
+          && request.resource.data.get('p', {}).diff(resource.data.get('p', {})).affectedKeys().hasOnly([request.auth.uid])
+          && (!(request.auth.uid in request.resource.data.get('p', {})) || entryOk(request.resource.data.p[request.auth.uid]));
+      }
+      match /meals/{id} {
+        allow read: if canUse(roomKey);
+        allow update: if false;
+        allow delete: if roomDeleted(roomKey) || expired()
+          || (request.auth != null && resource.data.uid == request.auth.uid)
+          || (canUse(roomKey) && isOwner(roomKey));
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['uid', 'n', 'img', 'slot', 'memo', 'mo', 'date', 'createdAt', 'expireAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.n == myNick(roomKey)
+          && request.resource.data.img is string
+          && request.resource.data.img.size() <= 80000
+          && request.resource.data.img.matches('^data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+$')
+          && request.resource.data.slot in ['b', 's1', 'l', 's2', 'd']
+          && (!('memo' in request.resource.data)
+              || (request.resource.data.memo is string && request.resource.data.memo.size() <= 40))
+          && (!('mo' in request.resource.data)
+              || (request.resource.data.mo is int && request.resource.data.mo >= 0 && request.resource.data.mo <= 72))
+          && request.resource.data.date is string && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.expireAt is timestamp
+          && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+        match /comments/{cid} {
+          function photo() { return /databases/$(database)/documents/rooms/$(roomKey)/meals/$(id); }
+          allow read: if canUse(roomKey);
+          allow update: if false;
+          allow delete: if roomDeleted(roomKey) || expired() || !exists(photo())
+            || (request.auth != null && resource.data.uid == request.auth.uid)
+            || (canUse(roomKey) && (isOwner(roomKey) || get(photo()).data.uid == request.auth.uid));
+          allow create: if canUse(roomKey)
+            && exists(photo())
+            && request.resource.data.keys().hasOnly(['text', 'uid', 'n', 'to', 'createdAt', 'expireAt'])
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.n == myNick(roomKey)
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 300
+            && (!('to' in request.resource.data)
+                || (request.resource.data.to is string && request.resource.data.to.size() >= 1 && request.resource.data.to.size() <= 40))
+            && request.resource.data.createdAt == request.time
+            && request.resource.data.expireAt is timestamp
+            && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+        }
+      }
+      match /plays/{id} {
+        allow read: if canUse(roomKey) || isAdmin();
+        allow update: if false;
+        allow delete: if roomDeleted(roomKey);
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['name', 'kind', 'cat', 'say', 'how', 'items', 'createdAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 30
+          && request.resource.data.kind in ['habit', 'dev']
+          && (!('cat' in request.resource.data)
+              || (request.resource.data.cat is string && request.resource.data.cat.size() <= 20))
+          && (!('say' in request.resource.data)
+              || (request.resource.data.say is string && request.resource.data.say.size() <= 40))
+          && request.resource.data.how is string
+          && request.resource.data.how.size() > 0
+          && request.resource.data.how.size() <= 200
+          && request.resource.data.items is list
+          && request.resource.data.items.size() <= 10
+          && request.resource.data.createdAt == request.time;
+      }
+    }
+  }
+}
