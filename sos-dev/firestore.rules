@@ -6,6 +6,7 @@ rules_version = '2';
 //       rooms/{방 열쇠}/opinions/{id}  — 모임 (topic 'meet'), 아래 comments 에 댓글
 //       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20)
 //       rooms/{방 열쇠}/meals/{id}     — 🍚 식단 사진 (v13, 1주일 뒤 자동 삭제), 아래 comments 에 댓글·답글 (v14)
+//       rooms/{방 열쇠}/ideas/{id}     — 💡 익명 제안함 (v15, 30일 뒤 자동 삭제), 아래 comments 에 익명 댓글
 //       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이 (지금은 앱에서 안 씀)
 //       rooms/{방 열쇠}/members/{uid}  — 방 멤버 닉네임·마지막 접속 날 (uid = 휴대폰마다 생기는 익명 로그인 번호)
 //       rooms/{방 열쇠}/private/owner  — 예전 방의 방장 확인용 (아무도 읽을 수 없음)
@@ -381,6 +382,47 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time
             && request.resource.data.expireAt is timestamp
             && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+        }
+      }
+
+      // 💡 익명 제안함 (v15): 닉네임·uid 를 저장하지 않아요. 쓴 휴대폰만 아는 비밀값(k)의 지문(kh)으로 '지움' 표시
+      //    방장은 지울 수 있고, 30일(+여유) 뒤 누구나 정리할 수 있어요
+      match /ideas/{id} {
+        allow read: if canUse(roomKey);
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt'])
+          && request.resource.data.t is string && request.resource.data.t.size() > 0 && request.resource.data.t.size() <= 40
+          && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 1000
+          && request.resource.data.kh is string && request.resource.data.kh.size() == 64
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.expireAt is timestamp
+          && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+        allow update: if request.auth != null
+          && resource.data.get('deleted', false) == false
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['t', 'b', 'deleted', 'k'])
+          && request.resource.data.k is string
+          && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+          && request.resource.data.t == '' && request.resource.data.b == '' && request.resource.data.deleted == true;
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
+
+        match /comments/{cid} {
+          function post() { return /databases/$(database)/documents/rooms/$(roomKey)/ideas/$(id); }
+          allow read: if canUse(roomKey);
+          allow create: if canUse(roomKey)
+            && exists(post()) && get(post()).data.get('deleted', false) == false
+            && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt'])
+            && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 300
+            && request.resource.data.kh is string && request.resource.data.kh.size() == 64
+            && request.resource.data.createdAt == request.time
+            && request.resource.data.expireAt is timestamp
+            && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+          allow update: if request.auth != null
+            && resource.data.get('deleted', false) == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k'])
+            && request.resource.data.k is string
+            && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+            && request.resource.data.b == '' && request.resource.data.deleted == true;
+          allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) && isOwner(roomKey));
         }
       }
 

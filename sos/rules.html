@@ -11,8 +11,8 @@ button{width:100%;padding:16px;border:0;border-radius:14px;background:var(--pick
 textarea{width:100%;box-sizing:border-box;height:45vh;margin-top:12px;font:12px/1.4 monospace;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);color:var(--fg)}
 #ok{text-align:center;font-weight:700;min-height:1.4em;margin-top:8px}
 </style></head><body>
-<h1>🔐 Firestore 보안 규칙 v14 (운영자용)</h1>
-<p>① 아래 칸에 <b>내 번호</b>(admin.html 에 보이는 번호)를 넣고<br>② 버튼을 누르면 규칙 <b>전체(331줄)</b>가 복사돼요.<br>③ Firebase 콘솔 규칙 칸을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>⚠️ 콘솔에서 따옴표를 직접 고치지 마세요 (따옴표가 두 개로 들어가 오류가 나요).<br>마지막 줄이 <code>}</code> 로 끝나는지 확인해 주세요.</p>
+<h1>🔐 Firestore 보안 규칙 v15 (운영자용)</h1>
+<p>① 아래 칸에 <b>내 번호</b>(admin.html 에 보이는 번호)를 넣고<br>② 버튼을 누르면 규칙 <b>전체(368줄)</b>가 복사돼요.<br>③ Firebase 콘솔 규칙 칸을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>⚠️ 콘솔에서 따옴표를 직접 고치지 마세요 (따옴표가 두 개로 들어가 오류가 나요).<br>마지막 줄이 <code>}</code> 로 끝나는지 확인해 주세요.</p>
 <label for="uid">내 번호 (운영자)</label>
 <input id="uid" autocomplete="off" spellcheck="false" placeholder="예: AbCd1234...">
 <button id="copy">📋 규칙 전체 복사하기</button>
@@ -323,6 +323,43 @@ service cloud.firestore {
             &amp;&amp; request.resource.data.createdAt == request.time
             &amp;&amp; request.resource.data.expireAt is timestamp
             &amp;&amp; request.resource.data.expireAt &lt;= request.time + duration.value(32, &#x27;d&#x27;);
+        }
+      }
+      match /ideas/{id} {
+        allow read: if canUse(roomKey);
+        allow create: if canUse(roomKey)
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;t&#x27;, &#x27;b&#x27;, &#x27;kh&#x27;, &#x27;createdAt&#x27;, &#x27;expireAt&#x27;])
+          &amp;&amp; request.resource.data.t is string &amp;&amp; request.resource.data.t.size() &gt; 0 &amp;&amp; request.resource.data.t.size() &lt;= 40
+          &amp;&amp; request.resource.data.b is string &amp;&amp; request.resource.data.b.size() &gt; 0 &amp;&amp; request.resource.data.b.size() &lt;= 1000
+          &amp;&amp; request.resource.data.kh is string &amp;&amp; request.resource.data.kh.size() == 64
+          &amp;&amp; request.resource.data.createdAt == request.time
+          &amp;&amp; request.resource.data.expireAt is timestamp
+          &amp;&amp; request.resource.data.expireAt &lt;= request.time + duration.value(32, &#x27;d&#x27;);
+        allow update: if request.auth != null
+          &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
+          &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;t&#x27;, &#x27;b&#x27;, &#x27;deleted&#x27;, &#x27;k&#x27;])
+          &amp;&amp; request.resource.data.k is string
+          &amp;&amp; hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+          &amp;&amp; request.resource.data.t == &#x27;&#x27; &amp;&amp; request.resource.data.b == &#x27;&#x27; &amp;&amp; request.resource.data.deleted == true;
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
+        match /comments/{cid} {
+          function post() { return /databases/$(database)/documents/rooms/$(roomKey)/ideas/$(id); }
+          allow read: if canUse(roomKey);
+          allow create: if canUse(roomKey)
+            &amp;&amp; exists(post()) &amp;&amp; get(post()).data.get(&#x27;deleted&#x27;, false) == false
+            &amp;&amp; request.resource.data.keys().hasOnly([&#x27;b&#x27;, &#x27;kh&#x27;, &#x27;createdAt&#x27;, &#x27;expireAt&#x27;])
+            &amp;&amp; request.resource.data.b is string &amp;&amp; request.resource.data.b.size() &gt; 0 &amp;&amp; request.resource.data.b.size() &lt;= 300
+            &amp;&amp; request.resource.data.kh is string &amp;&amp; request.resource.data.kh.size() == 64
+            &amp;&amp; request.resource.data.createdAt == request.time
+            &amp;&amp; request.resource.data.expireAt is timestamp
+            &amp;&amp; request.resource.data.expireAt &lt;= request.time + duration.value(32, &#x27;d&#x27;);
+          allow update: if request.auth != null
+            &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
+            &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;b&#x27;, &#x27;deleted&#x27;, &#x27;k&#x27;])
+            &amp;&amp; request.resource.data.k is string
+            &amp;&amp; hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+            &amp;&amp; request.resource.data.b == &#x27;&#x27; &amp;&amp; request.resource.data.deleted == true;
+          allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
         }
       }
       match /plays/{id} {

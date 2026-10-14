@@ -305,6 +305,43 @@ service cloud.firestore {
             && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
         }
       }
+      match /ideas/{id} {
+        allow read: if canUse(roomKey);
+        allow create: if canUse(roomKey)
+          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt'])
+          && request.resource.data.t is string && request.resource.data.t.size() > 0 && request.resource.data.t.size() <= 40
+          && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 1000
+          && request.resource.data.kh is string && request.resource.data.kh.size() == 64
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.expireAt is timestamp
+          && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+        allow update: if request.auth != null
+          && resource.data.get('deleted', false) == false
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['t', 'b', 'deleted', 'k'])
+          && request.resource.data.k is string
+          && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+          && request.resource.data.t == '' && request.resource.data.b == '' && request.resource.data.deleted == true;
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
+        match /comments/{cid} {
+          function post() { return /databases/$(database)/documents/rooms/$(roomKey)/ideas/$(id); }
+          allow read: if canUse(roomKey);
+          allow create: if canUse(roomKey)
+            && exists(post()) && get(post()).data.get('deleted', false) == false
+            && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt'])
+            && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 300
+            && request.resource.data.kh is string && request.resource.data.kh.size() == 64
+            && request.resource.data.createdAt == request.time
+            && request.resource.data.expireAt is timestamp
+            && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
+          allow update: if request.auth != null
+            && resource.data.get('deleted', false) == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k'])
+            && request.resource.data.k is string
+            && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
+            && request.resource.data.b == '' && request.resource.data.deleted == true;
+          allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) && isOwner(roomKey));
+        }
+      }
       match /plays/{id} {
         allow read: if canUse(roomKey) || isAdmin();
         allow update: if false;
