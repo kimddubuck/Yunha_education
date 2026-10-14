@@ -26,16 +26,18 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
 
-  try {
-    const rows = kind === 'peds' ? await peds(key, +la, +lo) : await pharm(key, +la, +lo);
+  // 20초 안에 못 끝내면 어디서 막혔는지(stage)를 알려 주고 끝내요
+  const stage = { now: 'start', t0: Date.now() };
+  const work = (async () => {
+    const rows = kind === 'peds' ? await peds(key, +la, +lo, stage) : await pharm(key, +la, +lo, stage);
     // 소아과 진료시간을 하나도 못 받았으면 원인을 같이 보내고, 결과는 짧게만 캐시해요 (곧 다시 시도하도록)
     const noHours = kind === 'peds' && rows.length && !rows.some(r => r.h);
     const res = json({ ok: true, rows, at: Date.now(), ...(noHours ? { hoursErr: rows.err || 'empty' } : {}) }, 200, noHours ? 300 : TTL[kind]);
     waitUntil(cache.put(cacheKey, res.clone()));
     return res;
-  } catch (e) {
-    return json({ ok: false, error: 'upstream', detail: String(e && e.message || e).slice(0, 160) }, 502);
-  }
+  })().catch(e => json({ ok: false, error: 'upstream', detail: `${String(e && e.message || e).slice(0, 120)} @${stage.now}` }, 502));
+  const late = new Promise(ok => setTimeout(() => ok(json({ ok: false, error: 'slow', detail: `server_timeout @${stage.now} ${Math.round((Date.now() - stage.t0) / 1000)}s` }, 504)), 20000));
+  return Promise.race([work, late]);
 }
 
 // 공공데이터포털은 '인코딩 키'와 '디코딩 키'를 둘 다 줘요. 어느 쪽을 넣어도 되게 해요
@@ -46,7 +48,7 @@ async function get(url, ms) {
   const r = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(ms) });
   return { ok: r.ok, status: r.status, text: await r.text() };
 }
-async function call(base, key, params, ms = 8000) {
+async function call(base, key, params, ms = 7000) {
   const q = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
   const url = `${base}?serviceKey=${enc(key)}&${q}&_type=json`;
   let r;
@@ -78,9 +80,10 @@ function dist(a, b, c, d) {
 }
 
 // 🏥 소아청소년과 (진료과 코드 11). 가까운 곳이 적으면 반경을 넓혀요
-async function peds(key, lat, lon) {
+async function peds(key, lat, lon, stage = {}) {
   let items = [];
   for (const radius of [3000, 8000]) {
+    stage.now = `list${radius}`;
     items = await call(HOSP, key, { xPos: lon, yPos: lat, radius, dgsbjtCd: '11', numOfRows: 60, pageNo: 1 });
     if (items.length >= 5) break;
   }
@@ -91,6 +94,7 @@ async function peds(key, lat, lon) {
   // 가까운 15곳만 진료시간을 붙여요 (5곳씩 나눠서, 실패해도 목록은 그대로)
   // 진료시간은 최대 6초만 기다려요. 늦게 오는 곳은 '시간 정보 없음'으로 두고 목록부터 보여줘요
   const near = rows.filter(r => r.y).slice(0, 15);
+  stage.now = 'hours';
   let err = '';
   const all = Promise.all(near.map(async r => {
     try { const w = await hours(key, r.y); if (w) Object.assign(r, w); } catch (e) { err = err || String(e && e.message || e).slice(0, 80); }
@@ -122,7 +126,8 @@ async function hours(key, ykiho) {
 }
 
 // 💊 약국: 거리순 + 오늘 영업 시작·끝 (HHMM). '지금 영업 중'은 화면에서 현재 시각으로 계산해요
-async function pharm(key, lat, lon) {
+async function pharm(key, lat, lon, stage = {}) {
+  stage.now = 'pharm';
   const items = await call(PHARM, key, { WGS84_LON: lon, WGS84_LAT: lat, pageNo: 1, numOfRows: 50 });
   return items.map(p => ({ n: p.dutyName, a: p.dutyAddr, t: p.dutyTel1 || '', la: num(p.latitude), lo: num(p.longitude), s: num(p.startTime), e: num(p.endTime) }))
     .filter(p => p.n && p.la != null && p.lo != null)
