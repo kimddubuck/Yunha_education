@@ -3,7 +3,10 @@
 const TESTS = [
   ['🏥 병원정보서비스 (소아과 목록)', 'https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList', { xPos: 129.0838, yPos: 35.2049, radius: 1000, dgsbjtCd: '11', numOfRows: 1, pageNo: 1 }],
   ['🕘 의료기관별상세정보서비스 (진료시간)', 'https://apis.data.go.kr/B551182/MadmDtlInfoService2.8/getDtlInfo2.8', { ykiho: '', numOfRows: 1, pageNo: 1 }],
-  ['💊 전국 약국 정보 조회 서비스', 'https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyLcinfoInqire', { WGS84_LON: 129.0838, WGS84_LAT: 35.2049, pageNo: 1, numOfRows: 1 }]
+  ['💊 전국 약국 정보 조회 서비스', 'https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyLcinfoInqire', { WGS84_LON: 129.0838, WGS84_LAT: 35.2049, pageNo: 1, numOfRows: 1 }],
+  ['🛝 어린이놀이시설정보 (키즈카페, 한 번에 1000건)', 'https://apis.data.go.kr/1741000/pfc3/getPfctInfo3', { pageIndex: 1, recordCountPerPage: 1000, instlPlaceCd: 'A013' }],
+  ['🛝 어린이놀이시설정보 (도시공원 수)', 'https://apis.data.go.kr/1741000/pfc3/getPfctInfo3', { pageIndex: 1, recordCountPerPage: 1, instlPlaceCd: 'A003' }],
+  ['✅ 어린이놀이시설 안전검사정보', 'https://apis.data.go.kr/1741000/sfty4/getSftyInsp4', { pageIndex: 1, recordCountPerPage: 1, instlPlaceCd: 'A013' }]
 ];
 const enc = k => /%[0-9A-Fa-f]{2}/.test(k) ? k : encodeURIComponent(k);
 
@@ -18,7 +21,7 @@ export async function onRequestGet({ env }) {
       const p = { ...p0 }; if ('ykiho' in p) { if (!ykiho) { out.push(`${name}: ⏭ 소아과 목록을 먼저 받아야 점검할 수 있어요`); continue; } p.ykiho = ykiho; }
       const q = Object.entries(p).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
       try {
-        const r = await fetch(`${base}?serviceKey=${enc(key)}&${q}&_type=json`, { signal: AbortSignal.timeout(8000) });
+        const r = await fetch(`${base}?serviceKey=${enc(key)}&${q}${base.includes('/1741000/') ? '' : '&_type=json'}`, { signal: AbortSignal.timeout(8000) });
         const t = await r.text();
         let msg;
         try {
@@ -27,7 +30,8 @@ export async function onRequestGet({ env }) {
           let it = b && b.items; it = it && it.item !== undefined ? it.item : it; it = Array.isArray(it) ? it : it ? [it] : [];
           if (ok && !ykiho && it[0] && it[0].ykiho) ykiho = it[0].ykiho;
           const extra = ok && 'ykiho' in p0 ? (it[0] && it[0].trmtMonStart != null ? ' · 진료시간 칸 있음' : ' · 진료시간 칸이 비어 있어요') : '';
-          msg = ok ? `✅ 연결됨 (결과 ${b && b.totalCount != null ? b.totalCount : it.length}건)${extra}` : `⚠️ ${h ? `${h.resultCode} ${h.resultMsg || ''}` : '응답 형식이 달라요'}`;
+          const total = b && (b.totalCount != null ? b.totalCount : b.totalCnt);
+          msg = ok ? `✅ 연결됨 (전체 ${total != null ? total : it.length}건 · 이번에 받은 ${it.length}건)${extra}` : `⚠️ ${h ? `${h.resultCode} ${h.resultMsg || ''}` : '응답 형식이 달라요'}`;
         } catch (e) {
           const m = t.match(/<returnAuthMsg>([^<]+)</) || t.match(/<resultMsg>([^<]+)</);
           msg = `❌ ${m ? m[1] : `HTTP ${r.status}`}${m && /NOT_REGISTERED/.test(m[1]) ? ' (아직 신청 안 됐거나 키 등록 중이에요)' : ''}`;

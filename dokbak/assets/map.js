@@ -6,8 +6,12 @@
   const KIND = {
     peds: { icon: '🏥', name: '소아청소년과', empty: '근처에서 소아청소년과를 찾지 못했어요.' },
     pharm: { icon: '💊', name: '약국', empty: '근처에서 약국을 찾지 못했어요.' },
-    care: { icon: '🤝', name: '육아 지원 시설', empty: '이 지역 자료에는 아직 육아 지원 시설이 없어요.' }
+    care: { icon: '🤝', name: '육아 지원 시설', empty: '이 지역 자료에는 아직 육아 지원 시설이 없어요.' },
+    play: { icon: '🛝', name: '놀이시설', empty: '근처에서 키즈카페·공공 놀이시설을 찾지 못했어요.' }
   };
+  const NOHOURS = k => k === 'care' || k === 'play';   // 운영시간 자료가 없는 종류
+  const ymd = v => v ? `${v.slice(0, 4)}.${Number(v.slice(4, 6))}.${Number(v.slice(6, 8))}` : '';
+  const todayYmd = () => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`; };
   const CARE_K = { c: ['🏫', '육아종합지원센터'], n: ['🤝', '공동육아나눔터'] };
   const st = { kind: 'peds', center: null, rows: [], layer: null, me: null, moved: false, openOnly: false };
   const map = L.map('map', { zoomControl: false, attributionControl: true }).setView(HOME, 14);
@@ -33,11 +37,16 @@
     let s = r.s, e = r.e; if (e <= s) e += 2400;
     return (now >= s && now < e) || (now + 2400 >= s && now + 2400 < e);
   }
-  const icon = r => st.kind === 'care' ? (CARE_K[r.k] || CARE_K.n)[0] : KIND[st.kind].icon;
+  const icon = r => st.kind === 'care' ? (CARE_K[r.k] || CARE_K.n)[0] : st.kind === 'play' ? (r.io === '실내' ? '🧸' : '🛝') : KIND[st.kind].icon;
   const pin = (r, open) => L.divIcon({ className: 'mpin' + (open === false ? ' off' : ''), html: `<span><i>${icon(r)}</i></span>`, iconSize: [34, 34], iconAnchor: [17, 30], popupAnchor: [0, -26] });
   const telA = t => t ? `<a class="mbtn" href="tel:${esc(t.replace(/[^0-9-]/g, ''))}">📞 ${esc(t)}</a>` : '';
   const wayA = r => `<a class="mbtn" href="https://map.kakao.com/link/to/${encodeURIComponent(r.n)},${r.la},${r.lo}" target="_blank" rel="noopener">🧭 길찾기</a>`;
   function badge(r){
+    if (st.kind === 'play'){
+      // 안전검사: 가장 최근 검사의 유효기간이 오늘 이후고 합격이면 ✅, 지났으면 ⚠️ (가까운 15곳만 확인해요)
+      const ins = !r.ins ? '' : r.ins.p && r.ins.v >= todayYmd() ? ` <span class="mtag on">✅ 안전검사 합격 · ~${ymd(r.ins.v)}</span>` : ` <span class="mtag off">⚠️ 안전검사 ${r.ins.p ? '유효기간 지남' : '불합격'} (${ymd(r.ins.v)})</span>`;
+      return `<span class="mtag">${esc(r.io ? r.io + ' · ' : '')}${esc(r.k)}</span>${r.ex ? ' <span class="mtag">🏅 우수시설</span>' : ''}${ins}`;
+    }
     if (st.kind === 'care') return `<span class="mtag">${(CARE_K[r.k] || CARE_K.n)[1]}</span> <span class="mtag">운영시간 자료 없음 · 전화로 확인</span>`;
     const peds = st.kind === 'peds', word = peds ? '진료' : '영업', t = todayHours(r), o = openNow(r);
     const kind = peds && r.k ? `<span class="mtag">${esc(r.k)}</span> ` : '';
@@ -51,10 +60,10 @@
     st.layer.clearLayers();
     const list = $('#mlist'); list.innerHTML = '';
     // 🟢 '지금 여는 곳만'을 켜면 진료·영업 중인 곳만 보여요 (육아 지원 시설은 시간 자료가 없어서 빼요)
-    const rows = st.openOnly && st.kind !== 'care' ? st.rows.filter(r => openNow(r) === true) : st.rows;
+    const rows = st.openOnly && !NOHOURS(st.kind) ? st.rows.filter(r => openNow(r) === true) : st.rows;
     if (!rows.length){ list.innerHTML = `<li class="mnone">${st.rows.length ? '지금 문 연 곳이 근처에 없어요. 「지금 여는 곳만」을 끄면 모두 보여요.' : KIND[st.kind].empty}</li>`; return; }
     rows.forEach((r, i) => {
-      const open = st.kind === 'care' ? null : openNow(r);
+      const open = NOHOURS(st.kind) ? null : openNow(r);
       const m = L.marker([r.la, r.lo], { icon: pin(r, open) }).addTo(st.layer);
       m.bindPopup(`<b>${esc(r.n)}</b><br>${badge(r)}<br><small>${esc(r.a)}</small><div class="mrow">${telA(r.t)}${wayA(r)}</div>`, { maxWidth: 260, autoPanPadding: [16, 16] });
       const li = document.createElement('li');
@@ -74,15 +83,16 @@
     const say = $('#msay'); say.textContent = `${KIND[st.kind].icon} ${KIND[st.kind].name} 찾는 중…`;
     try{
       const q = `lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`;
-      $('#mopen').hidden = st.kind === 'care';
-      const r = await fetch(st.kind === 'care' ? `/api/care?${q}` : `/api/near?kind=${st.kind}&${q}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
+      $('#mopen').hidden = NOHOURS(st.kind);
+      const r = await fetch(NOHOURS(st.kind) ? `/api/${st.kind}?${q}` : `/api/near?kind=${st.kind}&${q}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
       const j = await r.json();
       if (my !== seq || kind !== st.kind) return;
       if (j.needKey){ say.textContent = '🛠 지도 준비 중이에요. 공공데이터 연결이 끝나면 바로 보여요.'; st.rows = []; draw(); return; }
       if (!j.ok) throw new Error(j.detail || j.error || 'error');
       st.rows = j.rows || [];
       const openCnt = st.rows.filter(x => openNow(x)).length;
-      say.textContent = st.kind === 'care' ? `🤝 ${j.sido || ''} 육아 지원 시설 ${st.rows.length}곳 (가까운 순)` + (j.more ? ' · 위치를 찾는 중이라 일부만 보여요. 잠시 뒤 다시 눌러 주세요' : '')
+      say.textContent = st.kind === 'play' ? `🛝 가까운 키즈카페·공공 놀이시설 ${st.rows.length}곳 (가까운 순)`
+        : st.kind === 'care' ? `🤝 ${j.sido || ''} 육아 지원 시설 ${st.rows.length}곳 (가까운 순)` + (j.more ? ' · 위치를 찾는 중이라 일부만 보여요. 잠시 뒤 다시 눌러 주세요' : '')
         : st.kind === 'pharm' ? `💊 가까운 약국 ${st.rows.length}곳 · 지금 영업 중 ${openCnt}곳` : `🏥 가까운 소아청소년과 ${st.rows.length}곳 · 지금 진료 중 ${openCnt}곳`;
       if (j.hoursErr) say.textContent += ` · 진료시간을 아직 못 받았어요 (${String(j.hoursErr).slice(0, 60)})`;
       draw();
