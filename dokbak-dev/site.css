@@ -306,3 +306,4 @@ footer p{font-size:14px;color:var(--soft)}
 .card h3{font-size:15.5px;line-height:1.35}
 .card p{font-size:13px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cards{gap:6px}
+.prose a.pr,.prose a.pr h3,.prose a.card,.prose a.card h3,.pr h3,.card h3{color:var(--ink)}
