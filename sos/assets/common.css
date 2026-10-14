@@ -1257,3 +1257,5 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 /* 🤝 홈 슬로건: 서로의 육아 존중 */
 .slogan{margin:-4px 0 12px;text-align:center;font-size:14.5px;line-height:1.5;color:var(--muted);letter-spacing:-.2px}
 .slogan b{color:var(--fg)}
+.slogan{font-size:12px;margin:-10px 0 -12px;letter-spacing:-.3px;line-height:1.4}
+.slogan{margin:-2px 0 -12px}
