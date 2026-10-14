@@ -87,6 +87,7 @@
       // 원인을 짧게 같이 보여줘요 (예: SERVICE_KEY_IS_NOT_REGISTERED_ERROR = 공공데이터 키가 아직 등록 중)
       const why = String(e && (e.name === 'TimeoutError' || e.name === 'AbortError') ? 'timeout' : (e && e.message) || '').slice(0, 80);
       say.textContent = '⚠️ 정보를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.' + (why ? ` (${why})` : '');
+      st.rows = []; st.layer.clearLayers(); $('#mlist').innerHTML = '';   // 이전 목록이 남아 헷갈리지 않게 비워요
     }
   }
 
