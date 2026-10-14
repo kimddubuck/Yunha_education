@@ -3,31 +3,31 @@
 <head>
 <meta charset="utf-8"><meta name="color-scheme" content="dark">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>익명 제안함 · 공동육아 SOS</title>
+<title>익명게시판 · 공동육아 SOS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610141039">
+<link rel="manifest" href="manifest.webmanifest?v=202610141041">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610141039">
-<script src="assets/gate.js?v=202610141039"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610141041">
+<script src="assets/gate.js?v=202610141041"></script>
 </head>
 <body>
 <div class="wrap single">
   <nav class="site-nav" id="siteNav" data-page="idea" aria-label="메뉴"></nav>
   <main>
     <section class="sec idea-sec">
-      <h2>💡 익명 제안함</h2>
-      <p class="hint idea-note"><b>닉네임 없이 익명으로</b> 올라가요. <span class="nw">🙈 <b>방장도 누가 썼는지 몰라요.</b></span><br><span class="nw">얼굴 붉힐 걱정 없이,</span> <span class="nw">마음 편하게 이야기해 주세요 🙂</span><br><span class="nw">👥 우리 방만 봐요</span> · <span class="nw">🗑 <b>30일 뒤</b> 자동 삭제</span></p>
-      <button type="button" class="btn primary block" id="ideaOpen">✏️ 제안 쓰기</button>
+      <h2>🙈 익명게시판</h2>
+      <p class="hint idea-note"><b>닉네임 없이 익명으로</b> 올라가요. <span class="nw">🤫 <b>방장도 누가 썼는지 몰라요.</b></span><br><span class="nw">얼굴 붉힐 걱정 없이,</span> <span class="nw">육아 고민·하소연·제안 뭐든</span> <span class="nw">마음 편하게 이야기해 주세요 🙂</span><br><span class="nw">👥 우리 방만 봐요</span> · <span class="nw">🗑 <b>30일 뒤</b> 자동 삭제</span></p>
+      <button type="button" class="btn primary block" id="ideaOpen">✏️ 글 쓰기</button>
       <form class="idea-form" id="ideaForm" hidden>
-        <input type="text" id="ideaTitle" maxlength="40" placeholder="제목 (예: 모임 시간을 오전으로 해 보면 어때요?)" aria-label="제목">
-        <textarea id="ideaBody" maxlength="1000" rows="5" placeholder="하고 싶은 말을 편하게 적어 주세요. 이름·연락처 같은 개인정보는 빼 주세요." aria-label="내용"></textarea>
+        <input type="text" id="ideaTitle" maxlength="40" placeholder="제목 (예: 요즘 밤잠 어떻게 재우세요?)" aria-label="제목">
+        <textarea id="ideaBody" maxlength="1000" rows="5" placeholder="고민·하소연·제안, 뭐든 자유롭게 적어 주세요. 이름·연락처 같은 개인정보는 빼 주세요." aria-label="내용"></textarea>
         <div class="idea-row"><span class="hint" id="ideaCount">0 / 1000</span><button type="button" class="btn" id="ideaCancel">취소</button><button type="submit" class="btn primary" id="ideaSend">익명으로 올리기</button></div>
       </form>
       <ul class="idea-list" id="ideaList"><li class="hint">불러오는 중…</li></ul>
@@ -40,8 +40,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610141039"></script>
-<script src="assets/push.js?v=202610141039"></script>
-<script src="assets/idea.js?v=202610141039"></script>
+<script src="assets/common.js?v=202610141041"></script>
+<script src="assets/push.js?v=202610141041"></script>
+<script src="assets/idea.js?v=202610141041"></script>
 </body>
 </html>

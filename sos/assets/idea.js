@@ -1,4 +1,4 @@
-/* 💡 익명 제안함 — 우리 방 사람만 보는 익명 게시판 (제목·내용·댓글 모두 익명)
+/* 🙈 익명게시판 — 우리 방 사람만 보는 익명 게시판 (제목·내용·댓글 모두 익명)
    저장: rooms/{방 열쇠}/ideas/{id} {t, b, kh, createdAt, expireAt}, 댓글은 그 아래 comments {b, kh, createdAt, expireAt}
    닉네임·로그인 번호(uid)는 저장하지 않아요. 내 글인지는 이 휴대폰에만 있는 비밀값(k)으로만 알아요 (서버에는 지문 kh 만).
    지우기: 쓴 휴대폰(비밀값 확인) 또는 방장. 30일 뒤 자동 삭제. */
@@ -24,7 +24,7 @@ function renderIdeas(){
   const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('input').value} : null;
   ul.querySelectorAll('[data-idea] input').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
   const list = idea.items.filter(x => !x.deleted);
-  if(!list.length){ ul.innerHTML = '<li class="hint idea-empty">아직 제안이 없어요. 첫 제안을 남겨 보세요 💡</li>'; return; }
+  if(!list.length){ ul.innerHTML = '<li class="hint idea-empty">아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂</li>'; return; }
   ul.innerHTML = '';
   list.forEach(x => {
     const li = document.createElement('li'); li.className = 'idea-card'; li.dataset.id = x.id;
@@ -53,7 +53,7 @@ function renderIdeas(){
       f.innerHTML = `<input type="text" maxlength="300" placeholder="익명으로 댓글 달기" aria-label="익명 댓글"><button class="btn" type="submit">달기</button>`;
       box.append(cl, f); li.appendChild(box);
       if(mine || ME.owner){ const d = document.createElement('button'); d.type = 'button'; d.className = 'idea-del'; d.dataset.del = x.id;
-        d.textContent = mine ? '🗑 내 제안 지우기' : '🗑 방장 권한으로 지우기'; li.appendChild(d); }
+        d.textContent = mine ? '🗑 내 글 지우기' : '🗑 방장 권한으로 지우기'; li.appendChild(d); }
     } else {
       const more = document.createElement('button'); more.type = 'button'; more.className = 'idea-more'; more.dataset.toggle = x.id; more.textContent = '💬 펼쳐서 댓글 보기';
       li.appendChild(more);
@@ -89,13 +89,13 @@ async function removeDoc(ref, path){
   $i('#ideaCancel').addEventListener('click', () => { form.hidden = true; $i('#ideaOpen').hidden = false; });
   body.addEventListener('input', () => { $i('#ideaCount').textContent = `${body.value.length} / 1000`; });
   sosReady().then(ok => {
-    if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">제안함을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
+    if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
     idea.col = roomRef().collection('ideas');
     idea.col.orderBy('createdAt', 'desc').limit(100).onSnapshot(q => {
       const now = Date.now();
       idea.items = q.docs.map(d => ({id: d.id, ...d.data()})).filter(x => !x.expireAt || x.expireAt.toMillis() > now);
       renderIdeas();
-    }, () => { $i('#ideaList').innerHTML = '<li class="hint">💡 제안함을 준비하고 있어요. 잠시 뒤 다시 열어 주세요.</li>'; });
+    }, () => { $i('#ideaList').innerHTML = '<li class="hint">🙈 익명게시판을 준비하고 있어요. 잠시 뒤 다시 열어 주세요.</li>'; });
     document.addEventListener('sos:owner', renderIdeas);
   });
   form.addEventListener('submit', async e => {
@@ -110,7 +110,7 @@ async function removeDoc(ref, path){
         expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + IDEA_DAYS * 864e5)});
       title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000';
       form.hidden = true; $i('#ideaOpen').hidden = false;
-      if(typeof pushToast === 'function') pushToast('💡 익명으로 올렸어요');
+      if(typeof pushToast === 'function') pushToast('🙈 익명으로 올렸어요');
     }catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); else alert('올리지 못했어요. 잠시 뒤 다시 해 주세요.'); }
     btn.disabled = false; btn.textContent = '익명으로 올리기';
   });
@@ -118,7 +118,7 @@ async function removeDoc(ref, path){
     const tg = e.target.closest('[data-toggle]');
     if(tg){ const id = tg.dataset.toggle; if(idea.open.has(id)) idea.open.delete(id); else { idea.open.add(id); watchCmts(id); } renderIdeas(); return; }
     const del = e.target.closest('[data-del]');
-    if(del){ if(!confirm('이 제안을 지울까요? 댓글도 함께 안 보이게 돼요.')) return; del.disabled = true;
+    if(del){ if(!confirm('이 글을 지울까요? 댓글도 함께 안 보이게 돼요.')) return; del.disabled = true;
       try{ await removeDoc(idea.col.doc(del.dataset.del), ipath(del.dataset.del)); }catch(err){ del.disabled = false; if(typeof sosTrouble === 'function') sosTrouble(err); } return; }
     const cd = e.target.closest('[data-cdel]');
     if(cd){ if(!confirm('이 댓글을 지울까요?')) return; cd.disabled = true;

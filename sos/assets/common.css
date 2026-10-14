@@ -1269,7 +1269,7 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .slogan{margin-top:-12px;letter-spacing:.3px}
 @media (max-width:340px){.slogan{letter-spacing:-.3px;font-size:11.5px}}
 .slogan{margin-top:-4px}
-/* 💡 익명 제안함 */
+/* 🙈 익명게시판 */
 .idea-sec h2{margin:0 0 6px}
 .idea-note{margin:0 0 12px;line-height:1.7}
 .idea-form{display:flex;flex-direction:column;gap:8px;margin-top:4px}

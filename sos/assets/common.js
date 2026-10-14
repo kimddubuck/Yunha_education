@@ -83,7 +83,7 @@ function dayKind(ymd){ const [y,m,d] = ymd.split('-').map(Number), w = new Date(
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
-const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단'],['idea.html','idea','💡','제안'],['terms.html','safety','📜','이용약관']];
+const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단'],['idea.html','idea','🙈','익명게시판'],['terms.html','safety','📜','이용약관']];
 (function renderNav(){
   const nav = document.getElementById('siteNav'); if(!nav) return;
   const cur = nav.dataset.page;
@@ -759,7 +759,7 @@ async function cleanupExpired(){
   const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
   await Promise.all(sos.docs.map(d => del(d.ref)));
   const meals = await r.collection('meals').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 🍚 1달 지난 식단 사진
-  const ideas = await r.collection('ideas').where('expireAt', '<', now).limit(50).get().catch(() => ({docs: []}));   // 💡 30일 지난 익명 제안
+  const ideas = await r.collection('ideas').where('expireAt', '<', now).limit(50).get().catch(() => ({docs: []}));   // 🙈 30일 지난 익명게시판 글
   for(const d of ideas.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); }
   for(const d of meals.docs){   // 사진 댓글도 함께 (댓글은 사진과 같은 날 지워져요)
     const cs = await d.ref.collection('comments').get().catch(() => ({docs: []}));
