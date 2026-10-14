@@ -74,18 +74,31 @@ function watchDay(){
 /* 사진 올리기 창: 미리보기 · 한 줄 메모 · 아기 개월수(기억해 둬요) */
 function askUpload(slot, img){
   const label = (MEAL_SLOTS.find(s => s[0] === slot) || ['', ''])[1];
-  let mo = ''; try{ mo = localStorage.getItem('sosMealMo') || ''; }catch(e){}
+  let birth = ''; try{ birth = localStorage.getItem('sosBabyBirth') || ''; }catch(e){}   // 'YYYY-MM' 한 번 정하면 계속 써요
+  const [by, bm] = birth ? birth.split('-').map(Number) : [0, 0], thisY = new Date().getFullYear();
+  const yOpts = Array.from({length: 7}, (_, i) => thisY - i).map(y => `<option value="${y}"${y === by ? ' selected' : ''}>${y}년</option>`).join('');
+  const mOpts = Array.from({length: 12}, (_, i) => i + 1).map(m => `<option value="${m}"${m === bm ? ' selected' : ''}>${m}월생</option>`).join('');
   const box = sosInfo({icon: '', title: `${dayLabel(meal.date)} ${label}`, body: `
     <img class="meal-prev" src="${img}" alt="올릴 사진 미리보기">
     <p class="hint meal-size">${Math.round(img.length * 0.75 / 1024)}KB로 줄였어요</p>
     <input class="meal-in" id="mealMemo" maxlength="40" placeholder="메모 (선택) 예: 소고기죽">
-    <label class="meal-mo">👶 아기 <select id="mealMo"><option value="">개월수 (선택)</option>${Array.from({length: 49}, (_, i) => `<option value="${i}"${String(i) === mo ? ' selected' : ''}>${i}개월</option>`).join('')}</select></label>
+    <div class="meal-mo">👶 <select id="mealBy"><option value="">생년 (선택)</option>${yOpts}</select><select id="mealBm"><option value="">월</option>${mOpts}</select></div>
+    <p class="hint meal-age" id="mealAge"></p>
     <p class="hint meal-rule">📷 <b>음식만</b> 나오게 찍어 주세요 <span class="nw">(아이 얼굴·집 안 X)</span><br><span class="nw">👥 우리 방만 봐요</span> · <span class="nw">🗑 1달 뒤 자동 삭제</span></p>
     <button type="button" class="btn primary block" id="mealSend">올리기</button>`});
+  const ageOf = () => {
+    const y = +box.querySelector('#mealBy').value, m = +box.querySelector('#mealBm').value;
+    if(!y || !m) return null;
+    const [dy, dm] = meal.date.split('-').map(Number), mo = (dy - y) * 12 + (dm - m);
+    return mo >= 0 && mo <= 72 ? mo : null;
+  };
+  const showAge = () => { const a = ageOf(); box.querySelector("#mealAge").innerHTML = a == null ? '한 번 정하면 다음부터 자동으로 들어가요' : `→ ${dayLabel(meal.date)} 기준 <b>${a}개월</b> · 다음부터 자동`; };
+  box.querySelectorAll('#mealBy,#mealBm').forEach(el => el.addEventListener('change', showAge)); showAge();
   box.querySelector('#mealSend').addEventListener('click', async e => {
     const b = e.currentTarget; if(b.disabled) return; b.disabled = true; b.textContent = '올리는 중…';
-    const memo = box.querySelector('#mealMemo').value.trim().slice(0, 40), moV = box.querySelector('#mealMo').value;
-    try{ localStorage.setItem('sosMealMo', moV); }catch(err){}
+    const memo = box.querySelector('#mealMemo').value.trim().slice(0, 40), age = ageOf();
+    const yv = box.querySelector('#mealBy').value, mv = box.querySelector('#mealBm').value;
+    try{ if(yv && mv) localStorage.setItem('sosBabyBirth', `${yv}-${String(mv).padStart(2, '0')}`); }catch(err){}
     try{
       if(!(await sosReady())) throw new Error('offline');
       const ref = roomRef().collection('meals').doc();
@@ -93,7 +106,7 @@ function askUpload(slot, img){
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + MEAL_DAYS * 864e5)};
       if(memo) data.memo = memo;
-      if(moV !== '') data.mo = Number(moV);
+      if(age != null) data.mo = age;   // 생년월로 계산한 그날 개월수
       await ref.set(data);
       rememberMine(ref.id);
       box.remove();

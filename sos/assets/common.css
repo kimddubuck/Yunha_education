@@ -1219,3 +1219,6 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .meal-card{aspect-ratio:auto}
 .meal-add{aspect-ratio:auto;min-height:100%}
 .nw{white-space:nowrap}
+.meal-mo select{min-width:0}
+.meal-mo #mealBy{flex:1.2}.meal-mo #mealBm{flex:1}
+.meal-age{margin:-2px 0 8px;font-size:12.5px;text-align:left}
