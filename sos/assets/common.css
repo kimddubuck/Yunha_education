@@ -1240,3 +1240,6 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .meal-card figcaption span{color:rgba(255,255,255,.85)}
 .meal-del{top:4px;right:4px;width:24px;height:24px;line-height:24px;font-size:12px}
 .meal-row > .meal-add{aspect-ratio:1/1;min-height:0;border-radius:4px;font-size:24px}
+/* 식단 아이콘: 밥 먹는 아기 */
+.ti-img{width:1.15em;height:1.15em;vertical-align:-.2em}
+.meal-ic{width:1.35em;height:1.35em;vertical-align:-.3em}
