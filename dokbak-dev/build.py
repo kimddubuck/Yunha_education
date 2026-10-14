@@ -242,6 +242,14 @@ draw();
 <h2>📚 연구에서 확인된 놀이 패턴 {sum(1 for k in PR if PR_SRC[k])}가지</h2>
 <p class="src" style="margin:0 0 8px">영국 Athey(1990)의 놀이 도식 연구, Piaget의 대상영속성, 미국소아과학회 보고서, Sandseter의 위험한 놀이 연구에서 가져왔어요. 우리말 이름은 우리가 붙였어요.</p>
 <div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{PR_SRC[k]} · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items() if PR_SRC[k])}</div>
+<div class="box"><h2>👤 이름 풀이: 이 사람들은 누구예요?</h2><ul>
+<li><b>Athey (크리스 애시)</b> 영국 유아교육 연구자. 런던 프뢰벨 교육원에서 1970년대에 아이들을 몇 년간 관찰해 "놀이 도식"을 정리했고 1990년 책으로 냈어요.</li>
+<li><b>Piaget (장 피아제, 1896~1980)</b> 스위스 심리학자. 아이의 생각이 단계적으로 자란다는 인지발달 이론을 세운, 아동심리학의 기본이 되는 사람이에요.</li>
+<li><b>Parten (밀드레드 파튼)</b> 미국 사회학자. 1930년대 미네소타 대학에서 유치원 아이들의 노는 모습을 관찰해 "같이 노는 단계"를 나눴어요.</li>
+<li><b>AAP (미국소아과학회)</b> 미국 소아과 의사들의 학회. 2018년 보고서 대표 저자는 하버드 의대 소아과 의사 마이클 요그먼이에요.</li>
+<li><b>Sandseter (산세테르) & Kennair (케나이르)</b> 노르웨이 유아교육·진화심리학 교수. 아이들이 일부러 찾는 "살짝 무서운 놀이"를 연구했어요.</li>
+<li><b>Zosh (조시) 외 · LEGO 재단</b> 미국 발달심리학자들(펜실베이니아 주립대·템플대·델라웨어대)이 레고 그룹이 세운 재단의 지원으로 쓴 보고서예요.</li></ul>
+<p style="margin-top:8px"><a class="btn ghost" href="research.html">연구마다 자세히 보기</a></p></div>
 <h2>🧪 놀이 만들기용 분류 {sum(1 for k in PR if not PR_SRC[k])}가지 (연구 근거 없음)</h2>
 <p class="src" style="margin:0 0 8px">연구에서 가져온 게 아니에요. 집 물건으로 새 놀이를 만들 때 쓰려고 우리가 묶은 분류라서, 발달 근거로 읽지 말아 주세요.</p>
 <div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{NOSRC} · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items() if not PR_SRC[k])}</div>
@@ -357,7 +365,8 @@ segs(); render();
   rs = json.load(open(os.path.join(DEV, 'research.json'), encoding='utf-8'))
   def ritem(it):
     name = f'<a href="{e(it["url"])}" rel="noopener">{e(it["name"])}</a>' if it['url'] else e(it['name'])
-    return f'<div class="box ref"><h3>{name}</h3><p class="who">{e(it["who"])}</p><p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p></div>'
+    ppl = f'<p class="ppl">👤 <b>누구예요?</b> {e(it["people"])}</p>' if it.get('people') else ''
+    return f'<div class="box ref"><h3>{name}</h3><p class="who">{e(it["who"])}</p>{ppl}<p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p></div>'
   groups = ''.join(f'<h2>{e(g["title"])}</h2>' + ''.join(ritem(it) for it in g['items']) for g in rs['groups'])
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › <a href="principles.html">놀이 원리</a> › 참고한 연구</p><section class="blk prose" style="padding-top:12px">
 <h1>📚 놀이에 대한 연구와 자료</h1><p>{e(rs["intro"])}</p>
