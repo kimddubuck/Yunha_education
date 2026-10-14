@@ -12,6 +12,14 @@ const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '☀️ 점심'], ['d', '🌙 �
 const MEAL_DAYS = 7;           // 1주일치만 보고 1주일 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
 const MY_MEALS = 'sosMyMeals'; // 내가 올린 사진 위치 (탈퇴·방 빼기 때 지우려고 기억)
 const meal = { date: todayStr(), docs: [], unsub: null, onlyMine: false, broken: false };
+// 끼니 접기: 제목을 누르면 사진 줄을 접었다 폈다 해요 (이 휴대폰에 기억)
+const MEAL_FOLD = 'sosMealFold';
+const mealFold = (() => { try{ return new Set(JSON.parse(localStorage.getItem(MEAL_FOLD) || '[]')); }catch(e){ return new Set(); } })();
+function toggleFold(slot){
+  if(mealFold.has(slot)) mealFold.delete(slot); else mealFold.add(slot);
+  try{ localStorage.setItem(MEAL_FOLD, JSON.stringify([...mealFold])); }catch(e){}
+  renderMeal();
+}
 const $m = s => document.querySelector(s);
 
 function addDays(ymd, n){ const [y, m, d] = ymd.split('-').map(Number), t = new Date(y, m - 1, d + n); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; }
@@ -61,7 +69,9 @@ function renderMeal(){
       : `<span class="meal-add2"><button type="button" class="meal-add1" data-add="${slot}">📷 찍기</button><button type="button" class="meal-add1 alb" data-alb="${slot}">🖼 앨범</button></span>`;
     const alb = canAdd && ds.length ? `<button type="button" class="meal-alb" data-alb="${slot}">🖼 앨범에서</button>` : '';
     const body = ds.length ? `<div class="meal-row">${add}${cards}</div>` : (add || '<p class="hint meal-none">아직 사진이 없어요</p>');
-    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${MEAL_IC[slot]}<span>${label.slice(3)}</span>${ds.length ? ` <small>${ds.length}장</small>` : ''}${alb}</h3>${body}</section>`;
+    if(!ds.length) return `<section class="meal-slot empty"><h3>${MEAL_IC[slot]}<span>${label.slice(3)}</span></h3>${body}</section>`;
+    const shut = mealFold.has(slot);
+    return `<section class="meal-slot${shut ? ' shut' : ''}"><h3><button type="button" class="meal-fold" data-fold="${slot}" aria-expanded="${!shut}">${MEAL_IC[slot]}<span>${label.slice(3)}</span> <small>${ds.length}장</small><i aria-hidden="true">${shut ? '▸ 펼치기' : '▾'}</i></button>${shut ? '' : alb}</h3>${shut ? '' : body}</section>`;
   }).join('');
 }
 
@@ -224,6 +234,7 @@ async function mealGoPhoto(){
   if(!$m('#mealSlots')) return;
   const file = $m('#mealFile'), album = $m('#mealAlbum'); let pendingSlot = 'l';
   $m('#mealSlots').addEventListener('click', e => {
+    const fd = e.target.closest('[data-fold]'); if(fd){ toggleFold(fd.dataset.fold); return; }
     const del = e.target.closest('.meal-del'); if(del){ e.stopPropagation(); delPhoto(del.dataset.del); return; }
     const add = e.target.closest('[data-add]'); if(add){ pendingSlot = add.dataset.add; file.value = ''; file.click(); return; }
     const al = e.target.closest('[data-alb]'); if(al){ pendingSlot = al.dataset.alb; album.value = ''; album.click(); return; }

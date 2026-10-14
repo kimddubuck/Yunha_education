@@ -1285,3 +1285,10 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .idea-more{margin-top:8px;border:0;background:none;padding:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
 .idea-cmts{margin-top:10px}
 .idea-del{margin-top:10px;border:0;background:none;padding:0;color:#e5534b;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.meal-fold{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:inherit;font:inherit;padding:2px 0;cursor:pointer;text-align:left}
+.meal-fold i{font-style:normal;font-size:12px;font-weight:600;color:var(--muted);margin-left:6px}
+.meal-slot.shut{margin-bottom:10px}
+.meal-slot.shut h3{margin:0}
+/* 줄 자동 맞춤: 가운데 정렬 안내문은 줄 길이를 고르게, 왼쪽 정렬 글은 마지막 줄에 한 글자만 남지 않게 */
+p,li,dd,figcaption,label,small{text-wrap:pretty}
+:is(.tiny-note,.sos-hint,.meal-wait,.meal-meta,.meal-memo,.meal-size,.slogan,.picked-when,.pop p,.pop h2,.pop h3,.safe-hero p,.push-toast,.empty,.idea-empty){text-wrap:balance}
