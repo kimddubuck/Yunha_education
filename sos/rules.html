@@ -12,10 +12,11 @@ textarea{width:100%;box-sizing:border-box;height:45vh;margin-top:12px;font:12px/
 #ok{text-align:center;font-weight:700;min-height:1.4em;margin-top:8px}
 </style></head><body>
 <h1>🔐 Firestore 보안 규칙 v14 (운영자용)</h1>
-<p>① 아래 칸에 <b>내 번호</b>(admin.html 에 보이는 번호)를 넣고<br>② 버튼을 누르면 규칙 <b>전체(331줄)</b>가 복사돼요.<br>③ Firebase 콘솔 규칙 칸을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>마지막 줄이 <code>}</code> 로 끝나는지 확인해 주세요.</p>
+<p>① 아래 칸에 <b>내 번호</b>(admin.html 에 보이는 번호)를 넣고<br>② 버튼을 누르면 규칙 <b>전체(331줄)</b>가 복사돼요.<br>③ Firebase 콘솔 규칙 칸을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>⚠️ 콘솔에서 따옴표를 직접 고치지 마세요 (따옴표가 두 개로 들어가 오류가 나요).<br>마지막 줄이 <code>}</code> 로 끝나는지 확인해 주세요.</p>
 <label for="uid">내 번호 (운영자)</label>
 <input id="uid" autocomplete="off" spellcheck="false" placeholder="예: AbCd1234...">
 <button id="copy">📋 규칙 전체 복사하기</button>
+<p id="line28" style="font:12px/1.5 monospace;word-break:break-all;background:#1f2326;border-radius:10px;padding:8px;margin:10px 0 0"></p>
 <p id="ok" aria-live="polite"></p>
 <textarea id="t" readonly>rules_version = &#x27;2&#x27;;
 service cloud.firestore {
@@ -352,11 +353,14 @@ service cloud.firestore {
 <script>
 const T = document.getElementById('t'), RAW = T.value, U = document.getElementById('uid');
 try{ U.value = localStorage.getItem('sosAdminUid') || ''; }catch(e){}
-const fill = () => { const u = U.value.trim(); T.value = u ? RAW.replace("'여기에_내_번호'", "'" + u.replace(/[^A-Za-z0-9]/g, '') + "'") : RAW; };
+const clean = () => U.value.replace(/[^A-Za-z0-9]/g, '');
+const fill = () => { const u = clean(); T.value = u ? RAW.replace("'여기에_내_번호'", "'" + u + "'") : RAW;
+  const l = T.value.split('\n').find(x => x.includes('request.auth.uid in [')) || '';
+  document.getElementById('line28').textContent = '28번째 줄 미리보기 → ' + l.trim(); };
 U.addEventListener('input', () => { fill(); try{ localStorage.setItem('sosAdminUid', U.value.trim()); }catch(e){} }); fill();
 document.getElementById('copy').addEventListener('click', async () => {
   const ok = document.getElementById('ok');
-  if(!U.value.trim()){ ok.textContent = '⚠️ 먼저 내 번호를 넣어 주세요'; U.focus(); return; }
+  if(!/^[A-Za-z0-9]{20,40}$/.test(clean())){ ok.textContent = '⚠️ 내 번호를 확인해 주세요 (영문·숫자 20~40자, admin.html 의 번호를 그대로 복사)'; U.focus(); return; }
   fill();
   try{ await navigator.clipboard.writeText(T.value); }
   catch(e){ T.focus(); T.select(); document.execCommand('copy'); }
