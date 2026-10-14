@@ -353,3 +353,11 @@ footer p{font-size:14px;color:var(--soft)}
 .bd-badge.wide b{font-size:12.5px;white-space:nowrap}
 .lead2{font-size:17px;font-weight:600}
 .post h2{font-size:19px;margin:22px 0 6px}
+/* 게시글: 3줄 요약 · 정리하면 */
+.sum3,.endbox{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:14px 0 6px}
+.sum3-h{font-weight:800;font-size:15px;margin:0 0 6px}
+.sum3 ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.sum3 li{font-size:15.5px;line-height:1.55}
+.endbox{margin-top:22px;border-left:4px solid var(--ink)}
+.endbox p:last-child{margin:0}
+.bd-badge.wide{width:84px;min-width:0;padding:0 4px}.bd-badge.wide b{font-size:12px;letter-spacing:-.3px}

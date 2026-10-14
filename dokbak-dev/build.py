@@ -109,6 +109,11 @@ def okurl(u):
 def link(u, t):
   return f'<a href="{e(u)}" rel="noopener">{e(t)}</a>' if okurl(u) else e(t)
 
+def sum3box(x):
+  return ('<div class="sum3"><p class="sum3-h">📌 3줄 요약</p><ol>' + ''.join(f'<li>{e(t)}</li>' for t in x['sum3']) + '</ol></div>') if x.get('sum3') else ''
+def endbox(x):
+  return f'<div class="endbox"><p class="sum3-h">✅ 정리하면</p><p>{e(x["end"])}</p></div>' if x.get('end') else ''
+
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
@@ -404,7 +409,7 @@ segs(); render();
       when = f' · {e(it["yr"])}' if it['yr'] else ''
       body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../{list_href}">{list_name}</a></p>
 <article class="blk prose post" style="padding-top:12px"><h1>{e(it["t"])}</h1><p class="post-meta">{e(it["src"])}{when} · {e(it["kind"])}</p>
-<p class="lead2">{e(it["sum"])}</p>{''.join(f'<h2>{e(x["h"])}</h2><p>{e(x["p"])}</p>' for x in it.get('secs', []))}<p class="use">👉 {e(it["use"])}</p>{ppl}
+{sum3box(it)}{'' if it.get('sum3') else f'<p class="lead2">{e(it["sum"])}</p>'}{''.join(f'<h2>{e(x["h"])}</h2><p>{e(x["p"])}</p>' for x in it.get('secs', []))}{'' if it.get('sum3') else f'<p class="use">👉 {e(it["use"])}</p>'}{endbox(it)}{ppl}
 <h2>📚 출처</h2><div class="box ref"><p class="who" style="margin:0">📄 원문: {orig}<br>{e(it["who"])}</p></div>{''.join(f'<div class="box ref"><p class="who" style="margin:0">📄 {link(x.get("url"), x["name"])}<br>{e(x["who"])}</p><p class="ppl">👤 <b>누가 쓴 자료예요?</b> {e(x["people"])}</p></div>' for x in it.get('src2', []))}
 <p class="src">{e(rs["checked"])}</p>{pager}</article></div>'''
       files[f'{folder}/{it["id"]}.html'] = page(f'{it["t"]} · {list_name} | 오늘도 독박육아', it['sum'][:150], body, f'{folder}/{it["id"]}.html', list_href)
@@ -452,7 +457,7 @@ segs(); render();
       meta = ' · '.join(v for v in [c['cat'], c.get('age', ''), c.get('basis') or ((c['yr'][:4] + '년 기준') if c.get('yr') else '')] if v)
       body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../{slug}.html">{bname}</a> › {e(c["cat"])}</p>
 <article class="blk prose post" style="padding-top:12px"><h1>{e(c["t"])}</h1><p class="post-meta">{e(meta)}</p>
-<p class="lead2">{e(c["lead"])}</p>{secs}{note}
+<p class="lead2">{e(c["lead"])}</p>{sum3box(c)}{secs}{note}{endbox(c)}
 <h2>📚 출처</h2>{srcs}
 <p class="src">자료에 적힌 내용만 옮겼어요. 아이마다 다를 수 있으니 걱정되면 소아과 의사와 상의하세요.</p>{pager}</article></div>'''
       files[f'{slug}/{c["id"]}.html'] = page(f'{c["t"]} · {bname} | 오늘도 독박육아', c['lead'][:150], body, f'{slug}/{c["id"]}.html', f'{slug}.html')
