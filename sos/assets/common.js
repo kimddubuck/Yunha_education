@@ -12,11 +12,11 @@ const BOOK_DAYS = 7;
 // 오늘에서 n일 뒤 날짜를 YYYY-MM-DD로 (기기 시간 기준)
 function dayStr(n){ const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 const lastBookDay = () => dayStr(BOOK_DAYS - 1);
-// 지난 모임·댓글·SOS 숫자는 그 날짜가 지나고 7일 뒤 지워져요: 저장할 때 지울 날짜(expireAt)를 적어 두고,
+// 지난 모임·댓글·SOS 숫자는 그 날짜가 지나고 3일 뒤 지워져요: 저장할 때 지울 날짜(expireAt)를 적어 두고,
 // 방 사람이 앱을 열 때 지울 날짜가 지난 기록을 앱이 정리해요 (무료 요금제라 서버 TTL 대신, cleanupExpired)
-const KEEP_DAYS = 7;
+const KEEP_DAYS = 3;   // v16: 3일치만 보고, 날짜가 지나고 3일 뒤 지워요
 // 자동 삭제 스위치: 서버 규칙(expireAt 허용 + 지난 기록 삭제 허용)을 게시한 뒤에 true 로 켜요.
-// (꺼져 있으면 expireAt 을 보내지 않고, '7일 뒤 자동 삭제' 안내 문구도 숨겨요 — 사실이 아닌 안내를 보이지 않게)
+// (꺼져 있으면 expireAt 을 보내지 않고, '3일 뒤 자동 삭제' 안내 문구도 숨겨요 — 사실이 아닌 안내를 보이지 않게)
 const TTL_READY = true;   // 2026-10-04 서버 규칙 게시·확인 후 켬
 const ttl = ymd => TTL_READY ? {expireAt: expireAt(ymd)} : {};
 document.addEventListener('DOMContentLoaded', () => { if(!TTL_READY) document.querySelectorAll('.ttl-only').forEach(el => { el.hidden = true; }); });
@@ -155,26 +155,36 @@ async function shrinkPhoto(file, opt){
 const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u; return /^https?:\/\/[^\s]+$/i.test(u) && u.length <= 300 ? u : null; };
 function attachUI(form, opts){
   // form 안에 .attach-row 를 만들어요: [📷 찍기] [🖼 앨범] [🔗 링크 칸] + 사진 미리보기. 값은 attach.get() 으로 읽어요
-  const row = document.createElement('div'); row.className = 'attach-row';
+  // compact: 댓글 칸처럼 좁은 곳 — 📎 버튼을 누르면 줄이 펼쳐져요. onChange: 다시 그릴 때 잃지 않게 값을 돌려줘요
+  opts = opts || {};
+  const row = document.createElement('div'); row.className = 'attach-row' + (opts.compact ? ' compact' : '');
   row.innerHTML = `<button type="button" class="meal-add1 at-cam">📷 사진</button><button type="button" class="meal-add1 at-alb">🖼 앨범</button>
     <input type="url" class="at-url" maxlength="300" placeholder="🔗 링크 (선택)" aria-label="링크" inputmode="url">
     <input type="file" class="at-file" accept="image/*" capture="environment" hidden><input type="file" class="at-file2" accept="image/*" hidden>
     <div class="at-prev" hidden><img alt="첨부 사진 미리보기"><button type="button" class="meal-del at-x" aria-label="사진 빼기">✕</button><small class="hint"></small></div>`;
-  (opts && opts.before ? opts.before : form).insertAdjacentElement(opts && opts.before ? 'beforebegin' : 'beforeend', row);
+  (opts.before ? opts.before : form).insertAdjacentElement(opts.before ? 'beforebegin' : 'beforeend', row);
   const st = { img: '' }, prev = row.querySelector('.at-prev'), img = prev.querySelector('img'), note = prev.querySelector('small');
+  let tog = null;
+  if(opts.compact){
+    row.hidden = true;
+    tog = document.createElement('button'); tog.type = 'button'; tog.className = 'at-tog'; tog.textContent = '📎'; tog.setAttribute('aria-label', '사진·링크 붙이기'); tog.setAttribute('aria-pressed', 'false');
+    const sub = form.querySelector('button[type="submit"]'); if(sub) sub.insertAdjacentElement('beforebegin', tog); else form.appendChild(tog);
+    tog.addEventListener('click', () => { row.hidden = !row.hidden; if(!row.hidden) row.querySelector('.at-url').focus(); });
+  }
+  const changed = () => { if(tog) tog.setAttribute('aria-pressed', String(!!(st.img || row.querySelector('.at-url').value.trim()))); if(opts.onChange) opts.onChange({img: st.img, url: row.querySelector('.at-url').value}); };
   const pick = async inp => { const f = inp.files && inp.files[0]; if(!f) return;
     try{ st.img = await shrinkPhoto(f, {max: 320, limit: 28000}); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요 · 미리보기 크기로만 보여요`; prev.hidden = false; }
-    catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; };
+    catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; changed(); };
   const f1 = row.querySelector('.at-file'), f2 = row.querySelector('.at-file2');
   row.querySelector('.at-cam').addEventListener('click', () => f1.click()); row.querySelector('.at-alb').addEventListener('click', () => f2.click());
   f1.addEventListener('change', () => pick(f1)); f2.addEventListener('change', () => pick(f2));
-  row.querySelector('.at-x').addEventListener('click', () => { st.img = ''; img.removeAttribute('src'); prev.hidden = true; });
-  const url = row.querySelector('.at-url');
+  row.querySelector('.at-x').addEventListener('click', () => { st.img = ''; img.removeAttribute('src'); prev.hidden = true; changed(); });
+  const url = row.querySelector('.at-url'); url.addEventListener('input', changed);
   return {
     get(){ const u = safeUrl(url.value); if(u === null){ url.focus(); throw Object.assign(new Error('bad url'), {code: 'bad-url'}); }
       return {...(st.img ? {img: st.img} : {}), ...(u ? {url: u} : {})}; },
-    clear(){ st.img = ''; img.removeAttribute('src'); prev.hidden = true; url.value = ''; },
-    set(d){ st.img = d && d.img || ''; if(st.img){ img.src = st.img; prev.hidden = false; } else prev.hidden = true; url.value = d && d.url || ''; }
+    clear(){ st.img = ''; img.removeAttribute('src'); prev.hidden = true; url.value = ''; if(tog) row.hidden = true; changed(); },
+    set(d){ st.img = d && d.img || ''; if(st.img){ img.src = st.img; prev.hidden = false; } else prev.hidden = true; url.value = d && d.url || ''; if(tog && (st.img || url.value)) row.hidden = false; changed(); }
   };
 }
 // 글 아래에 붙은 사진·링크를 그려요 (글은 textContent 로만, 링크는 검사한 주소만)
@@ -851,7 +861,7 @@ async function cleanupExpired(){
   const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
   await Promise.all(sos.docs.map(d => del(d.ref)));
   const meals = await r.collection('meals').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 🍚 1달 지난 식단 사진
-  const ideas = await r.collection('ideas').where('expireAt', '<', now).limit(50).get().catch(() => ({docs: []}));   // 🙈 30일 지난 익명게시판 글
+  const ideas = await r.collection('ideas').where('expireAt', '<', now).limit(50).get().catch(() => ({docs: []}));   // 🙈 3일 지난 익명게시판 글
   for(const d of ideas.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); }
   for(const d of meals.docs){   // 사진 댓글도 함께 (댓글은 사진과 같은 날 지워져요)
     const cs = await d.ref.collection('comments').get().catch(() => ({docs: []}));

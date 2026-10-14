@@ -5,8 +5,8 @@ rules_version = '2';
 // 구조: rooms/{방 열쇠}                — 방 이름
 //       rooms/{방 열쇠}/opinions/{id}  — 모임 (topic 'meet'), 아래 comments 에 댓글
 //       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20)
-//       rooms/{방 열쇠}/meals/{id}     — 🍚 식단 사진 (v13, 1주일 뒤 자동 삭제), 아래 comments 에 댓글·답글 (v14)
-//       rooms/{방 열쇠}/ideas/{id}     — 💡 익명 제안함 (v15, 30일 뒤 자동 삭제), 아래 comments 에 익명 댓글
+//       rooms/{방 열쇠}/meals/{id}     — 🍚 식단 사진 (v13, 3일 뒤 자동 삭제), 아래 comments 에 댓글·답글 (v14)
+//       rooms/{방 열쇠}/ideas/{id}     — 💡 익명 제안함 (v15, 3일 뒤 자동 삭제), 아래 comments 에 익명 댓글
 //       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이 (지금은 앱에서 안 씀)
 //       rooms/{방 열쇠}/members/{uid}  — 방 멤버 닉네임·마지막 접속 날 (uid = 휴대폰마다 생기는 익명 로그인 번호)
 //       rooms/{방 열쇠}/private/owner  — 예전 방의 방장 확인용 (아무도 읽을 수 없음)
@@ -15,7 +15,7 @@ rules_version = '2';
 // 멤버가 되려면 방 열쇠를 알아야 해요 (= 초대 링크 + 비밀번호). 방장(ou)은 멤버를 내보낼 수 있어요(on = false).
 // 방 열쇠 = SHA-256("방코드:비밀번호"). 비밀번호를 모르면 열쇠를 모르고, 방 목록 보기(list)는 막혀 있어서
 // 다른 방을 찾을 수 없어요. 방 안의 규칙은 동래아 공동육아 사이트와 같아요.
-// 지난 모임·댓글·SOS는 expireAt(날짜+7일)이 지나면, 방 사람이 앱을 열 때 앱이 지워요 (무료 요금제라 TTL 정책 대신).
+// 지난 모임·댓글·SOS는 expireAt(날짜+3일)이 지나면, 방 사람이 앱을 열 때 앱이 지워요 (무료 요금제라 TTL 정책 대신).
 // 방은 방장이 앱에서 지울 수 있어요: '지워짐' 표시 → 방 안의 기록을 실제로 삭제. 지워진 방은 아무도 읽거나 쓸 수 없어요.
 // 문제 글은 Firebase 콘솔에서 직접 지워요.
 service cloud.firestore {
@@ -271,7 +271,8 @@ service cloud.firestore {
           allow read: if canUse(roomKey) || isAdmin();
           allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && (isOwner(roomKey) || meetGone()));
           allow create: if canUse(roomKey)
-            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt', 'to'])
+            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt', 'to', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.n == myNick(roomKey)
             && expireOk(request.resource.data)
@@ -286,7 +287,8 @@ service cloud.firestore {
           allow update: if canUse(roomKey)
             && resource.data.get('kh', '') != ''
             && resource.data.get('deleted', false) == false
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.k is string
             && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
             && request.resource.data.kh is string
@@ -378,7 +380,8 @@ service cloud.firestore {
             || (canUse(roomKey) && (isOwner(roomKey) || get(photo()).data.uid == request.auth.uid));
           allow create: if canUse(roomKey)
             && exists(photo())
-            && request.resource.data.keys().hasOnly(['text', 'uid', 'n', 'to', 'createdAt', 'expireAt'])
+            && request.resource.data.keys().hasOnly(['text', 'uid', 'n', 'to', 'createdAt', 'expireAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.n == myNick(roomKey)
             && request.resource.data.text is string
@@ -420,7 +423,8 @@ service cloud.firestore {
           allow read: if canUse(roomKey);
           allow create: if canUse(roomKey)
             && exists(post()) && get(post()).data.get('deleted', false) == false
-            && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt'])
+            && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 300
             && request.resource.data.kh is string && request.resource.data.kh.size() == 64
             && request.resource.data.createdAt == request.time
@@ -428,10 +432,11 @@ service cloud.firestore {
             && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
           allow update: if request.auth != null
             && resource.data.get('deleted', false) == false
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k', 'img', 'url'])
             && request.resource.data.k is string
             && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
-            && request.resource.data.b == '' && request.resource.data.deleted == true;
+            && request.resource.data.b == '' && request.resource.data.deleted == true
+            && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == '';
           allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) && isOwner(roomKey));
         }
       }

@@ -367,7 +367,7 @@ document.addEventListener('click', e => { if(e.target.closest('#gate .g-apptip')
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-demo')){ e.preventDefault(); e.stopPropagation(); sosBetaInfo(); } }, true);
 document.addEventListener('click', e => { if(e.target.closest('#gate .g-share')){ e.preventDefault(); e.stopPropagation(); sosShareApp(); } }, true);
 // 🗑 내 정보 모두 지우기: 모든 방에서 내 멤버(닉네임) 빼기 → 알림 끄기 → 익명 로그인 지우기 → 이 휴대폰 기록 지우기
-//  SOS 요청·참석 표시는 날짜가 지나고 7일 뒤 자동으로 지워져요
+//  SOS 요청·참석 표시는 날짜가 지나고 3일 뒤 자동으로 지워져요
 //  내보내진 방은 문서를 지울 수 없어서(다시 들어오는 걸 막으려고 남겨 둬요) 닉네임만 '(정보 지움)'으로 바꿔요
 // 📈 가입 기록 (운영 현황 '누적 가입 · 지운 것 포함' 그래프용): 방마다 한 번, 들어온 시각(joinedAt)을 그대로 남겨요.
 //    멤버 기록은 나가거나 방이 지워지면 없어지지만 이 기록은 남아요. 닉네임 없이 시각만 있어요
@@ -408,7 +408,7 @@ async function sosDeleteMe(){
   if(user && db) await sosDeleteMyMeals(db, user.uid, [...sosRooms(), ...sosKicked()]);   // 🍚 내가 올린 식단 사진 모두
   // 🙈 익명게시판 글·댓글: 이 휴대폰에 기억한 비밀값으로 '지움' 표시 (서버에는 누가 썼는지 없어서 이 방법뿐이에요)
   if(db){ let ik = {}; try{ ik = JSON.parse(localStorage.getItem('sosIdeaKeys') || '{}'); }catch(e){}
-    await Promise.all(Object.entries(ik).map(([path, k]) => db.doc(path).update({...(path.includes('/comments/') ? {} : {t: '', img: '', url: ''}), b: '', deleted: true, k}).catch(() => {}))); }
+    await Promise.all(Object.entries(ik).map(([path, k]) => db.doc(path).update({...(path.includes('/comments/') ? {} : {t: ''}), b: '', img: '', url: '', deleted: true, k}).catch(() => {}))); }
   if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
     const me = db.collection('rooms').doc(r.key).collection('members').doc(user.uid);
     try{ await me.delete(); }

@@ -139,6 +139,7 @@ function meetCard(o, past){
       const ct = document.createElement('span'); ct.textContent = c.text;
       const cw = document.createElement('small'); cw.textContent = fmtTime(c.createdAt) + (c.editedAt ? ' · 수정됨' : '');
       ci.append(ct, cw);
+      if(typeof attachView === 'function'){ const av = attachView(c); if(av) ci.appendChild(av); }
       if((c.uid && c.uid !== ME.uid) || ME.owner){   // 남의 댓글 신고 · 방장 지우기
         const m = document.createElement('span'); m.className = 'comment-mod';
         if(ME.owner && meet.reports[c.id]) m.insertAdjacentHTML('beforeend', `<span class="mod-flag">🚩 ${meet.reports[c.id]}</span>`);
@@ -164,6 +165,7 @@ function meetCard(o, past){
       chip.innerHTML = `<span></span><button type="button" data-reply-cancel="${o.id}">취소</button>`;
       chip.querySelector('span').textContent = `↪ ${rt.n || '이웃'}님에게 답글`; box.append(ul, chip, f); }
     else box.append(ul, f);
+    if(typeof attachUI === 'function'){ meet.atDrafts = meet.atDrafts || {}; f._at = attachUI(f, {compact: true, onChange: v => { meet.atDrafts[o.id] = v; }}); f._at.set(meet.atDrafts[o.id] || {}); }
     body.appendChild(box);
   }
   return li;
@@ -335,7 +337,7 @@ $('#meetList').addEventListener('click', async e => {
   if(cd){
     if(!confirm('이 댓글을 지울까요?')) return;
     cd.disabled = true;
-    try{ await changeComment(cd.dataset.meet, cd.dataset.cdel, {text:'', deleted:true}); }
+    try{ await changeComment(cd.dataset.meet, cd.dataset.cdel, {text:'', deleted:true, img:'', url:''}); }
     catch(err){ cd.disabled = false; cd.textContent = '⚠️ 다시'; }
     return;
   }
@@ -375,20 +377,22 @@ $('#meetList').addEventListener('submit', async e => {
   e.preventDefault();
   const id = f.dataset.comment, text = f.querySelector('input').value.trim();
   if(!text || !meet.col) return;
+  let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ meetSay('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
   meet.drafts[id] = ''; f.querySelector('input').value = '';   // 먼저 비우고, 실패하면 되돌려요
+  if(meet.atDrafts) delete meet.atDrafts[id]; if(f._at) f._at.clear();
   try{
     // 화면에 댓글이 먼저 뜨기 전에 열쇠부터 저장해 둬요 (그래야 바로 수정·삭제 버튼이 보여요)
     const k = newSecret(), ref = meet.col.doc(id).collection('comments').doc();
     setComKey(ref.id, k);
     const m = meet.items.find(o => o.id === id);   // 댓글도 모임과 같은 날 함께 지워져요
     const rt = meet.replyTo[id];
-    await ref.set({text, kh: await sha256hex(k), uid: ME.uid, n: ME.nick, ...(rt ? {to: rt.root} : {}), ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    await ref.set({text, ...at, kh: await sha256hex(k), uid: ME.uid, n: ME.nick, ...(rt ? {to: rt.root} : {}), ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
     delete meet.replyTo[id];
     // 🔔 알림: 답글이면 그 댓글 쓴 사람에게, 그리고 모임 주최자에게 (주최자가 답글 받는 사람이면 한 번만)
     if(rt && typeof pushMeetReply === 'function') pushMeetReply(m || {id}, rt.uid, text);
     if(m && !isMine(m) && !(rt && m.uid && rt.uid === m.uid) && typeof pushMeetComment === 'function') pushMeetComment(m, text);
   }catch(err){
-    meet.drafts[id] = text; renderMeets();
+    meet.drafts[id] = text; if(meet.atDrafts) meet.atDrafts[id] = at; renderMeets();
     meetSay('댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
   }
 });

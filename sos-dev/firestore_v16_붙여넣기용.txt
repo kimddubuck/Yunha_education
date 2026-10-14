@@ -202,7 +202,8 @@ service cloud.firestore {
           allow read: if canUse(roomKey) || isAdmin();
           allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && (isOwner(roomKey) || meetGone()));
           allow create: if canUse(roomKey)
-            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt', 'to'])
+            && request.resource.data.keys().hasOnly(['text', 'createdAt', 'kh', 'uid', 'n', 'expireAt', 'to', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.n == myNick(roomKey)
             && expireOk(request.resource.data)
@@ -217,7 +218,8 @@ service cloud.firestore {
           allow update: if canUse(roomKey)
             && resource.data.get('kh', '') != ''
             && resource.data.get('deleted', false) == false
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.k is string
             && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
             && request.resource.data.kh is string
@@ -298,7 +300,8 @@ service cloud.firestore {
             || (canUse(roomKey) && (isOwner(roomKey) || get(photo()).data.uid == request.auth.uid));
           allow create: if canUse(roomKey)
             && exists(photo())
-            && request.resource.data.keys().hasOnly(['text', 'uid', 'n', 'to', 'createdAt', 'expireAt'])
+            && request.resource.data.keys().hasOnly(['text', 'uid', 'n', 'to', 'createdAt', 'expireAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.n == myNick(roomKey)
             && request.resource.data.text is string
@@ -336,7 +339,8 @@ service cloud.firestore {
           allow read: if canUse(roomKey);
           allow create: if canUse(roomKey)
             && exists(post()) && get(post()).data.get('deleted', false) == false
-            && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt'])
+            && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 300
             && request.resource.data.kh is string && request.resource.data.kh.size() == 64
             && request.resource.data.createdAt == request.time
@@ -344,10 +348,11 @@ service cloud.firestore {
             && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
           allow update: if request.auth != null
             && resource.data.get('deleted', false) == false
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k', 'img', 'url'])
             && request.resource.data.k is string
             && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
-            && request.resource.data.b == '' && request.resource.data.deleted == true;
+            && request.resource.data.b == '' && request.resource.data.deleted == true
+            && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == '';
           allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) && isOwner(roomKey));
         }
       }

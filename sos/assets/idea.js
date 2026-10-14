@@ -1,12 +1,12 @@
 /* 🙈 익명게시판 — 우리 방 사람만 보는 익명 게시판 (제목·내용·댓글 모두 익명)
    저장: rooms/{방 열쇠}/ideas/{id} {t, b, kh, createdAt, expireAt}, 댓글은 그 아래 comments {b, kh, createdAt, expireAt}
    닉네임·로그인 번호(uid)는 저장하지 않아요. 내 글인지는 이 휴대폰에만 있는 비밀값(k)으로만 알아요 (서버에는 지문 kh 만).
-   지우기: 쓴 휴대폰(비밀값 확인) 또는 방장. 30일 뒤 자동 삭제. */
+   지우기: 쓴 휴대폰(비밀값 확인) 또는 방장. 3일 뒤 자동 삭제. */
 const $i = s => document.querySelector(s);
-const IDEA_DAYS = 30, IDEA_KEYS = 'sosIdeaKeys';
+const IDEA_DAYS = 3, IDEA_KEYS = 'sosIdeaKeys';   // v16: 3일 뒤 자동 삭제
 const idea = { col: null, items: [], open: new Set(), cmts: {}, subs: {}, drafts: {}, cat: 'talk', filter: '' };
 // 말머리 (서버 규칙 v16의 목록과 같아야 해요)
-const IDEA_CATS = [['talk', '💬 고민·하소연'], ['idea', '💡 제안'], ['buy', '🛒 공구'], ['place', '📍 아이랑 갈 곳'], ['club', '📚 모임 제안'], ['etc', '🙂 기타']];
+const IDEA_CATS = [['talk', '💬 고민·하소연'], ['idea', '💡 꿀팁·제안'], ['buy', '🛒 공구'], ['place', '📍 갈 곳·숙소·맛집'], ['club', '📚 모임 제안'], ['etc', '🙂 기타']];
 const catName = c => (IDEA_CATS.find(x => x[0] === c) || ['', ''])[1];
 
 const ideaKeys = () => { try{ return JSON.parse(localStorage.getItem(IDEA_KEYS) || '{}'); }catch(e){ return {}; } };
@@ -49,6 +49,7 @@ function renderIdeas(){
         const ct = document.createElement('span'); ct.textContent = c.b;
         const cw = document.createElement('small'); cw.textContent = ago(c.createdAt);
         ci.append(cn, ct, cw);
+        if(typeof attachView === 'function'){ const av = attachView(c); if(av) ci.appendChild(av); }
         const own = !!keys[ipath(x.id, c.id)];
         if(own || ME.owner){ const a = document.createElement('span'); a.className = 'comment-act';
           a.innerHTML = `<button type="button" data-cdel="${c.id}" data-idea="${x.id}">${own ? '삭제' : '삭제(방장)'}</button>`; ci.appendChild(a); }
@@ -58,6 +59,7 @@ function renderIdeas(){
       const f = document.createElement('form'); f.className = 'comment-form'; f.dataset.idea = x.id;
       f.innerHTML = `<input type="text" maxlength="300" placeholder="익명으로 댓글 달기" aria-label="익명 댓글"><button class="btn" type="submit">달기</button>`;
       box.append(cl, f); li.appendChild(box);
+      if(typeof attachUI === 'function'){ idea.atDrafts = idea.atDrafts || {}; f._at = attachUI(f, {compact: true, onChange: v => { idea.atDrafts[x.id] = v; }}); f._at.set(idea.atDrafts[x.id] || {}); }
       if(mine || ME.owner){ const d = document.createElement('button'); d.type = 'button'; d.className = 'idea-del'; d.dataset.del = x.id;
         d.textContent = mine ? '🗑 내 글 지우기' : '🗑 방장 권한으로 지우기'; li.appendChild(d); }
     } else {
@@ -81,7 +83,7 @@ function watchCmts(id){
 async function removeDoc(ref, path){
   const k = ideaKeys()[path];
   const isPost = !path.includes('/comments/');
-  if(k){ await ref.update({...(isPost ? {t: '', img: '', url: ''} : {}), b: '', deleted: true, k}); return; }
+  if(k){ await ref.update({...(isPost ? {t: ''} : {}), b: '', img: '', url: '', deleted: true, k}); return; }
   if(ME.owner){
     if(isPost){ const cs = await ref.collection('comments').get(); await Promise.all(cs.docs.map(c => c.ref.delete().catch(() => {}))); }
     await ref.delete();
@@ -97,7 +99,7 @@ async function removeDoc(ref, path){
   if(typeof attachUI === 'function') idea.attach = attachUI(form, {before: $i('#ideaAttach')});
   const cats = $i('#ideaCats'); cats.innerHTML = IDEA_CATS.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="${k === idea.cat}">${n}</button>`).join('');
   cats.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; idea.cat = b.dataset.cat; cats.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    title.placeholder = {talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', idea: '제목 (예: 모임 시간을 오전으로 바꿔 볼까요?)', buy: '제목 (예: 기저귀 공구 같이 하실 분?)', place: '제목 (예: 동래 실내놀이터 다녀왔어요)', club: '제목 (예: 육아책 독서모임 해요)', etc: '제목'}[idea.cat] || '제목'; });
+    title.placeholder = {talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', idea: '제목 (예: 밤잠 꿀팁 하나 공유해요 / 모임 시간 바꿔 볼까요?)', buy: '제목 (예: 기저귀 공구 같이 하실 분?)', place: '제목 (예: 아이랑 가기 좋은 숙소·맛집 추천해요)', club: '제목 (예: 육아책 독서모임 해요)', etc: '제목'}[idea.cat] || '제목'; });
   $i('#ideaFilter').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if(!b) return; idea.filter = b.dataset.filter; renderIdeas(); });
   sosReady().then(ok => {
     if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
@@ -140,11 +142,12 @@ async function removeDoc(ref, path){
     const f = e.target.closest('[data-idea]'); if(!f) return; e.preventDefault();
     const inp = f.querySelector('input'), b = inp.value.trim(); if(!b) return;
     const x = idea.items.find(y => y.id === f.dataset.idea); if(!x) return;
-    inp.value = ''; delete idea.drafts[x.id];
+    let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+    inp.value = ''; delete idea.drafts[x.id]; if(idea.atDrafts) delete idea.atDrafts[x.id]; if(f._at) f._at.clear();
     try{
       const ref = idea.col.doc(x.id).collection('comments').doc(), k = secret();
       setIdeaKey(ipath(x.id, ref.id), k);
-      await ref.set({b, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(), expireAt: x.expireAt});
-    }catch(err){ inp.value = b; if(typeof sosTrouble === 'function') sosTrouble(err); }
+      await ref.set({b, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(), expireAt: x.expireAt});
+    }catch(err){ inp.value = b; if(idea.atDrafts) idea.atDrafts[x.id] = at; if(typeof sosTrouble === 'function') sosTrouble(err); }
   });
 })();
