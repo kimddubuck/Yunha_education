@@ -321,3 +321,6 @@ footer p{font-size:14px;color:var(--soft)}
 .srcd p{margin:8px 0 0;font-size:14px;line-height:1.6;background:var(--teal-tint);border-radius:10px;padding:10px 12px;text-wrap:pretty}
 .sh .srcd{margin:10px 0 0}
 .srcd summary small{font-size:12px;color:var(--soft);font-weight:400;margin-left:2px}.box .srcd{border-top:0;padding-top:0;margin-top:0;border-bottom:1px dashed var(--line);padding:8px 0}.box .srcd:last-of-type{border-bottom:0}
+/* 탭 5개: 좁은 화면에서는 한 줄에 똑같은 너비로 나눠요 */
+@media (max-width:640px){.nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.nav a{padding:6px 0;text-align:center;font-size:13px;letter-spacing:-.4px}}
+@media (max-width:340px){.nav{gap:3px}.nav a{font-size:12px;letter-spacing:-.6px}}
