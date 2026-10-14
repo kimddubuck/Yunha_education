@@ -84,7 +84,7 @@
     try{
       const q = `lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`;
       $('#mopen').hidden = NOHOURS(st.kind);
-      const r = await fetch(NOHOURS(st.kind) ? `/api/${st.kind}?${q}` : `/api/near?kind=${st.kind}&${q}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
+      const r = await fetch(NOHOURS(st.kind) ? `/api/${st.kind}?${q}` : `/api/near?v=2&kind=${st.kind}&${q}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
       const j = await r.json();
       if (my !== seq || kind !== st.kind) return;
       if (j.needKey){ say.textContent = '🛠 지도 준비 중이에요. 공공데이터 연결이 끝나면 바로 보여요.'; st.rows = []; draw(); return; }

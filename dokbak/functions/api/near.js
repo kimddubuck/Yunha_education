@@ -21,7 +21,7 @@ export async function onRequestGet({ request, env, waitUntil }) {
 
   // 약 100m 단위로 반올림한 좌표로 캐시 (정확한 위치를 남기지 않아요)
   const la = lat.toFixed(3), lo = lon.toFixed(3);
-  const cacheKey = new Request(`${url.origin}/api/near?kind=${kind}&lat=${la}&lon=${lo}`);
+  const cacheKey = new Request(`${url.origin}/api/near?v=2&kind=${kind}&lat=${la}&lon=${lo}`);   // v: 저장 형식이 바뀌면 올려서 예전 결과를 버려요
   const cache = caches.default;
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
