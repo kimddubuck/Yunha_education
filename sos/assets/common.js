@@ -133,18 +133,19 @@ async function navBadges(){
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { navBadges(); }); else navBadges();
 
 /* 사진 줄이기: 긴 쪽 360px · WebP(안 되면 JPEG) · 60KB 넘으면 더 줄여요 */
-async function shrinkPhoto(file){
+async function shrinkPhoto(file, opt){
+  opt = opt || {};   // {max: 긴 쪽 px, limit: 글자 수 상한} — 첨부 사진은 더 작게 (약 20KB)
   let src = null;
   try{ src = await createImageBitmap(file); }
   catch(e){ src = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(file); }); }
-  let max = 360, q = 0.6;
+  let max = opt.max || 360, q = 0.6; const limit = opt.limit || 60000;
   for(let k = 0; k < 6; k++){
     const w = src.width, h = src.height, s = Math.min(1, max / Math.max(w, h));
     const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
     c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
     let u = c.toDataURL('image/webp', q);
     if(!u.startsWith('data:image/webp')) u = c.toDataURL('image/jpeg', q);   // 아이폰 사파리 일부는 WebP로 못 만들어요
-    if(u.length <= 60000) return u;
+    if(u.length <= limit) return u;
     max = Math.round(max * 0.85); q = Math.max(0.4, q - 0.08);
   }
   throw new Error('too-big');
@@ -162,7 +163,7 @@ function attachUI(form, opts){
   (opts && opts.before ? opts.before : form).insertAdjacentElement(opts && opts.before ? 'beforebegin' : 'beforeend', row);
   const st = { img: '' }, prev = row.querySelector('.at-prev'), img = prev.querySelector('img'), note = prev.querySelector('small');
   const pick = async inp => { const f = inp.files && inp.files[0]; if(!f) return;
-    try{ st.img = await shrinkPhoto(f); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요`; prev.hidden = false; }
+    try{ st.img = await shrinkPhoto(f, {max: 320, limit: 28000}); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요 · 미리보기 크기로만 보여요`; prev.hidden = false; }
     catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; };
   const f1 = row.querySelector('.at-file'), f2 = row.querySelector('.at-file2');
   row.querySelector('.at-cam').addEventListener('click', () => f1.click()); row.querySelector('.at-alb').addEventListener('click', () => f2.click());

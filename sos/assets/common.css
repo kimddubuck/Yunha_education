@@ -1306,3 +1306,12 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .attach-link{align-self:flex-start;font-size:13px;color:var(--accent-ink);background:var(--accent-soft);padding:4px 10px;border-radius:999px;text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .attach-big{display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 .attach-big img{max-width:96vw;max-height:90vh;border-radius:12px;background:#000}
+.attach-img{width:96px;height:96px;max-width:96px;max-height:96px;object-fit:cover;border-radius:8px}
+/* 🙈 익명게시판 말머리 */
+.idea-cats{display:flex;flex-wrap:wrap;gap:6px}
+.idea-cats button{border:1px solid var(--line);background:var(--bg);color:var(--muted);font:inherit;font-size:13px;font-weight:600;padding:6px 11px;border-radius:999px;cursor:pointer}
+.idea-cats button[aria-pressed="true"]{background:var(--pick);color:var(--pick-fg);border-color:var(--pick)}
+.idea-filter{margin:0 -16px 10px;padding:0 16px 2px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.idea-filter::-webkit-scrollbar{display:none}
+.idea-filter button{flex:none}
+.idea-cat{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);margin-right:4px;vertical-align:1px}

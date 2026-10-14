@@ -417,8 +417,9 @@ service cloud.firestore {
       match /ideas/{id} {
         allow read: if canUse(roomKey);
         allow create: if canUse(roomKey)
-          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;t&#x27;, &#x27;b&#x27;, &#x27;kh&#x27;, &#x27;createdAt&#x27;, &#x27;expireAt&#x27;, &#x27;img&#x27;, &#x27;url&#x27;])
+          &amp;&amp; request.resource.data.keys().hasOnly([&#x27;t&#x27;, &#x27;b&#x27;, &#x27;kh&#x27;, &#x27;createdAt&#x27;, &#x27;expireAt&#x27;, &#x27;img&#x27;, &#x27;url&#x27;, &#x27;c&#x27;])
           &amp;&amp; attachOk(request.resource.data)
+          &amp;&amp; (!(&#x27;c&#x27; in request.resource.data) || request.resource.data.c in [&#x27;talk&#x27;, &#x27;idea&#x27;, &#x27;buy&#x27;, &#x27;place&#x27;, &#x27;club&#x27;, &#x27;etc&#x27;])
           &amp;&amp; request.resource.data.t is string &amp;&amp; request.resource.data.t.size() &gt; 0 &amp;&amp; request.resource.data.t.size() &lt;= 40
           &amp;&amp; request.resource.data.b is string &amp;&amp; request.resource.data.b.size() &gt; 0 &amp;&amp; request.resource.data.b.size() &lt;= 1000
           &amp;&amp; request.resource.data.kh is string &amp;&amp; request.resource.data.kh.size() == 64

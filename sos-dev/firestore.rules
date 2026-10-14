@@ -397,8 +397,9 @@ service cloud.firestore {
       match /ideas/{id} {
         allow read: if canUse(roomKey);
         allow create: if canUse(roomKey)
-          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt', 'img', 'url'])
+          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt', 'img', 'url', 'c'])
           && attachOk(request.resource.data)
+          && (!('c' in request.resource.data) || request.resource.data.c in ['talk', 'idea', 'buy', 'place', 'club', 'etc'])
           && request.resource.data.t is string && request.resource.data.t.size() > 0 && request.resource.data.t.size() <= 40
           && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 1000
           && request.resource.data.kh is string && request.resource.data.kh.size() == 64
