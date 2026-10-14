@@ -422,3 +422,10 @@ footer p{font-size:14px;color:var(--soft)}
 #map{min-height:380px}
 .mtag.moon{background:#2b2a4a;color:#cfc8ff;border-color:#5a55a0}
 .leaflet-popup-content .mtag.moon{background:#ecebff;color:#3b3680}
+/* 상단 메뉴 버튼 세로 높이 줄이기 */
+.top .wrap{padding-block:7px;row-gap:6px}
+@media (max-width:640px){.nav{gap:4px}.nav a{padding:4px 0;line-height:1.35}}
+@media (max-width:440px){.nav{gap:4px}.nav a{padding:4px 0}}
+.top-sos{padding-block:4px}
+.card .sk{display:block;margin-top:6px;font-size:12px;color:var(--soft)}
+.box.grow{border-color:#bfe3c8;background:color-mix(in srgb,#2f9e55 7%,var(--paper))}

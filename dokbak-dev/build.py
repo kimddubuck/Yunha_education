@@ -179,9 +179,21 @@ def page(title, desc, body, path, active='', extra_head=''):
 
 NEWBOX = '<div class="box newp"><h2>🧪 새로 만든 놀이예요</h2><p>오늘도 독박육아가 <a href="../principles.html">놀이 원리</a>와 집에 있는 생활용품으로 새로 만든 놀이예요. 3세 미만 질식 위험 크기, 끈·자석·비닐, 넘어짐, 물 같은 <a href="../principles.html#safety">안전 원칙</a>으로 하나하나 검토했지만 <b>아직 직접 해 보기 전</b>이에요. 아이마다 다르니 반응을 보며 쉽게·어렵게 조절하고, 늘 옆에서 지켜봐 주세요. 해 보고 다듬으면 이 표시를 떼요.</p></div>'
 
+# 🌱 키우는 힘: 놀이마다 적은 발달 영역. 설명은 '이 놀이에서 아이가 실제로 하는 것' 수준으로만 적어요 (효과를 장담하는 말은 안 써요)
+SKILL = {
+  '오감': ('👀', '보고 듣고 만지고 냄새 맡으며 세상을 알아 가요'),
+  '소근육': ('🤏', '손가락·손목을 써서 집고, 꽂고, 돌려요. 숟가락질·그리기의 바탕이에요'),
+  '대근육': ('🏃', '기고, 걷고, 뛰고, 균형을 잡아요'),
+  '언어': ('💬', '말을 듣고, 따라 하고, 이름을 붙이고, 이야기해요'),
+  '인지': ('🧠', '기억하고, 비교하고, 순서와 원인을 알아 가요'),
+  '사회성': ('🤝', '차례를 지키고, 나누고, 다른 사람 마음을 헤아려요'),
+  '창의': ('🎨', '하나를 다른 것으로 바꾸고, 자기만의 답을 만들어요'),
+  '정서': ('💛', '기분을 알아차리고 말로 하고, 스스로 가라앉혀요'),
+}
+
 def card(p, up):
   return (f'<a class="card" href="{up}plays/{p["id"]}.html"><span class="meta">{age_range(p)} · {PLACE_ICON[p["place"]]} {p["place"]}{" · 👨‍👩‍👧 여럿이" if p["group"] else ""}{" · 🧪 새 놀이" if p["status"] == "후보" else ""}</span>'
-          f'<h3>{e(p["name"])}</h3><p>{e(p["steps"][0])}</p></a>')
+          f'<h3>{e(p["name"])}</h3><p>{e(p["steps"][0])}</p><span class="sk">{" · ".join(SKILL[k][0] + " " + k for k in p["skills"])}</span></a>')
 
 SOS_BRIDGE = f'''<div class="bridge"><p>이 놀이, <b>혼자 하기 버거우면</b>?<br>같은 단지 엄마 아빠와 같이 해요.</p><a class="btn sos" href="{APP}">🆘 이 시간에 SOS 보내기</a></div>'''
 SOS_BAND = f'''<div class="band">
@@ -234,6 +246,7 @@ def build():
   {NEWBOX if p['status'] == '후보' else ''}
   {f'<div class="box safe"><h2>⚠️ 먼저 읽어 주세요</h2><p>{e(p["safety"])}</p></div>' if p['status'] == '후보' and p['safety'] else ''}
   <div class="box why"><h2>💭 아이가 왜 좋아할까?</h2><ul>{why}</ul></div>
+  <div class="box grow"><h2>🌱 이 놀이로 자라는 힘</h2><ul>{''.join(f'<li>{SKILL[k][0]} <b>{k}</b>: {SKILL[k][1]}</li>' for k in p['skills'])}</ul><p class="src" style="margin:8px 0 0">놀이 하나로 한 번에 자라진 않아요. 자주, 짧게, 아이가 즐거울 때 하는 게 제일이에요.</p></div>
   <div class="box"><h2>🧺 준비물</h2><ul>{''.join(f'<li>{e(m)}</li>' for m in p['materials'])}</ul></div>
   {f'<div class="box swap"><h2>🔁 없으면 이걸로</h2><ul>{"".join(f"<li>{e(x)}</li>" for x in p.get("swaps", []))}</ul></div>' if p.get('swaps') else ''}
   <div class="box"><h2>👣 이렇게 해요</h2><ol>{''.join(f'<li>{e(s)}</li>' for s in p['steps'])}</ol></div>
@@ -249,12 +262,13 @@ def build():
       body, f'plays/{p["id"]}.html', 'plays/', f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>\n')
 
   # ── 놀이 찾기 (필터)
-  mini = [{k: p[k] for k in ('id', 'name', 'ageMin', 'ageMax', 'place', 'group', 'principles')} | {'s': p['steps'][0], 'a': age_range(p)} | ({'n': 1} if p['status'] == '후보' else {}) for p in rows]
+  mini = [{k: p[k] for k in ('id', 'name', 'ageMin', 'ageMax', 'place', 'group', 'principles', 'skills')} | {'s': p['steps'][0], 'a': age_range(p)} | ({'n': 1} if p['status'] == '후보' else {}) for p in rows]
   body = f'''<div class="wrap"><section class="blk">
-<div class="sh"><span class="ey">놀이 찾기</span><h1 style="font-size:clamp(26px,5vw,36px)">🔍 우리 아이랑 할 놀이 찾기</h1><p>개월수, 장소, 놀이 원리로 골라 보세요. 모두 집에 있는 물건으로 할 수 있어요.</p></div>
+<div class="sh"><span class="ey">놀이 찾기</span><h1 style="font-size:clamp(26px,5vw,36px)">🔍 우리 아이랑 할 놀이 찾기</h1><p>개월수, 장소, 키우고 싶은 힘으로 골라 보세요. 모두 집에 있는 물건으로 할 수 있어요.</p></div>
 <div class="filters">
   <div class="row"><span>나이</span><div class="seg" data-k="b"><button type="button" data-v="" aria-pressed="true">전체</button>{''.join(f'<button type="button" data-v="{s}">{n.split(" (")[0]}</button>' for s, n, a, b in BANDS)}</div></div>
   <div class="row"><span>장소</span><div class="seg" data-k="p"><button type="button" data-v="" aria-pressed="true">전체</button>{''.join(f'<button type="button" data-v="{k}">{v} {k}</button>' for k, v in PLACE_ICON.items())}</div></div>
+  <div class="row"><span>키우는 힘</span><div class="seg" data-k="s"><button type="button" data-v="" aria-pressed="true">전체</button>{''.join(f'<button type="button" data-v="{k}">{v[0]} {k}</button>' for k, v in SKILL.items())}</div></div>
   <div class="row"><span>원리</span><div class="seg" data-k="r"><button type="button" data-v="" aria-pressed="true">전체</button>{''.join(f'<button type="button" data-v="{k}">{v[0]} {pn(k)}</button>' for k, v in PR.items())}</div></div>
   <div class="row"><span>인원</span><div class="seg" data-k="g"><button type="button" data-v="" aria-pressed="true">상관없음</button><button type="button" data-v="1">👨‍👩‍👧 여럿이 하기 좋은 것</button></div></div>
 </div>
@@ -266,15 +280,16 @@ def build():
 const PLAYS = {json.dumps(mini, ensure_ascii=False)};
 const BANDS = {json.dumps({s: [a, b] for s, n, a, b in BANDS})};
 const ICON = {json.dumps(PLACE_ICON, ensure_ascii=False)};
-const st = {{b: '', p: '', r: '', g: ''}};
+const st = {{b: '', p: '', r: '', g: '', s: ''}};
+const SK = {json.dumps({k: v[0] for k, v in SKILL.items()}, ensure_ascii=False)};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}}[c]));
 try{{ const q = new URLSearchParams(location.search); for(const k in st) if(q.get(k)) st[k] = q.get(k); }}catch(err){{}}
 function draw(){{
   document.querySelectorAll('.filters .seg').forEach(s => s.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === st[s.dataset.k])));
   const [lo, hi] = st.b ? BANDS[st.b] : [0, 999];
-  const list = PLAYS.filter(p => p.ageMin <= hi && p.ageMax >= lo && (!st.p || p.place === st.p) && (!st.r || p.principles.includes(st.r)) && (!st.g || p.group));
+  const list = PLAYS.filter(p => p.ageMin <= hi && p.ageMax >= lo && (!st.p || p.place === st.p) && (!st.r || p.principles.includes(st.r)) && (!st.s || p.skills.includes(st.s)) && (!st.g || p.group));
   document.getElementById('count').textContent = `놀이 ${{list.length}}개`;
-  document.getElementById('list').innerHTML = list.map(p => `<a class="card" href="${{p.id}}.html"><span class="meta">${{p.a}} · ${{ICON[p.place]}} ${{p.place}}${{p.group ? ' · 👨‍👩‍👧 여럿이' : ''}}${{p.n ? ' · 🧪 새 놀이' : ''}}</span><h3>${{esc(p.name)}}</h3><p>${{esc(p.s)}}</p></a>`).join('') || '<p class="none">조건에 맞는 놀이가 아직 없어요. 조건을 하나 풀어 보세요.</p>';
+  document.getElementById('list').innerHTML = list.map(p => `<a class="card" href="${{p.id}}.html"><span class="meta">${{p.a}} · ${{ICON[p.place]}} ${{p.place}}${{p.group ? ' · 👨‍👩‍👧 여럿이' : ''}}${{p.n ? ' · 🧪 새 놀이' : ''}}</span><h3>${{esc(p.name)}}</h3><p>${{esc(p.s)}}</p><span class="sk">${{p.skills.map(k => SK[k] + ' ' + k).join(' · ')}}</span></a>`).join('') || '<p class="none">조건에 맞는 놀이가 아직 없어요. 조건을 하나 풀어 보세요.</p>';
   try{{ const q = new URLSearchParams(); for(const k in st) if(st[k]) q.set(k, st[k]); history.replaceState(null, '', q.toString() ? '?' + q : location.pathname); }}catch(err){{}}
 }}
 document.querySelector('.filters').addEventListener('click', ev => {{ const b = ev.target.closest('button'); if(!b) return; st[b.closest('.seg').dataset.k] = b.dataset.v; draw(); }});
@@ -346,6 +361,8 @@ draw();
 <section class="blk"><div class="wrap">
   <div class="sh"><span class="ey">개월수별 놀이</span><h2>📅 우리 아기 개월수에 맞는 놀이</h2></div>
   <div class="chips grid4">{''.join(f'<a class="chip" href="age/{s}.html">{short(s, n)}</a>' for s, n, a, b in BANDS)}</div>
+  <h2 style="margin-top:18px">🌱 키우고 싶은 힘으로 찾기</h2>
+  <div class="chips grid4">{''.join(f'<a class="chip" href="plays/?s={k}">{v[0]} {k}</a>' for k, v in SKILL.items())}</div>
 </div></section>
 
 <section class="blk"><div class="wrap">
