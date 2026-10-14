@@ -54,6 +54,8 @@ BAND_INTRO = {
   '4y': '친구와 함께하는 놀이가 즐거워지는 시기예요. 팀 놀이와 간단한 실험으로 "왜?"에 답해 주세요.',
   '5y': '스스로 계획하고 만드는 놀이를 좋아해요. 시장 놀이, 이야기 만들기처럼 생각을 말로 나누는 놀이가 좋아요.',
 }
+SHORT = {'2y': '2~3세', '3y': '3~4세', '4y': '4~5세', '5y': '5~7세'}   # 칩·탭용 짧은 이름 (추천기와 같게)
+short = lambda s, n: SHORT.get(s, n.split(' (')[0])
 PLACE_ICON = {'실내': '🏠', '실외': '🌳', '욕실': '🛁', '주방': '🍳'}
 MESS = ['깔끔', '보통', '많이']
 
@@ -204,9 +206,9 @@ draw();
   # ── 개월수별
   for s, n, lo, hi in BANDS:
     lst = [p for p in rows if in_band(p, lo, hi)]
-    tabs = ''.join(f'<a class="chip" href="{t}.html"{PRESSED if t == s else ""}>{m.split(" (")[0]}</a>' for t, m, a, b in BANDS)
+    tabs = ''.join(f'<a class="chip" href="{t}.html"{PRESSED if t == s else ""}>{short(t, m)}</a>' for t, m, a, b in BANDS)
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="./">개월수별</a> › {n}</p>
-<section class="blk" style="padding-top:12px"><div class="chips" style="margin:0 0 18px">{tabs}</div>
+<section class="blk" style="padding-top:12px"><div class="chips grid4" style="margin:0 0 18px">{tabs}</div>
 <div class="sh"><span class="ey">개월수별 놀이</span><h1 style="font-size:clamp(26px,5vw,36px)">📅 {n} 놀이 {len(lst)}가지</h1><p>{BAND_INTRO[s]}</p></div>
 <div class="cards">{''.join(card(p, '../') for p in lst) or '<p class="none">준비 중이에요.</p>'}</div></section>
 <section class="blk">{SOS_BRIDGE}</section></div>'''
@@ -259,7 +261,7 @@ draw();
 
 <section class="blk"><div class="wrap">
   <div class="sh"><span class="ey">개월수별 놀이</span><h2>📅 우리 아기 개월수에 맞는 놀이</h2></div>
-  <div class="chips" style="margin:0">{''.join(f'<a class="chip" href="age/{s}.html">{n.split(" (")[0]}</a>' for s, n, a, b in BANDS)}</div>
+  <div class="chips grid4">{''.join(f'<a class="chip" href="age/{s}.html">{short(s, n)}</a>' for s, n, a, b in BANDS)}</div>
 </div></section>
 
 <section class="blk"><div class="wrap">
