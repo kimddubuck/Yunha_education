@@ -4,7 +4,7 @@
 const MEET_TEMPLATE = '장소: \n놀이: ';
 const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:'', reports:{}, replyTo:{}};   // replyTo: 모임별 '답글 다는 중' {root, uid, n}   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
 
-// '참석' / '미확정' / '불참'은 한 사람(멤버)당 하나. 다시 누르면 취소, 다른 걸 누르면 바꾸기
+// '참석' / '불참'은 한 사람(멤버)당 하나. 다시 누르면 취소, 다른 걸 누르면 바꾸기 (예전 '미확정' 기록은 그대로 보여요). ❤️ 좋아요는 따로
 const myVote = o => ((o.v || {})[ME.uid] || {}).s || null;
 
 function meetInit(){
@@ -93,13 +93,14 @@ function meetCard(o, past){
   const mine = {join: 'joins', maybe: 'maybes', no: 'nos'}[myVote(o)], cnt = meetVotes(o);
   const vbtn = (k, s, label) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'join'; b.dataset.vote = k; b.dataset.id = o.id;
     b.setAttribute('aria-pressed', mine===k); b.textContent = label + ' '; const c = document.createElement('b'); c.textContent = cnt[s].count; b.appendChild(c); return b; };
-  const jb = vbtn('joins', 'join', '🙋 참석'), mb = vbtn('maybes', 'maybe', '🤔 미확정'), nb = vbtn('nos', 'no', '🙅 불참');
+  const jb = vbtn('joins', 'join', '🙋 참석'), nb = vbtn('nos', 'no', '🙅 불참');
+  const lb = likeBtn(o, ME.uid, meet.col.doc(o.id));   // ❤️ 좋아요 (v17)
   const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'join'; cb.dataset.toggle = o.id;
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
   cb.textContent = cs.length ? `💬 댓글 ${cs.length}개 보기` : '💬 댓글 남기기';
   if(meet.open.has(o.id)) cb.textContent = '💬 댓글 접기';
   cb.className = 'join comment-toggle act cmt';
-  row.append(jb, mb, nb); body.append(row);
+  row.append(jb, nb, lb); body.append(row);
   body.append(cb);
   if(isMine(o)){   // ⏰ 연 사람은 끝나는 시간을 정하거나 바꿀 수 있어요
     const t = document.createElement('button'); t.type = 'button'; t.className = 'act edit'; t.dataset.editMeet = o.id;

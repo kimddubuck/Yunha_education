@@ -239,14 +239,33 @@ function tallyHtml(o){
   const v = meetVotes(o);
   return VOTE_KINDS.map(([s, , label]) => `<span>${label} <b>${v[s].count}</b></span>`).join('');
 }
-// 누가 참석·미확정·불참했는지 + 아직 답 안 한 멤버 (팝업)
+// 누가 참석·불참했는지 + 아직 답 안 한 멤버 (팝업). 예전 '미확정'은 기록이 있을 때만 보여요
 async function showVoters(o){
   const v = meetVotes(o), members = await sosMembers();
   const answered = new Set(Object.keys(o.v || {}));
   const chips = list => list.length ? list.map(x => `<span class="who-chip">${esc(x)}</span>`).join('') : '<span class="who-none">없어요</span>';
-  const body = VOTE_KINDS.map(([s, , label]) => `<p class="who-h">${label} ${v[s].count}명</p><div class="who-list">${chips(v[s].names.map(x => x.n))}${v[s].old ? `<span class="who-none">+ 예전 기록 ${v[s].old}명</span>` : ''}</div>`).join('')
+  const body = VOTE_KINDS.filter(([s]) => s !== 'maybe' || v.maybe.count).map(([s, , label]) => `<p class="who-h">${label} ${v[s].count}명</p><div class="who-list">${chips(v[s].names.map(x => x.n))}${v[s].old ? `<span class="who-none">+ 예전 기록 ${v[s].old}명</span>` : ''}</div>`).join('')
     + `<p class="who-h">🤷 아직 답 안 함</p><div class="who-list">${chips(members.filter(m => !answered.has(m.uid)).map(m => m.nick))}</div>`;
   sosInfo({icon: '🙌', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body});
+}
+
+// ❤️ 좋아요 (v17): 글의 lk 지도에 내 칸(key)만 넣고 빼요. 모임·식단은 내 uid, 익명게시판은 글마다 다른 지문
+//    누른 사람 목록은 보여 주지 않고 숫자만 보여요. 글이 지워지면 같이 사라져요
+function likeCount(d){ return Object.keys((d && d.lk) || {}).length; }
+function likeBtn(d, key, ref, opts = {}){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'like' + (opts.cls ? ' ' + opts.cls : '');
+  const paint = () => { const on = !!((d.lk || {})[key]), n = likeCount(d); b.setAttribute('aria-pressed', on);
+    b.innerHTML = `<span class="lk-ic">${on ? '❤️' : '🤍'}</span><b>${n}</b>`; b.setAttribute('aria-label', `${on ? '좋아요 취소' : '좋아요'} (지금 ${n}명)`); };
+  paint();
+  b.addEventListener('click', async () => {
+    if(!ME.uid || !key || b.disabled) return;
+    const on = !!((d.lk || {})[key]); b.disabled = true;
+    d.lk = {...(d.lk || {})}; if(on) delete d.lk[key]; else d.lk[key] = true; paint();   // 먼저 그리고 저장해요
+    try{ await ref.update({['lk.' + key]: on ? firebase.firestore.FieldValue.delete() : true}); }
+    catch(err){ if(on) d.lk[key] = true; else delete d.lk[key]; paint(); sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 좋아요를 저장하지 못했어요'); }
+    b.disabled = false;
+  });
+  return b;
 }
 
 // 홈 화면 설치(웹앱)용 서비스 워커 등록 — 캐시는 하지 않아요

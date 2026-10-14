@@ -4,7 +4,7 @@
    지우기: 쓴 휴대폰(비밀값 확인) 또는 방장. 3일 뒤 자동 삭제. */
 const $i = s => document.querySelector(s);
 const IDEA_DAYS = 3, IDEA_KEYS = 'sosIdeaKeys';   // v16: 3일 뒤 자동 삭제
-const idea = { col: null, items: [], open: new Set(), cmts: {}, subs: {}, drafts: {}, cat: 'talk', filter: '' };
+const idea = {lkey: {},  col: null, items: [], open: new Set(), cmts: {}, subs: {}, drafts: {}, cat: 'talk', filter: '' };
 // 말머리 (서버 규칙 v16의 목록과 같아야 해요)
 const IDEA_CATS = [['talk', '💬 고민·하소연'], ['idea', '💡 꿀팁·제안'], ['buy', '🛒 공구'], ['place', '📍 갈 곳·숙소·맛집'], ['club', '📚 모임 제안'], ['etc', '🙂 기타']];
 const catName = c => (IDEA_CATS.find(x => x[0] === c) || ['', ''])[1];
@@ -39,6 +39,12 @@ function renderIdeas(){
     li.querySelector('.idea-t').appendChild(document.createTextNode(x.t));
     const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
     if(opened && typeof attachView === 'function'){ const av = attachView(x); if(av) b.insertAdjacentElement('afterend', av); }
+    // ❤️ 좋아요 (v17): 누가 눌렀는지 안 남게 글마다 다른 지문(내 번호+글 번호)을 칸 이름으로 써요
+    const foot = document.createElement('div'); foot.className = 'idea-foot';
+    if(!opened){ const more = document.createElement('button'); more.type = 'button'; more.className = 'idea-more'; more.dataset.toggle = x.id; more.textContent = '💬 펼쳐서 댓글 보기'; foot.appendChild(more); }
+    foot.appendChild(likeBtn(x, idea.lkey[x.id] || '', idea.col.doc(x.id)));
+    if(!idea.lkey[x.id] && ME.uid) sha(ME.uid + '/' + x.id).then(h => { idea.lkey[x.id] = h; const lb = li.querySelector('.idea-foot .like'); if(lb) lb.replaceWith(likeBtn(x, h, idea.col.doc(x.id))); });
+    li.appendChild(foot);
     if(opened){
       const cs = (idea.cmts[x.id] || []).filter(c => !c.deleted);
       const box = document.createElement('div'); box.className = 'comments idea-cmts';
@@ -62,9 +68,6 @@ function renderIdeas(){
       if(typeof attachUI === 'function'){ idea.atDrafts = idea.atDrafts || {}; f._at = attachUI(f, {compact: true, onChange: v => { idea.atDrafts[x.id] = v; }}); f._at.set(idea.atDrafts[x.id] || {}); }
       if(mine || ME.owner){ const d = document.createElement('button'); d.type = 'button'; d.className = 'idea-del'; d.dataset.del = x.id;
         d.textContent = mine ? '🗑 내 글 지우기' : '🗑 방장 권한으로 지우기'; li.appendChild(d); }
-    } else {
-      const more = document.createElement('button'); more.type = 'button'; more.className = 'idea-more'; more.dataset.toggle = x.id; more.textContent = '💬 펼쳐서 댓글 보기';
-      li.appendChild(more);
     }
     ul.appendChild(li);
   });

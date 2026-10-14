@@ -257,7 +257,7 @@ a.tally{text-decoration:none}
 .ops > li.meet-card{flex-direction:row;gap:14px}
 .date-badge small{color:inherit;opacity:.85}
 main a:not(.btn):not(.menu-card):not(.tally):not(.anon-box):not(.sos-btn){color:var(--accent-ink)}
-.vote-row{grid-template-columns:repeat(3,1fr)}
+.vote-row{grid-template-columns:1fr 1fr auto}
 .vote-row .join{padding:8px 4px;white-space:nowrap}
 .vote-row .join[data-vote="maybes"][aria-pressed="false"]:disabled{opacity:.45}
 .comment-toggle{align-self:flex-start;border:0;background:none;padding:2px 0;color:var(--muted);font-weight:600}
@@ -1320,3 +1320,20 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .at-tog{flex:none;border:1px solid var(--line);background:var(--bg);color:var(--muted);font:inherit;font-size:15px;padding:0 9px;border-radius:999px;cursor:pointer;min-height:36px}
 .at-tog[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent-ink)}
 .comment-list .attach-view{margin:4px 0 2px}
+
+/* ❤️ 좋아요 (v17): 숫자만 보이는 하트 버튼. 모임은 불참 옆, 식단은 메모 옆, 익명게시판은 카드 오른쪽 아래 */
+.like{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:700;color:var(--fg);cursor:pointer;line-height:1.2;white-space:nowrap}
+.like b{font-weight:800;font-variant-numeric:tabular-nums}
+.like .lk-ic{font-size:15px;line-height:1}
+.like[aria-pressed="true"]{border-color:#e5484d;color:#e5484d;background:color-mix(in srgb,#e5484d 12%,var(--bg))}
+.like:disabled{opacity:.6}
+.like:not(:disabled):active .lk-ic{transform:scale(1.3)}
+.vote-row .like{border-radius:10px;padding:8px 12px;align-self:stretch}
+.meal-line{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;margin:0 0 10px}
+.meal-line .meal-memo{margin:0;min-width:0}
+.meal-line .meal-memo:empty{display:none}
+.meal-line:has(.meal-memo:empty){grid-template-columns:1fr;justify-items:center}
+.meal-card .meal-lk{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:2px 7px;line-height:1.4}
+.idea-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
+.idea-foot .idea-more{margin-top:0}
+.idea-foot .like{margin-left:auto}

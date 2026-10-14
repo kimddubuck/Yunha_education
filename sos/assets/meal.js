@@ -46,6 +46,7 @@ function renderMeal(){
     const cards = ds.map(d => `<figure class="meal-card" data-open="${d.id}">
         <img src="${d.img}" alt="${esc(d.n)}님의 ${esc(label.slice(3))} 사진" loading="lazy">
         ${canDel(d) ? `<button type="button" class="meal-del" data-del="${d.id}" aria-label="사진 지우기">✕</button>` : ''}
+        ${likeCount(d) ? `<span class="meal-lk">❤️ ${likeCount(d)}</span>` : ''}
         <figcaption><b>${esc(d.n)}</b><span>${[d.mo != null ? `${d.mo}개월` : '', d.memo ? esc(d.memo) : ''].filter(Boolean).join(' · ') || '&nbsp;'}</span></figcaption></figure>`).join('');
     // ＋ 는 바로 카메라로 찍기, 🖼 앨범은 휴대폰 사진에서 고르기
     const add = !canAdd ? '' : ds.length ? `<button type="button" class="meal-add" data-add="${slot}" aria-label="${esc(label.slice(3))} 사진 찍어 올리기">📷<small>찍기</small></button>`
@@ -128,12 +129,13 @@ function openPhoto(id){
   const label = (MEAL_SLOTS.find(s => s[0] === d.slot) || ['', ''])[1];
   const box = sosInfo({icon: '', title: `${d.n} · ${label}`, body: `<img class="meal-big" src="${d.img}" alt="">
     <p class="meal-meta">${dayLabel(d.date)} ${fmtHm(d.createdAt)}${d.mo != null ? ` · 👶 ${d.mo}개월` : ''}</p>
-    ${d.memo ? `<p class="meal-memo"></p>` : ''}
+    <div class="meal-line"><p class="meal-memo"></p><span class="meal-like"></span></div>
     <div class="comments meal-cmts"><ul class="comment-list"><li class="hint">댓글을 불러오는 중…</li></ul>
       <p class="reply-chip" hidden><span></span><button type="button" data-mc-cancel>취소</button></p>
       <form class="comment-form"><input type="text" maxlength="300" placeholder="댓글 달기 (예: 레시피 궁금해요!)" aria-label="댓글"><button class="btn" type="submit">달기</button></form></div>
     ${canDel(d) ? `<button type="button" class="btn danger block" data-del="${d.id}">🗑 이 사진 지우기${d.uid !== ME.uid ? ' (방장)' : ''}</button>` : ''}`});
   if(d.memo) box.querySelector('.meal-memo').textContent = d.memo;
+  box.querySelector('.meal-like').appendChild(likeBtn(d, ME.uid, roomRef().collection('meals').doc(d.id)));   // ❤️ 좋아요 (v17)
   const ul = box.querySelector('.comment-list'), chip = box.querySelector('.reply-chip'), form = box.querySelector('.comment-form'), inp = form.querySelector('input');
   const at = typeof attachUI === 'function' ? attachUI(form, {compact: true}) : null;
   let list = [], replyTo = null;
