@@ -300,3 +300,9 @@ footer p{font-size:14px;color:var(--soft)}
 .card h3{font-size:16.5px}
 .card p{font-size:13.5px;line-height:1.45}
 .btn.ghost{padding:7px 14px;font-size:14px}
+/* 놀이 카드 더 낮게: 여백·줄간격 축소, 설명 한 줄 */
+.card{padding:8px 13px;gap:0;border-radius:12px}
+.card .meta{font-size:11.5px;line-height:1.4}
+.card h3{font-size:15.5px;line-height:1.35}
+.card p{font-size:13px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cards{gap:6px}
