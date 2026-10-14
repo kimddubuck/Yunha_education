@@ -1294,7 +1294,7 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 :is(.tiny-note,.sos-hint,.meal-wait,.meal-meta,.meal-memo,.meal-size,.slogan,.picked-when,.pop p,.pop h2,.pop h3,.safe-hero p,.push-toast,.empty,.idea-empty){text-wrap:balance}
 /* 탭 글자 오른쪽 위에 앱 아이콘 숫자처럼 */
 .nav-links a > span:last-child{position:relative}
-.nav-badge{position:absolute;top:-10px;right:-7px;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e8382f;color:#fff;font-style:normal;font-size:10.5px;font-weight:900;line-height:17px;text-align:center;border:2px solid var(--bg);white-space:nowrap}
+.nav-badge{position:absolute;top:-14px;right:-9px;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e8382f;color:#fff;font-style:normal;font-size:10.5px;font-weight:900;line-height:17px;text-align:center;border:2px solid var(--bg);white-space:nowrap}
 /* 📎 사진·링크 첨부 (v16) */
 .attach-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
 .attach-row .at-url{flex:1 1 140px;min-width:0;font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:7px 12px}
