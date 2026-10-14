@@ -1243,3 +1243,6 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 /* 식단 아이콘: 밥 먹는 아기 */
 .ti-img{width:1.15em;height:1.15em;vertical-align:-.2em}
 .meal-ic{width:1.35em;height:1.35em;vertical-align:-.3em}
+/* 끼니 배지 */
+.meal-slot h3{display:flex;align-items:center;gap:7px}
+.meal-badge{width:24px;height:24px;flex:none}

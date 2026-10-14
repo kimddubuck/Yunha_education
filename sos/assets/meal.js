@@ -2,6 +2,12 @@
    - 방 사람만 봐요. 올린 사람과 방장만 지울 수 있어요. 올린 날부터 1주일 뒤 자동으로 지워져요.
    - 사진은 휴대폰에서 작게 줄여(긴 쪽 360px, 한 장 약 20KB) 문서 안에 글자(data URL)로 넣어요.
    - 저장: rooms/{방 열쇠}/meals/{id} = {uid, n, img, slot, memo?, mo?, date, createdAt, expireAt} */
+// 끼니 배지: 색으로 바로 구분 (아침=주황 해돋이 · 점심=파란 하늘 해 · 저녁=남색 달)
+const MEAL_IC = {
+  b: '<svg class="meal-badge" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#ff9a3c"/><path d="M6 16a6 6 0 0 1 12 0z" fill="#fff6d6"/><path d="M12 5v2.4M6.2 8.2l1.6 1.6M17.8 8.2l-1.6 1.6" stroke="#fff6d6" stroke-width="1.8" stroke-linecap="round"/><rect x="3.5" y="16.6" width="17" height="1.8" rx=".9" fill="#fff"/></svg>',
+  l: '<svg class="meal-badge" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#3d8bfd"/><circle cx="12" cy="12" r="4.2" fill="#ffe14d"/><path d="M12 3.6v2M12 18.4v2M3.6 12h2M18.4 12h2M6 6l1.4 1.4M16.6 16.6L18 18M18 6l-1.4 1.4M7.4 16.6L6 18" stroke="#ffe14d" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  d: '<svg class="meal-badge" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#3b3f8f"/><path d="M14.5 5.5a6.8 6.8 0 1 0 4 11.6A7.6 7.6 0 0 1 14.5 5.5z" fill="#ffe9a8"/><circle cx="17.5" cy="7" r="1" fill="#fff"/><circle cx="19.2" cy="11" r=".7" fill="#fff"/></svg>'
+};
 const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '🍚 점심'], ['d', '🌙 저녁']];   // 간식은 빼고 끼니만 (서버 규칙에는 s1·s2가 남아 있어도 괜찮아요)
 const MEAL_DAYS = 7;           // 1주일치만 보고 1주일 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
 const MY_MEALS = 'sosMyMeals'; // 내가 올린 사진 위치 (탈퇴·방 빼기 때 지우려고 기억)
@@ -53,7 +59,7 @@ function renderMeal(){
     const add = !canAdd ? '' : ds.length ? `<button type="button" class="meal-add" data-add="${slot}" aria-label="${esc(label.slice(3))} 사진 더 올리기">＋<small>사진</small></button>`
       : `<button type="button" class="meal-add1" data-add="${slot}">＋ 사진 올리기</button>`;
     const body = ds.length ? `<div class="meal-row">${add}${cards}</div>` : (add || '<p class="hint meal-none">아직 사진이 없어요</p>');
-    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${label}${ds.length ? ` <small>${ds.length}장</small>` : ''}</h3>${body}</section>`;
+    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${MEAL_IC[slot]}<span>${label.slice(3)}</span>${ds.length ? ` <small>${ds.length}장</small>` : ''}</h3>${body}</section>`;
   }).join('');
 }
 
