@@ -1,9 +1,9 @@
 /* 🍚 식단: 우리 방 사람들의 이유식·유아식 사진
-   - 방 사람만 봐요. 올린 사람과 방장만 지울 수 있어요. 올린 날부터 1달 뒤 자동으로 지워져요.
+   - 방 사람만 봐요. 올린 사람과 방장만 지울 수 있어요. 올린 날부터 1주일 뒤 자동으로 지워져요.
    - 사진은 휴대폰에서 작게 줄여(긴 쪽 360px, 한 장 약 20KB) 문서 안에 글자(data URL)로 넣어요.
    - 저장: rooms/{방 열쇠}/meals/{id} = {uid, n, img, slot, memo?, mo?, date, createdAt, expireAt} */
 const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '🍚 점심'], ['d', '🌙 저녁']];   // 간식은 빼고 끼니만 (서버 규칙에는 s1·s2가 남아 있어도 괜찮아요)
-const MEAL_DAYS = 30;          // 1달 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
+const MEAL_DAYS = 7;           // 1주일치만 보고 1주일 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
 const MY_MEALS = 'sosMyMeals'; // 내가 올린 사진 위치 (탈퇴·방 빼기 때 지우려고 기억)
 const meal = { date: todayStr(), docs: [], unsub: null, onlyMine: false, broken: false };
 const $m = s => document.querySelector(s);
@@ -84,7 +84,7 @@ function askUpload(slot, img){
     <input class="meal-in" id="mealMemo" maxlength="40" placeholder="메모 (선택) 예: 소고기죽">
     <div class="meal-mo">👶 <select id="mealBy"><option value="">생년 (선택)</option>${yOpts}</select><select id="mealBm"><option value="">월</option>${mOpts}</select></div>
     <p class="hint meal-age" id="mealAge"></p>
-    <p class="hint meal-rule">📷 <b>음식만</b> 나오게 찍어 주세요 <span class="nw">(아이 얼굴·집 안 X)</span><br><span class="nw">👥 우리 방만 봐요</span> · <span class="nw">🗑 1달 뒤 자동 삭제</span></p>
+    <p class="hint meal-rule">📷 <b>음식만</b> 나오게 찍어 주세요 <span class="nw">(아이 얼굴·집 안 X)</span><br><span class="nw">👥 우리 방만 봐요</span> · <span class="nw">🗑 1주일 뒤 자동 삭제</span></p>
     <button type="button" class="btn primary block" id="mealSend">올리기</button>`});
   const ageOf = () => {
     const y = +box.querySelector('#mealBy').value, m = +box.querySelector('#mealBm').value;
