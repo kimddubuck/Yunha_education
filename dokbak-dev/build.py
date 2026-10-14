@@ -311,7 +311,7 @@ draw();
   <div class="prs">
     <a class="pr" href="daycare/"><span class="meta">21가지 주제 · 방문 체크리스트</span><h3>🏫 어린이집 기초 알기</h3><p>반 편성, 선생님 1명당 아이 수, 하루 일과, 비용, 입소 순서까지. 처음 보내는 분을 위해 정리했어요.</p></a>
     <a class="pr" href="brands.html"><span class="meta">프뢰벨 · 몬테소리 · 눈높이 · 씽크빅</span><h3>🏢 유아교육 회사 이름 풀이</h3><p>광고에서 보는 이름이 원래 누구고 어떤 회사인지, 공개 자료로 확인한 것만 적었어요.</p></a>
-    <a class="pr" href="research.html"><span class="meta">미국소아과학회 · 누리과정 등</span><h3>📚 놀이에 대한 연구</h3><p>놀이가 왜 중요한지, 아이는 어떻게 노는지. 세계 연구와 우리나라 공공 자료를 쉽게 풀었어요.</p></a>
+    <a class="pr" href="research.html"><span class="meta">미국소아과학회 · WHO · 누리과정 등</span><h3>📚 아이 연구</h3><p>놀이가 왜 중요한지, 이유식은 어떻게 할지. 세계 연구와 공공 자료를 쉽게 풀었어요.</p></a>
   </div>
 </div></section>
 
@@ -383,10 +383,10 @@ segs(); render();
     return f'<div class="box ref"><h3>{name}</h3><p class="who">{e(it["who"])}</p>{ppl}<p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p></div>'
   groups = ''.join(f'<h2>{e(g["title"])}</h2>' + ''.join(ritem(it) for it in g['items']) for g in rs['groups'])
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 아이 연구</p><section class="blk prose" style="padding-top:12px">
-<h1>📚 아이와 놀이에 대한 연구</h1><p>{e(rs["intro"])}</p>
+<h1>📚 아이 키우기에 대한 연구</h1><p>{e(rs["intro"])}</p>
 {groups}
 <p class="src">{e(rs["checked"])}</p></section></div>'''
-  files['research.html'] = page('놀이 연구와 자료 · 놀이가 왜 중요할까 | 오늘도 독박육아', '미국소아과학회 놀이 보고서, 놀이 도식 이론, 사회적 놀이 단계, 안내된 놀이 연구, 누리과정까지. 엄마표 놀이의 바탕이 된 연구를 쉽게 정리했어요.', body, 'research.html', 'research.html')
+  files['research.html'] = page('아이 연구 · 놀이와 이유식에 대한 연구 | 오늘도 독박육아', '미국소아과학회 놀이 보고서, 놀이 도식 이론부터 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지. 아이 키우는 데 바탕이 되는 연구를 쉽게 정리했어요.', body, 'research.html', 'research.html')
 
   # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
   VB = {'x': '근거 미확인', 'i': '간접 확인'}
