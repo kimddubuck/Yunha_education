@@ -297,6 +297,7 @@ draw();
   <div class="sh"><span class="ey">육아 정보</span><h2>📖 알아 두면 덜 헤매요</h2></div>
   <div class="prs">
     <a class="pr" href="daycare/"><span class="meta">21가지 주제 · 방문 체크리스트</span><h3>🏫 어린이집 기초 알기</h3><p>반 편성, 선생님 1명당 아이 수, 하루 일과, 비용, 입소 순서까지. 처음 보내는 분을 위해 정리했어요.</p></a>
+    <a class="pr" href="brands.html"><span class="meta">프뢰벨 · 몬테소리 · 눈높이 · 씽크빅</span><h3>🏢 유아교육 회사 이름 풀이</h3><p>광고에서 보는 이름이 원래 누구고 어떤 회사인지, 공개 자료로 확인한 것만 적었어요.</p></a>
     <a class="pr" href="research.html"><span class="meta">미국소아과학회 · 누리과정 등</span><h3>📚 놀이에 대한 연구</h3><p>놀이가 왜 중요한지, 아이는 어떻게 노는지. 세계 연구와 우리나라 공공 자료를 쉽게 풀었어요.</p></a>
   </div>
 </div></section>
@@ -392,6 +393,12 @@ segs(); render();
     if 'ask' in b: return '<div class="ask"><h3>🙋 방문해서 물어보세요</h3><ul>' + ''.join(f'<li>{e(q)}</li>' for q in b['ask']) + '</ul></div>'
     return ''
   LEGEND = f'<div class="vlegend"><p>표시가 없는 내용은 정부 지침·법령 원문에서 확인한 것이에요.</p><p>{vb("i")} 원문이 아니라 정부 보도자료·기사·개편 전 자료로만 확인한 내용이에요.</p><p>근거를 확인하지 못한 관행·해석은 이 사이트에 싣지 않았어요.</p></div>'
+  DAYCARE_SRC = '''<div class="box"><h2>📚 출처는 누구예요?</h2><ul>
+<li><b>교육부 「보육사업안내」</b> 해마다 나오는 어린이집 운영 지침서예요. 반 편성, 선생님 한 명당 아이 수, 보육료, 부모가 내는 비용 같은 기준이 여기 적혀 있어요. 원래 보건복지부가 냈는데, 2024년 6월 27일 어린이집 업무가 교육부로 넘어가서(유보통합) 지금은 교육부가 내요.</li>
+<li><b>영유아보육법</b> 어린이집에 관한 기본 법률이에요. CCTV 설치 의무 같은 내용이 여기 있어요.</li>
+<li><b>「주택건설기준 등에 관한 규정」</b> 국토교통부 소관 규정으로, 아파트 단지에 어린이집을 두는 기준이 여기 있어요.</li>
+<li><b>한국보육진흥원</b> 보건복지부 산하 공공기관으로, 어린이집 평가제 운영과 보육교사 교육을 맡아요. 평가제 내용은 이 기관의 보도자료와 2024년 평가 매뉴얼을 참고했어요.</li></ul>
+<p class="src" style="margin-top:8px">원문을 직접 읽고 정리한 내용엔 표시가 없고, 보도자료·기사로만 확인한 내용엔 '간접 확인' 표시가 있어요. 근거를 확인하지 못한 관행·해석은 싣지 않았어요.</p></div>'''
   for gf in sorted(f for f in os.listdir(os.path.join(DEV, 'guides')) if f.endswith('.json')):
     G = json.load(open(os.path.join(DEV, 'guides', gf), encoding='utf-8'))
     sl = G['slug']; os.makedirs(os.path.join(OUT, sl), exist_ok=True)
@@ -407,7 +414,7 @@ segs(); render();
       body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="./">{e(G["title"])}</a> › {e(sec["title"])}</p>
 <article class="blk prose guide" style="padding-top:12px"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1>{e(sec["title"])}</h1>
 {blocks}
-{LEGEND}<p class="src">{e(G["source"])}</p>{pager}{tool}</article></div>'''
+{LEGEND}<p class="src">{e(G["source"])}</p>{DAYCARE_SRC if sl == 'daycare' else ''}{pager}{tool}</article></div>'''
       first = next((b for b in sec['blocks'] if 'p' in b or 'list' in b), None)
       if first and 'p' in first: d = first['p']
       elif first: d = ' '.join(x['b'] for x in first['list'][:3])
@@ -418,8 +425,23 @@ segs(); render();
 <div class="sh"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1 style="font-size:clamp(26px,5vw,36px)">{e(G["title"])}</h1><p>{e(G["intro"])}</p></div>
 {tool}
 <div class="prs" style="margin-top:14px">{cards}</div>
-<p class="src">{e(G["source"])}</p></section></div>'''
+{DAYCARE_SRC if sl == 'daycare' else ''}
+<p class="src">{e(G["source"])}</p>
+{'<p style="margin-top:12px"><a class="btn ghost" href="../brands.html">🏢 프뢰벨·몬테소리·눈높이… 이름 풀이</a></p>' if sl == 'daycare' else ''}</section></div>'''
     files[f'{sl}/index.html'] = page(f'{G["title"]} | 오늘도 독박육아', G['desc'], body, f'{sl}/index.html', f'{sl}/')
+
+
+  # ── 유아교육 회사·교육법 이름 풀이
+  B = json.load(open(os.path.join(DEV, 'brands.json'), encoding='utf-8'))
+  def bitem(it):
+    srcs = ' · '.join(f'<a href="{e(u)}" rel="noopener">{e(t)}</a>' for t, u in it['src'])
+    return (f'<div class="box ref"><h3>{e(it["name"])}{vb(it.get("v"))}</h3><p class="who">{e(it["kind"])}</p><p>{e(it["sum"])}</p>'
+            + (f'<p class="gnote">{e(it["note"])}</p>' if it.get('note') else '') + f'<p class="src" style="margin-top:6px">출처: {srcs}</p></div>')
+  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › <a href="daycare/">어린이집</a> › 이름 풀이</p><section class="blk prose" style="padding-top:12px">
+<h1>🏢 {e(B["title"])}</h1><p>{e(B["intro"])}</p>
+{''.join(f'<h2>{e(g["title"])}</h2>' + ''.join(bitem(it) for it in g['items']) for g in B['groups'])}
+{LEGEND}<p class="src">{e(B["checked"])}</p></section></div>'''
+  files['brands.html'] = page('프뢰벨·몬테소리·눈높이·씽크빅은 누구? 유아교육 회사 이름 풀이 | 오늘도 독박육아', '프뢰벨과 몬테소리는 누구이고, 한국프뢰벨·영아다중·한솔교육·대교·웅진씽크빅·교원은 어떤 회사인지 공개 자료로 확인한 것만 정리했어요.', body, 'brands.html', 'daycare/')
 
   # ── 쓰기 + sitemap
   for path, txt in files.items():
