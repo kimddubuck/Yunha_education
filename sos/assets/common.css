@@ -1254,3 +1254,6 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .meal-cmts{margin:10px 0 12px;text-align:left}
 .meal-cmts .comment-form{display:flex;gap:6px}
 .meal-cmts .comment-form input{flex:1;min-width:0}
+/* 🤝 홈 슬로건: 서로의 육아 존중 */
+.slogan{margin:-4px 0 12px;text-align:center;font-size:14.5px;line-height:1.5;color:var(--muted);letter-spacing:-.2px}
+.slogan b{color:var(--fg)}
