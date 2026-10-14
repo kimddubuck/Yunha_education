@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610140636">
+<link rel="manifest" href="manifest.webmanifest?v=202610140834">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610140636">
-<script src="assets/gate.js?v=202610140636"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610140834">
+<script src="assets/gate.js?v=202610140834"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -87,7 +87,8 @@
         <li>서버에 남는 것: 방 이름, 닉네임,<br>마지막 접속 시간, 브라우저 종류,<br>SOS 요청 날짜·시간,<br>모임 글·참석·댓글,<br>🍚 식단 사진(작게 줄인 사진·메모·개월수),<br>내보낸 시각과 부탁 글<br>(30일 뒤 또는 허용·거절하면 지워져요)</li>
         <li>비밀번호는 저장하지 않아요.<br><b>우리 방 사람만</b> 기록을 볼 수 있어요.</li>
         <li>SOS·모임·댓글은 날짜가 지나고<br><b>7일 뒤 자동으로 지워져요.</b></li>
-        <li>🍚 식단 사진은 <b>우리 방 사람만</b> 보고,<br>올린 날부터 <b>1주일 뒤 자동으로 지워져요.</b><br>지우기는 올린 사람과 방장만 할 수 있어요.</li>
+        <li>🍚 식단 사진은 <b>우리 방 사람만</b> 보고,<br>올린 날부터 <b>1주일 뒤 자동으로 지워져요.</b><br>지우기는 올린 사람과 방장만 할 수 있어요.<br>사진에 단 댓글·답글도 사진과 함께 지워져요.</li>
+        <li>💬 댓글·답글 알림: 내 사진이나 내 모임에 댓글이 달리면,<br>내 댓글에 답글이 달리면 <b>나에게만</b> 알림이 가요.<br>(알림을 켠 휴대폰만, 알림에는 방 이름·닉네임·글 앞부분이 보여요)</li>
         <li>휴대폰마다 보이지 않는 로그인 번호가<br>하나 생겨요. 멤버인지 확인하는 데만 써요.</li>
         <li>알림을 켜면 <b>알림 주소</b>만<br>Google 알림 서버에 등록돼요.</li>
         <li>운영자는 날짜별 <b>방문자 수 숫자</b>만 봐요.<br>누가 들어왔는지는 남기지 않아요.</li>
@@ -98,8 +99,8 @@
     <section class="safe-card">
       <h2>🗑 그만 쓰고 싶을 때</h2>
       <ul class="safe-short">
-        <li>방에서 나가기: 홈의 <b>🚪 방 빼기</b><br>(그 방에 올린 내 식단 사진도 지워져요)</li>
-        <li>내 정보 모두 지우기:<br><a href="safety.html#delete-me">🔒 개인정보 페이지</a>의 <b>내 정보 모두 지우기</b><br>(내가 올린 식단 사진도 모두 지워져요)</li>
+        <li>방에서 나가기: 홈의 <b>🚪 방 빼기</b><br>(그 방에 올린 내 식단 사진과 사진 댓글도 지워져요)</li>
+        <li>내 정보 모두 지우기:<br><a href="safety.html#delete-me">🔒 개인정보 페이지</a>의 <b>내 정보 모두 지우기</b><br>(내가 올린 식단 사진과 사진에 단 내 댓글도 모두 지워져요)</li>
       </ul>
     </section>
 
@@ -113,6 +114,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="assets/common.js?v=202610140636"></script>
+<script src="assets/common.js?v=202610140834"></script>
 </body>
 </html>

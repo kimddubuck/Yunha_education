@@ -73,6 +73,7 @@ function watchDay(){
       const now = Date.now();
       meal.docs = q.docs.map(d => ({id: d.id, ...d.data()})).filter(d => !d.expireAt || d.expireAt.toMillis() > now);
       renderMeal();
+      if(meal.goOpen && meal.docs.some(d => d.id === meal.goOpen)){ const g = meal.goOpen; meal.goOpen = null; openPhoto(g); }
     }, err => { meal.broken = true; renderMeal(); if(typeof sosTrouble === 'function' && err && err.code !== 'permission-denied') sosTrouble(err); });
   });
 }
@@ -121,22 +122,100 @@ function askUpload(slot, img){
   });
 }
 
+// 💬 사진 댓글: rooms/{방}/meals/{사진}/comments — 올린 사람에게 알림, 답글은 그 댓글 쓴 사람에게 알림
+//   사진이 지워지면(1주일 뒤 포함) 댓글도 함께 지워져요. 내 댓글은 탈퇴할 때 지우려고 이 휴대폰에 위치를 기억해요
+const MY_MCMTS = 'sosMyMealCmts';
+function rememberMyCmt(mid, cid){ try{ const a = JSON.parse(localStorage.getItem(MY_MCMTS) || '[]'); a.push({key: ROOM.key, mid, cid}); localStorage.setItem(MY_MCMTS, JSON.stringify(a.slice(-300))); }catch(e){} }
+const mealCmts = id => roomRef().collection('meals').doc(id).collection('comments');
+
 function openPhoto(id){
   const d = meal.docs.find(x => x.id === id); if(!d) return;
   const label = (MEAL_SLOTS.find(s => s[0] === d.slot) || ['', ''])[1];
   const box = sosInfo({icon: '', title: `${d.n} · ${label}`, body: `<img class="meal-big" src="${d.img}" alt="">
     <p class="meal-meta">${dayLabel(d.date)} ${fmtHm(d.createdAt)}${d.mo != null ? ` · 👶 ${d.mo}개월` : ''}</p>
     ${d.memo ? `<p class="meal-memo"></p>` : ''}
+    <div class="comments meal-cmts"><ul class="comment-list"><li class="hint">댓글을 불러오는 중…</li></ul>
+      <p class="reply-chip" hidden><span></span><button type="button" data-mc-cancel>취소</button></p>
+      <form class="comment-form"><input type="text" maxlength="300" placeholder="댓글 달기 (예: 레시피 궁금해요!)" aria-label="댓글"><button class="btn" type="submit">달기</button></form></div>
     ${canDel(d) ? `<button type="button" class="btn danger block" data-del="${d.id}">🗑 이 사진 지우기${d.uid !== ME.uid ? ' (방장)' : ''}</button>` : ''}`});
   if(d.memo) box.querySelector('.meal-memo').textContent = d.memo;
-  box.addEventListener('click', e => { const b = e.target.closest('[data-del]'); if(b){ box.remove(); delPhoto(b.dataset.del); } });
+  const ul = box.querySelector('.comment-list'), chip = box.querySelector('.reply-chip'), form = box.querySelector('.comment-form'), inp = form.querySelector('input');
+  let list = [], replyTo = null;
+  const draw = () => {
+    ul.innerHTML = '';
+    const isRoot = c => !c.to || !list.some(x => x.id === c.to);
+    const ordered = []; list.filter(isRoot).forEach(r => { ordered.push(r); list.filter(x => x.to === r.id).forEach(x => ordered.push(x)); });
+    ordered.forEach(c => {
+      const li = document.createElement('li'); if(!isRoot(c)) li.className = 'reply';
+      const n = document.createElement('b'); n.className = 'comment-nick'; n.textContent = c.n || '';
+      const t = document.createElement('span'); t.textContent = c.text;
+      const w = document.createElement('small'); w.textContent = fmtHm(c.createdAt);
+      const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'reply-btn'; rb.dataset.mcReply = c.id; rb.textContent = '↪ 답글';
+      li.append(n, t, w, rb);
+      if(c.uid === ME.uid || ME.owner){ const x = document.createElement('span'); x.className = 'comment-act';
+        x.innerHTML = `<button type="button" data-mc-del="${c.id}">${c.uid === ME.uid ? '삭제' : '삭제(방장)'}</button>`; li.appendChild(x); }
+      ul.appendChild(li);
+    });
+    if(!list.length){ const e = document.createElement('li'); e.className = 'hint'; e.textContent = '첫 댓글을 남겨 보세요 💬'; ul.appendChild(e); }
+    chip.hidden = !replyTo; if(replyTo) chip.querySelector('span').textContent = `↪ ${replyTo.n || '이웃'}님에게 답글`;
+    inp.placeholder = replyTo ? '답글 달기' : '댓글 달기 (예: 레시피 궁금해요!)';
+  };
+  const unsub = mealCmts(id).orderBy('createdAt').limit(100).onSnapshot(q => {
+    if(!box.isConnected){ unsub(); return; }
+    list = q.docs.map(x => ({id: x.id, ...x.data()})); draw();
+  }, () => { ul.innerHTML = '<li class="hint">댓글을 불러오지 못했어요.</li>'; });
+  const watch = setInterval(() => { if(!box.isConnected){ unsub(); clearInterval(watch); } }, 1000);
+  box.addEventListener('click', async e => {
+    const b = e.target.closest('[data-del]'); if(b){ box.remove(); delPhoto(b.dataset.del); return; }
+    const r = e.target.closest('[data-mc-reply]');
+    if(r){ const c = list.find(x => x.id === r.dataset.mcReply);
+      if(c){ const root = c.to && list.some(x => x.id === c.to) ? c.to : c.id; replyTo = {root, uid: c.uid, n: c.n}; draw(); inp.focus(); } return; }
+    if(e.target.closest('[data-mc-cancel]')){ replyTo = null; draw(); return; }
+    const del = e.target.closest('[data-mc-del]');
+    if(del && confirm('이 댓글을 지울까요?')){ del.disabled = true; try{ await mealCmts(id).doc(del.dataset.mcDel).delete(); }catch(err){ del.disabled = false; if(typeof sosTrouble === 'function') sosTrouble(err); } }
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = inp.value.trim(); if(!text) return;
+    const rt = replyTo, btn = form.querySelector('button'); btn.disabled = true;
+    try{
+      const ref = mealCmts(id).doc();
+      await ref.set({text, uid: ME.uid, n: ME.nick, ...(rt ? {to: rt.root} : {}), expireAt: d.expireAt, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      rememberMyCmt(id, ref.id); inp.value = ''; replyTo = null; draw();
+      // 🔔 알림: 사진 올린 사람에게 + 답글이면 그 댓글 쓴 사람에게 (같은 사람이면 한 번만)
+      if(typeof pushMealComment === 'function'){
+        if(rt) pushMealComment(d, rt.uid, text, true);
+        if(!rt || rt.uid !== d.uid) pushMealComment(d, d.uid, text, false);
+      }
+    }catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); else alert('댓글을 저장하지 못했어요'); }
+    btn.disabled = false;
+  });
 }
 
+// 사진 지우기: 댓글부터 지우고 사진을 지워요
+async function delPhotoNow(id){
+  const cs = await mealCmts(id).get().catch(() => ({docs: []}));
+  await Promise.all(cs.docs.map(c => c.ref.delete().catch(() => {})));
+  await roomRef().collection('meals').doc(id).delete();
+}
 async function delPhoto(id){
   const d = meal.docs.find(x => x.id === id); if(!d || !canDel(d)) return;
-  if(!confirm(d.uid === ME.uid ? '이 사진을 지울까요?' : `방장으로서 ${d.n}님의 사진을 지울까요?`)) return;
-  try{ await roomRef().collection('meals').doc(id).delete(); forgetMine(id); if(typeof pushToast === 'function') pushToast('🗑 지웠어요'); }
+  if(!confirm(d.uid === ME.uid ? '이 사진을 지울까요? 댓글도 함께 지워져요.' : `방장으로서 ${d.n}님의 사진을 지울까요? 댓글도 함께 지워져요.`)) return;
+  try{ await delPhotoNow(id); forgetMine(id); if(typeof pushToast === 'function') pushToast('🗑 지웠어요'); }
   catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); }
+}
+
+// 🔔 댓글 알림을 눌러 왔으면 (meal.html?go=p사진아이디) 그 날짜로 가서 사진을 열어요
+async function mealGoPhoto(){
+  if(typeof SOS_GO === 'undefined' || !/^p[A-Za-z0-9]{1,40}$/.test(SOS_GO)) return;
+  const id = SOS_GO.slice(1); SOS_GO = '';
+  try{
+    if(!(await sosReady())) return;
+    const snap = await roomRef().collection('meals').doc(id).get(); if(!snap.exists) { if(typeof pushToast === 'function') pushToast('사진이 지워졌어요'); return; }
+    const dt = snap.data().date; if(dt && dt !== meal.date){ meal.date = dt; watchDay(); }
+    meal.goOpen = id;
+    if(meal.docs.some(d => d.id === id)){ meal.goOpen = null; openPhoto(id); }
+  }catch(e){}
 }
 
 (function initMeal(){
@@ -156,4 +235,5 @@ async function delPhoto(id){
   $m('#mealNext').addEventListener('click', () => { if(meal.date < todayStr()){ meal.date = addDays(meal.date, 1); watchDay(); } });
   document.querySelectorAll('[data-mine]').forEach(b => b.addEventListener('click', () => { meal.onlyMine = b.dataset.mine === '1'; renderMeal(); }));
   watchDay();
+  mealGoPhoto();
 })();

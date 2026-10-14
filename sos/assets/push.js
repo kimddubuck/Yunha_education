@@ -36,6 +36,8 @@ async function pushSosHours(day, hours){ pushSetExtra('s:' + ROOM.roomId + ':' +
 async function pushAttend(o, s){ pushSetExtra('a:' + ROOM.roomId + ':' + o.id, s === 'join' || s === 'maybe' ? [await attTopic(o.id)] : [], endOfDay(o.date)); }
 // 채널 이름: r = 방 전체, m = 모임 주최자
 async function roomTopic(room){ return 'r' + (await sha256Hex('push:' + room.key)).slice(0, 40); }
+// 💬 나에게 온 댓글·답글 알림 채널: 방마다 '그 방의 나' 채널 (방 열쇠 + 내 로그인 번호로 만들어요)
+async function userTopic(room, uid){ return 'u' + (await sha256Hex('push:' + room.key + ':u:' + uid)).slice(0, 40); }
 async function meetTopic(meetId){ return 'm' + (await sha256Hex('push:' + ROOM.key + ':' + meetId)).slice(0, 40); }
 
 let pushLastError = '', pushLastBody = null;   // 실패 응답도 남겨요 (채널 가입이 반쯤 됐을 때 어디까지 됐는지)
@@ -92,6 +94,8 @@ async function pushSync(ask){
   const token = await pushToken(ask); if(!token) return false;
   const rooms = sosRooms().filter(r => pushRoomOn(r.roomId));
   const want = await Promise.all(rooms.map(roomTopic));
+  const user = await sosAuth().catch(() => null);
+  if(user) want.push(...await Promise.all(rooms.map(r => userTopic(r, user.uid))));
   // 내가 연 모임 채널: 예전엔 글자만, 지금은 {t, room} — 끈 방의 모임은 빼요
   const mine = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x)
     .filter(x => !x.room || pushRoomOn(x.room)).map(x => x.t);
@@ -137,7 +141,8 @@ async function pushDropRoom(room){
   const meets = pushLS.get('sosPushMeetTopics', []).map(x => typeof x === 'string' ? {t: x, room: ''} : x);
   pushLS.set('sosPushMeetTopics', meets.filter(x => x.room !== room.roomId));   // 토큰이 없어도 이 방의 모임 채널 기록은 지워요
   const token = pushLS.get('sosPushToken', ''); if(!token) return;
-  const drop = [await roomTopic(room), ...meets.filter(x => x.room === room.roomId).map(x => x.t), ...ex.filter(x => x.room === room.roomId).map(x => x.t)];
+  const user = await sosAuth().catch(() => null);
+  const drop = [await roomTopic(room), ...(user ? [await userTopic(room, user.uid)] : []), ...meets.filter(x => x.room === room.roomId).map(x => x.t), ...ex.filter(x => x.room === room.roomId).map(x => x.t)];
   const doneKey = 'sosPushTopics:' + token.slice(-12), now = new Set(pushLS.get(doneKey, []));
   const topics = drop.filter(t => now.has(t)); if(!topics.length) return;
   const r = await withTimeout(pushApi({ action: 'unsubscribe', token, topics }), 15000, '알림 채널 해지').catch(() => null);
@@ -154,11 +159,11 @@ async function pushNotify(to, title, body, link, tag){
   try{
     const user = await sosAuth(); if(!user) return;
     const idToken = await user.getIdToken();
-    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', date: to.date || '', hours: to.hours || [], title, body, link, tag, from: await pushMe() });
+    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', to: to.to || '', date: to.date || '', hours: to.hours || [], title, body, link, tag, from: await pushMe() });
     if(!r && pushLastError && !/429/.test(pushLastError)) pushToast('⚠️ 방 사람들에게 알림을 보내지 못했어요 (' + pushLastError.slice(0, 60) + ')');   // 베타: 원인을 화면에 보여 줘요
   }catch(e){ pushToast('⚠️ 알림을 보내지 못했어요 (인터넷 연결 확인)'); }
 }
-const TO_ROOM = {kind: 'room'}, toMeet = meetId => ({kind: 'meet', meetId});
+const TO_ROOM = {kind: 'room'}, toMeet = meetId => ({kind: 'meet', meetId}), toUser = uid => ({kind: 'user', to: uid});
 const pushLink = page => `${page}?r=${ROOM.roomId}`;
 
 // --- 앱 곳곳에서 부르는 알림 ---
@@ -207,7 +212,17 @@ async function pushMeetJoin(o, joins){
 }
 async function pushMeetComment(o, text){
   if(!PUSH_VAPID || !ROOM) return;
-  pushNotify(toMeet(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · 눌러서 확인해 보세요`, pushLink('meet.html'), 'cmt-' + o.id);
+  pushNotify(toMeet(o.id), '💬 내 모임에 댓글이 달렸어요', `${ROOM.name} · ${ME.nick}: ${String(text).slice(0, 60)}`, pushLink('meet.html') + '&go=c' + o.id, 'cmt-' + o.id);
+}
+// ↪ 모임 댓글에 답글: 그 댓글을 쓴 사람에게
+async function pushMeetReply(o, uid, text){
+  if(!PUSH_VAPID || !ROOM || !uid || uid === ME.uid) return;
+  pushNotify(toUser(uid), '↪ 내 댓글에 답글이 달렸어요', `${ROOM.name} · ${ME.nick}: ${String(text).slice(0, 60)}`, pushLink('meet.html') + '&go=c' + o.id, 'rep-' + o.id);
+}
+// 🍚 식단 사진에 댓글: 사진 올린 사람에게 / 답글: 그 댓글을 쓴 사람에게
+async function pushMealComment(d, uid, text, reply){
+  if(!PUSH_VAPID || !ROOM || !uid || uid === ME.uid) return;
+  pushNotify(toUser(uid), reply ? '↪ 내 댓글에 답글이 달렸어요' : '💬 내 식단 사진에 댓글이 달렸어요', `${ROOM.name} · ${ME.nick}: ${String(text).slice(0, 60)}`, pushLink('meal.html') + '&go=p' + d.id, 'meal-' + d.id);
 }
 
 // 🔔 테스트 알림: 이 휴대폰에만 서버를 거쳐 알림을 보내 봐요 (휴대폰 → 우리 서버 → Google → 휴대폰, 전체 길 확인)

@@ -6,9 +6,9 @@
    - 이름·전화번호는 받지도 보내지도 않아요. 알림 문구와 휴대폰 알림 주소(토큰)만 다뤄요.
    - 알림 보내기(notify)는 그 방의 멤버만: 앱이 보낸 로그인 증표로 Firestore 멤버 문서를 확인해요 (isMember). */
 
-const TOPIC = /^[rmsa][0-9a-f]{40}$/;   // r 방 · m 주최자 · s 그 날짜·시간 SOS 보낸 사람 · a 모임 참석·미확정한 사람
+const TOPIC = /^[rmsau][0-9a-f]{40}$/;   // r 방 · m 주최자 · s 그 날짜·시간 SOS 보낸 사람 · a 모임 참석·미확정한 사람 · u 그 방의 한 사람(댓글·답글 알림)
 const TOKEN = /^[A-Za-z0-9_:\-.]{100,4096}$/;
-const LINK = /^(index|meet)\.html\?r=[a-z0-9]{6,20}(&go=(s\d{4}-\d{2}-\d{2}-\d{1,2}|[mr][A-Za-z0-9]{1,40}))?$/;   // go = 눌렀을 때 바로 띄울 SOS 시간(s날짜-시) · 모임(m아이디 · r=1시간 전 알림)
+const LINK = /^(index|meet|meal)\.html\?r=[a-z0-9]{6,20}(&go=(s\d{4}-\d{2}-\d{2}-\d{1,2}|[mrcp][A-Za-z0-9]{1,40}))?$/;   // go = 눌렀을 때 바로 띄울 SOS 시간(s날짜-시) · 모임(m아이디 · r=1시간 전 알림 · c=모임 댓글) · 식단 사진(p아이디)
 const KEY = /^[0-9a-f]{64}$/, UID = /^[A-Za-z0-9]{10,128}$/, IDTOKEN = /^[A-Za-z0-9_\-.]{100,4096}$/, MEET_ID = /^[A-Za-z0-9]{1,40}$/;
 const LIMIT = 6, WINDOW_MIN = 10;   // 채널마다 10분에 6번까지만 (알림 폭탄 방지)
 
@@ -85,15 +85,16 @@ export async function onRequestPost({ request, env, waitUntil }) {
     //  - 채널 이름은 서버가 방 열쇠로 만들어요 (앱이 아무 채널이나 고를 수 없게)
     if (b.action === 'notify') {
       const title = String(b.title || '').slice(0, 40), body = String(b.body || '').slice(0, 120);
-      const kind = ['meet', 'room', 'sos'].includes(b.kind) ? b.kind : '';
+      const kind = ['meet', 'room', 'sos', 'user'].includes(b.kind) ? b.kind : '';
       const hours = Array.isArray(b.hours) ? b.hours.map(Number).filter(h => Number.isInteger(h) && h >= 0 && h <= 23).slice(0, 12) : [];
       if (!KEY.test(b.key || '') || !UID.test(b.uid || '') || !IDTOKEN.test(b.idToken || '') || !kind
-        || (kind === 'meet' && !MEET_ID.test(b.meetId || '')) || (kind === 'sos' && (!/^\d{4}-\d{2}-\d{2}$/.test(b.date || '') || !hours.length))
+        || (kind === 'meet' && !MEET_ID.test(b.meetId || '')) || (kind === 'user' && (!UID.test(b.to || '') || b.to === b.uid)) || (kind === 'sos' && (!/^\d{4}-\d{2}-\d{2}$/.test(b.date || '') || !hours.length))
         || !title || !LINK.test(b.link || '')) return json({ error: 'bad_input' }, 400);
       if (!(await isMember(sa.project_id, b.key, b.uid, b.idToken))) return json({ error: 'not_member' }, 403);
       // sos = 그 날짜·시간들에 SOS 보낸 사람들 채널 (여러 시간에 겹친 사람은 같은 tag 라 알림 하나로 보여요)
       const topics = kind === 'room' ? ['r' + (await sha256(`push:${b.key}`)).slice(0, 40)]
         : kind === 'meet' ? ['m' + (await sha256(`push:${b.key}:${b.meetId}`)).slice(0, 40)]
+        : kind === 'user' ? ['u' + (await sha256(`push:${b.key}:u:${b.to}`)).slice(0, 40)]   // 댓글·답글 알림: 그 방의 그 사람 한 명에게
         : await Promise.all(hours.map(async h => 's' + (await sha256(`push:${b.key}:sos:${b.date}:${h}`)).slice(0, 40)));
       const tag = String(b.tag || 'sos').slice(0, 60);
       // SOS 요청 알림과 그 밖의 알림(새 모임 등)은 횟수를 따로 세요 — SOS를 여러 번 눌러도 '새 모임' 알림이 밀리지 않게

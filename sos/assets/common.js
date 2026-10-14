@@ -756,7 +756,11 @@ async function cleanupExpired(){
   const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
   await Promise.all(sos.docs.map(d => del(d.ref)));
   const meals = await r.collection('meals').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 🍚 1달 지난 식단 사진
-  await Promise.all(meals.docs.map(d => del(d.ref)));
+  for(const d of meals.docs){   // 사진 댓글도 함께 (댓글은 사진과 같은 날 지워져요)
+    const cs = await d.ref.collection('comments').get().catch(() => ({docs: []}));
+    await Promise.all(cs.docs.map(c => del(c.ref)));
+    await del(d.ref);
+  }
 }
 if(TTL_READY && typeof ROOM !== 'undefined' && ROOM) window.addEventListener('load', () => {
   const k = 'sosCleaned:' + ROOM.roomId;

@@ -2,7 +2,7 @@
    저장: rooms/{방 열쇠}/opinions 컬렉션의 topic 'meet' 글, 댓글은 그 글 아래 comments 컬렉션.
    common.js가 먼저 필요해요. 필요한 Firestore 규칙은 firestore.rules 참고 */
 const MEET_TEMPLATE = '장소: \n놀이: ';
-const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:'', reports:{}};   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
+const meet = { col:null, items:[], comments:{}, subs:{}, open:new Set(), drafts:{}, editing:null, editDraft:'', reports:{}, replyTo:{}};   // replyTo: 모임별 '답글 다는 중' {root, uid, n}   // drafts: 쓰는 중인 댓글, editing: 고치는 중인 내 댓글
 
 // '참석' / '미확정' / '불참'은 한 사람(멤버)당 하나. 다시 누르면 취소, 다른 걸 누르면 바꾸기
 const myVote = o => ((o.v || {})[ME.uid] || {}).s || null;
@@ -29,6 +29,7 @@ function meetInit(){
       if(ch && meet.items.some(o => o.id === ch[1])){ meet.open.add(ch[1]); history.replaceState(null, '', location.pathname);
         renderMeets(); setTimeout(() => { const t = document.querySelector(`[data-toggle="${ch[1]}"]`); if(t) t.closest('li').scrollIntoView({block: 'start', behavior: 'smooth'}); }, 200); }
       else renderMeets();
+      meetGoComments();
     }), err => { sosTrouble(err); $('#upSec').hidden = false; $('#meetEmpty').textContent = '모임 요청을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'; });
   });
 }
@@ -63,7 +64,7 @@ async function changeComment(mid, cid, data){
 }
 
 function meetCard(o, past){
-  const li = document.createElement('li'); li.className = 'meet-card' + (past ? ' op-past' : '');
+  const li = document.createElement('li'); li.className = 'meet-card' + (past ? ' op-past' : ''); li.dataset.mid = o.id;
   const body = document.createElement('div'); body.className = 'meet-body';
   li.append(dateBadge(o.date), body);
   const today = todayStr(), cs = (meet.comments[o.id] || []).filter(c => !c.deleted);
@@ -122,8 +123,11 @@ function meetCard(o, past){
     const box = document.createElement('div'); box.className = 'comments';
     const ul = document.createElement('ul'); ul.className = 'comment-list';
     const keys = comKeys();
-    cs.forEach(c => {
-      const ci = document.createElement('li');
+    // ↪ 답글은 원래 댓글 바로 아래에 들여 써요 (원래 댓글이 지워졌으면 그냥 댓글처럼)
+    const isRoot = c => !c.to || !cs.some(x => x.id === c.to);
+    const ordered = []; cs.filter(isRoot).forEach(r => { ordered.push(r); cs.filter(x => x.to === r.id).forEach(x => ordered.push(x)); });
+    ordered.forEach(c => {
+      const ci = document.createElement('li'); if(!isRoot(c)) ci.className = 'reply';
       if(meet.editing === c.id){
         const ef = document.createElement('form'); ef.className = 'comment-form comment-edit'; ef.dataset.editComment = c.id; ef.dataset.meet = o.id;
         ef.innerHTML = `<input type="text" maxlength="300" aria-label="댓글 고치기"><button class="btn primary" type="submit">저장</button><button class="btn" type="button" data-edit-cancel>취소</button>`;
@@ -141,6 +145,8 @@ function meetCard(o, past){
         if(ME.owner) m.insertAdjacentHTML('beforeend', `<button type="button" class="danger" data-owner-del="${o.id}" data-cid="${c.id}" aria-label="방장 권한으로 댓글 지우기">🗑</button>`);
         ci.appendChild(m);
       }
+      const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'reply-btn';
+      rb.dataset.replyC = c.id; rb.dataset.meet = o.id; rb.textContent = '↪ 답글'; ci.appendChild(rb);
       if(keys[c.id]){   // 이 휴대폰에서 쓴 댓글만 고치기·지우기
         const act = document.createElement('span'); act.className = 'comment-act';
         act.innerHTML = `<button type="button" data-cedit="${c.id}">수정</button><button type="button" data-cdel="${c.id}" data-meet="${o.id}">삭제</button>`;
@@ -149,14 +155,26 @@ function meetCard(o, past){
       ul.appendChild(ci);
     });
     if(!cs.length){ const e = document.createElement('li'); e.className = 'hint'; e.textContent = '아직 댓글이 없어요.'; ul.appendChild(e); }
+    const rt = meet.replyTo[o.id];
     const f = document.createElement('form'); f.className = 'comment-form'; f.dataset.comment = o.id;
-    f.innerHTML = `<input type="text" maxlength="300" placeholder="예: 11시쯤 갈 수 있어요" aria-label="댓글">
+    f.innerHTML = `<input type="text" maxlength="300" placeholder="${rt ? '답글 달기' : '예: 11시쯤 갈 수 있어요'}" aria-label="${rt ? '답글' : '댓글'}">
       <button class="btn" type="submit">달기</button>`;
-    box.append(ul, f); body.appendChild(box);
+    if(rt){ const chip = document.createElement('p'); chip.className = 'reply-chip';
+      chip.innerHTML = `<span></span><button type="button" data-reply-cancel="${o.id}">취소</button>`;
+      chip.querySelector('span').textContent = `↪ ${rt.n || '이웃'}님에게 답글`; box.append(ul, chip, f); }
+    else box.append(ul, f);
+    body.appendChild(box);
   }
   return li;
 }
 
+// 🔔 댓글·답글 알림을 눌러 왔으면 (meet.html?go=c모임아이디) 그 모임 댓글을 펼쳐 보여 줘요
+function meetGoComments(){
+  if(!/^c[A-Za-z0-9]{1,40}$/.test(SOS_GO) || !meet.items.length) return;
+  const id = SOS_GO.slice(1); if(!meet.items.some(o => o.id === id)) return;
+  SOS_GO = ''; meet.open.add(id); renderMeets();
+  setTimeout(() => { const el = document.querySelector(`[data-mid="${id}"]`); if(el) el.scrollIntoView({block: 'start', behavior: 'smooth'}); }, 120);
+}
 function renderMeets(){
   // 쓰는 중인 댓글과 커서 위치는 다시 그려도 지켜요
   const focused = document.activeElement && document.activeElement.closest && document.activeElement.closest('.comment-form');
@@ -296,6 +314,14 @@ $('#meetList').addEventListener('click', async e => {
     }
     return;
   }
+  const rpc = e.target.closest('[data-reply-c]');
+  if(rpc){ const all = meet.comments[rpc.dataset.meet] || [], c = all.find(x => x.id === rpc.dataset.replyC);
+    if(c){ const root = c.to && all.some(x => x.id === c.to && !x.deleted) ? c.to : c.id;
+      meet.replyTo[rpc.dataset.meet] = {root, uid: c.uid || '', n: c.n || ''}; renderMeets();
+      const inp = document.querySelector(`[data-comment="${rpc.dataset.meet}"] input`); if(inp) inp.focus(); }
+    return; }
+  const rc = e.target.closest('[data-reply-cancel]');
+  if(rc){ delete meet.replyTo[rc.dataset.replyCancel]; renderMeets(); return; }
   const ce = e.target.closest('[data-cedit]');
   if(ce){ const c = Object.values(meet.comments).flat().find(x => x.id === ce.dataset.cedit);
     meet.editing = ce.dataset.cedit; meet.editDraft = c ? c.text : ''; renderMeets(); return; }
@@ -350,8 +376,12 @@ $('#meetList').addEventListener('submit', async e => {
     const k = newSecret(), ref = meet.col.doc(id).collection('comments').doc();
     setComKey(ref.id, k);
     const m = meet.items.find(o => o.id === id);   // 댓글도 모임과 같은 날 함께 지워져요
-    await ref.set({text, kh: await sha256hex(k), uid: ME.uid, n: ME.nick, ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-    if(m && !isMine(m) && typeof pushMeetComment === 'function') pushMeetComment(m, text);   // 모임 주최자에게 댓글 알림
+    const rt = meet.replyTo[id];
+    await ref.set({text, kh: await sha256hex(k), uid: ME.uid, n: ME.nick, ...(rt ? {to: rt.root} : {}), ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+    delete meet.replyTo[id];
+    // 🔔 알림: 답글이면 그 댓글 쓴 사람에게, 그리고 모임 주최자에게 (주최자가 답글 받는 사람이면 한 번만)
+    if(rt && typeof pushMeetReply === 'function') pushMeetReply(m || {id}, rt.uid, text);
+    if(m && !isMine(m) && !(rt && m.uid && rt.uid === m.uid) && typeof pushMeetComment === 'function') pushMeetComment(m, text);
   }catch(err){
     meet.drafts[id] = text; renderMeets();
     meetSay('댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
