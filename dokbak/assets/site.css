@@ -404,3 +404,7 @@ footer p{font-size:14px;color:var(--soft)}
 .nw{white-space:nowrap}
 .mloc{margin-left:auto}
 .msay,.mlead{text-wrap:balance}
+.again{top:auto;bottom:12px}
+.leaflet-popup-content{margin:12px 14px}
+.leaflet-popup-content .mrow{flex-wrap:nowrap}
+.leaflet-popup-content .mtag:not(.on):not(.off){background:#eef0f2;color:#333}

@@ -10,7 +10,8 @@
   };
   const CARE_K = { c: ['🏫', '육아종합지원센터'], n: ['🤝', '공동육아나눔터'] };
   const st = { kind: 'peds', center: null, rows: [], layer: null, me: null, moved: false, openOnly: false };
-  const map = L.map('map', { zoomControl: true, attributionControl: true }).setView(HOME, 14);
+  const map = L.map('map', { zoomControl: false, attributionControl: true }).setView(HOME, 14);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);   // 확대 버튼은 오른쪽 아래 (정보창을 가리지 않게)
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
   st.layer = L.layerGroup().addTo(map);
 
@@ -55,7 +56,7 @@
     rows.forEach((r, i) => {
       const open = st.kind === 'care' ? null : openNow(r);
       const m = L.marker([r.la, r.lo], { icon: pin(r, open) }).addTo(st.layer);
-      m.bindPopup(`<b>${esc(r.n)}</b><br>${badge(r)}<br><small>${esc(r.a)}</small><div class="mrow">${telA(r.t)}${wayA(r)}</div>`);
+      m.bindPopup(`<b>${esc(r.n)}</b><br>${badge(r)}<br><small>${esc(r.a)}</small><div class="mrow">${telA(r.t)}${wayA(r)}</div>`, { maxWidth: 260, autoPanPadding: [16, 16] });
       const li = document.createElement('li');
       li.innerHTML = `<button type="button" class="mname" data-i="${i}">${icon(r)} ${esc(r.n)}</button> <span class="md">${km(r.d)}</span>
         <div>${badge(r)}</div><p class="ma">${esc(r.a)}</p><div class="mrow">${telA(r.t)}${wayA(r)}</div>`;
@@ -112,9 +113,12 @@
   $('#mopen').addEventListener('click', () => { st.openOnly = !st.openOnly; $('#mopen').setAttribute('aria-pressed', String(st.openOnly)); draw(); });
   $('#again').addEventListener('click', () => { const c = map.getCenter(); st.center = [c.lat, c.lng]; load(); });
   // 지도를 손으로 옮기면 '여기서 다시 찾기' 버튼 (결과에 맞춰 지도가 스스로 움직인 건 빼요)
+  // 정보창이 열려 있는 동안(정보창이 보이도록 지도가 살짝 움직일 때 포함)은 버튼을 띄우지 않아요
+  map.on('popupopen', () => { st.pop = true; $('#again').hidden = true; });
+  map.on('popupclose', () => { st.pop = false; st.anchor = map.getCenter(); });
   map.on('moveend', () => {
     const c = map.getCenter();
-    if (st.fitting || !st.anchor){ st.fitting = false; st.anchor = c; return; }
+    if (st.fitting || !st.anchor || st.pop){ st.fitting = false; st.anchor = c; return; }
     if (map.distance(c, st.anchor) > 800) $('#again').hidden = false;
   });
   locate();
