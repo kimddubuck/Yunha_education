@@ -344,3 +344,12 @@ footer p{font-size:14px;color:var(--soft)}
 .post-meta{font-size:14px;color:var(--soft);margin:-4px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .pager a{white-space:nowrap}
 .prose a.bd-row,a.bd-row,.bd-row .bd-t,.bd-badge b{color:var(--ink);text-decoration:none}
+/* 탭 8개: 휴대폰은 4칸 2줄, 1200px까지는 탭을 로고 아래 한 줄로 */
+@media (max-width:1200px){.top-sos{margin-left:auto}.nav{order:3;margin-left:0;width:100%}}
+@media (max-width:640px){.nav{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:440px){.nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.nav a{font-size:13px;letter-spacing:-.4px;padding:6px 0}}
+@media (max-width:340px){.nav a{font-size:12px;letter-spacing:-.6px}}
+.bd-badge.wide{width:auto;min-width:56px;padding:0 9px}
+.bd-badge.wide b{font-size:12.5px;white-space:nowrap}
+.lead2{font-size:17px;font-weight:600}
+.post h2{font-size:19px;margin:22px 0 6px}

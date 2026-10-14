@@ -1,3 +1,4 @@
+import re
 # '오늘도 독박육아' 홈페이지 만들기
 #  play-data/plays.json (놀이 데이터) → dokbak/ (올릴 정적 사이트)
 #  사용: python3 dokbak-dev/build.py
@@ -100,10 +101,19 @@ def age_range(p):
 def in_band(p, lo, hi):
   return p['ageMin'] <= hi and p['ageMax'] >= lo
 
+# 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
+OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
+def okurl(u):
+  m = re.match(r'https://([^/]+)/', u or '')
+  return bool(m) and m.group(1) in OK_HOSTS
+def link(u, t):
+  return f'<a href="{e(u)}" rel="noopener">{e(t)}</a>' if okurl(u) else e(t)
+
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
-  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육')]
+  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육'), ('tips.html', '육아 상식'), ('support.html', '지원')]
+  nav = [(h, t) for h, t in nav if h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))]
   navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if active == h else ""}>{t}</a>' for h, t in nav)
   return f'''<!doctype html>
 <html lang="ko">
@@ -389,13 +399,13 @@ segs(); render();
     for i, it in enumerate(items):
       prv = items[i - 1] if i else None; nxt = items[i + 1] if i + 1 < len(items) else None
       pager = '<div class="pager">' + (f'<a href="{prv["id"]}.html">‹ 이전 글</a>' if prv else '<span></span>') + f'<a href="../{list_href}">☰ 목록</a>' + (f'<a href="{nxt["id"]}.html">다음 글 ›</a>' if nxt else '<span></span>') + '</div>'
-      orig = f'<a href="{e(it["url"])}" rel="noopener">{e(it["name"])}</a>' if it['url'] else e(it['name'])
+      orig = link(it['url'], it['name'])
       ppl = f'<p class="ppl">👤 <b>누구예요?</b> {e(it["people"])}</p>' if it.get('people') else ''
       when = f' · {e(it["yr"])}' if it['yr'] else ''
       body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../{list_href}">{list_name}</a></p>
 <article class="blk prose post" style="padding-top:12px"><h1>{e(it["t"])}</h1><p class="post-meta">{e(it["src"])}{when} · {e(it["kind"])}</p>
-<p>{e(it["sum"])}</p><p class="use">👉 {e(it["use"])}</p>{ppl}
-<div class="box ref"><p class="who" style="margin:0">📄 원문: {orig}<br>{e(it["who"])}</p></div>
+<p class="lead2">{e(it["sum"])}</p>{''.join(f'<h2>{e(x["h"])}</h2><p>{e(x["p"])}</p>' for x in it.get('secs', []))}<p class="use">👉 {e(it["use"])}</p>{ppl}
+<h2>📚 출처</h2><div class="box ref"><p class="who" style="margin:0">📄 원문: {orig}<br>{e(it["who"])}</p></div>{''.join(f'<div class="box ref"><p class="who" style="margin:0">📄 {link(x.get("url"), x["name"])}<br>{e(x["who"])}</p><p class="ppl">👤 <b>누가 쓴 자료예요?</b> {e(x["people"])}</p></div>' for x in it.get('src2', []))}
 <p class="src">{e(rs["checked"])}</p>{pager}</article></div>'''
       files[f'{folder}/{it["id"]}.html'] = page(f'{it["t"]} · {list_name} | 오늘도 독박육아', it['sum'][:150], body, f'{folder}/{it["id"]}.html', list_href)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 교육</p><section class="blk prose" style="padding-top:12px">
@@ -411,6 +421,41 @@ segs(); render();
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="research.html">📚 놀이·교육 연구도 보기</a></p></section></div>'''
   files['food.html'] = page('이유식·유아식 연구 · 언제 시작하고 뭘 먹일까 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
   rposts(fd['groups'], 'food', 'food.html', '이유식')
+
+  # ── 칼럼 게시판 (dokbak-dev/columns/*.json · 육아 상식, 지원)
+  BOARDS = [('tips', '육아 상식', '💡', '초보 엄마 아빠가 궁금해하는 것들을 연구와 공식 기관 자료로 풀었어요. 글마다 누가 쓴 자료인지 밝혀 두었고, 자료에 적힌 내용만 옮겼어요.',
+             '아기는 왜 낯을 가리고 떼를 쓸까? 시기별 행동, 잠과 안전, 말과 책, 애착과 훈육까지 연구와 공식 기관 자료로 정리했어요.'),
+            ('support', '지원', '🎁', '부모급여, 아동수당, 첫만남이용권, 육아휴직처럼 나라에서 받을 수 있는 지원을 정부 누리집 자료로 정리했어요. 금액과 조건은 바뀔 수 있으니 신청 전에 원문을 꼭 확인하세요.',
+             '부모급여·아동수당·첫만남이용권·보육료·육아휴직 급여 등 나라에서 주는 육아 지원을 정부 자료로 정리했어요.')]
+  short_age = lambda c: re.sub(r'\s*\(.*?\)', '', c.get('age', ''))
+  for slug, bname, bicon, bintro, bdesc in BOARDS:
+    fp = os.path.join(DEV, 'columns', slug + '.json')
+    if not os.path.exists(fp): continue
+    posts = json.load(open(fp, encoding='utf-8'))
+    cats = []
+    for c in posts:
+      if c['cat'] not in cats: cats.append(c['cat'])
+    def cbadge(c):
+      return badge(c['yr'], '기준') if c.get('yr') else badge(c.get('age', '').replace('개월', '개월\u200b'), '')
+    lst = ''.join(f'<p class="bd-cat">{e(cat)}</p><div class="bd">' + ''.join(brow(f'{slug}/{c["id"]}.html', c['t'], c['lead'], badge(c['yr'][:4], '기준') if c.get('yr') else f'<span class="bd-badge wide"><b>{e(short_age(c))}</b></span>') for c in posts if c['cat'] == cat) + '</div>' for cat in cats)
+    body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › {bname}</p><section class="blk prose" style="padding-top:12px">
+<h1>{bicon} {bname}</h1><p>{e(bintro)}</p>
+{lst}
+<p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 검색으로 확인한 원문 문장을 바탕으로 정리했어요.</p></section></div>'''
+    files[f'{slug}.html'] = page(f'{bname} | 오늘도 독박육아', bdesc, body, f'{slug}.html', f'{slug}.html')
+    for i, c in enumerate(posts):
+      prv = posts[i - 1] if i else None; nxt = posts[i + 1] if i + 1 < len(posts) else None
+      pager = '<div class="pager">' + (f'<a href="{prv["id"]}.html">‹ 이전 글</a>' if prv else '<span></span>') + f'<a href="../{slug}.html">☰ 목록</a>' + (f'<a href="{nxt["id"]}.html">다음 글 ›</a>' if nxt else '<span></span>') + '</div>'
+      secs = ''.join(f'<h2>{e(x["h"])}</h2><p>{e(x["p"])}</p>' for x in c['secs'])
+      note = f'<p class="gnote">⚠️ {e(c["note"])}</p>' if c.get('note') else ''
+      srcs = ''.join(f'<div class="box ref"><p class="who" style="margin:0">📄 {link(x.get("url"), x["name"])}<br>{e(x["who"])}</p><p class="ppl">👤 <b>누가 쓴 자료예요?</b> {e(x["people"])}</p></div>' for x in c['src'])
+      meta = ' · '.join(v for v in [c['cat'], c.get('age', ''), c.get('basis') or ((c['yr'][:4] + '년 기준') if c.get('yr') else '')] if v)
+      body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../{slug}.html">{bname}</a> › {e(c["cat"])}</p>
+<article class="blk prose post" style="padding-top:12px"><h1>{e(c["t"])}</h1><p class="post-meta">{e(meta)}</p>
+<p class="lead2">{e(c["lead"])}</p>{secs}{note}
+<h2>📚 출처</h2>{srcs}
+<p class="src">자료에 적힌 내용만 옮겼어요. 아이마다 다를 수 있으니 걱정되면 소아과 의사와 상의하세요.</p>{pager}</article></div>'''
+      files[f'{slug}/{c["id"]}.html'] = page(f'{c["t"]} · {bname} | 오늘도 독박육아', c['lead'][:150], body, f'{slug}/{c["id"]}.html', f'{slug}.html')
 
   # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
   VB = {'x': '근거 미확인', 'i': '간접 확인'}
@@ -487,7 +532,7 @@ segs(); render();
   # ── 유아교육 회사·교육법 이름 풀이
   B = json.load(open(os.path.join(DEV, 'brands.json'), encoding='utf-8'))
   def bitem(it):
-    srcs = ' · '.join(f'<a href="{e(u)}" rel="noopener">{e(t)}</a>' for t, u in it['src'])
+    srcs = ' · '.join(link(u, t) for t, u in it['src'])
     return (f'<div class="box ref"><h3>{e(it["name"])}{vb(it.get("v"))}</h3><p class="who">{e(it["kind"])}</p><p>{e(it["sum"])}</p>'
             + (f'<p class="gnote">{e(it["note"])}</p>' if it.get('note') else '') + f'<p class="src" style="margin-top:6px">출처: {srcs}</p></div>')
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › <a href="daycare/">어린이집</a> › 이름 풀이</p><section class="blk prose" style="padding-top:12px">
