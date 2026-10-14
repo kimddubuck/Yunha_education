@@ -4,8 +4,8 @@
 import json, csv, sys, os
 D = os.path.dirname(os.path.abspath(__file__))
 J, C = os.path.join(D, 'plays.json'), os.path.join(D, 'plays.csv')
-FIELDS = ['id', 'status', 'name', 'ageMin', 'ageMax', 'place', 'group', 'minutes', 'mess', 'principles', 'skills', 'materials', 'steps', 'tip', 'safety', 'keywords']
-LISTS = {'principles', 'skills', 'materials', 'steps', 'keywords'}
+FIELDS = ['id', 'status', 'name', 'ageMin', 'ageMax', 'place', 'group', 'minutes', 'mess', 'principles', 'skills', 'materials', 'steps', 'tip', 'safety', 'keywords', 'swaps']
+LISTS = {'principles', 'skills', 'materials', 'steps', 'keywords', 'swaps'}   # swaps = 없으면 이걸로 (원래 → 대체1 · 대체2)
 PLACES = {'실내', '실외', '욕실', '주방'}
 STATUS = {'확정', '후보', '해봄'}   # 후보 = 원리로 새로 만든 놀이 (아직 안 해 봄) · 해봄 = 직접 해 보고 다듬은 것
 # 놀이 원리 (자세한 설명은 principles.md)
@@ -31,12 +31,13 @@ if '--from-csv' in sys.argv:
   rows = []
   with open(C, encoding='utf-8-sig') as f:
     for r in csv.DictReader(f):
-      for k in LISTS: r[k] = [x.strip() for x in r[k].split('|') if x.strip()]
+      for k in LISTS: r[k] = [x.strip() for x in (r.get(k) or '').split('|') if x.strip()]
       for k in ('ageMin', 'ageMax', 'minutes', 'mess'): r[k] = int(r[k])
       r['group'] = r['group'].strip().upper() in ('TRUE', 'O', 'Y', '1', '예')
       rows.append({k: r[k] for k in FIELDS})
 else:
   rows = json.load(open(J, encoding='utf-8'))
+  for r in rows: r.setdefault('swaps', [])
 bad = check(rows)
 if bad: print('\n'.join(bad)); sys.exit(1)
 rows.sort(key=lambda r: (r['ageMin'], r['ageMax'], r['id']))

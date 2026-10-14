@@ -408,3 +408,5 @@ footer p{font-size:14px;color:var(--soft)}
 .leaflet-popup-content{margin:12px 14px}
 .leaflet-popup-content .mrow{flex-wrap:nowrap}
 .leaflet-popup-content .mtag:not(.on):not(.off){background:#eef0f2;color:#333}
+.box.newp{border-color:#c9b6f2;background:color-mix(in srgb,#8a63d2 8%,var(--paper))}
+.box.swap li{margin:4px 0}
