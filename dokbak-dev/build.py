@@ -500,13 +500,14 @@ segs(); render();
   # ── 🗺 육아 지도 (내 주변 소아청소년과 · 문 연 약국)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 육아 지도</p><section class="blk prose" style="padding-top:12px;max-width:none">
 <h1>🗺 육아 지도</h1><p class="mlead">아이가 아플 때, 내 주변 <span class="nw"><b>소아청소년과</b>와</span> <span class="nw"><b>지금 문 연 약국</b>을</span> 찾아요. <span class="nw"><b>키즈카페·공공 놀이시설</b>,</span> <span class="nw"><b>육아종합지원센터</b>·</span><span class="nw"><b>공동육아나눔터</b>도</span> 볼 수 있어요.</p>
+<div class="mapwrap" id="mapwrap"><div id="map" aria-label="육아 지도"></div>
 <div class="mbar"><div class="mseg" role="group" aria-label="찾을 곳"><button type="button" data-kind="peds" aria-pressed="true">🏥 소아과</button><button type="button" data-kind="pharm" aria-pressed="false">💊 약국</button><button type="button" data-kind="play" aria-pressed="false">🛝 놀이</button><button type="button" data-kind="care" aria-pressed="false">🤝 육아지원</button></div>
-<button type="button" class="mopen" id="mopen" aria-pressed="false">🟢 지금 여는 곳만</button><button type="button" class="mloc" id="locate">📍 내 위치</button></div>
-<div class="mapwrap"><div id="map" aria-label="육아 지도"></div><button type="button" class="again" id="again" hidden>🔄 여기서 다시 찾기</button></div>
+<div class="mrow2"><button type="button" class="mopen" id="mopen" aria-pressed="false">🟢 지금 여는 곳만</button><button type="button" class="mloc" id="locate">📍 내 위치</button></div></div>
+<button type="button" class="again" id="again" hidden>🔄 여기서 다시 찾기</button></div>
 <p class="msay" id="msay" aria-live="polite"></p>
 <ul class="mlist" id="mlist"></ul>
 <div class="box mlinks"><h2>🌙 밤·휴일에 아이가 아프면</h2>
-<p><a href="https://www.e-gen.or.kr/moonlight/main.do" rel="noopener">달빛어린이병원 찾기 (응급의료포털)</a><br><small>보건복지부가 지정한 야간·휴일 소아 진료 병원이에요. 평일 밤 11~12시, 주말·휴일 오후 6시까지 문을 열어요. 병원마다 다르니 가기 전 꼭 전화해 주세요.</small></p>
+<p><a href="https://www.e-gen.or.kr/moonlight/main.do" rel="noopener">달빛어린이병원 찾기 (응급의료포털)</a><br><small>보건복지부가 지정한 야간·휴일 소아 진료 병원이에요. 평일 밤 11~12시, 주말·휴일 오후 6시까지 문을 열어요. 병원마다 다르니 가기 전 꼭 전화해 주세요.<br>위 목록에서 <b>🌙 밤·주말 진료</b> 표시는 병원이 신고한 진료시간으로 고른 거예요 (달빛어린이병원 지정과는 달라요).</small></p>
 <p><a href="https://www.e-gen.or.kr/" rel="noopener">응급의료포털 (응급실·문 연 병원)</a><br><small>위급하면 바로 <b>119</b>에 전화하세요.</small></p></div>
 <p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과)·의료기관별상세정보서비스(진료시간), 국립중앙의료원 전국 약국 정보(오늘 영업시간), 행정안전부 전국어린이놀이시설정보·안전검사정보(키즈카페 등 놀이제공영업소·공공도서관·육아종합지원센터·박물관, 운영 중인 곳만), 한국건강가정진흥원 전국 공동육아나눔터 기관현황(2025.11.10), 부산광역시 육아종합지원센터 현황(2026.5.22, 지금은 부산만 있어요). 시설 위치는 주소로 찾은 거라 조금 다를 수 있어요. 병원·약국이 신고한 시간이라 <b>임시 휴진·공휴일은 반영되지 않을 수 있어요.</b> <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap · 주소 검색: 카카오</p>
 </section></div>

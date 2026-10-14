@@ -41,6 +41,8 @@
   const pin = (r, open) => L.divIcon({ className: 'mpin' + (open === false ? ' off' : ''), html: `<span><i>${icon(r)}</i></span>`, iconSize: [34, 34], iconAnchor: [17, 30], popupAnchor: [0, -26] });
   const telA = t => t ? `<a class="mbtn" href="tel:${esc(t.replace(/[^0-9-]/g, ''))}">📞 ${esc(t)}</a>` : '';
   const wayA = r => `<a class="mbtn" href="https://map.kakao.com/link/to/${encodeURIComponent(r.n)},${r.la},${r.lo}" target="_blank" rel="noopener">🧭 길찾기</a>`;
+  // 🌙 밤·주말 진료: 신고한 진료시간이 평일 밤 8시 넘어서까지거나 일요일에도 있으면 표시 (달빛어린이병원 지정 여부와는 달라요)
+  const lateNight = r => !!(r.h && (Object.entries(r.h).some(([d, w]) => d < 5 && w[1] >= 2000) || r.h[6]));
   function badge(r){
     if (st.kind === 'play'){
       // 안전검사: 가장 최근 검사의 유효기간이 오늘 이후고 합격이면 ✅, 지났으면 ⚠️ (가까운 15곳만 확인해요)
@@ -50,7 +52,7 @@
     if (st.kind === 'care') return `<span class="mtag">${(CARE_K[r.k] || CARE_K.n)[1]}</span> <span class="mtag">운영시간 자료 없음 · 전화로 확인</span>`;
     const peds = st.kind === 'peds', word = peds ? '진료' : '영업', t = todayHours(r), o = openNow(r);
     const kind = peds && r.k ? `<span class="mtag">${esc(r.k)}</span> ` : '';
-    const lunch = peds && r.l ? `<br><small class="mlunch">🍱 점심 ${esc(r.l)}</small>` : '';
+    const lunch = (peds && lateNight(r) ? ' <span class="mtag moon">🌙 밤·주말 진료</span>' : '') + (peds && r.l ? `<br><small class="mlunch">🍱 점심 ${esc(r.l)}</small>` : '');
     if (o === null) return kind + `<span class="mtag">${word}시간 정보 없음</span>` + lunch;
     if (t.off) return kind + '<span class="mtag off">오늘 휴진 (신고 기준)</span>' + lunch;
     return kind + (o ? `<span class="mtag on">지금 ${word} 중 · ~${hhmm(t.e > 2400 ? t.e - 2400 : t.e)}</span>` : `<span class="mtag off">${word} 시간 아님 · 오늘 ${hhmm(t.s)}~${hhmm(t.e)}</span>`) + lunch;
@@ -69,11 +71,11 @@
     rows.forEach((r, i) => {
       const open = NOHOURS(st.kind) ? null : openNow(r);
       const m = L.marker([r.la, r.lo], { icon: pin(r, open) }).addTo(st.layer);
-      m.bindPopup(`<b>${esc(r.n)}</b><br>${badge(r)}<br><small>${esc(r.a)}</small><div class="mrow">${telA(r.t)}${wayA(r)}</div>`, { maxWidth: 260, autoPanPadding: [16, 16] });
+      m.bindPopup(`<b>${esc(r.n)}</b><br>${badge(r)}<br><small>${esc(r.a)}</small><div class="mrow">${telA(r.t)}${wayA(r)}</div>`, { maxWidth: 260, autoPanPaddingTopLeft: [16, 24], autoPanPaddingBottomRight: [16, 60] });
       const li = document.createElement('li');
       li.innerHTML = `<button type="button" class="mname" data-i="${i}">${icon(r)} ${esc(r.n)}</button> <span class="md">${km(r.d)}</span>
         <div>${badge(r)}</div><p class="ma">${esc(r.a)}</p><div class="mrow">${telA(r.t)}${wayA(r)}</div>`;
-      li.querySelector('.mname').addEventListener('click', () => { map.setView([r.la, r.lo], 16); m.openPopup(); window.scrollTo({ top: $('#map').offsetTop - 70, behavior: 'smooth' }); });
+      li.querySelector('.mname').addEventListener('click', () => { map.setView([r.la, r.lo], 16); m.openPopup(); window.scrollTo({ top: $('#mapwrap').offsetTop - 70, behavior: 'smooth' }); });
       list.appendChild(li);
     });
   }
@@ -96,9 +98,10 @@
       if (!j.ok) throw new Error(j.detail || j.error || 'error');
       st.rows = j.rows || [];
       const openCnt = st.rows.filter(x => openNow(x)).length;
+      const moonCnt = st.kind === 'peds' ? st.rows.filter(lateNight).length : 0;
       say.textContent = st.kind === 'play' ? `🛝 가까운 키즈카페·공공 놀이시설 ${st.rows.length}곳 (가까운 순)`
         : st.kind === 'care' ? `🤝 ${j.sido || ''} 육아 지원 시설 ${st.rows.length}곳 (가까운 순)` + (j.more ? ' · 위치를 찾는 중이라 일부만 보여요. 잠시 뒤 다시 눌러 주세요' : '')
-        : st.kind === 'pharm' ? `💊 가까운 약국 ${st.rows.length}곳 · 지금 영업 중 ${openCnt}곳` : `🏥 가까운 소아청소년과 ${st.rows.length}곳 · 지금 진료 중 ${openCnt}곳`;
+        : st.kind === 'pharm' ? `💊 가까운 약국 ${st.rows.length}곳 · 지금 영업 중 ${openCnt}곳` : `🏥 가까운 소아청소년과 ${st.rows.length}곳 · 지금 진료 중 ${openCnt}곳` + (moonCnt ? ` · 🌙 밤·주말 진료 ${moonCnt}곳` : '');
       if (j.hoursErr) say.textContent += ` · 진료시간을 아직 못 받았어요 (${String(j.hoursErr).slice(0, 60)})`;
       draw();
       if (st.rows.length){ const b = L.latLngBounds(st.rows.slice(0, 8).map(x => [x.la, x.lo])); if (st.me) b.extend(st.me.getLatLng()); st.fitting = true; map.fitBounds(b, { padding: [30, 30], maxZoom: 16 }); }
@@ -134,8 +137,8 @@
   $('#again').addEventListener('click', () => { const c = map.getCenter(); st.center = [c.lat, c.lng]; load(); });
   // 지도를 손으로 옮기면 '여기서 다시 찾기' 버튼 (결과에 맞춰 지도가 스스로 움직인 건 빼요)
   // 정보창이 열려 있는 동안(정보창이 보이도록 지도가 살짝 움직일 때 포함)은 버튼을 띄우지 않아요
-  map.on('popupopen', () => { st.pop = true; $('#again').hidden = true; });
-  map.on('popupclose', () => { st.pop = false; st.anchor = map.getCenter(); });
+  map.on('popupopen', () => { st.pop = true; $('#again').hidden = true; $('#mapwrap').classList.add('pop'); });
+  map.on('popupclose', () => { st.pop = false; st.anchor = map.getCenter(); $('#mapwrap').classList.remove('pop'); });
   map.on('moveend', () => {
     const c = map.getCenter();
     if (st.fitting || !st.anchor || st.pop){ st.fitting = false; st.anchor = c; return; }

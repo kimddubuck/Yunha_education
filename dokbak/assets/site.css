@@ -410,3 +410,15 @@ footer p{font-size:14px;color:var(--soft)}
 .leaflet-popup-content .mtag:not(.on):not(.off){background:#eef0f2;color:#333}
 .box.newp{border-color:#c9b6f2;background:color-mix(in srgb,#8a63d2 8%,var(--paper))}
 .box.swap li{margin:4px 0}
+/* 지도 위 작은 조작 버튼 (정보창이 열리면 숨겨요) */
+.mbar{position:absolute;top:8px;left:8px;right:8px;z-index:500;margin:0;gap:6px;flex-direction:column;align-items:stretch;pointer-events:none;transition:opacity .15s}
+.mbar>*{pointer-events:auto}
+.mseg{flex:none;gap:2px;padding:2px;background:color-mix(in srgb,var(--paper) 92%,transparent);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.mseg button{font-size:12.5px;padding:6px 4px}
+.mrow2{display:flex;justify-content:space-between;gap:6px}
+.mopen,.mloc{font-size:12.5px;padding:6px 10px;background:color-mix(in srgb,var(--paper) 92%,transparent);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.mapwrap.pop .mbar{opacity:0;pointer-events:none}
+.mapwrap.pop .mbar>*{pointer-events:none}
+#map{min-height:380px}
+.mtag.moon{background:#2b2a4a;color:#cfc8ff;border-color:#5a55a0}
+.leaflet-popup-content .mtag.moon{background:#ecebff;color:#3b3680}
