@@ -35,6 +35,16 @@ PR = {
   '당기고떼기': ('🩹', '살짝 버티다가 "쏙" 빠지는 손맛이 좋아요', 9),
 }
 PR_SLUG = {k: f'p{i+1:02d}' for i, k in enumerate(PR)}
+# 원리마다 '어디서 나왔나'. None 이면 연구 근거 없이 놀이 만들기용으로 우리가 묶은 분류예요 (사이트에 그렇게 표시)
+PR_SRC = {
+  '넣고빼기': 'Athey(1990) 놀이 도식 · enclosure(담기)', '옮기기': 'Athey(1990) 놀이 도식 · transporting(나르기)',
+  '굴리고던지기': 'Athey(1990) 놀이 도식 · trajectory(궤적)', '감싸고풀기': 'Athey(1990) 놀이 도식 · enveloping(감싸기)',
+  '꽂고잇기': 'Athey(1990) 놀이 도식 · connecting(연결)', '변신': 'Athey(1990) 놀이 도식 · transforming(변형)',
+  '숨기고찾기': 'Piaget · 대상영속성', '흉내역할': 'AAP 「The Power of Play」(2018) · Parten(1932)',
+  '몸으로도전': 'Sandseter & Kennair(2011) · 위험한 놀이',
+  '원인결과': None, '쌓고무너뜨리기': None, '분류짝맞추기': None, '소리만들기': None, '당기고떼기': None,
+}
+NOSRC = '놀이 만들기용 분류 · 연구 근거 없음'
 PR_NAME = {'넣고빼기': '넣고 빼기', '숨기고찾기': '숨기고 찾기', '원인결과': '원인과 결과', '굴리고던지기': '굴리고 던지기', '감싸고풀기': '감싸고 풀기', '꽂고잇기': '꽂고 잇기', '쌓고무너뜨리기': '쌓고 무너뜨리기', '분류짝맞추기': '분류·짝 맞추기', '흉내역할': '흉내·역할', '몸으로도전': '몸으로 도전', '소리만들기': '소리 만들기', '당기고떼기': '당기고 떼기'}
 pn = lambda k: PR_NAME.get(k, k)
 
@@ -221,24 +231,29 @@ draw();
   for k, (ic, why, frm) in PR.items():
     lst = [p for p in rows if k in p['principles']]
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../principles.html">놀이 원리</a> › {pn(k)}</p>
-<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">놀이 원리 · 대략 {age(frm)}부터</span><h1 style="font-size:clamp(26px,5vw,36px)">{ic} {pn(k)}</h1><p>{why}</p></div>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">{'📚 연구 근거 · ' + PR_SRC[k] if PR_SRC[k] else '🧪 ' + NOSRC}</span><h1 style="font-size:clamp(26px,5vw,36px)">{ic} {pn(k)}</h1><p>{why}</p>{'' if PR_SRC[k] else '<p class="gnote">이 분류는 연구에서 가져온 게 아니라, 집 물건으로 놀이를 만들기 쉽게 우리가 묶은 거예요. 아래 놀이들은 그 분류로 만든 거고요.</p>'}</div>
 <div class="cards">{''.join(card(p, '../') for p in lst) or '<p class="none">준비 중이에요.</p>'}</div></section></div>'''
     files[f'principles/{PR_SLUG[k]}.html'] = page(f'{pn(k)} 놀이 · 아이가 좋아하는 이유 | 오늘도 독박육아', f'{why}. {pn(k)} 원리로 하는 엄마표 놀이 {len(lst)}가지.', body, f'principles/{PR_SLUG[k]}.html', 'principles.html')
   body = f'''<div class="wrap"><section class="blk prose" style="max-width:none">
 <div class="sh"><span class="ey">놀이 원리</span><h1 style="font-size:clamp(26px,5vw,36px)">🧠 아이는 왜 이걸 좋아할까?</h1><p>엄마표 놀이 대부분은 아래 원리 몇 개를 생활 물건으로 조합한 거예요.<br>원리를 알면 집에 있는 물건만 보고도 새 놀이를 만들 수 있어요.</p></div>
-<h2>아이가 빠지는 놀이의 5가지 조건</h2>
-<ol class="rules"><li><b>결과가 바로</b> 보여요</li><li><b>몇 번이고</b> 다시 할 수 있어요</li><li><b>조금 어렵지만</b> 할 만해요</li><li><b>진짜 어른 물건</b>이에요</li><li><b>아이 몸에 맞는</b> 작은 세상이에요</li></ol>
-<h2>14가지 놀이 원리</h2>
-<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">대략 {age(v[2])}부터 · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items())}</div>
+<h2>배움이 일어나는 놀이의 5가지 특징</h2>
+<p class="src" style="margin:0 0 8px">Zosh 외, 「Learning through play: a review of the evidence」 (LEGO 재단, 2017)에서 정리한 특징이에요. 다섯 가지가 매 순간 다 있을 필요는 없대요.</p>
+<ol class="rules"><li><b>즐거워요</b> (joyful)</li><li><b>의미가 있어요</b> (meaningful)</li><li><b>푹 빠져요</b> (actively engaging)</li><li><b>되풀이하며 시도해요</b> (iterative)</li><li><b>함께해요</b> (socially interactive)</li></ol>
+<h2>📚 연구에서 확인된 놀이 패턴 {sum(1 for k in PR if PR_SRC[k])}가지</h2>
+<p class="src" style="margin:0 0 8px">영국 Athey(1990)의 놀이 도식 연구, Piaget의 대상영속성, 미국소아과학회 보고서, Sandseter의 위험한 놀이 연구에서 가져왔어요. 우리말 이름은 우리가 붙였어요.</p>
+<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{PR_SRC[k]} · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items() if PR_SRC[k])}</div>
+<h2>🧪 놀이 만들기용 분류 {sum(1 for k in PR if not PR_SRC[k])}가지 (연구 근거 없음)</h2>
+<p class="src" style="margin:0 0 8px">연구에서 가져온 게 아니에요. 집 물건으로 새 놀이를 만들 때 쓰려고 우리가 묶은 분류라서, 발달 근거로 읽지 말아 주세요.</p>
+<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{NOSRC} · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items() if not PR_SRC[k])}</div>
 <h2>새 놀이 만드는 공식</h2>
 <p><b>원리 1~2개 + 집에 있는 물건 1~2개 + 아이 나이에 맞는 난이도</b></p>
 <ul><li>꽂고 잇기 + 채반 → 채반 구멍에 빨대 꽂기</li><li>당기고 떼기 + 빨래집게 + 상자 → 상자 테두리 빨래집게 떼기</li><li>굴리고 던지기 + 휴지심 + 벽 → 벽에 휴지심 미끄럼틀 붙여 공 굴리기</li></ul>
 <p>어리면 <b>크게·적게·느리게</b>, 크면 <b>작게·많게·규칙 더하기</b>로 난이도를 바꿔요.</p>
-<div class="box why"><h2>📚 이 원리는 어디서 왔나요?</h2><p>공식으로 정해진 분류는 아니에요. 놀이 도식(스키마) 이론, 피아제의 대상영속성, 사회적 놀이 단계, 안내된 놀이 연구 같은 아동발달 연구를 바탕으로 엄마표 놀이에 쓰기 좋게 <b>우리가 묶고 이름 붙인 것</b>이에요. 개월수는 대략적인 기준이고 아이마다 달라요.</p><p style="margin-top:8px"><a class="btn ghost" href="research.html">참고한 연구 보기</a></p></div>
+<div class="box why"><h2>📚 어디까지가 연구이고 어디부터가 우리 생각인가요?</h2><p>위 '연구에서 확인된 패턴'은 출처가 있는 내용이에요. '놀이 만들기용 분류'와 <b>새 놀이 만드는 공식, 놀이마다 적은 추천 나이·방법·꿀팁은 우리가 생각해서 쓴 것</b>이라 발달 근거로 보지 말고 참고만 해 주세요. 각 연구가 무슨 내용인지는 아래에서 볼 수 있어요.</p><p style="margin-top:8px"><a class="btn ghost" href="research.html">참고한 연구 보기</a></p></div>
 <h2>⚠️ 생활 물건으로 놀 때 안전 원칙</h2>
 <ul><li>3세 미만은 휴지심 구멍(지름 약 3.5cm)에 들어가는 크기는 질식 위험이 있어요. 꼭 지켜보거나 빼 주세요.</li><li>비닐봉지·랩·고무줄·끈은 얼굴이나 목에 닿지 않게 하고, 놀이가 끝나면 바로 치워요.</li><li>칼·가위·글루건으로 하는 준비는 어른만 해요.</li><li>물놀이는 얕은 물이라도 어른이 늘 옆에 있어요.</li></ul>
 </section></div>'''
-  files['principles.html'] = page('놀이 원리 14가지 · 아이가 좋아하는 놀이의 비밀 | 오늘도 독박육아', '아이가 빠지는 놀이의 5가지 조건과 14가지 놀이 원리. 원리를 알면 집에 있는 물건으로 새 놀이를 만들 수 있어요.', body, 'principles.html', 'principles.html')
+  files['principles.html'] = page('놀이 원리 · 연구에서 확인된 놀이 패턴 | 오늘도 독박육아', '연구에서 확인된 놀이 패턴 9가지와 놀이 만들기용 분류 5가지를 출처와 함께 나눠 보여 드려요.', body, 'principles.html', 'principles.html')
 
   # ── 홈
   feat = [p for p in rows if p['group']][:6]
@@ -354,6 +369,8 @@ segs(); render();
   VB = {'x': '근거 미확인', 'i': '간접 확인'}
   vb = lambda v: f'<span class="vb {v}">{VB[v]}</span>' if v in VB else ''
   def gblock(b):
+    if b.get('v') == 'x': return ''   # 근거를 확인하지 못한 블록은 사이트에 싣지 않아요
+    if 'list' in b: b = {**b, 'list': [x for x in b['list'] if x.get('v') != 'x']}
     mark = f'<p class="vline">{vb(b["v"])}{e(b.get("vt", ""))}</p>' if b.get('v') else ''
     if 'p' in b: return f'<p>{e(b["p"])}</p>'
     if 'note' in b: return f'<p class="gnote">{vb(b.get("v"))}{e(b["note"])}</p>'
@@ -365,7 +382,7 @@ segs(); render();
     if 'timeline' in b: return mark + '<ol class="timeline">' + ''.join(f'<li><time>{e(t)}</time><span>{e(x)}</span></li>' for t, x in b['timeline']) + '</ol>'
     if 'ask' in b: return '<div class="ask"><h3>🙋 방문해서 물어보세요</h3><ul>' + ''.join(f'<li>{e(q)}</li>' for q in b['ask']) + '</ul></div>'
     return ''
-  LEGEND = f'<div class="vlegend"><p>표시가 없는 내용은 정부 지침·법령 원문에서 확인한 것이에요.</p><p>{vb("i")} 원문이 아니라 기사, 검색 요약, 개편 전 자료로만 확인한 내용이에요.</p><p>{vb("x")} 근거를 확인하지 못했어요. 흔한 관행이나 정리한 사람의 해석이라 틀릴 수 있어요.</p></div>'
+  LEGEND = f'<div class="vlegend"><p>표시가 없는 내용은 정부 지침·법령 원문에서 확인한 것이에요.</p><p>{vb("i")} 원문이 아니라 정부 보도자료·기사·개편 전 자료로만 확인한 내용이에요.</p><p>근거를 확인하지 못한 관행·해석은 이 사이트에 싣지 않았어요.</p></div>'
   for gf in sorted(f for f in os.listdir(os.path.join(DEV, 'guides')) if f.endswith('.json')):
     G = json.load(open(os.path.join(DEV, 'guides', gf), encoding='utf-8'))
     sl = G['slug']; os.makedirs(os.path.join(OUT, sl), exist_ok=True)
