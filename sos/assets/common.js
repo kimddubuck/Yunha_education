@@ -104,6 +104,34 @@ const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 
   nav.querySelector('.intro-btn').addEventListener('click', () => { if(typeof showIntro === 'function') showIntro(); });
 })();
 
+/* 🔴 아래 탭 새 글 숫자: 마지막으로 그 탭을 본 뒤에 올라온 글 수 (SOS 예약=모임 글, 식단=사진, 익명게시판=글)
+   '본 시각'은 이 휴대폰에만 저장해요 (sosSeen:{방}). 내가 올린 건 빼고 세요. 처음 들어온 방은 지금부터 세요 */
+const SEEN_TABS = {meet: 'opinions', meal: 'meals', idea: 'ideas'};
+function seenMap(){ try{ return JSON.parse(localStorage.getItem('sosSeen:' + (ROOM && ROOM.roomId)) || '{}'); }catch(e){ return {}; } }
+function markSeen(tab){ if(!ROOM) return; try{ const m = seenMap(); m[tab] = Date.now(); localStorage.setItem('sosSeen:' + ROOM.roomId, JSON.stringify(m)); }catch(e){} }
+async function navBadges(){
+  const nav = document.getElementById('siteNav'); if(!nav || typeof ROOM === 'undefined' || !ROOM || typeof sosReady !== 'function') return;
+  const cur = nav.dataset.page;
+  if(SEEN_TABS[cur]) markSeen(cur);   // 이 탭을 보고 있으니 여기까지는 본 걸로
+  if(!(await sosReady())) return;
+  const r = roomRef(); if(!r) return;
+  const seen = seenMap(); let changed = false;
+  for(const [tab, col] of Object.entries(SEEN_TABS)){
+    if(tab === cur) continue;
+    if(!seen[tab]){ seen[tab] = Date.now(); changed = true; continue; }   // 처음엔 지금부터
+    try{
+      const q = await r.collection(col).where('createdAt', '>', firebase.firestore.Timestamp.fromMillis(seen[tab])).limit(30).get();
+      // 익명게시판 글엔 uid가 없어서, 이 휴대폰에 남은 내 글 열쇠(sosIdeaKeys)로 내 글을 빼요
+      let mine = {}; try{ mine = JSON.parse(localStorage.getItem('sosIdeaKeys') || '{}'); }catch(e){}
+      const n = q.docs.filter(d => { const x = d.data(); return x.uid !== ME.uid && !x.deleted && !mine[`rooms/${ROOM.key}/ideas/${d.id}`]; }).length;
+      const a = nav.querySelector(`.nav-links a[href="${Object.fromEntries(NAV.map(x => [x[1], x[0]]))[tab]}"]`);
+      if(a){ let i = a.querySelector('.nav-badge'); if(n){ if(!i){ i = document.createElement('i'); i.className = 'nav-badge'; a.appendChild(i); } i.textContent = n > 9 ? '9+' : n; a.setAttribute('aria-label', `${a.textContent.trim()} 새 글 ${n}개`); } else if(i) i.remove(); }
+    }catch(e){ console.debug('navBadges', tab, e && e.message); }
+  }
+  if(changed){ try{ localStorage.setItem('sosSeen:' + ROOM.roomId, JSON.stringify(seen)); }catch(e){} }
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { navBadges(); }); else navBadges();
+
 /* Firebase — 모임·SOS·놀이 추가는 지금 들어와 있는 "모임 방" 안에 저장돼요 (roomRef는 gate.js)
    필요한 Firestore 보안 규칙은 firestore.rules 참고 */
 // 모임 컬렉션을 돌려줘요. 인터넷·SDK 문제로 못 쓰거나 아직 방에 안 들어왔으면 null

@@ -1292,3 +1292,6 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 /* 줄 자동 맞춤: 가운데 정렬 안내문은 줄 길이를 고르게, 왼쪽 정렬 글은 마지막 줄에 한 글자만 남지 않게 */
 p,li,dd,figcaption,label,small{text-wrap:pretty}
 :is(.tiny-note,.sos-hint,.meal-wait,.meal-meta,.meal-memo,.meal-size,.slogan,.picked-when,.pop p,.pop h2,.pop h3,.safe-hero p,.push-toast,.empty,.idea-empty){text-wrap:balance}
+.nav-links a{position:relative}
+.nav-badge{position:absolute;top:-2px;right:calc(50% - 22px);min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e8382f;color:#fff;font-style:normal;font-size:10.5px;font-weight:900;line-height:17px;text-align:center;border:2px solid var(--bg)}
+@media (min-width:641px){.nav-badge{top:-4px;right:-6px}}
