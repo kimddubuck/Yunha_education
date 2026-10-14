@@ -28,7 +28,9 @@ export async function onRequestGet({ request, env, waitUntil }) {
 
   try {
     const rows = kind === 'peds' ? await peds(key, +la, +lo) : await pharm(key, +la, +lo);
-    const res = json({ ok: true, rows, at: Date.now() }, 200, TTL[kind]);
+    // 소아과 진료시간을 하나도 못 받았으면 원인을 같이 보내고, 결과는 짧게만 캐시해요 (곧 다시 시도하도록)
+    const noHours = kind === 'peds' && rows.length && !rows.some(r => r.h);
+    const res = json({ ok: true, rows, at: Date.now(), ...(noHours ? { hoursErr: rows.err || 'empty' } : {}) }, 200, noHours ? 300 : TTL[kind]);
     waitUntil(cache.put(cacheKey, res.clone()));
     return res;
   } catch (e) {
@@ -89,11 +91,13 @@ async function peds(key, lat, lon) {
   // 가까운 15곳만 진료시간을 붙여요 (5곳씩 나눠서, 실패해도 목록은 그대로)
   // 진료시간은 최대 6초만 기다려요. 늦게 오는 곳은 '시간 정보 없음'으로 두고 목록부터 보여줘요
   const near = rows.filter(r => r.y).slice(0, 15);
+  let err = '';
   const all = Promise.all(near.map(async r => {
-    try { const w = await hours(key, r.y); if (w) Object.assign(r, w); } catch (e) {}
+    try { const w = await hours(key, r.y); if (w) Object.assign(r, w); } catch (e) { err = err || String(e && e.message || e).slice(0, 80); }
   }));
-  await Promise.race([all, new Promise(ok => setTimeout(ok, 6000))]);
+  await Promise.race([all, new Promise(ok => setTimeout(() => { err = err || 'timeout'; ok(); }, 6000))]);
   rows.forEach(r => { delete r.y; });
+  Object.defineProperty(rows, 'err', { value: err, enumerable: false });
   return rows;
 }
 
@@ -112,6 +116,7 @@ async function hours(key, ykiho) {
     });
     out = { ...(Object.keys(h).length ? { h } : {}), ...(d.lunchWeek ? { l: String(d.lunchWeek).slice(0, 40) } : {}) };
   }
+  if (!out || !out.h) return out;   // 시간표가 없으면 저장하지 않고 다음에 다시 물어봐요
   await cache.put(ck, new Response(JSON.stringify(out), { headers: { 'Cache-Control': 'public, max-age=86400', 'Content-Type': 'application/json' } }));
   return out;
 }

@@ -53,6 +53,29 @@ BIO = {
   'AAP': ('AAP(2018) · Parten(1932)', '미국소아과학회(AAP)는 미국 소아과 의사들이 모인 학회예요. 2018년 보고서 「The Power of Play」의 대표 저자 마이클 요그먼(Michael Yogman)은 하버드 의대 소속 소아과 의사예요. 밀드레드 파튼(Mildred Parten)은 미국의 사회학자로, 1930년대 미네소타 대학에서 유치원 아이들이 노는 모습을 관찰해 혼자 놀기→나란히 놀기→어울려 놀기 같은 "같이 노는 단계"를 나눴어요.'),
   'Sandseter': ('Sandseter & Kennair(2011)', '엘렌 베아테 산세테르(Ellen Beate Hansen Sandseter)는 노르웨이 퀸 모드 유아교육대학 교수로, 아이들이 일부러 찾는 "살짝 무서운 놀이"를 오래 연구한 사람이에요. 함께 쓴 레이프 케나이르(Leif Kennair)는 노르웨이 과학기술대(NTNU)의 진화심리학자예요. 높은 곳, 빠른 속도, 몸싸움 같은 놀이가 두려움을 이겨 내는 데 도움이 된다고 봤어요.'),
 }
+# 🤝 육아 지원 시설 목록 (공공데이터 파일) → 지도 함수가 쓰는 모듈. 좌표는 함수가 카카오로 바꿔서 시도별로 캐시해요
+def _road(addr):
+  # 카카오 주소 검색은 '도로명 + 건물번호'까지만 넣는 게 잘 찾아요 (층·건물 이름은 빼요)
+  m = re.match(r'^(.*?(?:로|길)(?:\s*\d+번?길)?\s*\d+(?:-\d+)?)', addr)
+  if m: return m.group(1).strip()
+  return re.sub(r'\s+\S*\d+층.*$', '', re.sub(r'\s*\(.*$', '', addr)).strip()   # 지번 주소: 괄호·층 뒤는 빼요
+def write_care(path):
+  import csv
+  os.makedirs(os.path.dirname(path), exist_ok=True)
+  out = []
+  with open(os.path.join(DEV, 'data', '공동육아나눔터_전국_20251110.csv'), encoding='utf-8') as f:
+    for r in csv.DictReader(f):
+      r = {k.strip(): (v or '').strip() for k, v in r.items()}
+      a = re.sub(r'\s+', ' ', r['주소(도로명)'])
+      out.append({'k': 'n', 's': r['시도'], 'n': f"{r['운영기관']} 공동육아나눔터", 'a': a, 'q': _road(a), 't': r['연락처']})
+  with open(os.path.join(DEV, 'data', '육아종합지원센터_부산_20260522.csv'), encoding='utf-8') as f:
+    for r in csv.DictReader(f):
+      r = {k.strip(): (v or '').strip() for k, v in r.items()}
+      a = '부산광역시 ' + re.sub(r'\s*\(.*?\)\s*$', '', r['주소'])
+      out.append({'k': 'c', 's': '부산', 'n': r['센터명'], 'a': a, 'q': _road(a), 't': r['연락처']})
+  open(path, 'w').write('// 자동 생성 (dokbak-dev/build.py · data/*.csv). 직접 고치지 마세요\nexport default ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
+  return out
+
 def bio_of(src):
   for k, v in BIO.items():
     if src and src.startswith(k): return v
@@ -185,6 +208,7 @@ def build():
   shutil.copytree(os.path.join(DEV, 'vendor', 'leaflet'), os.path.join(OUT, 'assets', 'leaflet'))
   shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
+  write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
   files = {}
 
   # ── 놀이 하나하나 (검색으로 들어오는 페이지)
@@ -468,16 +492,16 @@ segs(); render();
 
   # ── 🗺 육아 지도 (내 주변 소아청소년과 · 문 연 약국)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 육아 지도</p><section class="blk prose" style="padding-top:12px;max-width:none">
-<h1>🗺 육아 지도</h1><p class="mlead">아이가 아플 때, 내 주변 <b>소아청소년과</b>와 <b>지금 문 연 약국</b>을 찾아요.</p>
-<div class="mbar"><div class="mseg" role="group" aria-label="찾을 곳"><button type="button" data-kind="peds" aria-pressed="true">🏥 소아과</button><button type="button" data-kind="pharm" aria-pressed="false">💊 약국</button></div>
-<button type="button" class="mloc" id="locate">📍 내 위치</button></div>
+<h1>🗺 육아 지도</h1><p class="mlead">아이가 아플 때, 내 주변 <span class="nw"><b>소아청소년과</b>와</span> <span class="nw"><b>지금 문 연 약국</b>을</span> 찾아요. <span class="nw"><b>육아종합지원센터</b>·</span><span class="nw"><b>공동육아나눔터</b>도</span> 볼 수 있어요.</p>
+<div class="mbar"><div class="mseg" role="group" aria-label="찾을 곳"><button type="button" data-kind="peds" aria-pressed="true">🏥 소아과</button><button type="button" data-kind="pharm" aria-pressed="false">💊 약국</button><button type="button" data-kind="care" aria-pressed="false">🤝 육아 지원</button></div>
+<button type="button" class="mopen" id="mopen" aria-pressed="false">🟢 지금 여는 곳만</button><button type="button" class="mloc" id="locate">📍 내 위치</button></div>
 <div class="mapwrap"><div id="map" aria-label="육아 지도"></div><button type="button" class="again" id="again" hidden>🔄 여기서 다시 찾기</button></div>
 <p class="msay" id="msay" aria-live="polite"></p>
 <ul class="mlist" id="mlist"></ul>
 <div class="box mlinks"><h2>🌙 밤·휴일에 아이가 아프면</h2>
 <p><a href="https://www.e-gen.or.kr/moonlight/main.do" rel="noopener">달빛어린이병원 찾기 (응급의료포털)</a><br><small>보건복지부가 지정한 야간·휴일 소아 진료 병원이에요. 평일 밤 11~12시, 주말·휴일 오후 6시까지 문을 열어요. 병원마다 다르니 가기 전 꼭 전화해 주세요.</small></p>
 <p><a href="https://www.e-gen.or.kr/" rel="noopener">응급의료포털 (응급실·문 연 병원)</a><br><small>위급하면 바로 <b>119</b>에 전화하세요.</small></p></div>
-<p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과)·의료기관별상세정보서비스(진료시간), 국립중앙의료원 전국 약국 정보(오늘 영업시간). 병원·약국이 신고한 시간이라 <b>임시 휴진·공휴일은 반영되지 않을 수 있어요.</b> <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap</p>
+<p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과)·의료기관별상세정보서비스(진료시간), 국립중앙의료원 전국 약국 정보(오늘 영업시간), 한국건강가정진흥원 전국 공동육아나눔터 기관현황(2025.11.10), 부산광역시 육아종합지원센터 현황(2026.5.22, 지금은 부산만 있어요). 시설 위치는 주소로 찾은 거라 조금 다를 수 있어요. 병원·약국이 신고한 시간이라 <b>임시 휴진·공휴일은 반영되지 않을 수 있어요.</b> <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap · 주소 검색: 카카오</p>
 </section></div>
 <script src="assets/leaflet/leaflet.js"></script><script src="assets/map.js?v={V}"></script>'''
   files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')

@@ -5,9 +5,11 @@
   const HOME = [35.2049, 129.0838];   // 위치를 못 받으면: 부산 동래구 근처에서 시작
   const KIND = {
     peds: { icon: '🏥', name: '소아청소년과', empty: '근처에서 소아청소년과를 찾지 못했어요.' },
-    pharm: { icon: '💊', name: '약국', empty: '근처에서 약국을 찾지 못했어요.' }
+    pharm: { icon: '💊', name: '약국', empty: '근처에서 약국을 찾지 못했어요.' },
+    care: { icon: '🤝', name: '육아 지원 시설', empty: '이 지역 자료에는 아직 육아 지원 시설이 없어요.' }
   };
-  const st = { kind: 'peds', center: null, rows: [], layer: null, me: null, moved: false };
+  const CARE_K = { c: ['🏫', '육아종합지원센터'], n: ['🤝', '공동육아나눔터'] };
+  const st = { kind: 'peds', center: null, rows: [], layer: null, me: null, moved: false, openOnly: false };
   const map = L.map('map', { zoomControl: true, attributionControl: true }).setView(HOME, 14);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
   st.layer = L.layerGroup().addTo(map);
@@ -30,10 +32,12 @@
     let s = r.s, e = r.e; if (e <= s) e += 2400;
     return (now >= s && now < e) || (now + 2400 >= s && now + 2400 < e);
   }
-  const pin = (k, open) => L.divIcon({ className: 'mpin' + (open === false ? ' off' : ''), html: `<span><i>${KIND[k].icon}</i></span>`, iconSize: [34, 34], iconAnchor: [17, 30], popupAnchor: [0, -26] });
+  const icon = r => st.kind === 'care' ? (CARE_K[r.k] || CARE_K.n)[0] : KIND[st.kind].icon;
+  const pin = (r, open) => L.divIcon({ className: 'mpin' + (open === false ? ' off' : ''), html: `<span><i>${icon(r)}</i></span>`, iconSize: [34, 34], iconAnchor: [17, 30], popupAnchor: [0, -26] });
   const telA = t => t ? `<a class="mbtn" href="tel:${esc(t.replace(/[^0-9-]/g, ''))}">📞 ${esc(t)}</a>` : '';
   const wayA = r => `<a class="mbtn" href="https://map.kakao.com/link/to/${encodeURIComponent(r.n)},${r.la},${r.lo}" target="_blank" rel="noopener">🧭 길찾기</a>`;
   function badge(r){
+    if (st.kind === 'care') return `<span class="mtag">${(CARE_K[r.k] || CARE_K.n)[1]}</span>`;
     const peds = st.kind === 'peds', word = peds ? '진료' : '영업', t = todayHours(r), o = openNow(r);
     const kind = peds && r.k ? `<span class="mtag">${esc(r.k)}</span> ` : '';
     const lunch = peds && r.l ? `<br><small class="mlunch">🍱 점심 ${esc(r.l)}</small>` : '';
@@ -45,13 +49,15 @@
   function draw(){
     st.layer.clearLayers();
     const list = $('#mlist'); list.innerHTML = '';
-    if (!st.rows.length){ list.innerHTML = `<li class="mnone">${KIND[st.kind].empty}</li>`; return; }
-    st.rows.forEach((r, i) => {
-      const open = openNow(r);
-      const m = L.marker([r.la, r.lo], { icon: pin(st.kind, open) }).addTo(st.layer);
+    // 🟢 '지금 여는 곳만'을 켜면 진료·영업 중인 곳만 보여요 (육아 지원 시설은 시간 자료가 없어서 빼요)
+    const rows = st.openOnly && st.kind !== 'care' ? st.rows.filter(r => openNow(r) === true) : st.rows;
+    if (!rows.length){ list.innerHTML = `<li class="mnone">${st.rows.length ? '지금 문 연 곳이 근처에 없어요. 「지금 여는 곳만」을 끄면 모두 보여요.' : KIND[st.kind].empty}</li>`; return; }
+    rows.forEach((r, i) => {
+      const open = st.kind === 'care' ? null : openNow(r);
+      const m = L.marker([r.la, r.lo], { icon: pin(r, open) }).addTo(st.layer);
       m.bindPopup(`<b>${esc(r.n)}</b><br>${badge(r)}<br><small>${esc(r.a)}</small><div class="mrow">${telA(r.t)}${wayA(r)}</div>`);
       const li = document.createElement('li');
-      li.innerHTML = `<button type="button" class="mname" data-i="${i}">${KIND[st.kind].icon} ${esc(r.n)}</button> <span class="md">${km(r.d)}</span>
+      li.innerHTML = `<button type="button" class="mname" data-i="${i}">${icon(r)} ${esc(r.n)}</button> <span class="md">${km(r.d)}</span>
         <div>${badge(r)}</div><p class="ma">${esc(r.a)}</p><div class="mrow">${telA(r.t)}${wayA(r)}</div>`;
       li.querySelector('.mname').addEventListener('click', () => { map.setView([r.la, r.lo], 16); m.openPopup(); window.scrollTo({ top: $('#map').offsetTop - 70, behavior: 'smooth' }); });
       list.appendChild(li);
@@ -63,13 +69,17 @@
     $('#again').hidden = true; st.moved = false;
     const say = $('#msay'); say.textContent = `${KIND[st.kind].icon} ${KIND[st.kind].name} 찾는 중…`;
     try{
-      const r = await fetch(`/api/near?kind=${st.kind}&lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
+      const q = `lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`;
+      $('#mopen').hidden = st.kind === 'care';
+      const r = await fetch(st.kind === 'care' ? `/api/care?${q}` : `/api/near?kind=${st.kind}&${q}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
       const j = await r.json();
       if (j.needKey){ say.textContent = '🛠 지도 준비 중이에요. 공공데이터 연결이 끝나면 바로 보여요.'; st.rows = []; draw(); return; }
       if (!j.ok) throw new Error(j.detail || j.error || 'error');
       st.rows = j.rows || [];
       const openCnt = st.rows.filter(x => openNow(x)).length;
-      say.textContent = st.kind === 'pharm' ? `💊 가까운 약국 ${st.rows.length}곳 · 지금 영업 중 ${openCnt}곳` : `🏥 가까운 소아청소년과 ${st.rows.length}곳 · 지금 진료 중 ${openCnt}곳`;
+      say.textContent = st.kind === 'care' ? `🤝 ${j.sido || ''} 육아 지원 시설 ${st.rows.length}곳 (가까운 순)` + (j.more ? ' · 위치를 찾는 중이라 일부만 보여요. 잠시 뒤 다시 눌러 주세요' : '')
+        : st.kind === 'pharm' ? `💊 가까운 약국 ${st.rows.length}곳 · 지금 영업 중 ${openCnt}곳` : `🏥 가까운 소아청소년과 ${st.rows.length}곳 · 지금 진료 중 ${openCnt}곳`;
+      if (j.hoursErr) say.textContent += ` · 진료시간을 아직 못 받았어요 (${String(j.hoursErr).slice(0, 60)})`;
       draw();
       if (st.rows.length){ const b = L.latLngBounds(st.rows.slice(0, 8).map(x => [x.la, x.lo])); if (st.me) b.extend(st.me.getLatLng()); st.fitting = true; map.fitBounds(b, { padding: [30, 30], maxZoom: 16 }); }
       else { st.anchor = map.getCenter(); }
@@ -98,6 +108,7 @@
     load();
   }));
   $('#locate').addEventListener('click', locate);
+  $('#mopen').addEventListener('click', () => { st.openOnly = !st.openOnly; $('#mopen').setAttribute('aria-pressed', String(st.openOnly)); draw(); });
   $('#again').addEventListener('click', () => { const c = map.getCenter(); st.center = [c.lat, c.lng]; load(); });
   // 지도를 손으로 옮기면 '여기서 다시 찾기' 버튼 (결과에 맞춰 지도가 스스로 움직인 건 빼요)
   map.on('moveend', () => {

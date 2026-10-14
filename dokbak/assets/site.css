@@ -394,3 +394,13 @@ footer p{font-size:14px;color:var(--soft)}
 .mpin i{transform:rotate(45deg);font-style:normal;line-height:1}
 @media (max-width:1440px){.top-sos{margin-left:auto}.nav{order:3;margin-left:0;width:100%}}
 .mlunch{color:var(--soft);font-size:12.5px}
+/* 육아 지도: 3가지 찾기 + 🟢 지금 여는 곳만 */
+.mbar{flex-wrap:wrap}
+.mseg{flex:1 1 100%}
+.mseg button{flex:1;padding:7px 6px;white-space:nowrap}
+.mopen{margin-right:auto;border:1px solid var(--line);background:var(--paper);color:var(--soft);font:inherit;font-size:14px;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.mopen[aria-pressed="true"]{background:#e3f6e8;border-color:#2f9e55;color:#1d6b38}
+.mloc{white-space:nowrap}
+.nw{white-space:nowrap}
+.mloc{margin-left:auto}
+.msay,.mlead{text-wrap:balance}
