@@ -38,7 +38,7 @@
   const telA = t => t ? `<a class="mbtn" href="tel:${esc(t.replace(/[^0-9-]/g, ''))}">📞 ${esc(t)}</a>` : '';
   const wayA = r => `<a class="mbtn" href="https://map.kakao.com/link/to/${encodeURIComponent(r.n)},${r.la},${r.lo}" target="_blank" rel="noopener">🧭 길찾기</a>`;
   function badge(r){
-    if (st.kind === 'care') return `<span class="mtag">${(CARE_K[r.k] || CARE_K.n)[1]}</span>`;
+    if (st.kind === 'care') return `<span class="mtag">${(CARE_K[r.k] || CARE_K.n)[1]}</span> <span class="mtag">운영시간 자료 없음 · 전화로 확인</span>`;
     const peds = st.kind === 'peds', word = peds ? '진료' : '영업', t = todayHours(r), o = openNow(r);
     const kind = peds && r.k ? `<span class="mtag">${esc(r.k)}</span> ` : '';
     const lunch = peds && r.l ? `<br><small class="mlunch">🍱 점심 ${esc(r.l)}</small>` : '';
@@ -65,7 +65,10 @@
     });
   }
 
+  // 버튼을 빨리 바꿔 누르면 늦게 도착한 이전 결과가 화면을 덮어써요 → 마지막 요청 결과만 써요
+  let seq = 0;
   async function load(){
+    const my = ++seq, kind = st.kind;
     const c = st.center || HOME;
     $('#again').hidden = true; st.moved = false;
     const say = $('#msay'); say.textContent = `${KIND[st.kind].icon} ${KIND[st.kind].name} 찾는 중…`;
@@ -74,6 +77,7 @@
       $('#mopen').hidden = st.kind === 'care';
       const r = await fetch(st.kind === 'care' ? `/api/care?${q}` : `/api/near?kind=${st.kind}&${q}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
       const j = await r.json();
+      if (my !== seq || kind !== st.kind) return;
       if (j.needKey){ say.textContent = '🛠 지도 준비 중이에요. 공공데이터 연결이 끝나면 바로 보여요.'; st.rows = []; draw(); return; }
       if (!j.ok) throw new Error(j.detail || j.error || 'error');
       st.rows = j.rows || [];
@@ -85,6 +89,7 @@
       if (st.rows.length){ const b = L.latLngBounds(st.rows.slice(0, 8).map(x => [x.la, x.lo])); if (st.me) b.extend(st.me.getLatLng()); st.fitting = true; map.fitBounds(b, { padding: [30, 30], maxZoom: 16 }); }
       else { st.anchor = map.getCenter(); }
     }catch(e){
+      if (my !== seq) return;
       // 원인을 짧게 같이 보여줘요 (예: SERVICE_KEY_IS_NOT_REGISTERED_ERROR = 공공데이터 키가 아직 등록 중)
       const why = String(e && (e.name === 'TimeoutError' || e.name === 'AbortError') ? 'timeout' : (e && e.message) || '').slice(0, 80);
       say.textContent = '⚠️ 정보를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.' + (why ? ` (${why})` : '');
