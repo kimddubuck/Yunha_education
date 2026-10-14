@@ -320,3 +320,4 @@ footer p{font-size:14px;color:var(--soft)}
 .srcd[open] summary::after{content:"▴"}
 .srcd p{margin:8px 0 0;font-size:14px;line-height:1.6;background:var(--teal-tint);border-radius:10px;padding:10px 12px;text-wrap:pretty}
 .sh .srcd{margin:10px 0 0}
+.srcd summary small{font-size:12px;color:var(--soft);font-weight:400;margin-left:2px}.box .srcd{border-top:0;padding-top:0;margin-top:0;border-bottom:1px dashed var(--line);padding:8px 0}.box .srcd:last-of-type{border-bottom:0}
