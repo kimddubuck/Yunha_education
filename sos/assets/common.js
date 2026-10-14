@@ -125,7 +125,7 @@ async function navBadges(){
       let mine = {}; try{ mine = JSON.parse(localStorage.getItem('sosIdeaKeys') || '{}'); }catch(e){}
       const n = q.docs.filter(d => { const x = d.data(); return x.uid !== ME.uid && !x.deleted && !mine[`rooms/${ROOM.key}/ideas/${d.id}`]; }).length;
       const a = nav.querySelector(`.nav-links a[href="${Object.fromEntries(NAV.map(x => [x[1], x[0]]))[tab]}"]`);
-      if(a){ let i = a.querySelector('.nav-badge'); if(n){ if(!i){ i = document.createElement('i'); i.className = 'nav-badge'; a.appendChild(i); } i.textContent = n > 9 ? '9+' : n; a.setAttribute('aria-label', `${a.textContent.trim()} 새 글 ${n}개`); } else if(i) i.remove(); }
+      if(a){ let i = a.querySelector('.nav-badge'); if(n){ if(!i){ i = document.createElement('i'); i.className = 'nav-badge'; (a.querySelector('span:last-child') || a).appendChild(i); } i.textContent = n > 9 ? '9+' : n; a.setAttribute('aria-label', `${a.textContent.trim()} 새 글 ${n}개`); } else if(i) i.remove(); }
     }catch(e){ console.debug('navBadges', tab, e && e.message); }
   }
   if(changed){ try{ localStorage.setItem('sosSeen:' + ROOM.roomId, JSON.stringify(seen)); }catch(e){} }
