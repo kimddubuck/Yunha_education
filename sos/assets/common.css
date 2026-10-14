@@ -1222,3 +1222,10 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .meal-mo select{min-width:0}
 .meal-mo #mealBy{flex:1.2}.meal-mo #mealBm{flex:1}
 .meal-age{margin:-2px 0 8px;font-size:12.5px;text-align:left}
+.meal-slot{padding:0}.meal-slot.empty{padding:4px 0}
+/* 칸마다 옆으로 넘기는 한 줄 (사람이 많아도 세로가 짧게) · '+'는 맨 앞 */
+.meal-row{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin:0 -16px;padding:0 16px 2px}
+.meal-row::-webkit-scrollbar{display:none}
+.meal-row > *{flex:0 0 28%;scroll-snap-align:start}
+.meal-row > .meal-add{flex-basis:15%;min-height:0;font-size:22px}
+.meal-slot h3 small.swipe{font-weight:500}
