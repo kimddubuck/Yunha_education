@@ -61,7 +61,11 @@
     const list = $('#mlist'); list.innerHTML = '';
     // 🟢 '지금 여는 곳만'을 켜면 진료·영업 중인 곳만 보여요 (육아 지원 시설은 시간 자료가 없어서 빼요)
     const rows = st.openOnly && !NOHOURS(st.kind) ? st.rows.filter(r => openNow(r) === true) : st.rows;
-    if (!rows.length){ list.innerHTML = `<li class="mnone">${st.rows.length ? '지금 문 연 곳이 근처에 없어요. 「지금 여는 곳만」을 끄면 모두 보여요.' : KIND[st.kind].empty}</li>`; return; }
+    if (!rows.length){
+      // 밤·휴일에 문 연 소아과가 없으면 달빛어린이병원 안내로 바로 이어 줘요
+      const moon = st.kind === 'peds' ? '<br>🌙 밤·휴일엔 <a href="https://www.e-gen.or.kr/moonlight/main.do" rel="noopener">달빛어린이병원</a>을 찾아보세요. 위급하면 <b>119</b>.' : '';
+      list.innerHTML = `<li class="mnone">${st.rows.length ? '지금 문 연 곳이 근처에 없어요. 「지금 여는 곳만」을 끄면 모두 보여요.' + moon : KIND[st.kind].empty}</li>`; return;
+    }
     rows.forEach((r, i) => {
       const open = NOHOURS(st.kind) ? null : openNow(r);
       const m = L.marker([r.la, r.lo], { icon: pin(r, open) }).addTo(st.layer);
@@ -80,7 +84,8 @@
     const my = ++seq, kind = st.kind;
     const c = st.center || HOME;
     $('#again').hidden = true; st.moved = false;
-    const say = $('#msay'); say.textContent = `${KIND[st.kind].icon} ${KIND[st.kind].name} 찾는 중…`;
+    const say = $('#msay'); say.textContent = `${KIND[st.kind].icon} ${KIND[st.kind].name} 찾는 중… (처음엔 10초쯤 걸릴 수 있어요)`;
+    $('#mlist').innerHTML = '';   // 찾는 동안 이전 목록·안내가 남지 않게
     try{
       const q = `lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`;
       $('#mopen').hidden = NOHOURS(st.kind);
