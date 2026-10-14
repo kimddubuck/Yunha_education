@@ -45,6 +45,27 @@ PR_SRC = {
   '원인결과': None, '쌓고무너뜨리기': None, '분류짝맞추기': None, '소리만들기': None, '당기고떼기': None,
 }
 NOSRC = '놀이 만들기용 분류 · 연구 근거 없음'
+# 출처 이름을 누르면 펼쳐지는 '누구예요?' 설명
+BIO = {
+  'Athey': ('Athey(1990) 놀이 도식', '크리스 애시(Chris Athey)는 영국의 유아교육 연구자예요. 런던 프뢰벨 교육원에서 1970년대에 어린아이들을 몇 년 동안 관찰한 "프뢰벨 유아교육 프로젝트"를 이끌었고, 그 결과를 1990년 책 『Extending Thought in Young Children』으로 냈어요. 장난감이 달라도 되풀이되는 아이의 행동 패턴을 "도식(schema)"이라고 불렀고, 영국 어린이집·유치원 교사 교육에서 널리 쓰여요.'),
+  'Piaget': ('Piaget 대상영속성', '장 피아제(Jean Piaget, 1896~1980)는 스위스의 심리학자예요. 아이의 생각이 나이에 따라 단계적으로 자란다는 "인지발달 이론"을 세웠고, 눈앞에서 사라진 물건도 계속 있다는 걸 아기가 차츰 알게 되는 것을 "대상영속성"이라고 했어요. 지금 쓰이는 아동심리학 교과서 대부분의 바탕이 된 사람이에요.'),
+  'AAP': ('AAP(2018) · Parten(1932)', '미국소아과학회(AAP)는 미국 소아과 의사들이 모인 학회예요. 2018년 보고서 「The Power of Play」의 대표 저자 마이클 요그먼(Michael Yogman)은 하버드 의대 소속 소아과 의사예요. 밀드레드 파튼(Mildred Parten)은 미국의 사회학자로, 1930년대 미네소타 대학에서 유치원 아이들이 노는 모습을 관찰해 혼자 놀기→나란히 놀기→어울려 놀기 같은 "같이 노는 단계"를 나눴어요.'),
+  'Sandseter': ('Sandseter & Kennair(2011)', '엘렌 베아테 산세테르(Ellen Beate Hansen Sandseter)는 노르웨이 퀸 모드 유아교육대학 교수로, 아이들이 일부러 찾는 "살짝 무서운 놀이"를 오래 연구한 사람이에요. 함께 쓴 레이프 케나이르(Leif Kennair)는 노르웨이 과학기술대(NTNU)의 진화심리학자예요. 높은 곳, 빠른 속도, 몸싸움 같은 놀이가 두려움을 이겨 내는 데 도움이 된다고 봤어요.'),
+}
+def bio_of(src):
+  for k, v in BIO.items():
+    if src and src.startswith(k): return v
+  return None
+def src_chips(k, n):
+  # 줄바꿈이 항목 사이에서만 일어나게 항목마다 nowrap 칩으로
+  src = PR_SRC[k]
+  if not src: return f'<span class="chip-m">🧪 {NOSRC}</span><span class="chip-m">놀이 {n}가지</span>'
+  parts = src.split(' · ')
+  return ''.join(f'<span class="chip-m">{e(x)}</span>' for x in parts) + f'<span class="chip-m">놀이 {n}가지</span>'
+def src_details(k):
+  b = bio_of(PR_SRC[k])
+  if not b: return ''
+  return f'<details class="srcd"><summary>👤 {e(b[0])} — 누구예요?</summary><p>{e(b[1])}</p></details>'
 PR_NAME = {'넣고빼기': '넣고 빼기', '숨기고찾기': '숨기고 찾기', '원인결과': '원인과 결과', '굴리고던지기': '굴리고 던지기', '감싸고풀기': '감싸고 풀기', '꽂고잇기': '꽂고 잇기', '쌓고무너뜨리기': '쌓고 무너뜨리기', '분류짝맞추기': '분류·짝 맞추기', '흉내역할': '흉내·역할', '몸으로도전': '몸으로 도전', '소리만들기': '소리 만들기', '당기고떼기': '당기고 떼기'}
 pn = lambda k: PR_NAME.get(k, k)
 
@@ -231,7 +252,7 @@ draw();
   for k, (ic, why, frm) in PR.items():
     lst = [p for p in rows if k in p['principles']]
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../principles.html">놀이 원리</a> › {pn(k)}</p>
-<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">{'📚 연구 근거 · ' + PR_SRC[k] if PR_SRC[k] else '🧪 ' + NOSRC}</span><h1 style="font-size:clamp(26px,5vw,36px)">{ic} {pn(k)}</h1><p>{why}</p>{'' if PR_SRC[k] else '<p class="gnote">이 분류는 연구에서 가져온 게 아니라, 집 물건으로 놀이를 만들기 쉽게 우리가 묶은 거예요. 아래 놀이들은 그 분류로 만든 거고요.</p>'}</div>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">{'📚 연구 근거 · ' + PR_SRC[k] if PR_SRC[k] else '🧪 ' + NOSRC}</span><h1 style="font-size:clamp(26px,5vw,36px)">{ic} {pn(k)}</h1><p>{why}</p>{src_details(k)}{'' if PR_SRC[k] else '<p class="gnote">이 분류는 연구에서 가져온 게 아니라, 집 물건으로 놀이를 만들기 쉽게 우리가 묶은 거예요. 아래 놀이들은 그 분류로 만든 거고요.</p>'}</div>
 <div class="cards">{''.join(card(p, '../') for p in lst) or '<p class="none">준비 중이에요.</p>'}</div></section></div>'''
     files[f'principles/{PR_SLUG[k]}.html'] = page(f'{pn(k)} 놀이 · 아이가 좋아하는 이유 | 오늘도 독박육아', f'{why}. {pn(k)} 원리로 하는 엄마표 놀이 {len(lst)}가지.', body, f'principles/{PR_SLUG[k]}.html', 'principles.html')
   body = f'''<div class="wrap"><section class="blk prose" style="max-width:none">
@@ -241,7 +262,7 @@ draw();
 <ol class="rules"><li><b>즐거워요</b> (joyful)</li><li><b>의미가 있어요</b> (meaningful)</li><li><b>푹 빠져요</b> (actively engaging)</li><li><b>되풀이하며 시도해요</b> (iterative)</li><li><b>함께해요</b> (socially interactive)</li></ol>
 <h2>📚 연구에서 확인된 놀이 패턴 {sum(1 for k in PR if PR_SRC[k])}가지</h2>
 <p class="src" style="margin:0 0 8px">영국 Athey(1990)의 놀이 도식 연구, Piaget의 대상영속성, 미국소아과학회 보고서, Sandseter의 위험한 놀이 연구에서 가져왔어요. 우리말 이름은 우리가 붙였어요.</p>
-<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{PR_SRC[k]} · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items() if PR_SRC[k])}</div>
+<div class="prs">{''.join(f'<div class="pr pr2"><div class="meta chips-m">{src_chips(k, sum(1 for p in rows if k in p["principles"]))}</div><a href="principles/{PR_SLUG[k]}.html"><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>{src_details(k)}</div>' for k, v in PR.items() if PR_SRC[k])}</div>
 <div class="box"><h2>👤 이름 풀이: 이 사람들은 누구예요?</h2><ul>
 <li><b>Athey (크리스 애시)</b> 영국 유아교육 연구자. 런던 프뢰벨 교육원에서 1970년대에 아이들을 몇 년간 관찰해 "놀이 도식"을 정리했고 1990년 책으로 냈어요.</li>
 <li><b>Piaget (장 피아제, 1896~1980)</b> 스위스 심리학자. 아이의 생각이 단계적으로 자란다는 인지발달 이론을 세운, 아동심리학의 기본이 되는 사람이에요.</li>
@@ -252,7 +273,7 @@ draw();
 <p style="margin-top:8px"><a class="btn ghost" href="research.html">연구마다 자세히 보기</a></p></div>
 <h2>🧪 놀이 만들기용 분류 {sum(1 for k in PR if not PR_SRC[k])}가지 (연구 근거 없음)</h2>
 <p class="src" style="margin:0 0 8px">연구에서 가져온 게 아니에요. 집 물건으로 새 놀이를 만들 때 쓰려고 우리가 묶은 분류라서, 발달 근거로 읽지 말아 주세요.</p>
-<div class="prs">{''.join(f'<a class="pr" href="principles/{PR_SLUG[k]}.html"><span class="meta">{NOSRC} · 놀이 {sum(1 for p in rows if k in p["principles"])}가지</span><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a>' for k, v in PR.items() if not PR_SRC[k])}</div>
+<div class="prs">{''.join(f'<div class="pr pr2"><div class="meta chips-m">{src_chips(k, sum(1 for p in rows if k in p["principles"]))}</div><a href="principles/{PR_SLUG[k]}.html"><h3>{v[0]} {pn(k)}</h3><p>{v[1]}</p></a></div>' for k, v in PR.items() if not PR_SRC[k])}</div>
 <h2>새 놀이 만드는 공식</h2>
 <p><b>원리 1~2개 + 집에 있는 물건 1~2개 + 아이 나이에 맞는 난이도</b></p>
 <ul><li>꽂고 잇기 + 채반 → 채반 구멍에 빨대 꽂기</li><li>당기고 떼기 + 빨래집게 + 상자 → 상자 테두리 빨래집게 떼기</li><li>굴리고 던지기 + 휴지심 + 벽 → 벽에 휴지심 미끄럼틀 붙여 공 굴리기</li></ul>

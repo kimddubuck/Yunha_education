@@ -308,3 +308,15 @@ footer p{font-size:14px;color:var(--soft)}
 .cards{gap:6px}
 .prose a.pr,.prose a.pr h3,.prose a.card,.prose a.card h3,.pr h3,.card h3{color:var(--ink)}
 .box.ref .ppl{font-size:14px;background:var(--teal-tint);border-radius:10px;padding:8px 10px;margin:4px 0 8px}
+/* 출처 칩: 항목 사이에서만 줄바꿈 · 누르면 펼쳐지는 설명 */
+.chips-m{display:flex;flex-wrap:wrap;gap:4px 6px;margin-bottom:4px}
+.chip-m{white-space:nowrap;font-size:12px;color:var(--teal-ink);background:var(--teal-tint);border-radius:6px;padding:1px 7px}
+.pr2 a{text-decoration:none;color:inherit;display:block}
+.pr2 a p{white-space:normal;text-wrap:pretty}
+.srcd{margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+.srcd summary{cursor:pointer;font-size:13.5px;color:var(--link);list-style:none;display:flex;align-items:center;gap:6px}
+.srcd summary::-webkit-details-marker{display:none}
+.srcd summary::after{content:"▾";margin-left:auto;color:var(--soft)}
+.srcd[open] summary::after{content:"▴"}
+.srcd p{margin:8px 0 0;font-size:14px;line-height:1.6;background:var(--teal-tint);border-radius:10px;padding:10px 12px;text-wrap:pretty}
+.sh .srcd{margin:10px 0 0}
