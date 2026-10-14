@@ -39,10 +39,21 @@ export async function onRequestGet({ request, env, waitUntil }) {
 // 공공데이터포털은 '인코딩 키'와 '디코딩 키'를 둘 다 줘요. 어느 쪽을 넣어도 되게 해요
 const enc = k => /%[0-9A-Fa-f]{2}/.test(k) ? k : encodeURIComponent(k);
 
-async function call(base, key, params) {
+// 공공 API가 느리거나 https 연결이 안 될 때를 대비해: 8초 안에 답이 없으면 끊고 http 로 한 번 더 물어봐요
+async function get(url, ms) {
+  const r = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(ms) });
+  return { ok: r.ok, status: r.status, text: await r.text() };
+}
+async function call(base, key, params, ms = 8000) {
   const q = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
-  const r = await fetch(`${base}?serviceKey=${enc(key)}&${q}&_type=json`, { headers: { Accept: 'application/json' }, cf: { cacheTtl: 0 } });
-  const t = await r.text();
+  const url = `${base}?serviceKey=${enc(key)}&${q}&_type=json`;
+  let r;
+  try { r = await get(url, ms); }
+  catch (e) {
+    try { r = await get(url.replace(/^https:/, 'http:'), ms); }
+    catch (e2) { throw new Error(/timeout|abort/i.test(String(e2 && e2.name) + String(e2 && e2.message)) ? 'timeout' : 'connect_fail'); }
+  }
+  const t = r.text;
   if (!r.ok) throw new Error(`http_${r.status}`);
   let j; try { j = JSON.parse(t); } catch (e) {
     // 인증키 문제 등은 XML 로 와요: <returnAuthMsg>SERVICE_KEY_IS_NOT_REGISTERED_ERROR</returnAuthMsg>
@@ -76,10 +87,12 @@ async function peds(key, lat, lon) {
     .map(h => ({ ...h, d: dist(lat, lon, h.la, h.lo) }))
     .sort((x, y) => x.d - y.d).slice(0, 50);
   // 가까운 15곳만 진료시간을 붙여요 (5곳씩 나눠서, 실패해도 목록은 그대로)
+  // 진료시간은 최대 6초만 기다려요. 늦게 오는 곳은 '시간 정보 없음'으로 두고 목록부터 보여줘요
   const near = rows.filter(r => r.y).slice(0, 15);
-  for (let i = 0; i < near.length; i += 5) await Promise.all(near.slice(i, i + 5).map(async r => {
+  const all = Promise.all(near.map(async r => {
     try { const w = await hours(key, r.y); if (w) Object.assign(r, w); } catch (e) {}
   }));
+  await Promise.race([all, new Promise(ok => setTimeout(ok, 6000))]);
   rows.forEach(r => { delete r.y; });
   return rows;
 }
@@ -89,7 +102,7 @@ const pad4 = v => { const d = String(v == null ? '' : v).replace(/\D/g, ''); ret
 async function hours(key, ykiho) {
   const ck = new Request(`https://cache.local/dtl/${encodeURIComponent(ykiho)}`), cache = caches.default;
   const hit = await cache.match(ck); if (hit) return hit.json();
-  const items = await call(DETAIL, key, { ykiho, numOfRows: 10, pageNo: 1 });
+  const items = await call(DETAIL, key, { ykiho, numOfRows: 10, pageNo: 1 }, 5000);
   const d = items[0]; let out = null;
   if (d) {
     const h = {};

@@ -63,7 +63,7 @@
     $('#again').hidden = true; st.moved = false;
     const say = $('#msay'); say.textContent = `${KIND[st.kind].icon} ${KIND[st.kind].name} 찾는 중…`;
     try{
-      const r = await fetch(`/api/near?kind=${st.kind}&lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`);
+      const r = await fetch(`/api/near?kind=${st.kind}&lat=${c[0].toFixed(5)}&lon=${c[1].toFixed(5)}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined });
       const j = await r.json();
       if (j.needKey){ say.textContent = '🛠 지도 준비 중이에요. 공공데이터 연결이 끝나면 바로 보여요.'; st.rows = []; draw(); return; }
       if (!j.ok) throw new Error(j.detail || j.error || 'error');
@@ -73,7 +73,11 @@
       draw();
       if (st.rows.length){ const b = L.latLngBounds(st.rows.slice(0, 8).map(x => [x.la, x.lo])); if (st.me) b.extend(st.me.getLatLng()); st.fitting = true; map.fitBounds(b, { padding: [30, 30], maxZoom: 16 }); }
       else { st.anchor = map.getCenter(); }
-    }catch(e){ say.textContent = '⚠️ 정보를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.'; }
+    }catch(e){
+      // 원인을 짧게 같이 보여줘요 (예: SERVICE_KEY_IS_NOT_REGISTERED_ERROR = 공공데이터 키가 아직 등록 중)
+      const why = String(e && (e.name === 'TimeoutError' || e.name === 'AbortError') ? 'timeout' : (e && e.message) || '').slice(0, 80);
+      say.textContent = '⚠️ 정보를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.' + (why ? ` (${why})` : '');
+    }
   }
 
   function locate(){
