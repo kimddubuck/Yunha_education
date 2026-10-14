@@ -125,7 +125,7 @@ def in_band(p, lo, hi):
   return p['ageMin'] <= hi and p['ageMax'] >= lo
 
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
-OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
+OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'www.healthychildren.org', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
 def okurl(u):
   m = re.match(r'https://([^/]+)/', u or '')
   return bool(m) and m.group(1) in OK_HOSTS
