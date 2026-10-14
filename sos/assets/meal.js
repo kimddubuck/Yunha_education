@@ -27,23 +27,6 @@ const oldestDay = () => addDays(todayStr(), -MEAL_DAYS);
 function rememberMine(id){ try{ const a = JSON.parse(localStorage.getItem(MY_MEALS) || '[]'); a.unshift({key: ROOM.key, id}); localStorage.setItem(MY_MEALS, JSON.stringify(a.slice(0, 300))); }catch(e){} }
 function forgetMine(id){ try{ localStorage.setItem(MY_MEALS, JSON.stringify(JSON.parse(localStorage.getItem(MY_MEALS) || '[]').filter(x => x.id !== id))); }catch(e){} }
 
-/* 사진 줄이기: 긴 쪽 360px · WebP(안 되면 JPEG) · 60KB 넘으면 더 줄여요 */
-async function shrinkPhoto(file){
-  let src = null;
-  try{ src = await createImageBitmap(file); }
-  catch(e){ src = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(file); }); }
-  let max = 360, q = 0.6;
-  for(let k = 0; k < 6; k++){
-    const w = src.width, h = src.height, s = Math.min(1, max / Math.max(w, h));
-    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
-    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
-    let u = c.toDataURL('image/webp', q);
-    if(!u.startsWith('data:image/webp')) u = c.toDataURL('image/jpeg', q);   // 아이폰 사파리 일부는 WebP로 못 만들어요
-    if(u.length <= 60000) return u;
-    max = Math.round(max * 0.85); q = Math.max(0.4, q - 0.08);
-  }
-  throw new Error('too-big');
-}
 
 function fmtHm(ts){ if(!ts || !ts.toDate) return ''; const d = ts.toDate(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; }
 const canDel = d => d.uid === ME.uid || ME.owner;

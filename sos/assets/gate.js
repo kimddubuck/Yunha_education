@@ -408,7 +408,7 @@ async function sosDeleteMe(){
   if(user && db) await sosDeleteMyMeals(db, user.uid, [...sosRooms(), ...sosKicked()]);   // 🍚 내가 올린 식단 사진 모두
   // 🙈 익명게시판 글·댓글: 이 휴대폰에 기억한 비밀값으로 '지움' 표시 (서버에는 누가 썼는지 없어서 이 방법뿐이에요)
   if(db){ let ik = {}; try{ ik = JSON.parse(localStorage.getItem('sosIdeaKeys') || '{}'); }catch(e){}
-    await Promise.all(Object.entries(ik).map(([path, k]) => db.doc(path).update({...(path.includes('/comments/') ? {} : {t: ''}), b: '', deleted: true, k}).catch(() => {}))); }
+    await Promise.all(Object.entries(ik).map(([path, k]) => db.doc(path).update({...(path.includes('/comments/') ? {} : {t: '', img: '', url: ''}), b: '', deleted: true, k}).catch(() => {}))); }
   if(user && db) for(const r of [...sosRooms(), ...sosKicked()]){
     const me = db.collection('rooms').doc(r.key).collection('members').doc(user.uid);
     try{ await me.delete(); }

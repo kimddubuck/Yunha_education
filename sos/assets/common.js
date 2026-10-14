@@ -132,6 +132,69 @@ async function navBadges(){
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { navBadges(); }); else navBadges();
 
+/* 사진 줄이기: 긴 쪽 360px · WebP(안 되면 JPEG) · 60KB 넘으면 더 줄여요 */
+async function shrinkPhoto(file){
+  let src = null;
+  try{ src = await createImageBitmap(file); }
+  catch(e){ src = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(file); }); }
+  let max = 360, q = 0.6;
+  for(let k = 0; k < 6; k++){
+    const w = src.width, h = src.height, s = Math.min(1, max / Math.max(w, h));
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    let u = c.toDataURL('image/webp', q);
+    if(!u.startsWith('data:image/webp')) u = c.toDataURL('image/jpeg', q);   // 아이폰 사파리 일부는 WebP로 못 만들어요
+    if(u.length <= 60000) return u;
+    max = Math.round(max * 0.85); q = Math.max(0.4, q - 0.08);
+  }
+  throw new Error('too-big');
+}
+
+/* 📎 글에 사진·링크 붙이기 (모임 글·익명게시판 글, v16). 사진은 shrinkPhoto 로 작게 줄여 글 안에 넣고, 링크는 http/https 만 받아요 */
+const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u; return /^https?:\/\/[^\s]+$/i.test(u) && u.length <= 300 ? u : null; };
+function attachUI(form, opts){
+  // form 안에 .attach-row 를 만들어요: [📷 찍기] [🖼 앨범] [🔗 링크 칸] + 사진 미리보기. 값은 attach.get() 으로 읽어요
+  const row = document.createElement('div'); row.className = 'attach-row';
+  row.innerHTML = `<button type="button" class="meal-add1 at-cam">📷 사진</button><button type="button" class="meal-add1 at-alb">🖼 앨범</button>
+    <input type="url" class="at-url" maxlength="300" placeholder="🔗 링크 (선택)" aria-label="링크" inputmode="url">
+    <input type="file" class="at-file" accept="image/*" capture="environment" hidden><input type="file" class="at-file2" accept="image/*" hidden>
+    <div class="at-prev" hidden><img alt="첨부 사진 미리보기"><button type="button" class="meal-del at-x" aria-label="사진 빼기">✕</button><small class="hint"></small></div>`;
+  (opts && opts.before ? opts.before : form).insertAdjacentElement(opts && opts.before ? 'beforebegin' : 'beforeend', row);
+  const st = { img: '' }, prev = row.querySelector('.at-prev'), img = prev.querySelector('img'), note = prev.querySelector('small');
+  const pick = async inp => { const f = inp.files && inp.files[0]; if(!f) return;
+    try{ st.img = await shrinkPhoto(f); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요`; prev.hidden = false; }
+    catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; };
+  const f1 = row.querySelector('.at-file'), f2 = row.querySelector('.at-file2');
+  row.querySelector('.at-cam').addEventListener('click', () => f1.click()); row.querySelector('.at-alb').addEventListener('click', () => f2.click());
+  f1.addEventListener('change', () => pick(f1)); f2.addEventListener('change', () => pick(f2));
+  row.querySelector('.at-x').addEventListener('click', () => { st.img = ''; img.removeAttribute('src'); prev.hidden = true; });
+  const url = row.querySelector('.at-url');
+  return {
+    get(){ const u = safeUrl(url.value); if(u === null){ url.focus(); throw Object.assign(new Error('bad url'), {code: 'bad-url'}); }
+      return {...(st.img ? {img: st.img} : {}), ...(u ? {url: u} : {})}; },
+    clear(){ st.img = ''; img.removeAttribute('src'); prev.hidden = true; url.value = ''; },
+    set(d){ st.img = d && d.img || ''; if(st.img){ img.src = st.img; prev.hidden = false; } else prev.hidden = true; url.value = d && d.url || ''; }
+  };
+}
+// 글 아래에 붙은 사진·링크를 그려요 (글은 textContent 로만, 링크는 검사한 주소만)
+function attachView(d){
+  const box = document.createElement('div'); box.className = 'attach-view';
+  if(d.img && /^data:image\/(webp|jpeg);base64,[A-Za-z0-9+/=]+$/.test(d.img)){
+    const im = document.createElement('img'); im.src = d.img; im.alt = '첨부 사진'; im.loading = 'lazy'; im.className = 'attach-img';
+    im.addEventListener('click', () => bigPhoto(d.img)); box.appendChild(im);
+  }
+  const u = d.url && safeUrl(d.url);
+  if(u){ const a = document.createElement('a'); a.className = 'attach-link'; a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    let host = u; try{ host = new URL(u).hostname.replace(/^www\./, ''); }catch(e){}
+    a.textContent = `🔗 ${host}`; a.title = u; box.appendChild(a); }
+  return box.childElementCount ? box : null;
+}
+function bigPhoto(src){
+  const back = document.createElement('div'); back.className = 'pop-back attach-big';
+  const im = document.createElement('img'); im.src = src; im.alt = '첨부 사진 크게 보기'; back.appendChild(im);
+  back.addEventListener('click', () => back.remove()); document.body.appendChild(back);
+}
+
 /* Firebase — 모임·SOS·놀이 추가는 지금 들어와 있는 "모임 방" 안에 저장돼요 (roomRef는 gate.js)
    필요한 Firestore 보안 규칙은 firestore.rules 참고 */
 // 모임 컬렉션을 돌려줘요. 인터넷·SDK 문제로 못 쓰거나 아직 방에 안 들어왔으면 null

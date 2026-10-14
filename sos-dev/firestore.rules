@@ -22,6 +22,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // 자동 삭제 시각(expireAt): 날짜 칸이어야 하고, 너무 먼 미래는 안 됨 (예약은 1주일까지라 20일이면 넉넉)
+    // v16: 📷 사진(작게 줄인 data URL, 최대 80KB)·🔗 링크(http/https, 300자) 첨부 — 모임 글·익명게시판 글
+    function attachOk(d) {
+      return (!('img' in d) || (d.img is string && d.img.size() <= 80000 && (d.img == '' || d.img.matches('^data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+$'))))
+        && (!('url' in d) || (d.url is string && d.url.size() <= 300 && (d.url == '' || d.url.matches('^https?://[^\\s]+$'))));
+    }
     function expireOk(d) {
       return !('expireAt' in d) || (d.expireAt is timestamp && d.expireAt <= request.time + duration.value(20, 'd'));
     }
@@ -208,7 +213,8 @@ service cloud.firestore {
         // 지우기: 지워진 방 정리, 지난 기록 정리, 방장이 문제 글 내리기
         allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
         allow create: if canUse(roomKey)
-          && request.resource.data.keys().hasOnly(['topic', 'text', 'play', 'date', 'slot', 'end', 'host', 'uid', 'expireAt', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['topic', 'text', 'play', 'date', 'slot', 'end', 'host', 'uid', 'expireAt', 'createdAt', 'img', 'url'])
+          && attachOk(request.resource.data)
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.host == myNick(roomKey)
           && expireOk(request.resource.data)
@@ -247,7 +253,8 @@ service cloud.firestore {
           || voteMine()
           // v12: ✏️ 연 사람이 모임 고치기 (날짜·시작·끝나는 시간·장소 글 · 지울 날짜). 취소된 모임은 못 고쳐요
           || (resource.data.get('uid', '') == request.auth.uid && resource.data.topic == 'meet' && !resource.data.get('cancelled', false)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'date', 'slot', 'end', 'expireAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'date', 'slot', 'end', 'expireAt', 'img', 'url'])
+            && attachOk(request.resource.data)
             && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
             && request.resource.data.date is string && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
             && request.resource.data.slot in ['9시', '10시', '11시', '12시', '13시', '14시', '15시', '16시', '17시', '18시', '19시', '20시']
@@ -390,7 +397,8 @@ service cloud.firestore {
       match /ideas/{id} {
         allow read: if canUse(roomKey);
         allow create: if canUse(roomKey)
-          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt'])
+          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt', 'img', 'url'])
+          && attachOk(request.resource.data)
           && request.resource.data.t is string && request.resource.data.t.size() > 0 && request.resource.data.t.size() <= 40
           && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 1000
           && request.resource.data.kh is string && request.resource.data.kh.size() == 64
@@ -399,10 +407,11 @@ service cloud.firestore {
           && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
         allow update: if request.auth != null
           && resource.data.get('deleted', false) == false
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['t', 'b', 'deleted', 'k'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['t', 'b', 'deleted', 'k', 'img', 'url'])
           && request.resource.data.k is string
           && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
-          && request.resource.data.t == '' && request.resource.data.b == '' && request.resource.data.deleted == true;
+          && request.resource.data.t == '' && request.resource.data.b == '' && request.resource.data.deleted == true
+          && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == '';
         allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
 
         match /comments/{cid} {

@@ -73,10 +73,11 @@ function meetCard(o, past){
   w.textContent = `${dayLabel(o.date)} ${meetWhen(o)}${o.date===today ? ' · 오늘' : ''}`;
   const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
   const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
+  const av = (typeof attachView === 'function') ? attachView(o) : null;
   // 👀 참석자 — 시간 줄 오른쪽 위 (누르면 누가 참석·불참했는지 닉네임 팝업). 지난 모임도 같은 모양
   const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
   const top = document.createElement('div'); top.className = 'meet-top'; top.append(w, who);
-  body.append(top, hs, p);
+  body.append(top, hs, p); if(av) body.appendChild(av);
   if(!live){   // 지난·취소된 모임은 버튼 대신 숫자만
     const tally = document.createElement('button'); tally.type = 'button'; tally.className = 'tally'; tally.dataset.voters = o.id;
     tally.innerHTML = tallyHtml(o); body.append(tally);
@@ -225,10 +226,11 @@ function setEditMode(o){
 function startEditMeet(o){
   openMeetForm(o.date, o.slot);
   meetPicker.state.end = o.end || null; meetPicker.render();
-  $('#meetText').value = o.text || ''; $('#meetCount').textContent = `${$('#meetText').value.length} / 500`;
+  $('#meetText').value = o.text || ''; $('#meetCount').textContent = `${$('#meetText').value.length} / 500`; if(meet.attach) meet.attach.set(o);
   $('#meetMsg').textContent = ''; setEditMode(o);
 }
 $('#meetText').addEventListener('input', () => { $('#meetCount').textContent = `${$('#meetText').value.length} / 500`; });
+if(typeof attachUI === 'function') meet.attach = attachUI($('#meetForm'), {before: $('#meetAttach')});
 $('#meetForm').addEventListener('submit', async e => {
   e.preventDefault();
   const text = $('#meetText').value.trim(), date = meetPicker.state.date, host = ME.nick;
@@ -246,19 +248,22 @@ $('#meetForm').addEventListener('submit', async e => {
       const id = editMeet, slot = meetPicker.state.slot, ch = {text, date, slot, ...ttl(date)};
       const meetEnd = meetPicker.state.end;
       ch.end = meetEnd && parseInt(meetEnd) > parseInt(slot) ? meetEnd : firebase.firestore.FieldValue.delete();
+      if(meet.attach){ let at; try{ at = meet.attach.get(); }catch(err){ if(err.code === 'bad-url'){ $('#meetMsg').textContent = '🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'; return; } throw err; }
+        ch.img = at.img || firebase.firestore.FieldValue.delete(); ch.url = at.url || firebase.firestore.FieldValue.delete(); }
       await meet.col.doc(id).update(ch);
       if(typeof pushEditMeet === 'function'){ const en = typeof ch.end === 'string' ? ch.end : ''; pushEditMeet(id, date, meetWhen({slot, end: en})); pushRemind(id, date, slot, en); }
       setEditMode(null); $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
       $('#meetMsg').textContent = '✏️ 모임을 고쳤어요. 방 사람들에게 알림을 보냈어요';
       return;
     }
-    const doc = {topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), createdAt: firebase.firestore.FieldValue.serverTimestamp()};
+    let at = {}; try{ at = meet.attach ? meet.attach.get() : {}; }catch(err){ if(err.code === 'bad-url'){ $('#meetMsg').textContent = '🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'; return; } throw err; }
+    const doc = {topic:'meet', text, date, slot:meetPicker.state.slot, host, uid: ME.uid, ...ttl(date), ...at, createdAt: firebase.firestore.FieldValue.serverTimestamp()};
     const meetEnd = meetPicker.state.end;
     if(meetEnd && parseInt(meetEnd) > parseInt(doc.slot)) doc.end = meetEnd;
     let ref;
     try{ ref = await meet.col.add(doc); }
     catch(err){ if(!(doc.end && err && err.code === 'permission-denied')) throw err; delete doc.end; ref = await meet.col.add(doc); }   // 서버 규칙(v11) 게시 전이면 끝나는 시간 없이 저장해요
-    $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`;
+    $('#meetText').value = MEET_TEMPLATE; $('#meetCount').textContent = `${MEET_TEMPLATE.length} / 500`; if(meet.attach) meet.attach.clear();
     if(ref && ref.id) addMyMeet(ref.id);
     // 🙋 연 사람은 처음부터 '참석'으로 (나중에 미확정·불참으로 바꿀 수 있어요). 규칙상 만들 때는 v 를 못 넣어서 바로 이어서 표시해요
     if(ref && ref.id) ref.update({['v.' + ME.uid]: {s: 'join', n: host}}).catch(() => {});

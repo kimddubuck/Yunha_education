@@ -33,6 +33,7 @@ function renderIdeas(){
       <p class="idea-b"></p>`;
     li.querySelector('.idea-t').textContent = x.t;
     const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
+    if(opened && typeof attachView === 'function'){ const av = attachView(x); if(av) b.insertAdjacentElement('afterend', av); }
     if(opened){
       const cs = (idea.cmts[x.id] || []).filter(c => !c.deleted);
       const box = document.createElement('div'); box.className = 'comments idea-cmts';
@@ -75,7 +76,7 @@ function watchCmts(id){
 async function removeDoc(ref, path){
   const k = ideaKeys()[path];
   const isPost = !path.includes('/comments/');
-  if(k){ await ref.update({...(isPost ? {t: ''} : {}), b: '', deleted: true, k}); return; }
+  if(k){ await ref.update({...(isPost ? {t: '', img: '', url: ''} : {}), b: '', deleted: true, k}); return; }
   if(ME.owner){
     if(isPost){ const cs = await ref.collection('comments').get(); await Promise.all(cs.docs.map(c => c.ref.delete().catch(() => {}))); }
     await ref.delete();
@@ -88,6 +89,7 @@ async function removeDoc(ref, path){
   $i('#ideaOpen').addEventListener('click', () => { form.hidden = false; $i('#ideaOpen').hidden = true; title.focus(); });
   $i('#ideaCancel').addEventListener('click', () => { form.hidden = true; $i('#ideaOpen').hidden = false; });
   body.addEventListener('input', () => { $i('#ideaCount').textContent = `${body.value.length} / 1000`; });
+  if(typeof attachUI === 'function') idea.attach = attachUI(form, {before: $i('#ideaAttach')});
   sosReady().then(ok => {
     if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
     idea.col = roomRef().collection('ideas');
@@ -102,13 +104,14 @@ async function removeDoc(ref, path){
     e.preventDefault();
     const t = title.value.trim(), b = body.value.trim();
     if(!t || !b){ (t ? body : title).focus(); return; }
+    let at = {}; try{ at = idea.attach ? idea.attach.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
     const btn = $i('#ideaSend'); btn.disabled = true; btn.textContent = '올리는 중…';
     try{
       const ref = idea.col.doc(), k = secret();
       setIdeaKey(ipath(ref.id), k);
-      await ref.set({t, b, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      await ref.set({t, b, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + IDEA_DAYS * 864e5)});
-      title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000';
+      title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000'; if(idea.attach) idea.attach.clear();
       form.hidden = true; $i('#ideaOpen').hidden = false;
       if(typeof pushToast === 'function') pushToast('🙈 익명으로 올렸어요');
     }catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); else alert('올리지 못했어요. 잠시 뒤 다시 해 주세요.'); }
