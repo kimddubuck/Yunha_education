@@ -53,7 +53,7 @@ function renderMeal(){
     const add = !canAdd ? '' : ds.length ? `<button type="button" class="meal-add" data-add="${slot}" aria-label="${esc(label.slice(3))} 사진 더 올리기">＋<small>사진</small></button>`
       : `<button type="button" class="meal-add1" data-add="${slot}">＋ 사진 올리기</button>`;
     const body = ds.length ? `<div class="meal-row">${add}${cards}</div>` : (add || '<p class="hint meal-none">아직 사진이 없어요</p>');
-    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${label}${ds.length ? ` <small>${ds.length}장${ds.length > 3 ? ' · 옆으로 넘겨 보기 ›' : ''}</small>` : ''}</h3>${body}</section>`;
+    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${label}${ds.length ? ` <small>${ds.length}장</small>` : ''}</h3>${body}</section>`;
   }).join('');
 }
 
