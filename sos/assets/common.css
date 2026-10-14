@@ -1259,3 +1259,10 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .slogan b{color:var(--fg)}
 .slogan{font-size:12px;margin:-10px 0 -12px;letter-spacing:-.3px;line-height:1.4}
 .slogan{margin:-2px 0 -12px}
+/* 슬로건 겹침 방지 */
+.slogan{margin:0 0 -6px;position:relative;z-index:1}
+.wrap.single main:has(> .cover) .slogan{margin-bottom:0}
+/* 식단: 📷 찍기 + 🖼 앨범 */
+.meal-add2{display:flex;gap:6px}
+.meal-add1.alb{opacity:.85}
+.meal-alb{margin-left:auto;border:0;background:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;cursor:pointer;padding:0 2px}

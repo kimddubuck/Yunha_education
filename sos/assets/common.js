@@ -89,7 +89,7 @@ const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 
   const cur = nav.dataset.page;
   // 🤝 슬로건: 홈·SOS 예약·식단 맨 위에 작게 (서로의 육아 존중)
   if(['home', 'meet', 'meal'].includes(cur)){ const m = document.querySelector('main');
-    if(m) m.insertAdjacentHTML('afterbegin', '<p class="slogan">🤝 <span class="nw">집집마다 육아는 달라요,</span> <span class="nw"><b>판단 말고 응원해요</b></span></p>'); }
+    if(m) m.insertAdjacentHTML('afterbegin', '<p class="slogan">🤝 <span class="nw">육아엔 정답이 없어요,</span> <span class="nw"><b>서로의 방식을 존중해요</b></span></p>'); }
   nav.innerHTML = `<a class="brand" href="index.html">공동육아 SOS 🆘</a><div class="nav-links">` +
     NAV.map(([href,key,icon,label]) => `<a href="${href}"${key===cur ? ' aria-current="page"' : ''}><span class="ti" aria-hidden="true">${icon}</span><span>${label}</span></a>`).join('') + '</div>' +
     '<button type="button" class="intro-btn" aria-label="공동육아 SOS 소개 다시 보기">📖 소개</button>';

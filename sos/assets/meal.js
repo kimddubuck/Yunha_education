@@ -56,10 +56,12 @@ function renderMeal(){
         <img src="${d.img}" alt="${esc(d.n)}님의 ${esc(label.slice(3))} 사진" loading="lazy">
         ${canDel(d) ? `<button type="button" class="meal-del" data-del="${d.id}" aria-label="사진 지우기">✕</button>` : ''}
         <figcaption><b>${esc(d.n)}</b><span>${[d.mo != null ? `${d.mo}개월` : '', d.memo ? esc(d.memo) : ''].filter(Boolean).join(' · ') || '&nbsp;'}</span></figcaption></figure>`).join('');
-    const add = !canAdd ? '' : ds.length ? `<button type="button" class="meal-add" data-add="${slot}" aria-label="${esc(label.slice(3))} 사진 더 올리기">＋<small>사진</small></button>`
-      : `<button type="button" class="meal-add1" data-add="${slot}">＋ 사진 올리기</button>`;
+    // ＋ 는 바로 카메라로 찍기, 🖼 앨범은 휴대폰 사진에서 고르기
+    const add = !canAdd ? '' : ds.length ? `<button type="button" class="meal-add" data-add="${slot}" aria-label="${esc(label.slice(3))} 사진 찍어 올리기">📷<small>찍기</small></button>`
+      : `<span class="meal-add2"><button type="button" class="meal-add1" data-add="${slot}">📷 찍기</button><button type="button" class="meal-add1 alb" data-alb="${slot}">🖼 앨범</button></span>`;
+    const alb = canAdd && ds.length ? `<button type="button" class="meal-alb" data-alb="${slot}">🖼 앨범에서</button>` : '';
     const body = ds.length ? `<div class="meal-row">${add}${cards}</div>` : (add || '<p class="hint meal-none">아직 사진이 없어요</p>');
-    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${MEAL_IC[slot]}<span>${label.slice(3)}</span>${ds.length ? ` <small>${ds.length}장</small>` : ''}</h3>${body}</section>`;
+    return `<section class="meal-slot${ds.length ? '' : ' empty'}"><h3>${MEAL_IC[slot]}<span>${label.slice(3)}</span>${ds.length ? ` <small>${ds.length}장</small>` : ''}${alb}</h3>${body}</section>`;
   }).join('');
 }
 
@@ -220,17 +222,20 @@ async function mealGoPhoto(){
 
 (function initMeal(){
   if(!$m('#mealSlots')) return;
-  const file = $m('#mealFile'); let pendingSlot = 'l';
+  const file = $m('#mealFile'), album = $m('#mealAlbum'); let pendingSlot = 'l';
   $m('#mealSlots').addEventListener('click', e => {
     const del = e.target.closest('.meal-del'); if(del){ e.stopPropagation(); delPhoto(del.dataset.del); return; }
     const add = e.target.closest('[data-add]'); if(add){ pendingSlot = add.dataset.add; file.value = ''; file.click(); return; }
+    const al = e.target.closest('[data-alb]'); if(al){ pendingSlot = al.dataset.alb; album.value = ''; album.click(); return; }
     const card = e.target.closest('[data-open]'); if(card) openPhoto(card.dataset.open);
   });
-  file.addEventListener('change', async () => {
-    const f = file.files && file.files[0]; if(!f) return;
+  const picked = async inp => {
+    const f = inp.files && inp.files[0]; if(!f) return;
     try{ askUpload(pendingSlot, await shrinkPhoto(f)); }
     catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); }
-  });
+  };
+  file.addEventListener('change', () => picked(file));
+  album.addEventListener('change', () => picked(album));
   $m('#mealPrev').addEventListener('click', () => { if(meal.date > oldestDay()){ meal.date = addDays(meal.date, -1); watchDay(); } });
   $m('#mealNext').addEventListener('click', () => { if(meal.date < todayStr()){ meal.date = addDays(meal.date, 1); watchDay(); } });
   document.querySelectorAll('[data-mine]').forEach(b => b.addEventListener('click', () => { meal.onlyMine = b.dataset.mine === '1'; renderMeal(); }));
