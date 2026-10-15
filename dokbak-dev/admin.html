@@ -81,7 +81,8 @@ body>header.top,body>footer,.subnav{display:none}
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),num=n=>(+n||0).toLocaleString('ko-KR');
 const SEARCH=['네이버','구글','다음','빙','줌'];
 let key='',days=7,titles={};try{key=localStorage.getItem('dk_admin')||'';days=+localStorage.getItem('dk_days')||7}catch(e){}
-fetch('search.json').then(r=>r.json()).then(j=>{j.forEach(o=>{titles['/'+(o.u||'').replace(/index\.html$/,'').replace(/\.html$/,'')]=o.t.split(' · ')[0]});titles['/']='🏠 홈'}).catch(()=>{});
+// 페이지 주소 → 글 제목 (검색 목록에서). 통계를 그리기 전에 먼저 받아 둬요
+const titlesReady=fetch('search.json').then(r=>r.json()).then(j=>{j.forEach(o=>{titles['/'+(o.u||'').replace(/index\.html$/,'').replace(/\.html$/,'')]=o.t.split(' · ')[0]})}).catch(()=>{}).then(()=>{titles['/']='🏠 홈';titles['/admin']='📊 방문 통계'});
 const nm=p=>esc(titles[p]||p);
 function bars(el,rows,label,val,sub){const max=Math.max(1,...rows.map(r=>+r[val]||0));
  $(el).innerHTML=rows.length?rows.slice(0,8).map(r=>`<li><span>${label(r)}</span><em>${num(r[val])}${sub?` <small>${sub(r)}</small>`:''}</em><i style="width:${Math.max(2,Math.round((+r[val]||0)/max*100))}%"></i></li>`).join(''):'<li><span class="none">아직 기록이 없어요</span></li>';}
@@ -99,7 +100,7 @@ async function load(){
  if(r.status===503){const j=await r.json().catch(()=>({setup:{}}));$('setupState').textContent=`지금 상태: 데이터베이스(STATS) ${j.setup&&j.setup.db?'✅':'❌'} · 비밀번호(ADMIN_KEY) ${j.setup&&j.setup.key?'✅':'❌'}`;return show('setup')}
  if(r.status===401){try{localStorage.removeItem('dk_admin')}catch(e){}$('msg').textContent=key?'비밀번호가 달라요.':'';key='';return show('login')}
  if(!r.ok){$('msg').textContent='통계를 못 불러왔어요 (HTTP '+r.status+')';return show('login')}
- const j=await r.json();try{if(!sessionStorage.getItem('dk_meinit')){sessionStorage.setItem('dk_meinit','1');if(!localStorage.getItem('dk_me_off'))localStorage.setItem('dk_me','1')}}catch(e){}
+ const j=await r.json();await titlesReady;try{if(!sessionStorage.getItem('dk_meinit')){sessionStorage.setItem('dk_meinit','1');if(!localStorage.getItem('dk_me_off'))localStorage.setItem('dk_me','1')}}catch(e){}
  show('view');
  const m={};j.daily.forEach(x=>m[x.d]=x);const all=[];for(let i=Math.max(j.days,7)-1;i>=0;i--)all.push(new Date(Date.now()+324e5-i*864e5).toISOString().slice(0,10));
  const ds=all.slice(-days),g=d=>m[d]||{pv:0,uv:0,se:0},sum=(a,k)=>a.reduce((s,d)=>s+(+g(d)[k]||0),0);
