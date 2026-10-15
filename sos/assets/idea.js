@@ -55,6 +55,10 @@ function renderIdeas(){
         const ct = document.createElement('span'); ct.textContent = c.b;
         const cw = document.createElement('small'); cw.textContent = ago(c.createdAt);
         ci.append(cn, ct, cw);
+        // ❤️ 댓글 좋아요 (v18): 글처럼 댓글마다 다른 지문
+        const ck = 'c:' + c.id, cref = idea.col.doc(x.id).collection('comments').doc(c.id);
+        ci.appendChild(likeBtn(c, idea.lkey[ck] || '', cref, {cls: 'mini'}));
+        if(!idea.lkey[ck] && ME.uid) sha(ME.uid + '/' + c.id).then(h => { idea.lkey[ck] = h; const lb = ci.querySelector('.like'); if(lb) lb.replaceWith(likeBtn(c, h, cref, {cls: 'mini'})); });
         if(typeof attachView === 'function'){ const av = attachView(c); if(av) ci.appendChild(av); }
         const own = !!keys[ipath(x.id, c.id)];
         if(own || ME.owner){ const a = document.createElement('span'); a.className = 'comment-act';

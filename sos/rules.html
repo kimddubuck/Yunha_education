@@ -11,7 +11,7 @@ button{width:100%;padding:16px;border:0;border-radius:14px;background:var(--pick
 textarea{width:100%;box-sizing:border-box;height:45vh;margin-top:12px;font:12px/1.4 monospace;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);color:var(--fg)}
 #ok{text-align:center;font-weight:700;min-height:1.4em;margin-top:8px}
 </style></head><body>
-<h1>🔐 Firestore 보안 규칙 v17 (운영자용)</h1>
+<h1>🔐 Firestore 보안 규칙 v18 (운영자용)</h1>
 <p>① 아래 칸에 <b>내 번호</b>(admin.html 에 보이는 번호)를 넣고<br>② 버튼을 누르면 규칙 <b>전체</b>가 복사돼요.<br>③ Firebase 콘솔 규칙 칸을 <b>모두 지우고</b> 붙여넣은 뒤 <b>게시</b>하세요.<br>⚠️ 콘솔에서 따옴표를 직접 고치지 마세요 (따옴표가 두 개로 들어가 오류가 나요).<br>마지막 줄이 <code>}</code> 로 끝나는지 확인해 주세요.</p>
 <label for="uid">내 번호 (운영자)</label>
 <input id="uid" autocomplete="off" spellcheck="false" placeholder="예: AbCd1234...">
@@ -43,7 +43,7 @@ service cloud.firestore {
 
     // 자동 삭제 시각(expireAt): 날짜 칸이어야 하고, 너무 먼 미래는 안 됨 (예약은 1주일까지라 20일이면 넉넉)
     // v16: 📷 사진(작게 줄인 data URL, 최대 80KB)·🔗 링크(http/https, 300자) 첨부 — 모임 글·익명게시판 글
-    // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기.
+    // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기. v18: 댓글(모임·식단·익명게시판)에도
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+&#x27;/&#x27;+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get(&#x27;lk&#x27;, {});
@@ -314,7 +314,8 @@ service cloud.firestore {
             &amp;&amp; (!(&#x27;kh&#x27; in request.resource.data)
                 || (request.resource.data.kh is string &amp;&amp; request.resource.data.kh.size() == 64))
             &amp;&amp; request.resource.data.createdAt == request.time;
-          allow update: if canUse(roomKey)
+          allow update: if canUse(roomKey) &amp;&amp; (resource.data.get(&#x27;deleted&#x27;, false) == false &amp;&amp; likeMine(request.auth.uid, myNick(roomKey)))   // v18: ❤️ 댓글 좋아요
+            || canUse(roomKey)
             &amp;&amp; resource.data.get(&#x27;kh&#x27;, &#x27;&#x27;) != &#x27;&#x27;
             &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
             &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;text&#x27;, &#x27;k&#x27;, &#x27;kh&#x27;, &#x27;deleted&#x27;, &#x27;editedAt&#x27;, &#x27;img&#x27;, &#x27;url&#x27;])
@@ -404,7 +405,7 @@ service cloud.firestore {
         match /comments/{cid} {
           function photo() { return /databases/$(database)/documents/rooms/$(roomKey)/meals/$(id); }
           allow read: if canUse(roomKey);
-          allow update: if false;
+          allow update: if canUse(roomKey) &amp;&amp; exists(photo()) &amp;&amp; likeMine(request.auth.uid, myNick(roomKey));   // v18: ❤️ 댓글 좋아요
           allow delete: if roomDeleted(roomKey) || expired() || !exists(photo())
             || (request.auth != null &amp;&amp; resource.data.uid == request.auth.uid)
             || (canUse(roomKey) &amp;&amp; (isOwner(roomKey) || get(photo()).data.uid == request.auth.uid));
@@ -463,13 +464,16 @@ service cloud.firestore {
             &amp;&amp; request.resource.data.createdAt == request.time
             &amp;&amp; request.resource.data.expireAt is timestamp
             &amp;&amp; request.resource.data.expireAt &lt;= request.time + duration.value(32, &#x27;d&#x27;);
-          allow update: if request.auth != null
+          allow update: if (request.auth != null
             &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
             &amp;&amp; request.resource.data.diff(resource.data).affectedKeys().hasOnly([&#x27;b&#x27;, &#x27;deleted&#x27;, &#x27;k&#x27;, &#x27;img&#x27;, &#x27;url&#x27;])
             &amp;&amp; request.resource.data.k is string
             &amp;&amp; hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
             &amp;&amp; request.resource.data.b == &#x27;&#x27; &amp;&amp; request.resource.data.deleted == true
-            &amp;&amp; request.resource.data.get(&#x27;img&#x27;, &#x27;&#x27;) == &#x27;&#x27; &amp;&amp; request.resource.data.get(&#x27;url&#x27;, &#x27;&#x27;) == &#x27;&#x27;;
+            &amp;&amp; request.resource.data.get(&#x27;img&#x27;, &#x27;&#x27;) == &#x27;&#x27; &amp;&amp; request.resource.data.get(&#x27;url&#x27;, &#x27;&#x27;) == &#x27;&#x27;)
+            // v18: ❤️ 댓글 좋아요 — 글마다 다른 지문
+            || (canUse(roomKey) &amp;&amp; resource.data.get(&#x27;deleted&#x27;, false) == false
+              &amp;&amp; likeMine(hashing.sha256(request.auth.uid + &#x27;/&#x27; + cid).toHexString().lower(), true));
           allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) &amp;&amp; isOwner(roomKey));
         }
       }

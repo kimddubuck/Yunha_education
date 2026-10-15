@@ -23,7 +23,7 @@ service cloud.firestore {
 
     // 자동 삭제 시각(expireAt): 날짜 칸이어야 하고, 너무 먼 미래는 안 됨 (예약은 1주일까지라 20일이면 넉넉)
     // v16: 📷 사진(작게 줄인 data URL, 최대 80KB)·🔗 링크(http/https, 300자) 첨부 — 모임 글·익명게시판 글
-    // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기.
+    // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기. v18: 댓글(모임·식단·익명게시판)에도
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+'/'+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get('lk', {});
@@ -294,7 +294,8 @@ service cloud.firestore {
             && (!('kh' in request.resource.data)
                 || (request.resource.data.kh is string && request.resource.data.kh.size() == 64))
             && request.resource.data.createdAt == request.time;
-          allow update: if canUse(roomKey)
+          allow update: if canUse(roomKey) && (resource.data.get('deleted', false) == false && likeMine(request.auth.uid, myNick(roomKey)))   // v18: ❤️ 댓글 좋아요
+            || canUse(roomKey)
             && resource.data.get('kh', '') != ''
             && resource.data.get('deleted', false) == false
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'k', 'kh', 'deleted', 'editedAt', 'img', 'url'])
@@ -384,7 +385,7 @@ service cloud.firestore {
         match /comments/{cid} {
           function photo() { return /databases/$(database)/documents/rooms/$(roomKey)/meals/$(id); }
           allow read: if canUse(roomKey);
-          allow update: if false;
+          allow update: if canUse(roomKey) && exists(photo()) && likeMine(request.auth.uid, myNick(roomKey));   // v18: ❤️ 댓글 좋아요
           allow delete: if roomDeleted(roomKey) || expired() || !exists(photo())
             || (request.auth != null && resource.data.uid == request.auth.uid)
             || (canUse(roomKey) && (isOwner(roomKey) || get(photo()).data.uid == request.auth.uid));
@@ -443,13 +444,16 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time
             && request.resource.data.expireAt is timestamp
             && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
-          allow update: if request.auth != null
+          allow update: if (request.auth != null
             && resource.data.get('deleted', false) == false
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['b', 'deleted', 'k', 'img', 'url'])
             && request.resource.data.k is string
             && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
             && request.resource.data.b == '' && request.resource.data.deleted == true
-            && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == '';
+            && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == '')
+            // v18: ❤️ 댓글 좋아요 — 글마다 다른 지문
+            || (canUse(roomKey) && resource.data.get('deleted', false) == false
+              && likeMine(hashing.sha256(request.auth.uid + '/' + cid).toHexString().lower(), true));
           allow delete: if roomDeleted(roomKey) || expired() || !exists(post()) || (canUse(roomKey) && isOwner(roomKey));
         }
       }

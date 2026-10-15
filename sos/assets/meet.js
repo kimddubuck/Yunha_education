@@ -144,6 +144,7 @@ function meetCard(o, past){
       const ct = document.createElement('span'); ct.textContent = c.text;
       const cw = document.createElement('small'); cw.textContent = fmtTime(c.createdAt) + (c.editedAt ? ' · 수정됨' : '');
       ci.append(ct, cw);
+      ci.appendChild(likeBtn(c, ME.uid, meet.col.doc(o.id).collection('comments').doc(c.id), {val: ME.nick, cls: 'mini'}));   // ❤️ 댓글 좋아요 (v18)
       if(typeof attachView === 'function'){ const av = attachView(c); if(av) ci.appendChild(av); }
       if((c.uid && c.uid !== ME.uid) || ME.owner){   // 남의 댓글 신고 · 방장 지우기
         const m = document.createElement('span'); m.className = 'comment-mod';

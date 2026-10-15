@@ -151,7 +151,7 @@ function openPhoto(id){
       const t = document.createElement('span'); t.textContent = c.text;
       const w = document.createElement('small'); w.textContent = fmtHm(c.createdAt);
       const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'reply-btn'; rb.dataset.mcReply = c.id; rb.textContent = '↪ 답글';
-      li.append(n, t, w, rb);
+      li.append(n, t, w, likeBtn(c, ME.uid, mealCmts(d.id).doc(c.id), {val: ME.nick, cls: 'mini'}), rb);   // ❤️ 댓글 좋아요 (v18)
       if(typeof attachView === 'function'){ const av = attachView(c); if(av) li.appendChild(av); }
       if(c.uid === ME.uid || ME.owner){ const x = document.createElement('span'); x.className = 'comment-act';
         x.innerHTML = `<button type="button" data-mc-del="${c.id}">${c.uid === ME.uid ? '삭제' : '삭제(방장)'}</button>`; li.appendChild(x); }
