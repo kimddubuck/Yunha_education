@@ -83,7 +83,7 @@ function dayKind(ymd){ const [y,m,d] = ymd.split('-').map(Number), w = new Date(
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
-const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단'],['idea.html','idea','🙈','익명게시판'],['terms.html','safety','📜','이용약관']];
+const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단'],['idea.html','idea','🙈','익명게시판'],['https://dokbak.pages.dev/','dokbak','<img class="ti-img" src="assets/dokbak.svg" alt="">','독박육아'],['terms.html','safety','📜','이용약관']];   // 독박육아: 놀이·연구·지도 사이트 (새 창)
 (function renderNav(){
   const nav = document.getElementById('siteNav'); if(!nav) return;
   const cur = nav.dataset.page;
@@ -91,7 +91,7 @@ const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 
   if(['home', 'meet', 'meal', 'idea'].includes(cur)){ const m = document.querySelector('main');
     if(m) m.insertAdjacentHTML('afterbegin', '<p class="slogan">🤝 <span class="nw">육아엔 정답이 없어요,</span> <span class="nw"><b>서로의 방식을 존중해요</b></span></p>'); }
   nav.innerHTML = `<a class="brand" href="index.html">공동육아 SOS 🆘</a><div class="nav-links">` +
-    NAV.map(([href,key,icon,label]) => `<a href="${href}"${key===cur ? ' aria-current="page"' : ''}><span class="ti" aria-hidden="true">${icon}</span><span>${label}</span></a>`).join('') + '</div>' +
+    NAV.map(([href,key,icon,label]) => `<a href="${href}"${key===cur ? ' aria-current="page"' : ''}${/^https?:/.test(href) ? ' target="_blank" rel="noopener"' : ''}><span class="ti" aria-hidden="true">${icon}</span><span>${label}</span></a>`).join('') + '</div>' +
     '<button type="button" class="intro-btn" aria-label="공동육아 SOS 소개 다시 보기">📖 소개</button>';
   // 왼쪽 위 '🏠 방 목록': 방에 들어와 있을 때만 (gate.js의 showRooms)
   if(typeof ROOM !== 'undefined' && ROOM){

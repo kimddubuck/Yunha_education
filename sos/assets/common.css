@@ -1241,7 +1241,7 @@ main a.cmt-pv,main a.cmt-pv span{color:var(--fg)}
 .meal-del{top:4px;right:4px;width:24px;height:24px;line-height:24px;font-size:12px}
 .meal-row > .meal-add{aspect-ratio:1/1;min-height:0;border-radius:4px;font-size:24px}
 /* 식단 아이콘: 밥 먹는 아기 */
-.ti-img{width:1.15em;height:1.15em;vertical-align:-.2em}
+.ti-img{width:1.15em;height:1.15em;vertical-align:-.2em;border-radius:22%}
 .meal-ic{width:1.35em;height:1.35em;vertical-align:-.3em}
 /* 끼니 배지 */
 .meal-slot h3{display:flex;align-items:center;gap:7px}
@@ -1371,3 +1371,6 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .like{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .like-who.mini{display:inline;margin:0;font-size:12px;color:var(--muted);text-align:left}
 .like-who.mini::before{content:none}
+/* 아래 탭 6개: 글자를 조금 줄여요 */
+@media (max-width:420px){ .nav-links a{font-size:11px;letter-spacing:-.3px} }
+@media (max-width:340px){ .nav-links a{font-size:10px;letter-spacing:-.4px} }
