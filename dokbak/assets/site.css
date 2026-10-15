@@ -534,8 +534,8 @@ footer p{font-size:14px;color:var(--soft)}
 @media (min-width:640px){.stg-g{grid-template-columns:1fr 1.4fr 1.4fr}}
 /* 🆘 공동육아 SOS 앱 소개 카드 (놀이·개월수 페이지 아래) */
 .appcard{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
-.appcard .ac-q{font-size:14.5px;color:var(--soft);margin:0 0 10px}
-.appcard .ac-q b{color:var(--ink)}
+.appcard .ac-q{font-size:15px;color:var(--soft);margin:0 0 12px;line-height:1.45}
+.appcard .ac-q b{color:var(--ink);font-size:clamp(19px,5.4vw,22px);font-family:'Jua',sans-serif;font-weight:400}
 .appcard .ac-top{display:flex;gap:12px;align-items:center;color:inherit;text-decoration:none}
 .appcard .ac-top img{width:52px;height:52px;border-radius:13px;flex:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .appcard .ac-top b{font-size:18px}

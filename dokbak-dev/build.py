@@ -235,8 +235,8 @@ def card(p, up):
   return (f'<a class="card" href="{up}plays/{p["id"]}.html"><span class="meta">{age_range(p)} · {PLACE_ICON[p["place"]]} {p["place"]}{" · 👨‍👩‍👧 여럿이" if p["group"] else ""}{" · 🧪 새 놀이" if p["status"] == "후보" else ""}</span>'
           f'<h3>{e(p["name"])}</h3><p>{e(p["steps"][0])}</p><span class="sk">{" · ".join(SKILL[k][0] + " " + k for k in p["skills"])}</span></a>')
 
-SOS_BRIDGE = f'''<div class="appcard"><p class="ac-q">이 놀이, <b>혼자 하기 버거우면</b>? 같은 단지 엄마 아빠와 같이 해요.</p>
-<a class="ac-top" href="{APP}"><img src="/assets/sos-app.png" alt="" width="52" height="52"><span><span class="nw"><b>공동육아 SOS</b><em>웹앱</em></span><small>이웃과 시간 맞춰 같이 키우는 앱</small></span></a>
+SOS_BRIDGE = f'''<div class="appcard"><p class="ac-q">오늘도 독박육아?<br><b>우리 같이 <span class="nw">공동육아해요 🤝</span></b></p>
+<a class="ac-top" href="{APP}"><img src="/assets/sos-app.png" alt="" width="52" height="52"><span><span class="nw"><b>공동육아 SOS</b><em>웹앱</em></span><small>같은 단지 엄마 아빠와 시간 맞춰 같이 키우는 웹앱</small></span></a>
 <ul class="ac-f"><li>🆘 SOS 달력</li><li>🙌 모임 열기</li><li>🍚 식단공유</li><li>🙈 익명게시판</li></ul>
 <p class="ac-s">설치 없이 링크로 바로 열려요 · 홈 화면에 추가하면 앱처럼 써요 · 가입 없이 닉네임만</p>
 <div class="ac-b"><a class="btn teal" href="{APP}">🆘 앱 열기</a><a class="btn ghost" href="{APP}guide.html">📖 사용법</a></div></div>'''
