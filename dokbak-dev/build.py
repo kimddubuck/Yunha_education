@@ -278,7 +278,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 </main>
 <footer><div class="wrap">
   <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
-  <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
+  <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 육아 정보 홈페이지와 <a href="{APP}">공동육아 웹앱</a>을 만들었어요.</p>
   {AI_FOOT}<div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><a href="{up}contact.html">문의</a><span>{CONTACT}</span></div>
 </div></footer>
 {'' if path == 'admin.html' else BEACON}
