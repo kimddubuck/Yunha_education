@@ -91,7 +91,7 @@
         <div class="gtile"><small>한 끼 양</small>${cupsvg}<b>${f[8]}</b><small>${cup != null ? '250mL 컵 기준' : ''}</small></div>
         <div class="gtile"><small>하루 열량</small><b class="gbig">${kcal.toLocaleString()}<em>kcal</em></b><div class="gkbar"><i style="width:${Math.round(kcal / 1700 * 100)}%"></i></div><small>${f[9]}</small></div>
       </div><p class="gfeed">${f[3]}</p>
-      <p class="src">열량은 2020 한국인 영양소 섭취기준의 '에너지 필요추정량'(평균 체격·보통 활동 기준)이고, 끼니 수와 한 끼 양은 WHO 이유식 안내예요. 아이마다 달라서 배고픔·배부름 신호가 먼저예요. 얼마나 먹을지는 아이가 정해요.</p></div>`;
+      <p class="src">열량은 2020 한국인 영양소 섭취기준의 '에너지 필요추정량'(평균 체격·보통 활동 기준)이고, 끼니 수와 한 끼 양은 WHO 이유식 안내예요(250mL 컵은 일반 종이컵 약 180mL보다 조금 커요. ½컵은 종이컵 ⅔쯤). 아이마다 달라서 배고픔·배부름 신호가 먼저예요. 얼마나 먹을지는 아이가 정해요.</p></div>`;
     }
     // 🩺 검진: 8단계 타임라인
     const cur = CHECK.find(c => n0 >= c[1] && n0 <= c[2]), next = CHECK.find(c => c[1] > n0);
