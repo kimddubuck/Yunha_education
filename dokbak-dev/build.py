@@ -573,7 +573,7 @@ segs(); render();
           ('2020 한국인 영양소 섭취기준 · 에너지 필요추정량', '보건복지부·한국영양학회 · 2020', '', '0~5개월 500, 6~11개월 600, 1~2세 900, 3~5세 1,400, 6~8세 남 1,700·여 1,500kcal예요. 평균 체격·보통 활동량 기준이라 아이마다 달라요. 원문 표는 검색으로 확인한 2차 자료(어린이집 식단 안내 등)를 바탕으로 했어요.'),
           ('영유아 건강검진 안내', '국민건강보험공단', 'https://www.nhis.or.kr/nhis/healthin/wbhaca04800m01.do', '8차 검진 시기(생후 14~35일부터 66~71개월까지)와 검진 기관 찾기 안내예요. 1차 검진은 2021년 1월 1일 출생아부터예요.')]
   gsrc = ''.join(f'<details class="srcd"><summary>📄 {e(n)} <small>{e(k)}</small></summary><p>{e(t)}{(" <a href=%s rel=noopener>원문 열기</a>" % u) if u else ""}</p></details>' for n, k, u, t in GSRC)
-  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 우리 아이 지금</p>
+  gbody = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 우리 아이 지금</p>
 <section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">👶 우리 아이 지금</span><h1 style="font-size:clamp(26px,5vw,36px)">몇 개월이고, 얼마나 크고, 얼마나 먹을까?</h1><p>태어난 해·달과 성별만 고르면 지금 개월수에 맞는 키·몸무게 범위, 하루 먹는 양, 영유아 검진 시기를 보여 줘요. 적은 내용은 이 휴대폰에만 남아요.</p></div>
 <div class="box gform">
   <div class="row"><span>태어난 때</span><div class="gin"><select id="gy" aria-label="태어난 해"><option value="">해</option></select><select id="gm" aria-label="태어난 달"><option value="">달</option></select><input id="gd" type="number" min="1" max="31" placeholder="일 (선택)" aria-label="태어난 날"></div></div>
@@ -586,7 +586,7 @@ segs(); render();
 <div id="gout"></div>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>
 </section></div>'''
-  files['growth.html'] = page('우리 아이 지금 · 개월수별 키·몸무게·식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게 범위(WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', body, 'growth.html', 'growth.html',
+  files['growth.html'] = page('우리 아이 지금 · 개월수별 키·몸무게·식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게 범위(WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', gbody, 'growth.html', 'growth.html',
     f'<script>window.WHO_LMS={LMSJ};</script><script defer src="assets/growth.js?v={V}"></script>')
   files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')
 
