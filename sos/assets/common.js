@@ -1038,7 +1038,7 @@ function meetShareBtn(o){
   const b = document.createElement('button'); b.type = 'button'; b.className = 'act meet-share'; b.textContent = '📣 공유';
   b.addEventListener('click', async () => {
     let url = ''; try{ url = inviteUrl() + '&go=m' + o.id; }catch(e){ return; }
-    const text = `[${ROOM.name}] ${dayLabel(o.date)} ${meetWhen(o)} 모임 🙌\n${o.text ? o.text.slice(0, 60) + '\n' : ''}\n참석·불참 중 하나만 꾹 눌러 주세요 🙋\n무반응은 주최자의 용기를 줄어들게 해요 🥲\n\n👇 누르면 바로 투표 창이 열려요\n${url}`;
+    const text = `[${ROOM.name}] ${dayLabel(o.date)} ${meetWhen(o)} 모임 🙌\n${o.text ? o.text.slice(0, 60) + '\n' : ''}\n👇 누르면 바로 투표 창이 열려요\n${url}`;
     if(navigator.share){ try{ await navigator.share({text}); return; }catch(e){ if(e.name === 'AbortError') return; } }
     try{ await navigator.clipboard.writeText(text); if(typeof pushToast === 'function') pushToast('✅ 복사했어요! 단톡방에 붙여넣으세요'); }
     catch(e){ window.prompt('아래 글을 복사해서 단톡방에 붙여넣으세요.', text); }
