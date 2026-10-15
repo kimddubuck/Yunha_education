@@ -595,7 +595,8 @@ segs(); render();
     tool = ''
     if G.get('tool'):
       tool = f'<div class="bridge tool"><p><b>🧰 {e(G["tool"]["name"])}</b><br>{e(G["tool"]["desc"])}</p><a class="btn teal" href="{e(G["tool"]["url"])}" rel="noopener">열기</a></div>'
-    secs = G['sections']
+    # 근거를 확인한 내용이 하나도 없는 항목(관행만 있는 것)은 페이지를 만들지 않아요 (빈 페이지 방지)
+    secs = [x for x in G['sections'] if any(b.get('v') != 'x' and 'ask' not in b for b in x.get('blocks', []))]
     for i, sec in enumerate(secs):
       prv = secs[i - 1] if i else None
       nxt = secs[i + 1] if i + 1 < len(secs) else None
