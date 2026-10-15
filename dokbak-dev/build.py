@@ -785,6 +785,9 @@ segs(); render();
   for g in rs['food']['groups']:
     for it in g['items']:
       entries['food'].append(('food/' + it['id'] + '.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind']), '🥣'))
+  # 🎵 동요 추천 페이지도 '말·미디어'와 '놀이' 주제 맨 위에
+  for tp_ in ('lang', 'play'):
+    entries[tp_].insert(0, ('songs.html', '아이 동요 추천 · 개월수별 동요와 율동', '0~12개월 자장가·손유희부터 3세 이상 노래 놀이까지 · 노래 연구 4편', badge('동요', '추천'), '🎵'))
   for tp_, rows_ in entries.items():
     for r_ in rows_: TOPIC_OF_PAGE[r_[0]] = tp_
   os.makedirs(os.path.join(OUT, 'info'), exist_ok=True)
