@@ -277,7 +277,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 </main>
 <footer><div class="wrap">
   <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
-  <p>독박육아 하는 날을 덜 외롭게.<br>집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
+  <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
   {AI_FOOT}<div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
 </div></footer>
 {'' if path == 'admin.html' else BEACON}
@@ -547,6 +547,7 @@ segs(); render();
   prose = lambda t, h: f'<div class="wrap"><section class="blk prose">{h}</section></div>'
   files['about.html'] = page('소개 | 오늘도 독박육아', '오늘도 독박육아는 독박육아 하는 날을 덜 외롭게 만드는 놀이 정보 사이트예요.', prose('소개', f'''<h1>☕ 오늘도 독박육아</h1>
 <p>혼자 아이를 보는 날, 제일 막막한 건 "오늘 뭐 하고 놀지?"예요. 이 사이트는 그 질문에 바로 답하려고 만들었어요.</p>
+<h2>👨‍🍼 만든 사람</h2><p><b>육아휴직을 하고 아이를 혼자 보는 아빠</b>가 직접 만들었어요. 독박육아를 하면서 필요했던 것들을 하나씩 만들었어요.</p><ul><li><b>오늘도 독박육아</b>: 집에 있는 물건으로 바로 할 수 있는 놀이와, 믿을 만한 기관·연구에서 가져온 육아 정보를 쉬운 말로 모았어요.</li><li><b><a href="{APP}">공동육아 SOS</a></b>: 혼자 버티기 힘든 날, 같은 단지 엄마 아빠와 시간을 맞춰 함께 보려고 만든 앱이에요.</li></ul><p>놀이는 직접 해 본 것만 올리고, 육아 정보는 글마다 누가 쓴 자료인지 출처를 밝혀요.</p>
 <h2>무엇을 하나요</h2><ul><li>개월수별로 집에 있는 물건으로 하는 놀이를 모아요.</li><li>아이가 왜 그 놀이를 좋아하는지 <a href="principles.html">놀이 원리</a>로 설명해요.</li><li>혼자 버티기 힘든 날엔 이웃과 함께하는 <a href="{APP}">공동육아 SOS</a>로 이어 드려요.</li></ul>
 <h2>놀이 정보에 대해</h2><p>{'놀이는 두 가지예요. 직접 해 보고 정리한 놀이와, <b>🧪 새 놀이</b> 표시가 붙은 <b>AI(인공지능)가 만든 놀이</b>예요. AI 놀이는 놀이 원리와 안전 원칙에 맞춰 만들고 검토했지만 사람이 해 본 건 아니라서 <b>참고용</b>이에요.' if AI_ON else '여기 놀이는 <b>직접 해 보고 정리한 놀이</b>예요. 새 놀이는 직접 해 본 뒤에 하나씩 올려요.'} 아이마다 발달 속도가 다르니 개월수는 참고로만 봐 주세요. 놀이할 때는 꼭 어른이 옆에서 지켜봐 주세요.</p>
 <h2>문의</h2><p>{CONTACT}</p>'''), 'about.html')
