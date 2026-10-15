@@ -501,7 +501,7 @@ footer p{font-size:14px;color:var(--soft)}
 
 /* 묶음 안의 작은 탭 */
 .subnav{background:var(--paper);border-bottom:1px solid var(--line)}
-.subnav .wrap{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 16px}
+.subnav .wrap{display:flex;flex-wrap:wrap;gap:6px;padding:8px 16px}
 .subnav a{flex:0 0 auto;text-decoration:none;font-size:13.5px;font-weight:700;color:var(--soft);padding:6px 12px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
 .subnav a[aria-current="page"]{color:var(--ink);background:var(--bg);border-color:var(--line)}
 @media (max-width:440px){.nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
