@@ -234,6 +234,7 @@ def page_keywords(path):
           'songs.html': ['동요 추천', '아기 동요', '율동', '자장가'], 'food.html': KW_TOPIC['food'], 'research.html': ['육아 연구', '아기 발달', '놀이 연구'],
           'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도']}.get(path, [])
 
+NOINDEX = {'404.html', 'search.html', 'admin.html'} | {f'principles/{PR_SLUG[k]}.html' for k, v in PR_SRC.items() if not v}   # 연구 근거 없는 '놀이 만들기용 분류'는 검색엔진에 안 내보내요
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
@@ -256,7 +257,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<link rel="canonical" href="{BASE}/{pretty(path)}"><meta property="og:url" content="{BASE}/{pretty(path)}">
+{'<meta name="robots" content="noindex,follow">' if path in NOINDEX else f'<link rel="canonical" href="{BASE}/{pretty(path)}"><meta property="og:url" content="{BASE}/{pretty(path)}">'}
 <meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
 <meta name="theme-color" content="#2a9095">{''.join(f'<meta name="{k}" content="{e(v)}">' for k, v in SITE_VERIFY if v)}
@@ -278,7 +279,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <footer><div class="wrap">
   <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
   <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
-  {AI_FOOT}<div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
+  {AI_FOOT}<div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><a href="{up}contact.html">문의</a><span>{CONTACT}</span></div>
 </div></footer>
 {'' if path == 'admin.html' else BEACON}
 </body>
@@ -558,9 +559,13 @@ segs(); render();
 <h2>방문 통계 (Cloudflare Web Analytics)</h2><p>사이트를 더 낫게 만들기 위해 <b>Cloudflare Web Analytics</b>로 방문 통계를 봐요. 이 도구는 <b>쿠키를 쓰지 않고</b>, 누가 왔는지 개인을 알아보지 않아요. 집계되는 것은 날짜별 방문·조회 수, 많이 본 페이지, 어디서 들어왔는지(검색·링크 등), 기기와 브라우저 종류, 나라·지역 단위의 대략적인 위치예요. IP 주소는 집계에만 잠깐 쓰이고 저장하지 않아요. 자세한 내용은 <a href="https://www.cloudflare.com/web-analytics/" rel="noopener">Cloudflare 안내</a>를 봐 주세요.</p>
 <h2>방문 통계 (사이트 자체 집계)</h2><p>어떤 글이 도움이 되는지 보려고 사이트가 직접 방문 수를 세요. 페이지를 열 때 <b>날짜, 본 페이지 주소, 들어온 곳(네이버·구글처럼 사이트 이름만, 검색 주소에 들어 있으면 검색어), 기기 종류(휴대폰·태블릿·PC)</b>만 서버(Cloudflare)에 남겨요. <b>IP 주소, 쿠키, 이름 같은 개인을 알아볼 수 있는 정보는 저장하지 않아요.</b> 다른 사이트로 가는 링크(공동육아 SOS 등)를 누르면 <b>어느 사이트로 나갔는지</b>도 세요. 같은 사람이 하루에 여러 번 세어지지 않도록 브라우저 저장소에 '오늘 방문함' 표시(날짜 한 줄)만 남겨요. 이 숫자는 운영자만 봐요.</p>
 <h2>🗺 육아 지도</h2><p>「📍 내 위치」를 누르면 브라우저가 위치 허용을 물어봐요. 허용하면 내 위치는 <b>이 휴대폰에서만</b> 지도를 옮기는 데 쓰고, 서버에는 약 100m 단위로 반올림한 좌표만 보내요. 서버는 이 반올림한 좌표를 공공데이터포털(건강보험심사평가원·국립중앙의료원·행정안전부)에 전달해 주변 병원·약국·놀이시설을 찾고, 카카오 로컬 API에는 어느 시도인지 확인하는 데만 보내요. 위치는 어디에도 저장하지 않고, 같은 동네의 검색 결과만 잠깐 캐시해요.</p>
-<h2>쿠키와 광고</h2><p>앞으로 광고(Google 애드센스)를 붙이면, Google 같은 광고 사업자가 쿠키를 써서 이 사이트와 다른 사이트 방문 기록을 바탕으로 광고를 보여 줄 수 있어요. 맞춤 광고는 <a href="https://adssettings.google.com" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 광고를 붙이면 이 내용을 다시 알려 드려요.</p>
+<h2>쿠키와 광고 (Google 애드센스)</h2><p>이 사이트는 Google 애드센스 광고를 실을 수 있어요. 광고를 실으면 이렇게 돼요.</p><ul><li>Google을 포함한 제3자 광고 공급업체는 <b>쿠키</b>를 써서, 이용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여 줘요.</li><li>Google은 광고 쿠키를 써서 이 사이트와 인터넷의 다른 사이트 방문 기록을 바탕으로 광고를 게재할 수 있어요.</li><li>맞춤 광고는 <a href="https://adssettings.google.com" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 다른 광고 공급업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>에서 끌 수 있어요.</li><li>Google이 정보를 어떻게 쓰는지는 <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">Google 파트너 사이트 정보 이용 안내</a>에서 볼 수 있어요.</li></ul>
 <h2>공동육아 SOS</h2><p>공동육아 SOS 앱은 따로 운영되며, 그 앱의 개인정보 안내를 따라요.</p>
 <h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {datetime.date.today():%Y년 %m월 %d일}</p>'''), 'privacy.html')
+  files['contact.html'] = page('문의 | 오늘도 독박육아', '오늘도 독박육아 문의하기 · 잘못된 정보 알리기 · 놀이 제안', prose('문의', f'''<h1>✉️ 문의</h1>
+<p>궁금한 점, 잘못된 정보, 이런 놀이·정보가 있으면 좋겠다는 제안을 메일로 보내 주세요.</p>
+<div class="box"><h2>📮 메일</h2><p style="font-size:18px;margin:0"><a href="mailto:{CONTACT}">{CONTACT}</a></p><p class="src" style="margin:6px 0 0">보통 며칠 안에 답장해요. 아이 이름·연락처 같은 개인정보는 꼭 필요할 때만 적어 주세요.</p></div>
+<h2>이런 걸 알려 주세요</h2><ul><li>🩺 글 내용이 공식 안내나 연구와 다를 때 (출처 링크를 함께 보내 주시면 빨리 고쳐요)</li><li>💰 국가지원 금액·조건이 바뀌었을 때</li><li>🧸 해 보니 좋았던 놀이, 바꿔 보니 더 좋았던 방법</li><li>🆘 <a href="{APP}">공동육아 SOS</a> 앱 사용 중 불편한 점</li></ul>'''), 'contact.html')
   files['terms.html'] = page('이용약관 | 오늘도 독박육아', '오늘도 독박육아 이용약관', prose('약관', f'''<h1>이용약관</h1>
 <h2>1. 사이트 이용</h2><p>누구나 무료로 볼 수 있어요. 글과 놀이 정리는 운영자가 직접 쓴 것이라, 출처를 밝히면 개인적으로 공유해도 괜찮아요. 통째로 복사해 다른 곳에 올리는 건 안 돼요.</p>
 <h2>2. 놀이 정보</h2><p>놀이는 일반적인 참고 정보예요. 아이의 나이·발달·건강에 맞는지는 보호자가 판단해 주세요. 모든 놀이는 어른이 옆에서 지켜볼 때 해 주세요. 놀이 중 생긴 사고에 대해 사이트가 책임지기 어려워요.</p>
@@ -958,7 +963,7 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
     os.makedirs(os.path.dirname(os.path.join(OUT, path)), exist_ok=True)
     open(os.path.join(OUT, path), 'w', encoding='utf-8').write(txt)
   today = datetime.date.today().isoformat()
-  urls = ''.join(f'<url><loc>{BASE}/{pretty(p)}</loc><lastmod>{today}</lastmod></url>' for p in sorted(files))
+  urls = ''.join(f'<url><loc>{BASE}/{pretty(p)}</loc><lastmod>{today}</lastmod></url>' for p in sorted(files) if p not in NOINDEX)
   open(os.path.join(OUT, 'sitemap.xml'), 'w').write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
   open(os.path.join(OUT, 'admin.html'), 'w', encoding='utf-8').write(page('방문 통계 | 오늘도 독박육아', '', ADMIN_BODY, 'admin.html', '', '<meta name="robots" content="noindex,nofollow">'))
   open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: {BASE}/sitemap.xml\n')
