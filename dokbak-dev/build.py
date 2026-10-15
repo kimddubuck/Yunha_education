@@ -9,7 +9,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEV = os.path.join(ROOT, 'dokbak-dev')
 OUT = os.path.join(ROOT, 'dokbak')
 # 구글 서치 콘솔 · 네이버 서치어드바이저 '소유 확인' HTML 태그의 content 값만 넣어요 (비밀 키 아님, 비우면 안 넣어요)
-SITE_VERIFY = {'google-site-verification': 'LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4NpfnuWqSw', 'naver-site-verification': '24c64ae8aaef959ea969cfde87a96b063cd368ef'}
+SITE_VERIFY = [('google-site-verification', 'LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4NpfnuWqSw'),   # dokbak.pages.dev
+               ('google-site-verification', 'ZFMTOLEzDx_o9xWt52lDTOJko_3P7FKUIH1PbmnYO5o'),   # 독박육아.com
+               ('naver-site-verification', '24c64ae8aaef959ea969cfde87a96b063cd368ef')]   # dokbak.pages.dev
 BASE = 'https://xn--iq1br1ns0hr0b.com'   # 독박육아.com (한글 도메인의 영문 표기). sitemap · 대표 주소에 쓰여요
 APP = 'https://gongdong-sos.pages.dev/'
 CONTACT = 'ifb1321@gmail.com'       # 공동육아 SOS 이용약관에 공개된 운영자 문의 메일과 같아요
@@ -256,7 +258,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <link rel="canonical" href="{BASE}/{pretty(path)}"><meta property="og:url" content="{BASE}/{pretty(path)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<meta name="theme-color" content="#2a9095">{''.join(f'<meta name="{k}" content="{e(v)}">' for k, v in SITE_VERIFY.items() if v)}
+<meta name="theme-color" content="#2a9095">{''.join(f'<meta name="{k}" content="{e(v)}">' for k, v in SITE_VERIFY if v)}
 <link rel="icon" href="{up}assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
