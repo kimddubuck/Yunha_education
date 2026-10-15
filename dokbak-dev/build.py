@@ -171,13 +171,13 @@ def page(title, desc, body, path, active='', extra_head=''):
 <footer><div class="wrap">
   <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
   <p>독박육아 하는 날을 덜 외롭게.<br>집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
-  <div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
+  <p class="src" style="margin:0 0 6px">🧪 새 놀이 표시는 AI(인공지능)가 놀이 원리로 만든 놀이예요. 참고용으로만 봐 주세요.</p><div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
 </div></footer>
 </body>
 </html>
 '''
 
-NEWBOX = '<div class="box newp"><h2>🧪 새로 만든 놀이예요</h2><p>오늘도 독박육아가 <a href="../principles.html">놀이 원리</a>와 집에 있는 생활용품으로 새로 만든 놀이예요. 3세 미만 질식 위험 크기, 끈·자석·비닐, 넘어짐, 물 같은 <a href="../principles.html#safety">안전 원칙</a>으로 하나하나 검토했지만 <b>아직 직접 해 보기 전</b>이에요. 아이마다 다르니 반응을 보며 쉽게·어렵게 조절하고, 늘 옆에서 지켜봐 주세요. 해 보고 다듬으면 이 표시를 떼요.</p></div>'
+NEWBOX = '<div class="box newp"><h2>🧪 AI가 만든 새 놀이예요</h2><p>이 놀이는 사람이 해 본 놀이가 아니라, <b>AI(인공지능)가</b> <a href="../principles.html">놀이 원리</a>와 집에 있는 생활용품을 조합해서 만든 거예요. <b>참고용으로만</b> 봐 주세요. 3세 미만 질식 위험 크기, 끈·자석·비닐, 넘어짐, 물 같은 <a href="../principles.html#safety">안전 원칙</a>으로 하나하나 검토했지만 <b>아직 직접 해 보기 전</b>이에요. 아이마다 다르니 반응을 보며 쉽게·어렵게 조절하고, 늘 옆에서 지켜봐 주세요. 해 보고 다듬으면 이 표시를 떼요.</p></div>'
 
 # 🌱 키우는 힘: 놀이마다 적은 발달 영역. 설명은 '이 놀이에서 아이가 실제로 하는 것' 수준으로만 적어요 (효과를 장담하는 말은 안 써요)
 SKILL = {
@@ -273,7 +273,7 @@ def build():
   <div class="row"><span>인원</span><div class="seg" data-k="g"><button type="button" data-v="" aria-pressed="true">상관없음</button><button type="button" data-v="1">👨‍👩‍👧 여럿이 하기 좋은 것</button></div></div>
 </div>
 <p class="count" id="count"></p>
-<div class="cards" id="list">{''.join(card(p, '../') for p in rows)}</div>
+<p class="src" style="margin:0 0 10px">🧪 새 놀이 = AI(인공지능)가 놀이 원리로 만든 놀이예요. 사람이 해 본 건 아니라 참고용이에요.</p><div class="cards" id="list">{''.join(card(p, '../') for p in rows)}</div>
 </section>
 <section class="blk">{SOS_BRIDGE}</section></div>
 <script>
@@ -426,7 +426,7 @@ segs(); render();
   files['about.html'] = page('소개 | 오늘도 독박육아', '오늘도 독박육아는 독박육아 하는 날을 덜 외롭게 만드는 놀이 정보 사이트예요.', prose('소개', f'''<h1>☕ 오늘도 독박육아</h1>
 <p>혼자 아이를 보는 날, 제일 막막한 건 "오늘 뭐 하고 놀지?"예요. 이 사이트는 그 질문에 바로 답하려고 만들었어요.</p>
 <h2>무엇을 하나요</h2><ul><li>개월수별로 집에 있는 물건으로 하는 놀이를 모아요.</li><li>아이가 왜 그 놀이를 좋아하는지 <a href="principles.html">놀이 원리</a>로 설명해요.</li><li>혼자 버티기 힘든 날엔 이웃과 함께하는 <a href="{APP}">공동육아 SOS</a>로 이어 드려요.</li></ul>
-<h2>놀이 정보에 대해</h2><p>놀이 방법은 모두 직접 정리해 쓴 글이에요. 아이마다 발달 속도가 다르니 개월수는 참고로만 봐 주세요. 놀이할 때는 꼭 어른이 옆에서 지켜봐 주세요.</p>
+<h2>놀이 정보에 대해</h2><p>놀이는 두 가지예요. 직접 해 보고 정리한 놀이와, <b>🧪 새 놀이</b> 표시가 붙은 <b>AI(인공지능)가 만든 놀이</b>예요. AI 놀이는 놀이 원리와 안전 원칙에 맞춰 만들고 검토했지만 사람이 해 본 건 아니라서 <b>참고용</b>이에요. 아이마다 발달 속도가 다르니 개월수는 참고로만 봐 주세요. 놀이할 때는 꼭 어른이 옆에서 지켜봐 주세요.</p>
 <h2>문의</h2><p>{CONTACT}</p>'''), 'about.html')
   files['privacy.html'] = page('개인정보처리방침 | 오늘도 독박육아', '오늘도 독박육아 개인정보처리방침', prose('개인정보', f'''<h1>개인정보처리방침</h1>
 <p>오늘도 독박육아(이하 "사이트")는 회원가입이 없고, 이름·연락처 같은 개인정보를 받지 않아요.</p>
