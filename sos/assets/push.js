@@ -329,9 +329,9 @@ const PUSH_WHAT = `<ul class="push-what">
   <li><b>🙌 새 모임</b>이 열리거나 바뀌면<small>👉 방 사람 모두</small></li>
   <li><b>🆘 SOS</b>가 내가 누른 시간에 몰리면<small>👉 그 시간 누른 사람</small></li>
   <li><b>⏰ 모임 1시간 전</b> 리마인드<small>👉 참석한 사람</small></li>
-  <li><b>🙋 내 모임</b>에 참석·댓글이 늘면 · 연 사람</li>
+  <li><b>🙋 내 모임</b>에 참석·댓글이 늘면<small>👉 연 사람</small></li>
   <li><b>🍚 식단 사진</b>이 올라오면<small>👉 방 사람 모두</small></li>
-  <li><b>💬 내 사진·내 댓글</b>에 댓글·답글이 달리면 · 나에게만</li>
+  <li><b>💬 내 사진·내 댓글</b>에 댓글·답글이 달리면<small>👉 나에게만</small></li>
 </ul><p class="push-what-note">🙈 익명게시판과 ❤️ 좋아요는 알림이 없어요. 끄려면 방 이름 옆 🔔를 한 번 더 누르면 돼요.</p>`;
 function pushWhatInfo(){ if(typeof sosInfo === 'function') sosInfo({icon: '🔔', title: '이런 알림이 와요', body: PUSH_WHAT}); }
 async function pushBellClick(btn){
