@@ -512,3 +512,15 @@ footer p{font-size:14px;color:var(--soft)}
 .gme-t small{display:inline-block;margin-top:2px}
 .rchips{margin:10px 0 4px}
 .rchips button small{opacity:.7;font-size:11px;margin-left:2px}
+/* 🔍 통합 검색 */
+.top-search{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:999px;color:var(--ink);background:var(--teal-tint);border:1px solid var(--line);margin-left:auto;flex:none}
+.top-search + .top-sos{margin-left:0}
+.sbox{display:flex;gap:6px;margin:12px 0 8px}
+.sbox input{flex:1;min-width:0;font:inherit;font-size:16px;padding:11px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink)}
+.sbox input:focus{outline:none;border-color:var(--teal)}
+.sbox button{flex:none;font:inherit;font-weight:800;font-size:15px;padding:0 18px;border:0;border-radius:999px;background:var(--teal);color:var(--on-teal,#fff);cursor:pointer}
+.schips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.schips button{font:inherit;font-size:13.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--teal-tint);color:var(--ink);cursor:pointer}
+#sres mark{background:color-mix(in srgb,#ffd54a 55%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.schips[hidden]{display:none}
+@media (max-width:440px){.top .wrap{column-gap:8px}.top-search{width:34px;height:34px}.top-sos .sos-long{display:none}.top-sos i{display:inline}}
