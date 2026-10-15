@@ -135,7 +135,7 @@ const MEET_NUDGES = [
   '❤️ 하트 하나가 <b>주최자를 위로해요</b>'];
 const TICKERS = { home: NUDGES, plan: PLAN_NUDGES, meet: MEET_NUDGES };
 // 한 문장씩: 오른쪽 끝에서 들어와 왼쪽 끝으로 다 빠져나가면 다음 문장이 들어와요 (전광판마다 따로 돌아요)
-const NUDGE_SPEED = 55;   // 1초에 55px
+const NUDGE_SPEED = 75;   // 1초에 75px
 const tick = {};
 const tickOf = set => tick[set] || (tick[set] = { i: 0, t0: Date.now(), timer: null });
 function nudgePaint(root){   // 달력을 다시 그려도 흐르던 자리에서 이어서 (처음부터 다시 시작 X)
