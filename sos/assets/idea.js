@@ -26,10 +26,8 @@ function renderIdeas(){
   const fo = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-idea]');   // 쓰는 중인 댓글은 지켜요
   const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('input').value} : null;
   ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
-  const list = idea.items.filter(x => !x.deleted && (!idea.filter || (x.c || 'talk') === idea.filter));
-  const fr = $i('#ideaFilter'); if(fr && !fr.childElementCount) fr.innerHTML = [['', '전체'], ...IDEA_CATS].map(([k, n]) => `<button type="button" data-filter="${k}" aria-pressed="${k === idea.filter}">${n}</button>`).join('');
-  if(fr) fr.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === idea.filter)));
-  if(!list.length){ ul.innerHTML = `<li class="hint idea-empty">${idea.filter ? '이 말머리 글이 아직 없어요.' : '아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂'}</li>`; return; }
+  const list = idea.items.filter(x => !x.deleted);   // 말머리는 글에 붙어만 있고, 걸러 보기는 없어요
+  if(!list.length){ ul.innerHTML = `<li class="hint idea-empty">아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂</li>`; return; }
   ul.innerHTML = '';
   list.forEach(x => {
     const li = document.createElement('li'); li.className = 'idea-card'; li.dataset.id = x.id;
@@ -108,7 +106,6 @@ async function removeDoc(ref, path){
   const cats = $i('#ideaCats'); cats.innerHTML = IDEA_CATS.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="${k === idea.cat}">${n}</button>`).join('');
   cats.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; idea.cat = b.dataset.cat; cats.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     title.placeholder = {talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', place: '제목 (예: 이번 주말 공원 피크닉 같이 가실 분?)', club: '제목 (예: 그림책 같이 읽을 분 모여요)', buy: '제목 (예: 기저귀 공구 같이 하실 분?)', idea: '제목 (예: 밤잠 꿀팁 하나 공유해요)', etc: '제목'}[idea.cat] || '제목'; });
-  $i('#ideaFilter').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if(!b) return; idea.filter = b.dataset.filter; renderIdeas(); });
   sosReady().then(ok => {
     if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
     idea.col = roomRef().collection('ideas');
