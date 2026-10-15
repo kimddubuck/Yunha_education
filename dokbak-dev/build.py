@@ -128,6 +128,7 @@ def in_band(p, lo, hi):
 # 📚 육아 정보 주제 탭: 육아 상식·연구·이유식 글을 출처 종류가 아니라 주제로 묶어요
 TOPICS = [('play', '🧸', '놀이·발달'), ('mind', '💛', '마음·행동'), ('lang', '🗣', '말·책·미디어'), ('food', '🍚', '먹기·이유식'),
           ('sleep', '😴', '잠·배변·양치'), ('health', '🩺', '건강·검진·안전'), ('together', '🤝', '공동육아')]
+TOPIC_SHORT = {'play': '놀이', 'mind': '마음', 'lang': '말·미디어', 'food': '먹기', 'sleep': '잠·습관', 'health': '건강·안전', 'together': '공동육아'}   # 작은 탭에 쓰는 짧은 이름
 TOPIC_OF = {   # 글 id → 주제 (여기 없는 글은 아래 기본 규칙으로)
   'mouthing-dropping': 'play', 'same-book-again': 'play', 'why-questions': 'play',
   'stranger-separation-anxiety': 'mind', 'crying-curve': 'mind', 'tantrum-how-common': 'mind', 'toddler-biting': 'mind',
@@ -160,7 +161,7 @@ def page(title, desc, body, path, active='', extra_head=''):
   # 메뉴 6개로 묶어요. 묶음 안의 작은 탭(subnav)은 그 묶음 페이지 위에 보여요
   GROUPS = [('plays/', '놀이', [('plays/', '🔍 놀이 찾기'), ('age/', '📅 개월수별'), ('principles.html', '🧠 놀이 원리')]),
             ('growth.html', '우리 아이 지금', []),
-            ('info/play.html', '육아 정보', [(f'info/{sl}.html', f'{ic} {nm}') for sl, ic, nm in TOPICS], ['tips.html', 'research.html', 'food.html']),
+            ('info/play.html', '육아 정보', [(f'info/{sl}.html', f'{ic} {TOPIC_SHORT[sl]}') for sl, ic, nm in TOPICS], ['tips.html', 'research.html', 'food.html']),
             ('daycare/', '어린이집', []),
             ('support.html', '국가지원', []),
             ('map.html', '육아 지도', [])]

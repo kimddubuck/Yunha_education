@@ -84,12 +84,41 @@ function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
 const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단'],['idea.html','idea','🙈','익명게시판'],['https://dokbak.pages.dev/','dokbak','<img class="ti-img" src="assets/dokbak.svg" alt="">','독박육아'],['terms.html','safety','📜','이용약관']];   // 독박육아: 놀이·연구·지도 사이트 (새 창)
+// 💬 전광판 글귀: 8초마다 바뀌고, 누르면 바로 다음으로. 첫 줄은 늘 우리 약속
+//    출처가 분명한 말만 이름을 붙이고, 널리 쓰이지만 출처가 불확실한 말은 이름 없이 둬요
+const SLOGANS = [
+  ['🤝', '육아엔 정답이 없어요,', '서로의 방식을 존중해요', ''],
+  ['🌷', '엄마가 행복해야', '아이도 행복해요', ''],
+  ['🕊️', '육아의 목표는', '아이의 독립이에요', ''],
+  ['🏘️', '아이 하나를 키우려면', '온 마을이 필요해요', '아프리카 속담'],
+  ['🫶', '완벽한 부모는 없어요,', '충분히 좋은 부모면 돼요', '위니컷(소아과 의사)의 말에서'],
+  ['👀', '아이는 어른 말을 듣지 않지만,', '어른을 따라 해요', '제임스 볼드윈'],
+  ['🧸', '놀이는', '아이의 일이에요', '마리아 몬테소리'],
+  ['☕', '오늘 하루도 버틴 당신,', '잘하고 있어요', ''],
+  ['🌱', '아이는 저마다', '피는 때가 달라요', ''],
+  ['😮‍💨', '힘든 날엔 쉬어도 돼요,', '엄마 아빠도 사람이에요', ''],
+  ['🙋', '독박인 날도,', '혼자는 아니에요', ''],
+  ['👶', '울음은', '아이의 첫 번째 말이에요', ''],
+  ['⏳', '하루 10분, 온전히', '눈 맞추는 시간이면 충분해요', ''],
+  ['🏠', '아이에게 필요한 건 완벽한 집이 아니라', '따뜻한 품이에요', ''],
+  ['🌙', '오늘 못 한 건', '내일 하면 돼요', ''],
+  ['🤲', '같이 키우면', '덜 외로워요', '']];
+function startSlogan(){
+  const el = document.getElementById('slogan'); if(!el) return;
+  let i = 0, timer = null;
+  const paint = () => { const [ic, a, b, who] = SLOGANS[i];
+    el.innerHTML = `${ic} <span class="nw">${a}</span> <span class="nw"><b>${b}</b></span>${who ? ` <small class="sl-who">– ${who}</small>` : ''}`; };
+  const next = () => { el.classList.add('fade'); setTimeout(() => { i = (i + 1) % SLOGANS.length; paint(); el.classList.remove('fade'); }, 350); };
+  const arm = () => { clearInterval(timer); timer = setInterval(() => { if(!document.hidden) next(); }, 8000); };
+  el.addEventListener('click', () => { next(); arm(); });
+  arm();
+}
 (function renderNav(){
   const nav = document.getElementById('siteNav'); if(!nav) return;
   const cur = nav.dataset.page;
   // 🤝 슬로건: 홈·SOS 예약·식단 맨 위에 작게 (서로의 육아 존중)
   if(['home', 'meet', 'meal', 'idea'].includes(cur)){ const m = document.querySelector('main');
-    if(m) m.insertAdjacentHTML('afterbegin', '<p class="slogan">🤝 <span class="nw">육아엔 정답이 없어요,</span> <span class="nw"><b>서로의 방식을 존중해요</b></span></p>'); }
+    if(m){ m.insertAdjacentHTML('afterbegin', '<p class="slogan" id="slogan" title="누르면 다음 글귀">🤝 <span class="nw">육아엔 정답이 없어요,</span> <span class="nw"><b>서로의 방식을 존중해요</b></span></p>'); startSlogan(); } }
   nav.innerHTML = `<a class="brand" href="index.html">공동육아 SOS 🆘</a><div class="nav-links">` +
     NAV.map(([href,key,icon,label]) => `<a href="${href}"${key===cur ? ' aria-current="page"' : ''}${/^https?:/.test(href) ? ' target="_blank" rel="noopener"' : ''}><span class="ti" aria-hidden="true">${icon}</span><span>${label}</span></a>`).join('') + '</div>' +
     '<button type="button" class="intro-btn" aria-label="공동육아 SOS 소개 다시 보기">📖 소개</button>';

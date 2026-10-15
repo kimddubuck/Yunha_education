@@ -1374,3 +1374,8 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 /* 아래 탭 6개: 글자를 조금 줄여요 */
 @media (max-width:420px){ .nav-links a{font-size:11px;letter-spacing:-.3px} }
 @media (max-width:340px){ .nav-links a{font-size:10px;letter-spacing:-.4px} }
+/* 💬 전광판 글귀: 부드럽게 바뀌어요 */
+.slogan{transition:opacity .35s;cursor:pointer;min-height:1.4em}
+.slogan.fade{opacity:0}
+.slogan .sl-who{font-size:10.5px;color:var(--muted);opacity:.8;margin-left:2px}
+@media (prefers-reduced-motion:reduce){.slogan{transition:none}}
