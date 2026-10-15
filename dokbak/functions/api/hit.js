@@ -8,6 +8,11 @@ const SRC = [
   [/(^|\.)kakao\.com$|(^|\.)kakaocdn\.net$/, '카카오'], [/(^|\.)instagram\.com$/, '인스타그램'], [/(^|\.)facebook\.com$/, '페이스북'],
   [/(^|\.)threads\.(net|com)$/, '스레드'], [/(^|\.)youtube\.com$/, '유튜브'], [/(^|\.)bing\.com$/, '빙'], [/(^|\.)zum\.com$/, '줌'],
   [/^gongdong-sos\.pages\.dev$/, '공동육아 SOS']];
+// 들어온 주소(referrer)가 없을 때: 어느 앱 안에서 열었는지 (브라우저 정보에 앱 이름이 들어 있어요)
+const APPS = [[/KAKAOTALK/i, '카카오톡'], [/NAVER\(inapp|NAVER\/|NaverMatome/i, '네이버 앱'], [/Instagram/i, '인스타그램'], [/FBAN|FBAV|FB_IAB/i, '페이스북'],
+  [/\bBAND\//i, '밴드'], [/DaumApps|DaumDevice/i, '다음 앱'], [/\bLine\//i, '라인'], [/Threads|Barcelona/i, '스레드'], [/everytimeApp/i, '에브리타임']];
+// 링크에 붙인 utm_source 짧은 이름 → 보기 좋은 이름
+const UTM = { sos: '공동육아 SOS', kakao: '카카오톡', insta: '인스타그램', blog: '네이버 블로그', cafe: '네이버 카페', band: '밴드' };
 const BOT = /bot|crawl|spider|slurp|preview|headless|lighthouse|monitor|facebookexternalhit|kakaotalk-scrap|yeti/i;
 let ready = false;
 async function init(db) {
@@ -44,7 +49,8 @@ export async function onRequestPost({ request, env }) {
     try { await init(db); await db.prepare('INSERT INTO mine (d, p, pv) VALUES (?, ?, 1) ON CONFLICT (d, p) DO UPDATE SET pv = pv + 1').bind(d, p).run(); } catch { }
     return done;
   }
-  let s = '직접·앱', q = '';
+  const ua = request.headers.get('user-agent') || '';
+  let s = (APPS.find(([re]) => re.test(ua)) || [, '직접 (주소·즐겨찾기·문자)'])[1], q = '';
   try {
     if (b.r) {
       const r = new URL(String(b.r)), h = r.hostname.toLowerCase();
@@ -56,8 +62,7 @@ export async function onRequestPost({ request, env }) {
     }
   } catch { }
   // 광고·공유 링크에 붙은 utm_source 가 있으면 그걸 들어온 곳으로 써요
-  try { const u = new URLSearchParams(String(b.q || '')).get('utm_source'); if (u && s !== '사이트 안') s = u.replace(/[^\w가-힣·\-]/g, '').slice(0, 30) || s; } catch { }
-  const ua = request.headers.get('user-agent') || '';
+  try { const u = new URLSearchParams(String(b.q || '')).get('utm_source'); if (u && s !== '사이트 안') s = UTM[u.toLowerCase()] || u.replace(/[^\w가-힣·\-]/g, '').slice(0, 30) || s; } catch { }
   const dev = /iPad|Tablet/i.test(ua) ? '태블릿' : /Mobi|Android|iPhone/i.test(ua) ? '휴대폰' : 'PC';
   const uv = b.v ? 1 : 0, se = b.s ? 1 : 0;
   try {

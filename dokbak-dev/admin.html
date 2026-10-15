@@ -31,6 +31,7 @@ body>header.top,body>footer,.subnav{display:none}
 .adm .bars li em{font-style:normal;font-weight:700}
 .adm .bars li i{grid-column:1/-1;height:4px;border-radius:2px;background:var(--teal);opacity:.75}
 .adm .bars small{color:var(--soft)}
+.adm .bars .land{display:block;font-size:12.5px;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm .bars .none{color:var(--soft);display:block}
 .adm .note{font-size:12.5px;color:var(--soft);margin:6px 0 0}
 .adm input[type=password]{flex:1;min-width:0;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg,transparent);color:var(--ink)}
@@ -67,7 +68,7 @@ body>header.top,body>footer,.subnav{display:none}
 <div class="card"><h2>📈 날짜별 방문자 <b id="cTot"></b><small id="cSub"></small></h2><div id="chart"></div></div>
 
 <div class="grid2">
-<div class="card"><h2>🚪 들어온 곳</h2><ul class="bars" id="srcs"></ul><p class="note">직접·앱 = 주소 직접 입력, 카카오톡·문자 등 앱에서 누름</p></div>
+<div class="card"><h2>🚪 들어온 곳</h2><ul class="bars" id="srcs"></ul><p class="note">들어온 곳 아래 작은 글씨 = 처음 본 페이지. 카카오톡·네이버 앱·인스타그램은 앱 안에서 연 것까지 구분해요. 직접 = 주소 입력·즐겨찾기·문자 링크</p></div>
 <div class="card"><h2>🔎 검색어</h2><ul class="bars" id="kws"></ul><p class="note">구글 검색어는 Search Console → 실적에서 봐요</p></div>
 <div class="card"><h2>📄 많이 본 페이지</h2><ul class="bars" id="pages"></ul></div>
 <div class="card"><h2>🆘 SOS 누른 페이지</h2><ul class="bars" id="sosPages"></ul></div>
@@ -115,7 +116,8 @@ async function load(){
  $('tMine').textContent=num((j.mine||[]).filter(x=>ds.includes(x.d)).reduce((a,x)=>a+(+x.pv||0),0));
  const cd=days===1?all.slice(-7):ds;chart(cd,cd.map(d=>+g(d).uv||0));
  $('cTot').textContent=num(sum(cd,'uv'))+'명';$('cSub').textContent=days===1?'최근 7일':`최근 7일 ${num(sum(all.slice(-7),'uv'))}명`;
- bars('srcs',j.srcs,x=>esc(x.s),'se');
+ const land={};(j.lands||[]).forEach(x=>{(land[x.s]=land[x.s]||[]).push(x)});
+ bars('srcs',j.srcs,x=>esc(x.s)+((land[x.s]||[]).length?`<span class="land">${land[x.s].slice(0,3).map(l=>`${nm(l.p)} ${num(l.se)}`).join(' · ')}</span>`:''),'se');
  bars('kws',j.kws,x=>`${esc(x.q)} <small>· ${esc(x.s)}</small>`,'n');
  bars('pages',j.pages,x=>`<a href="${esc(x.p)}">${nm(x.p)}</a>`,'pv');
  bars('sosPages',j.outPages||[],x=>`<a href="${esc(x.p)}">${nm(x.p)}</a>`,'n');
