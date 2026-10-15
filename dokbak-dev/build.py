@@ -8,6 +8,8 @@ import json, os, shutil, html, datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEV = os.path.join(ROOT, 'dokbak-dev')
 OUT = os.path.join(ROOT, 'dokbak')
+# 구글 서치 콘솔 · 네이버 서치어드바이저 '소유 확인' HTML 태그의 content 값만 넣어요 (비밀 키 아님, 비우면 안 넣어요)
+SITE_VERIFY = {'google-site-verification': '', 'naver-site-verification': ''}
 BASE = 'https://dokbak.pages.dev'   # 도메인이 정해지면 여기만 바꿔요 (sitemap · 공유 주소에 쓰여요)
 APP = 'https://gongdong-sos.pages.dev/'
 CONTACT = 'ifb1321@gmail.com'       # 공동육아 SOS 이용약관에 공개된 운영자 문의 메일과 같아요
@@ -163,7 +165,7 @@ def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
   # 메뉴 6개로 묶어요. 묶음 안의 작은 탭(subnav)은 그 묶음 페이지 위에 보여요
-  GROUPS = [('plays/', '놀이', [('plays/', '🔍 놀이 찾기'), ('age/', '📅 개월수별'), ('principles.html', '🧠 놀이 원리')]),
+  GROUPS = [('plays/', '놀이', [('plays/', '🔍 놀이 찾기'), ('age/', '📅 개월수별'), ('principles.html', '🧠 놀이 원리'), ('songs.html', '🎵 동요 추천')]),
             ('growth.html', '우리 아이 지금', []),
             ('info/play.html', '육아 정보', [(f'info/{sl}.html', f'{ic} {TOPIC_SHORT[sl]}') for sl, ic, nm in TOPICS], ['tips.html', 'research.html', 'food.html']),
             ('daycare/', '어린이집', []),
@@ -184,7 +186,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <link rel="canonical" href="{BASE}/{path.replace('index.html', '')}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<meta name="theme-color" content="#2a9095">
+<meta name="theme-color" content="#2a9095">{''.join(f'<meta name="{k}" content="{e(v)}">' for k, v in SITE_VERIFY.items() if v)}
 <link rel="icon" href="{up}assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
@@ -704,6 +706,43 @@ segs(); render();
 <div class="bd">{trows}</div>{bysrc}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
     files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
+
+  # ── 🎵 동요 추천: 개월수별 동요 + 율동 (노래 제목만 싣고 가사는 싣지 않아요 · 율동은 AI가 정리)
+  SONGS = [
+    ('0~12개월', '👶', '안고 흔들고, 손으로 놀아요', [
+      ('섬집아기', '잠들기 전 자장가로 불러 줘요. 율동 대신 아기를 안고 노래 박자에 맞춰 천천히 흔들어요.'),
+      ('도리도리 짝짜꿍 · 곤지곤지 잼잼', '고개 좌우로 도리도리, 손뼉 짝짜꿍, 손바닥에 검지 콕콕 곤지곤지, 주먹 쥐었다 폈다 잼잼. 아기 손을 잡고 같이 해 줘요.'),
+      ('작은 별', '"반짝반짝"에 손가락을 쫙 폈다 오므려요. 누워 있는 아기 얼굴 위에서 천천히 보여 줘요.'),
+      ('나비야', '두 손 엄지를 걸어 나비를 만들고 팔랑팔랑 날다가 아기 배·코에 살짝 앉혀요.')]),
+    ('12~36개월', '🧒', '따라 하고, 몸으로 표현해요', [
+      ('곰 세 마리', '아빠곰은 팔을 크게, 엄마곰은 중간, 애기곰은 몸을 작게 웅크려요. "으쓱으쓱"에 어깨를 들썩.'),
+      ('머리 어깨 무릎 발', '노래에 맞춰 몸을 짚어요. 익숙해지면 점점 빠르게, 마지막엔 아주 느리게.'),
+      ('산토끼', '두 손을 머리 위에 귀처럼 세우고 깡충깡충 뛰어요. 아직 못 뛰면 무릎만 굽혔다 펴요.'),
+      ('올챙이와 개구리', '손을 꼬리처럼 흔들며 헤엄치다가, "뒷다리가 쑥" "앞다리가 쑥"에 다리·팔을 내밀고 마지막에 폴짝.'),
+      ('상어가족', '손을 아기 상어는 손가락만, 엄마·아빠는 두 팔로 크게 벌려 입 모양을 만들어요.'),
+      ('그대로 멈춰라', '노래하며 춤추다 "그대로 멈춰라!"에 얼음. 기다리는 힘을 길러 주는 놀이 노래예요.')]),
+    ('3세 이상', '🧑', '여럿이, 규칙 있는 노래 놀이', [
+      ('우리 집에 왜 왔니', '두 편으로 손잡고 줄 서서 노래하며 앞뒤로 오가요. 공동육아 모임처럼 여럿일 때 좋아요.'),
+      ('동대문을 열어라', '어른 둘이 팔로 문을 만들고 아이들이 줄지어 지나가요. 노래가 끝날 때 문이 닫히면 잡혀요.'),
+      ('둥글게 둥글게', '손잡고 원으로 돌다가 어른이 숫자를 외치면 그 수만큼 모여 앉아요. 수 세기 놀이가 돼요.'),
+      ('리자로 끝나는 말은', '"개나리, 보따리…"처럼 같은 글자로 끝나는 말을 번갈아 대요. 말놀이라 어휘가 늘어요.'),
+      ('퐁당퐁당', '돌 던지는 흉내를 내고, 손가락으로 물결이 퍼지는 모양을 그려요.')])]
+  SONG_REF = [
+    ('Corbeil, Trehub, Peretz (2016) · Infancy', 'https://doi.org/10.1111/infa.12114', '노래를 들려줄 때 아기가 울기 시작하기까지 걸린 시간이 말을 들려줄 때(아기 말투 포함)의 약 두 배였어요.'),
+    ('Cirelli, Trehub (2020) · Developmental Psychology', 'https://doi.org/10.1037/dev0000917', '8·10개월 아기를 달랠 때 말보다 노래가 보채는 반응을 더 줄였고, 그중 <b>익숙한 노래</b>가 가장 효과가 컸고 웃음도 많았어요.'),
+    ('Mehr, Song, Spelke (2016) · Psychological Science', 'https://doi.org/10.1177/0956797615626691', '집에서 부모가 불러 준 노래를 부르는 낯선 사람을 5개월 아기가 더 오래 쳐다봤어요. 같은 노래를 <b>장난감 소리로만</b> 들은 아기에겐 이런 차이가 없었어요.'),
+    ('Bainbridge 외 (2021) · Nature Human Behaviour', 'https://doi.org/10.1038/s41562-020-00963-z', '처음 듣는 다른 나라 자장가에도 아기의 심박·동공 반응이 다른 노래보다 더 느긋해졌어요.')]
+  sg = ''.join(f'''<div class="box"><h2>{ic} {e(band)} 동요 <small style="font-weight:400;color:var(--muted)">· {e(sub)}</small></h2><ol>{''.join(f'<li><b>{e(t)}</b> — {e(d)}</li>' for t, d in lst)}</ol></div>''' for band, ic, sub, lst in SONGS)
+  sref = ''.join(f'<li>{link(u, a)}<br>{d}</li>' for a, u, d in SONG_REF)
+  songs_body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › <a href="plays/">놀이</a> › 동요 추천</p>
+<section class="blk prose" style="padding-top:12px"><div class="sh"><span class="ey">🎵 동요 추천</span><h1 style="font-size:clamp(24px,5vw,34px)">개월수별 아이 동요 추천과 율동</h1><p>음원 없이 엄마·아빠 목소리로 불러도 충분해요. 같은 노래를 자주 불러 주면 아이에게 "우리 노래"가 돼요.</p></div>
+<div class="box why"><h2>📚 왜 노래를 불러 주면 좋을까요?</h2><ul>{sref}</ul><p class="src" style="margin:6px 0 0">위 연구는 아기를 달래고 관심을 끄는 효과를 본 거예요. 노래가 지능·발달을 높인다는 뜻은 아니에요.</p></div>
+<div class="box"><h2>🎤 이렇게 불러 주세요</h2><ul><li><b>같은 노래를 반복</b>해요. 익숙한 노래일수록 달래는 효과가 컸어요.</li><li>틀어 주기보다 <b>직접 불러</b> 주세요. 노래 실력은 상관없어요.</li><li>보챌 때는 말로 달래기보다 노래로 바꿔 보세요.</li></ul></div>
+{sg}
+<div class="box newp"><h2>🧪 율동 설명은 AI가 정리했어요</h2><p>노래 고르기와 율동 동작은 <b>AI(인공지능)가</b> 널리 알려진 동요와 손유희를 바탕으로 정리한 거예요. 참고용으로 봐 주시고, 아이 나이와 반응에 맞게 바꿔 주세요. 가사는 저작권 때문에 싣지 않아요.</p></div>
+<p style="margin-top:14px">💃 <a href="plays/nursery-dance.html">동요 율동 놀이</a> · <a href="tips/same-book-again.html">같은 책을 또 읽어 달라는 이유</a></p>
+</section></div>'''
+  files['songs.html'] = page('아이 동요 추천 · 개월수별 동요와 율동 | 오늘도 독박육아', '0~12개월 자장가·손유희부터 3세 이상 노래 놀이까지 개월수별 아이 동요 추천과 율동. 노래가 아기를 달래는 효과에 대한 연구도 함께.', songs_body, 'songs.html', 'songs.html')
 
   # ── 🔍 통합 검색: 만든 페이지 전부에서 제목·설명·본문을 뽑아 search.json 으로 (휴대폰에서 바로 찾아요)
   SKIND = [('plays/', '🧸 놀이'), ('age/', '📅 개월수별'), ('principles', '🧠 놀이 원리'), ('tips/', '💡 육아 상식'), ('research/', '📚 연구·논문'),
