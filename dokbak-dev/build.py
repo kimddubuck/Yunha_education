@@ -125,6 +125,23 @@ def in_band(p, lo, hi):
   return p['ageMin'] <= hi and p['ageMax'] >= lo
 
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
+# 📚 육아 정보 주제 탭: 육아 상식·연구·이유식 글을 출처 종류가 아니라 주제로 묶어요
+TOPICS = [('play', '🧸', '놀이·발달'), ('mind', '💛', '마음·행동'), ('lang', '🗣', '말·책·미디어'), ('food', '🍚', '먹기·이유식'),
+          ('sleep', '😴', '잠·배변·양치'), ('health', '🩺', '건강·검진·안전'), ('together', '🤝', '공동육아')]
+TOPIC_OF = {   # 글 id → 주제 (여기 없는 글은 아래 기본 규칙으로)
+  'mouthing-dropping': 'play', 'same-book-again': 'play', 'why-questions': 'play',
+  'stranger-separation-anxiety': 'mind', 'crying-curve': 'mind', 'tantrum-how-common': 'mind', 'toddler-biting': 'mind',
+  'attachment-secure-base': 'mind', 'still-face': 'mind', 'praise-effort': 'mind', 'discipline-no-spanking': 'mind', 'postpartum-depression': 'mind',
+  'babbling-first-words': 'lang', 'late-talker-milestones': 'lang', 'who-movement-screen-under5': 'lang',
+  'night-waking': 'sleep', 'safe-sleep-aap-2022': 'sleep', 'sleep-hours-by-age': 'sleep', 'safe-sleep-sids': 'sleep',
+  'teething-signs': 'health', 'choking-prevention': 'health', 'car-seat-rear-facing': 'health'}
+TOPIC_INTRO = {'play': '아이가 왜 그렇게 노는지, 놀이가 발달에 어떻게 이어지는지에 대한 연구와 공공 자료예요.',
+  'mind': '울음, 낯가림, 떼, 깨물기부터 애착·훈육·부모 마음까지, 아이와 부모의 마음에 대한 글이에요.',
+  'lang': '말 배우기, 책 읽기, 영상·전자 장난감·TV가 말과 발달에 미치는 영향에 대한 연구예요.',
+  'food': '이유식 시작부터 편식·재촉·간식·설탕·주스까지, 먹이기에 대한 기관 안내와 연구예요.',
+  'sleep': '안전한 잠자리, 수면교육, 분리수면, 배변 훈련, 양치에 대한 연구와 안내예요.',
+  'health': '영유아 검진, 발달 질문지, 예방접종, 구강검진과 이앓이·질식·카시트 같은 안전 수칙이에요.',
+  'together': '엄마 모임, 또래 지지, 놀이모임이 부모 마음과 아이 발달에 어떤 도움이 되는지 본 연구예요.'}
 OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'www.ncbi.nlm.nih.gov', 'www.healthychildren.org', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
 def okurl(u):
   m = re.match(r'https://([^/]+)/', u or '')
@@ -143,14 +160,14 @@ def page(title, desc, body, path, active='', extra_head=''):
   # 메뉴 6개로 묶어요. 묶음 안의 작은 탭(subnav)은 그 묶음 페이지 위에 보여요
   GROUPS = [('plays/', '놀이', [('plays/', '🔍 놀이 찾기'), ('age/', '📅 개월수별'), ('principles.html', '🧠 놀이 원리')]),
             ('growth.html', '우리 아이 지금', []),
-            ('tips.html', '육아 정보', [('tips.html', '💡 육아 상식'), ('research.html', '📚 연구·논문'), ('food.html', '🥣 이유식')]),
+            ('info/play.html', '육아 정보', [(f'info/{sl}.html', f'{ic} {nm}') for sl, ic, nm in TOPICS], ['tips.html', 'research.html', 'food.html']),
             ('daycare/', '어린이집', []),
             ('support.html', '국가지원', []),
             ('map.html', '육아 지도', [])]
   has = lambda h: h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))
-  GROUPS = [(h, t, [c for c in cs if has(c[0])]) for h, t, cs in GROUPS if has(h)]
-  grp = next((g for g in GROUPS if active == g[0] or any(active == c[0] for c in g[2])), None)
-  navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if grp and grp[0] == h else ""}>{t}</a>' for h, t, _ in GROUPS)
+  GROUPS = [(g[0], g[1], [c for c in g[2] if has(c[0])], g[3] if len(g) > 3 else []) for g in GROUPS if has(g[0])]
+  grp = next((g for g in GROUPS if active == g[0] or any(active == c[0] for c in g[2]) or active in g[3]), None)
+  navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if grp and grp[0] == h else ""}>{t}</a>' for h, t, _, _ in GROUPS)
   subnav = f'<nav class="subnav" aria-label="{e(grp[1])} 안에서 고르기"><div class="wrap">' + ''.join(f'<a href="{up}{h}"{CUR if active == h else ""}>{t}</a>' for h, t in grp[2]) + '</div></nav>' if grp and grp[2] else ''
   return f'''<!doctype html>
 <html lang="ko">
@@ -656,6 +673,31 @@ segs(); render();
 {''.join(f'<h2>{e(g["title"])}</h2>' + ''.join(bitem(it) for it in g['items']) for g in B['groups'])}
 {LEGEND}<p class="src">{e(B["checked"])}</p></section></div>'''
   files['brands.html'] = page('프뢰벨·몬테소리·눈높이·씽크빅은 누구? 유아교육 회사 이름 풀이 | 오늘도 독박육아', '프뢰벨과 몬테소리는 누구이고, 한국프뢰벨·영아다중·한솔교육·대교·웅진씽크빅·교원은 어떤 회사인지 공개 자료로 확인한 것만 정리했어요.', body, 'brands.html', 'daycare/')
+
+  # ── 📚 육아 정보 주제 탭 페이지 (info/<주제>.html): 상식·연구·이유식 글을 주제별로 모아요
+  entries = {sl: [] for sl, _, _ in TOPICS}
+  def topic_of(item_id, default): return TOPIC_OF.get(item_id, default)
+  CATMAP_T = {'말·책·미디어': 'lang', '마음·애착·훈육': 'mind', '우리나라 공식 안내': 'health', '수면·안전': 'health', '0~12개월 행동': 'mind', '12~36개월 행동': 'mind'}
+  for c in json.load(open(os.path.join(DEV, 'columns', 'tips.json'), encoding='utf-8')):
+    tp = topic_of(c['id'], CATMAP_T.get(c['cat'], 'mind'))
+    entries[tp].append(('tips/' + c['id'] + '.html', c['t'], c['lead'], badge(c['yr'][:4], '기준') if c.get('yr') else badge(c.get('age', ''), ''), '💡'))
+  CATMAP_R = {'놀이': 'play', '공공 자료': 'play', '잠·습관': 'sleep', '먹기': 'food', '말 배우기': 'lang', '공동육아': 'together'}
+  for g in rs['groups']:
+    for it in g['items']:
+      tp = topic_of(it['id'], CATMAP_R.get(g.get('cat'), 'play'))
+      entries[tp].append(('research/' + it['id'] + '.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind']), '📚'))
+  for g in rs['food']['groups']:
+    for it in g['items']:
+      entries['food'].append(('food/' + it['id'] + '.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind']), '🥣'))
+  os.makedirs(os.path.join(OUT, 'info'), exist_ok=True)
+  bysrc = '<p class="src" style="margin-top:14px">출처 종류별로 보기: <a href="../tips.html">💡 육아 상식</a> · <a href="../research.html">📚 연구·논문</a> · <a href="../food.html">🥣 이유식</a></p>'
+  for sl, ic, nm in TOPICS:
+    trows = ''.join(brow('../' + h, t, m, b) for h, t, m, b, _ in entries[sl])
+    body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › 육아 정보 › {e(nm)}</p><section class="blk prose" style="padding-top:12px">
+<h1>{ic} {e(nm)}</h1><p>{e(TOPIC_INTRO[sl])} 글 {len(entries[sl])}개예요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요.</p>
+<div class="bd">{trows}</div>{bysrc}
+<p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
+    files[f'info/{sl}.html'] = page(f'{nm} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
 
   # ── 쓰기 + sitemap
   for path, txt in files.items():
