@@ -12,7 +12,7 @@
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=202610151115">
+<link rel="stylesheet" href="assets/site.css?v=202610151237">
 </head>
 <body>
 <header class="top"><div class="wrap">
@@ -29,7 +29,7 @@
 <script>(function(){const q=document.getElementById('sq'),res=document.getElementById('sres'),cnt=document.getElementById('scount'),chips=document.getElementById('schips');
 const POP=['수면교육','이유식','떼쓰기','양치','배변','영상','책 읽기','비눗방울','숨바꼭질','육아휴직','부모급여','어린이집 비용','예방접종','공동육아'];
 chips.innerHTML=POP.map(w=>`<button type="button">${w}</button>`).join('');
-let idx=null;const load=()=>idx?Promise.resolve(idx):fetch(new URL('search.json?v=fe63e464',location.href),{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(j=>idx=j.map(o=>Object.assign(o,{_t:o.t.toLowerCase(),_a:(o.t+' '+o.d+' '+o.x).toLowerCase().replace(/\s+/g,'')})));
+let idx=null;const load=()=>idx?Promise.resolve(idx):fetch(new URL('search.json?v=584bb345',location.href),{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(j=>idx=j.map(o=>Object.assign(o,{_t:o.t.toLowerCase(),_a:(o.t+' '+o.d+' '+o.x).toLowerCase().replace(/\s+/g,'')})));
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mark=(s,ws)=>{let h=esc(s);ws.forEach(w=>{if(w)h=h.split(esc(w)).join('<mark>'+esc(w)+'</mark>');});return h;};
 function snip(o,ws){const src=o.d+' '+o.x;const low=src.toLowerCase();let i=-1;for(const w of ws){i=low.indexOf(w);if(i>=0)break;}if(i<0)return o.d||src.slice(0,80);const a=Math.max(0,i-30);return(a?'…':'')+src.slice(a,a+90)+'…';}

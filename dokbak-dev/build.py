@@ -129,6 +129,7 @@ def in_band(p, lo, hi):
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
 # 📚 육아 정보 주제 탭: 육아 상식·연구·이유식 글을 출처 종류가 아니라 주제로 묶어요
 # 🔎 네이버 키워드 도구로 많이 찾는 말을 페이지 <title>에만 덧붙여요 (화면 제목은 그대로)
+STG_CARD = '<a class="box" href="../food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>'   # 🥣 이유식 단계표 바로가기 (🍚 먹기 주제 맨 위)
 TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
 AGE_SEO = {'10-12m': '(돌 아기)', '13-18m': '(돌 지난 아기)'}
 PLAY_SEO = {'shadow': ' (집에서 그림자극장)', 'c-puppet-shadow-story': ' (그림자극장)'}
@@ -606,6 +607,7 @@ segs(); render();
   <p class="src" style="margin:8px 0 0">몸무게·키·머리둘레를 적으면 같은 개월 아이 100명 중 몇 등인지도 알려 줘요. 예전에 잰 값(검진 결과지 등)이면 '잰 날'을 같이 적어야 그때 개월수로 계산해요.</p>
 </div>
 <div id="gout"></div>
+<a class="box" href="food/stages.html" style="display:block;margin:14px 0 0;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>
 </section></div>'''
   files['growth.html'] = page('아기 키·몸무게 백분위 계산 · 개월수별 식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게·머리둘레 백분위(100명 중 몇 등, WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', gbody, 'growth.html', 'growth.html',
@@ -718,7 +720,7 @@ segs(); render();
     trows = ''.join(brow('../' + h, t, m, b) for h, t, m, b, _ in entries[sl])
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › 육아 정보 › {e(nm)}</p><section class="blk prose" style="padding-top:12px">
 <h1>{ic} {e(nm)}</h1><p>{e(TOPIC_INTRO[sl])} 글 {len(entries[sl])}개예요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요.</p>
-<div class="bd">{trows}</div>{bysrc}
+{STG_CARD if sl == 'food' else ''}<div class="bd">{trows}</div>{bysrc}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
     files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
 
