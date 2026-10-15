@@ -254,9 +254,13 @@ async function showVoters(o){
 //    익명게시판: 칸 이름은 글마다 다른 지문, 값은 true → 숫자만 보이고 누가 눌렀는지 안 남아요. 글이 지워지면 같이 사라져요
 function likeCount(d){ return Object.keys((d && d.lk) || {}).length; }
 function likeNames(d){ return Object.values((d && d.lk) || {}).filter(v => typeof v === 'string' && v); }
+// 인스타그램처럼 '가영맘님 외 2명이 좋아해요' — 누르면 전체 이름 팝업
 function likeWho(d){
   const names = likeNames(d); if(!names.length) return null;
-  const p = document.createElement('p'); p.className = 'like-who'; p.textContent = '❤️ ' + names.join(', '); return p;
+  const p = document.createElement('button'); p.type = 'button'; p.className = 'like-who';
+  p.textContent = `❤️ ${names[0]}님${names.length > 1 ? ` 외 ${names.length - 1}명` : ''}이 좋아해요`;
+  p.addEventListener('click', () => sosInfo({icon: '❤️', title: `좋아요 ${names.length}명`, body: `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>`}));
+  return p;
 }
 function likeBtn(d, key, ref, opts = {}){
   const val = opts.val || true;
@@ -267,9 +271,9 @@ function likeBtn(d, key, ref, opts = {}){
   b.addEventListener('click', async () => {
     if(!ME.uid || !key || b.disabled) return;
     const on = !!((d.lk || {})[key]); b.disabled = true;
-    d.lk = {...(d.lk || {})}; if(on) delete d.lk[key]; else d.lk[key] = val; paint();   // 먼저 그리고 저장해요
+    d.lk = {...(d.lk || {})}; if(on) delete d.lk[key]; else d.lk[key] = val; paint(); if(opts.after) opts.after();   // 먼저 그리고 저장해요
     try{ await ref.update({['lk.' + key]: on ? firebase.firestore.FieldValue.delete() : val}); }
-    catch(err){ if(on) d.lk[key] = val; else delete d.lk[key]; paint(); sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 좋아요를 저장하지 못했어요'); }
+    catch(err){ if(on) d.lk[key] = val; else delete d.lk[key]; paint(); if(opts.after) opts.after(); sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 좋아요를 저장하지 못했어요'); }
     b.disabled = false;
   });
   return b;

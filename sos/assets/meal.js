@@ -135,8 +135,9 @@ function openPhoto(id){
       <form class="comment-form"><input type="text" maxlength="300" placeholder="댓글 달기 (예: 레시피 궁금해요!)" aria-label="댓글"><button class="btn" type="submit">달기</button></form></div>
     ${canDel(d) ? `<button type="button" class="btn danger block" data-del="${d.id}">🗑 이 사진 지우기${d.uid !== ME.uid ? ' (방장)' : ''}</button>` : ''}`});
   if(d.memo) box.querySelector('.meal-memo').textContent = d.memo;
-  box.querySelector('.meal-like').appendChild(likeBtn(d, ME.uid, roomRef().collection('meals').doc(d.id), {val: ME.nick}));   // ❤️ 좋아요 (v17)
-  const lw = likeWho(d); if(lw) box.querySelector('.meal-line').insertAdjacentElement('afterend', lw);   // 누가 눌렀는지
+  // ❤️ 좋아요 (v17) + 누가 눌렀는지 ('가영맘님 외 2명이 좋아해요'). 누를 때마다 그 줄도 다시 그려요
+  const who = () => { box.querySelector('.like-who')?.remove(); const lw = likeWho(d); if(lw) box.querySelector('.meal-line').insertAdjacentElement('afterend', lw); };
+  box.querySelector('.meal-like').appendChild(likeBtn(d, ME.uid, roomRef().collection('meals').doc(d.id), {val: ME.nick, after: who})); who();
   const ul = box.querySelector('.comment-list'), chip = box.querySelector('.reply-chip'), form = box.querySelector('.comment-form'), inp = form.querySelector('input');
   const at = typeof attachUI === 'function' ? attachUI(form, {compact: true}) : null;
   let list = [], replyTo = null;
