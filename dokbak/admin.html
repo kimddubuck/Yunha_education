@@ -12,7 +12,7 @@
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=202610151254">
+<link rel="stylesheet" href="assets/site.css?v=202610151302">
 <meta name="robots" content="noindex,nofollow"></head>
 <body>
 <header class="top"><div class="wrap">
@@ -60,6 +60,7 @@ body>header.top,body>footer,.subnav{display:none}
 .adm .note{font-size:12.5px;color:var(--soft);margin:6px 0 0}
 .adm input[type=password]{flex:1;min-width:0;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg,transparent);color:var(--ink)}
 .adm .row{display:flex;gap:8px}
+.adm .aip{border-top:1px solid var(--line);padding:8px 0}.adm .aip summary{cursor:pointer;list-style:none}.adm .aip summary small{color:var(--soft)}.adm .aip p,.adm .aip ol{font-size:14.5px;margin:6px 0}.adm .card h2 small{margin-left:4px}
 .adm .me{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
 .adm .me button{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:none;color:var(--ink);cursor:pointer;margin-left:auto}
 </style>
@@ -99,6 +100,12 @@ body>header.top,body>footer,.subnav{display:none}
 <div class="card"><h2>↗ 밖으로 나간 링크</h2><ul class="bars" id="outs"></ul></div>
 <div class="card"><h2>📱 기기</h2><ul class="bars" id="devs"></ul></div>
 </div>
+<div class="card ai" style="margin-top:10px"><h2>🧪 AI가 만든 놀이 <small>나만 보기 · 사이트엔 안 보여요</small></h2>
+<p class="note" style="margin:0 0 8px;white-space:normal">아직 직접 해 보기 전이라 공개하지 않은 놀이예요. 해 본 놀이는 이름을 알려 주면 '해봄'으로 바꿔 사이트에 올려요.</p>
+<button type="button" class="btn ghost" id="aiLoad">불러오기</button>
+<div id="aiBox" hidden><input id="aiQ" type="search" placeholder="놀이 이름·준비물로 찾기" style="width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);margin:6px 0">
+<div class="seg" id="aiAge" style="grid-template-columns:repeat(5,1fr)"><button type="button" data-a="" aria-pressed="true">전체</button><button type="button" data-a="0-12">0~12개월</button><button type="button" data-a="13-24">13~24개월</button><button type="button" data-a="25-48">2~3세</button><button type="button" data-a="49-99">4세+</button></div>
+<p class="note" id="aiCount"></p><div id="aiList"></div></div></div>
 <div class="card me" style="margin-top:10px"><span>🙋 이 기기: <b id="meState">-</b></span><button type="button" id="meBtn"></button></div>
 </div>
 </div>
@@ -155,6 +162,19 @@ $('range').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
 $('rf').addEventListener('click',load);
 $('out').addEventListener('click',()=>{try{localStorage.removeItem('dk_admin')}catch(e){}key='';$('msg').textContent='';show('login');});
 $('meBtn').addEventListener('click',()=>{let on=false;try{on=!!localStorage.getItem('dk_me');if(on){localStorage.removeItem('dk_me');localStorage.setItem('dk_me_off','1')}else{localStorage.setItem('dk_me','1');localStorage.removeItem('dk_me_off')}}catch(e){}meUI();});
+// 🧪 AI 놀이 (운영자만): /api/aiplays 는 비밀번호가 있어야 줘요
+let AI=null,aiAge='';
+function aiDraw(){const q=$('aiQ').value.trim().toLowerCase().replace(/\s+/g,''),[lo,hi]=aiAge?aiAge.split('-').map(Number):[0,999];
+ const L=AI.filter(p=>p.ageMax>=lo&&p.ageMin<=hi&&(!q||(p.name+(p.materials||[]).join('')+(p.keywords||[]).join('')).toLowerCase().replace(/\s+/g,'').includes(q)));
+ $('aiCount').textContent=`${L.length}개 / 전체 ${AI.length}개`;
+ $('aiList').innerHTML=L.map(p=>`<details class="aip"><summary><b>${esc(p.name)}</b> <small>${esc(p.a)} · ${esc(p.place)}${p.group?' · 여럿이':''}</small></summary>
+  <p><b>준비물</b> ${esc((p.materials||[]).join(', '))}</p><ol>${(p.steps||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
+  ${p.tip?`<p>💡 ${esc(p.tip)}</p>`:''}${p.safety?`<p>⚠️ ${esc(p.safety)}</p>`:''}<p class="note">id: ${esc(p.id)}</p></details>`).join('');}
+$('aiLoad').addEventListener('click',async()=>{const b=$('aiLoad');b.disabled=true;b.textContent='불러오는 중…';
+ try{const r=await fetch('/api/aiplays',{headers:{'x-key':key},cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);AI=(await r.json()).plays;b.hidden=true;$('aiBox').hidden=false;aiDraw();}
+ catch(e){b.disabled=false;b.textContent='다시 불러오기 ('+e.message+')';}});
+$('aiQ').addEventListener('input',()=>AI&&aiDraw());
+$('aiAge').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;aiAge=b.dataset.a;[...$('aiAge').children].forEach(x=>x.setAttribute('aria-pressed',x===b));aiDraw();});
 key?load():show('login');})();</script>
 
 </main>

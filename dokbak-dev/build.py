@@ -338,6 +338,10 @@ def build():
   shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
+  # 🧪 AI가 만든 놀이(후보)는 공개 페이지로 만들지 않고, 관리자 비밀번호로만 받아 보게 서버 함수 안에 넣어요 (/api/aiplays)
+  ai_ = [{k: p[k] for k in ('id', 'name', 'ageMin', 'ageMax', 'place', 'group', 'minutes', 'mess', 'principles', 'skills', 'materials', 'steps', 'tip', 'safety', 'keywords', 'swaps') if k in p} | {'a': age_range(p)}
+         for p in json.load(open(os.path.join(ROOT, 'play-data', 'plays.json'), encoding='utf-8')) if p['status'] == '후보']
+  open(os.path.join(OUT, 'functions', '_lib', 'aiplays.js'), 'w', encoding='utf-8').write('export default ' + json.dumps(ai_, ensure_ascii=False) + ';\n')
   files = {}
 
   # ── 놀이 하나하나 (검색으로 들어오는 페이지)
