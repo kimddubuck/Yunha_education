@@ -526,6 +526,7 @@ segs(); render();
   fd = rs['food']
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 이유식</p><section class="blk prose" style="padding-top:12px">
 <h1>🥄 이유식·유아식 연구</h1><p>{e(fd["intro"])}</p>
+<a class="box" href="food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>
 {rboard(fd['groups'], 'food')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="research.html">📚 놀이·교육 연구도 보기</a></p></section></div>'''
   files['food.html'] = page('아기 이유식 시작 시기·소고기·철분 · 이유식 연구 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
@@ -715,6 +716,29 @@ segs(); render();
 <div class="bd">{trows}</div>{bysrc}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
     files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
+
+  # ── 🥣 이유식 단계표: WHO 나이 구간(6~8 · 9~11 · 12~23개월) 기준. 초기·중기·후기·완료기는 흔히 쓰는 이름으로만 붙여요
+  STAGES = [
+    ('6~8개월', '초기·중기', '🥄', '하루 2~3번', '2~3큰술로 시작 → 250mL 컵의 ½(약 125mL)까지', '걸쭉한 죽, 곱게 으깬 음식',
+     '처음엔 숟가락 끝으로 맛만 보여 줘요. 모유·분유는 그대로 먹여요.'),
+    ('9~11개월', '후기', '🍚', '하루 3~4번 + 간식 1~2번', '250mL 컵의 ½(약 125mL)', '잘게 다지거나 으깬 음식, 손으로 집어 먹는 음식',
+     '손으로 집어 먹게 하면 스스로 먹는 연습이 돼요.'),
+    ('12~23개월', '완료기', '🍽', '하루 3~4번 + 간식 1~2번', '250mL 컵의 ¾~1컵(약 190~250mL)', '가족이 먹는 음식 (필요하면 다지거나 으깨서)',
+     '어른 음식을 나눠 줄 때는 간을 하기 전에 덜어요.')]
+  stg = ''.join(f'''<div class="box stg"><h2>{ic} {e(m)} <small>· 흔히 '{e(nm)}'</small></h2>
+<div class="stg-g"><div><small>하루 끼니</small><b>{e(meals)}</b></div><div><small>한 끼 양</small><b>{e(amt)}</b></div><div><small>질감</small><b>{e(tex)}</b></div></div><p>{e(tip)}</p></div>''' for m, nm, ic, meals, amt, tex, tip in STAGES)
+  stages_body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../food.html">이유식</a> › 이유식 단계표</p>
+<section class="blk prose" style="padding-top:12px"><div class="sh"><span class="ey">🥣 이유식 단계표</span><h1 style="font-size:clamp(24px,5vw,34px)">이유식 단계표: 시기별 끼니·양·질감</h1><p>세계보건기구(WHO) 안내를 기준으로 개월수마다 하루 몇 번, 한 번에 얼마나, 어떤 질감으로 주는지 정리했어요.</p></div>
+<div class="sum3"><p class="sum3-h">📌 3줄 요약</p><ol><li>이유식은 6개월 무렵, 아기가 머리를 가누고 입을 벌리면 시작해요.</li><li>끼니와 양은 천천히 늘리고, 질감은 죽 → 다진 음식 → 가족 음식으로 바꿔 가요.</li><li>고기·달걀 같은 철분 음식은 처음부터 넣고, 돌 전 꿀과 달고 짠 맛은 피해요.</li></ol></div>
+{stg}
+<p class="src">양은 평균이에요. 아기마다 달라서 <b>배고픔·배부름 신호</b>가 먼저예요. 고개를 돌리거나 입을 다물면 그만 먹고 싶다는 뜻이에요. 초기·중기·후기·완료기는 우리나라에서 흔히 쓰는 이름이고, 경계 개월수는 자료마다 조금씩 달라요.</p>
+<div class="box why"><h2>🚦 언제 시작하나요?</h2><ul><li>WHO는 <b>6개월</b>에 시작하라고 해요. 질병관리청은 모유 아기는 6개월 이후, 분유 아기는 4~6개월로 안내해요. <a href="kdca-start.html">자세히</a></li><li>대한소아청소년과학회는 날짜보다 <b>머리 가누기, 음식에 입 벌리기</b> 같은 준비 신호를 먼저 보라고 해요. <a href="kps-start.html">자세히</a></li></ul></div>
+<div class="box"><h2>✅ 꼭 넣어요</h2><ul><li><b>소고기 같은 붉은 고기</b>: 타고난 철분이 4~6개월이면 많이 줄어서 이유식으로 채워요. <a href="mfds-iron.html">식약처</a> · <a href="kdca-iron.html">질병관리청</a></li><li><b>고기·생선·달걀, 과일·채소를 날마다</b> 주라고 WHO가 권해요. <a href="who.html">WHO 지침</a></li><li>싫어하는 채소도 여러 번 주면 먹게 되는 경우가 많아요. <a href="veg.html">연구 보기</a></li></ul></div>
+<div class="box safe"><h2>⛔ 피해요</h2><ul><li><b>돌 전 꿀</b>은 주지 않아요. <a href="honey.html">왜 안 될까?</a></li><li><b>1살 전 과일 주스</b>는 주지 않아요. <a href="juice.html">자세히</a></li><li>처음부터 <b>달고 짠 맛</b>에 길들이지 않아요.</li><li>포도알·팝콘처럼 <b>목에 걸리기 쉬운 음식</b>은 작게 자르거나 피해요. <a href="../tips/choking-prevention.html">질식 예방</a></li></ul><p class="src" style="margin:6px 0 0">땅콩을 일찍 먹이는 것과 알레르기에 대한 연구는 <a href="leap.html">LEAP 연구</a>에 정리했어요. 알레르기가 걱정되면 소아청소년과와 먼저 상의해요.</p></div>
+<div class="box ref"><h2>📚 출처</h2><ul><li>{link('https://www.who.int/publications/i/item/9789241597494', 'WHO (2009) Infant and young child feeding: Model chapter')} — 나이별 끼니 수·한 끼 양·질감</li><li>{link('https://www.who.int/publications/i/item/9789240081864', 'WHO (2023) 6~23개월 이유식 지침')} — 6개월 시작, 고기·채소 날마다, 반응하며 먹이기</li><li>질병관리청 · 식품의약품안전처 · 대한소아청소년과학회 안내 (각 링크 참고)</li></ul></div>
+<p style="margin-top:14px">📏 <a href="../growth.html">우리 아이 개월수별 키·몸무게와 하루 먹는 양 보기</a></p>
+</section></div>'''
+  files['food/stages.html'] = page('이유식 단계표 · 초기·중기·후기·완료기 시기별 양과 횟수 | 오늘도 독박육아', '6~8개월, 9~11개월, 12~23개월 이유식 하루 끼니 수, 한 끼 양, 질감을 WHO 안내 기준으로 정리했어요. 시작 신호, 철분(소고기), 피해야 할 음식까지.', stages_body, 'food/stages.html', 'food.html')
 
   # ── 🎵 동요 추천: 개월수별 동요 + 율동 (노래 제목만 싣고 가사는 싣지 않아요 · 율동은 AI가 정리)
   SONGS = [

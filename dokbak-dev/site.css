@@ -524,3 +524,11 @@ footer p{font-size:14px;color:var(--soft)}
 #sres mark{background:color-mix(in srgb,#ffd54a 55%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .schips[hidden]{display:none}
 @media (max-width:440px){.top .wrap{column-gap:8px}.top-search{width:34px;height:34px}.top-sos .sos-long{display:none}.top-sos i{display:inline}}
+/* 🥣 이유식 단계표 */
+.stg h2 small{font-size:15px;font-weight:400;color:var(--soft)}
+.stg-g{display:grid;grid-template-columns:1fr;gap:6px;margin:6px 0 8px}
+.stg-g>div{background:var(--teal-tint);border-radius:12px;padding:8px 12px}
+.stg-g small{display:block;font-size:13px;color:var(--soft)}
+.stg-g b{font-size:16px}
+.stg p{margin:0}
+@media (min-width:640px){.stg-g{grid-template-columns:1fr 1.4fr 1.4fr}}
