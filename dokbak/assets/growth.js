@@ -49,7 +49,7 @@
     let h = `<div class="box ghero"><div class="gage"><span class="gnum">${n}</span><span class="gunit">개월</span></div><div class="gage-r"><b>만 ${yrs}세 ${rem}개월</b><div class="gbar"><i style="width:${pct}%"></i></div><small>0개월 ───────── 만 6세(72개월)</small></div>
       <p class="src" style="flex-basis:100%;margin:6px 0 0">태어난 날짜를 안 적으면 15일로 계산해요. 1~2주 차이는 아래 숫자에 거의 영향이 없어요.</p></div>`;
     // 📏 키·몸무게: 3~97백분위 범위 막대 + 내 아이 표시
-    h += '<div class="box"><h2>📏 이 개월의 키·몸무게</h2>';
+    h += `<div class="box"><h2>📏 이 개월의 키·몸무게</h2><p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
     if(!s) h += '<p class="src">성별을 고르면 숫자가 보여요. 남녀 기준이 달라요.</p>';
     else if(n > 60) h += '<p class="src">WHO 기준은 60개월(만 5세)까지만 있어요. 그 뒤는 질병관리청 2017 성장도표를 봐 주세요 (아래 출처).</p>';
     else {
@@ -61,14 +61,15 @@
         // 막대는 1~99백분위(z ±2.33)를 전체 폭으로, 3~97 구간을 진하게
         const L0 = val(lms, -2.326), L1 = val(lms, 2.326), px = x => Math.max(0, Math.min(100, (x - L0) / (L1 - L0) * 100));
         let me = '';
-        if(mine > 0){ const z = zOf(lms, mine), pc = Math.min(99, Math.max(1, Math.round(cdf(z) * 100)));
-          me = `<span class="gme" style="left:${px(mine).toFixed(1)}%"><i></i><b>${mine}${u}</b></span><p class="gme-t">${icon} 우리 아이 ${name} <b>${mine}${u}</b> → <b>${pc}백분위</b> <small>(같은 개월 ${s === 'b' ? '남' : '여'}아 100명 중 ${pc}번째쯤${pc < 3 || pc > 97 ? ' · 보통 범위 밖이에요. 소아과에서 상의해요' : ''})</small></p>`; }
+        if(mine > 0){ const z = zOf(lms, mine), pc = Math.min(99, Math.max(1, Math.round(cdf(z) * 100))), rank = 101 - pc;   // 큰 순서로 몇 등 (1등 = 제일 큼)
+          const tag = pc > 97 || pc < 3 ? '보통 범위 밖' : pc >= 85 ? '큰 편' : pc <= 15 ? '작은 편' : '보통';
+          me = `<span class="gme" style="left:${px(mine).toFixed(1)}%"><i></i></span><p class="gme-t">${icon} 우리 아이 <b>${mine}${u}</b> → 같은 개월 ${s === 'b' ? '남' : '여'}아 100명 중 <b class="grank">${rank}등</b> <b>(${tag})</b>${pc > 97 || pc < 3 ? '<br><small>큰 순서로 센 등수예요. 보통 범위를 벗어나면 소아과에서 상의해요.</small>' : '<br><small>큰 순서로 센 등수예요. 1등이 제일 크고 100등이 제일 작아요.</small>'}</p>`; }
         return `<div class="gband"><div class="gband-h"><b>${icon} ${name}${name === '키' && n < 24 ? ' <small>누워서 잰 길이</small>' : ''}</b><span>${s === 'b' ? '남아' : '여아'} ${n}개월 · 중간 <b>${f(mid)}${u}</b></span></div>
           <div class="gtrack"><i class="grng" style="left:${px(lo).toFixed(1)}%;width:${(px(hi) - px(lo)).toFixed(1)}%"></i><i class="gmid" style="left:${px(mid).toFixed(1)}%"></i>${me ? me.split('</span>')[0] + '</span>' : ''}</div>
-          <div class="glab"><span style="left:${px(lo).toFixed(1)}%">작은 편<br><b>${f(lo)}${u}</b><small>3%</small></span><span class="c" style="left:${px(mid).toFixed(1)}%">중간<br><b>${f(mid)}${u}</b><small>50%</small></span><span class="r" style="left:${px(hi).toFixed(1)}%">큰 편<br><b>${f(hi)}${u}</b><small>97%</small></span></div>${me ? me.split('</span>')[1] : ''}</div>`;
+          <div class="glab"><span style="left:${px(lo).toFixed(1)}%">작은 편<br><b>${f(lo)}${u}</b><small>100명 중 97등</small></span><span class="c" style="left:${px(mid).toFixed(1)}%">중간<br><b>${f(mid)}${u}</b><small>50등</small></span><span class="r" style="left:${px(hi).toFixed(1)}%">큰 편<br><b>${f(hi)}${u}</b><small>3등</small></span></div>${me ? me.split('</span>')[1] : ''}</div>`;
       };
       h += band('몸무게', '⚖️', w, 'kg', mw, true) + band('키', '📏', hh, 'cm', mh, true);
-      h += `<p class="src">진한 막대가 3~97백분위, 100명 중 94명이 들어가는 보통 범위예요. 세계보건기구(WHO) 아동 성장 기준이에요. 범위를 벗어나거나 갑자기 백분위가 크게 바뀌면 소아과에서 상의해요.${n >= 36 ? ' 36개월부터는 질병관리청 2017 성장도표가 우리나라 아이 자료로 따로 있어서 WHO 숫자와 조금 달라요. 검진 결과지의 백분위가 기준이에요.' : ''}</p>`;
+      h += `<p class="src">진한 막대가 보통 범위(100명 중 3등~97등)예요. ${n < 36 ? '우리나라 2017 성장도표는 0~35개월에 세계보건기구(WHO) 성장 기준을 그대로 쓰기 때문에 영유아 검진 결과와 같은 숫자예요.' : '36개월부터 우리나라 2017 성장도표는 한국 아이 자료로 따로 만들어져 있는데, 이 사이트는 그 표를 아직 못 구해서 세계보건기구(WHO) 기준으로 계산해요. 등수가 조금 다를 수 있으니 검진 결과지의 숫자가 기준이에요.'} 범위를 벗어나거나 등수가 갑자기 크게 바뀌면 소아과에서 상의해요.</p>`;
     }
     h += '</div>';
     // 🥄 먹는 양: 타일 3개 (끼니 · 한 끼 양 · 하루 열량)
