@@ -128,7 +128,15 @@ const PLAN_NUDGES = [
   '📝 다음 주 SOS를 <b>오늘 미리</b> 걸어 두세요',
   '🦸 어벤져스도 혼자 안 싸워요. <b>육아 어셈블</b>',
   '🏠 넌 다 <b>계획이 있구나.</b>'];
-const TICKERS = { home: NUDGES, plan: PLAN_NUDGES };
+// 💌 홈 '다가오는 모임' 전광판: 참석·불참·댓글 하나라도 남기게 (data-set="meet")
+const MEET_NUDGES = [
+  '💌 <b>참석·불참</b> 중 하나만 꾹!',
+  '😢 악플보다 무서운 건 <b>무플이에요</b>',
+  '🚶 갈까 말까 할 땐? <b>가라!</b>',
+  '👀 읽씹은 그만, <b>참석·불참 꾹</b>',
+  '❤️ 하트 하나에 <b>주최자 어깨가 으쓱</b>',
+  '💬 "저도요!" <b>한마디면 충분해요</b>'];
+const TICKERS = { home: NUDGES, plan: PLAN_NUDGES, meet: MEET_NUDGES };
 // 한 문장씩: 오른쪽 끝에서 들어와 왼쪽 끝으로 다 빠져나가면 다음 문장이 들어와요 (전광판마다 따로 돌아요)
 const NUDGE_SPEED = 55;   // 1초에 55px
 const tick = {};
@@ -1053,7 +1061,7 @@ function showMeetVote(o, remind){
     ${sosN.length ? `<div class="go-sos"><p>🆘 이 시간 SOS 보낸 이웃 <b>${sosN.length}명</b></p><div class="who-list">${sosN.map(n => `<span class="who-chip sos">${esc(n)}</span>`).join('')}</div></div>` : ''}
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}" aria-pressed="${((o.v || {})[ME.uid] || {}).s === s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
-    <p class="go-tip">${remind ? '못 가게 되면 <b>불참</b>으로 바꿔 주세요<br>주최자가 기다리지 않게요 🙏' : '👆 <b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊'}</p>
+    <p class="go-tip">${remind ? '못 가게 되면 <b>불참</b>으로 바꿔 주세요<br>주최자가 기다리지 않게요 🙏' : '👆 <b>참석 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊'}</p>
     <button type="button" class="go-later" data-pop="1">나중에 할게요</button>`});
   box.classList.add('hero-pop');
   if(o.host) box.querySelector('.go-host').textContent = `👑 ${o.host} 주최`;   // 글은 글자로만
