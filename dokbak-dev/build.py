@@ -140,9 +140,18 @@ def endbox(x):
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
-  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육'), ('tips.html', '육아 상식'), ('support.html', '지원'), ('growth.html', '우리 아이 지금'), ('map.html', '육아 지도')]
-  nav = [(h, t) for h, t in nav if h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))]
-  navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if active == h else ""}>{t}</a>' for h, t in nav)
+  # 메뉴 6개로 묶어요. 묶음 안의 작은 탭(subnav)은 그 묶음 페이지 위에 보여요
+  GROUPS = [('plays/', '놀이', [('plays/', '🔍 놀이 찾기'), ('age/', '📅 개월수별'), ('principles.html', '🧠 놀이 원리')]),
+            ('growth.html', '우리 아이 지금', []),
+            ('food.html', '이유식', []),
+            ('tips.html', '육아 정보', [('tips.html', '💡 육아 상식'), ('research.html', '📚 연구·논문')]),
+            ('daycare/', '어린이집·지원', [('daycare/', '🏫 어린이집'), ('support.html', '🎁 지원')]),
+            ('map.html', '육아 지도', [])]
+  has = lambda h: h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))
+  GROUPS = [(h, t, [c for c in cs if has(c[0])]) for h, t, cs in GROUPS if has(h)]
+  grp = next((g for g in GROUPS if active == g[0] or any(active == c[0] for c in g[2])), None)
+  navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if grp and grp[0] == h else ""}>{t}</a>' for h, t, _ in GROUPS)
+  subnav = f'<nav class="subnav" aria-label="{e(grp[1])} 안에서 고르기"><div class="wrap">' + ''.join(f'<a href="{up}{h}"{CUR if active == h else ""}>{t}</a>' for h, t in grp[2]) + '</div></nav>' if grp and grp[2] else ''
   return f'''<!doctype html>
 <html lang="ko">
 <head>
@@ -165,7 +174,7 @@ def page(title, desc, body, path, active='', extra_head=''):
   <nav class="nav" aria-label="메뉴">{navh}</nav>
   <a class="top-sos" href="{APP}"><i>🆘 </i>공동육아 SOS</a>
 </div></header>
-<main>
+{subnav}<main>
 {body}
 </main>
 <footer><div class="wrap">
