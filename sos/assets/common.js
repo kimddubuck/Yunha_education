@@ -92,6 +92,22 @@ const SLOGANS = [
   ['🎯', '육아의 궁극적인 목표는', '독립이에요', ''],
   ['🪞', '아이는', '부모의 거울이에요', ''],
   ['🌿', '아이는 목수처럼 짓는 게 아니라,', '정원사처럼 가꾸는 거예요', '']];
+// 🙋 SOS 달력 밑 한 줄: 내성적인 이웃도 먼저 누를 수 있게 5초마다 바뀌어요 (누르면 바로 다음)
+const NUDGES = [
+  '🙋 눈치 말고 <b>먼저 꾹!</b> 누가 먼저 누르나 기다리는 중 👀',
+  '🌱 한 명이 누르면 <b>두 번째는 훨씬 쉬워져요</b>',
+  '🫶 나만 힘든 거 아니에요. <b>누르면 보여요</b>',
+  '☕ "누구 커피 한잔?" <b>그 마음이면 충분해요</b>',
+  '🙈 SOS 누른다고 <b>모임을 열 필요는 없어요</b>',
+  '👀 다들 보고만 있어요. <b>첫 번째가 되어 주세요</b>',
+  '🤝 오늘의 SOS가 <b>내일의 동네 친구</b>가 돼요'];
+let nudgeI = 0;
+function nextNudge(){
+  nudgeI = (nudgeI + 1) % NUDGES.length;
+  document.querySelectorAll('.sos-nudge').forEach(el => { el.classList.add('fade'); setTimeout(() => { el.innerHTML = NUDGES[nudgeI]; el.classList.remove('fade'); }, 350); });
+}
+let nudgeT = setInterval(() => { if(!document.hidden && document.querySelector('.sos-nudge')) nextNudge(); }, 5000);
+document.addEventListener('click', e => { if(!e.target.closest('.sos-nudge')) return; nextNudge(); clearInterval(nudgeT); nudgeT = setInterval(() => { if(!document.hidden && document.querySelector('.sos-nudge')) nextNudge(); }, 5000); });
 function startSlogan(){
   const el = document.getElementById('slogan'); if(!el) return;
   let i = 0, timer = null;
@@ -576,7 +592,7 @@ function sosSummary(){
       return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
     // 한 화면에 방 제목·SOS·모임이 다 보이게 짧게: 안내 한 줄, 시간 칸은 한 줄짜리 (다가오는 SOS 목록은 빼고 날짜 탭으로 봐요)
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
-      <p class="sos-nudge">🙋 눈치 말고 <b>먼저 꾹!</b> 누가 먼저 누르나 기다리는 중 👀</p>
+      <p class="sos-nudge" title="누르면 다음 글귀">${NUDGES[nudgeI]}</p>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-note1">👆 시간을 누르면 누가 보냈는지 보여요</p>
       <div class="sos-today">${cells}</div>`;
