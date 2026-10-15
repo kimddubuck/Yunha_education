@@ -548,3 +548,18 @@ footer p{font-size:14px;color:var(--soft)}
 .appcard .ac-b{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .appcard .ac-b .btn{text-align:center;justify-content:center}
 .appcard .nw{white-space:nowrap}
+/* ✍️ 문장 자동 줄맞춤: 본문 문장은 단어가 어색하게 홀로 남지 않게, 제목은 줄 길이를 고르게 */
+main p,main li,main dd,main td,main figcaption,.src,.note{text-wrap:pretty}
+main h1,main h2,main h3,.kw-h{text-wrap:balance}
+/* 📖 어려운 말 풀이 */
+abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-underline-offset:4px;cursor:help}
+.box.gloss{background:var(--teal-tint);border-color:transparent}
+.box.gloss dl{margin:4px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px}
+.box.gloss dt{font-weight:700;white-space:nowrap}
+.box.gloss dd{margin:0;font-size:15px;color:var(--ink)}
+@media (max-width:420px){.box.gloss dl{grid-template-columns:1fr;gap:0}.box.gloss dd{margin:0 0 8px}}
+/* 🔎 관련 검색어 */
+.kwbox{padding-top:0}
+.kw-h{font-size:14px;color:var(--soft);margin:0 0 6px}
+.kw{display:flex;flex-wrap:wrap;gap:6px}
+.kw a{font-size:14px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none}

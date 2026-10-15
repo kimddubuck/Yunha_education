@@ -17,6 +17,8 @@ SHOW = {'확정', '해봄', '후보'}       # 후보 = 원리로 새로 만든 �
 V = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
 e = lambda s: html.escape(str(s), quote=True)
+from urllib.parse import quote
+TOPIC_OF_PAGE = {}   # 글 주소 → 육아 정보 주제 (관련 검색어용, build 때 채워요)
 CUR = ' aria-current="page"'
 PRESSED = ' aria-pressed="true"'
 
@@ -165,6 +167,68 @@ def endbox(x):
 # Cloudflare Pages는 /a.html 을 /a 로 넘겨요(308). 검색엔진에는 넘어간 뒤 주소를 알려 줘야 '가져올 수 없음'·중복이 안 생겨요
 def pretty(path):
   return re.sub(r'(^|/)index\.html$', r'\1', path)[:-5] if path.endswith('.html') and not re.search(r'(^|/)index\.html$', path) else re.sub(r'(^|/)index\.html$', r'\1', path)
+# 📖 어려운 말 → 초등학생도 알 쉬운 말 (글 페이지에서 처음 나올 때 점선 밑줄 + 글 끝 '어려운 말 풀이'). 긴 말을 먼저 찾아요
+GLOSS_DIRS = ('research', 'tips', 'food', 'support', 'daycare', 'principles')
+GLOSS = sorted([
+  ('실행기능', '계획을 세우고, 참고, 한 가지에 집중하는 뇌의 힘이에요.'),
+  ('자기조절', '화나거나 신날 때 스스로 마음과 행동을 다스리는 힘이에요.'),
+  ('메타분석', '여러 연구 결과를 한데 모아 다시 계산해 본 연구예요.'),
+  ('체계적 문헌고찰', '정해진 방법으로 관련 연구를 빠짐없이 찾아 모아 정리한 연구예요.'),
+  ('무작위 대조', '참여한 사람을 제비뽑기처럼 무작위로 나눠, 한쪽만 해 보고 비교하는 실험이에요.'),
+  ('대조군', '비교하려고 따로 아무것도 하지 않은 쪽 사람들이에요.'),
+  ('관찰 연구', '실험을 하지 않고 있는 그대로 지켜보며 기록한 연구예요. 무엇이 원인인지는 딱 잘라 말하기 어려워요.'),
+  ('코호트', '같은 무리의 사람들을 오랫동안 따라가며 살핀 연구 방식이에요.'),
+  ('상관관계', '두 가지가 함께 나타난다는 뜻이에요. 하나가 다른 하나의 원인이라는 뜻은 아니에요.'),
+  ('학술지', '연구 논문을 싣는 전문 잡지예요. 다른 전문가가 먼저 검토하고 실어요.'),
+  ('초록', '논문 맨 앞에 붙은 짧은 요약이에요.'),
+  ('임상', '병원처럼 실제 환자나 사람을 직접 만나 돌보는 현장을 말해요.'),
+  ('백분위', '같은 나이 아이 100명을 줄 세웠을 때 몇 번째쯤인지를 나타내는 숫자예요.'),
+  ('철결핍성 빈혈', '몸에 철분이 모자라서 피가 산소를 잘 나르지 못하는 상태예요. 쉽게 지치고 얼굴이 창백해질 수 있어요.'),
+  ('빈혈', '피가 몸 구석구석에 산소를 잘 나르지 못하는 상태예요. 쉽게 지치고 얼굴이 창백해질 수 있어요.'),
+  ('알레르기', '몸이 어떤 음식이나 물질에 지나치게 반응해서 두드러기·가려움 같은 증상이 생기는 거예요.'),
+  ('영아돌연사증후군', '건강해 보이던 돌 전 아기가 잠자다가 뚜렷한 이유 없이 숨지는 일이에요.'),
+  ('독성 스트레스', '도와주는 어른 없이 오래 계속되는 아주 심한 스트레스예요.'),
+  ('애착', '아기와 늘 돌봐 주는 사람 사이에 생기는 깊은 믿음과 정이에요.'),
+  ('분리불안', '엄마 아빠와 떨어질 때 크게 불안해하고 우는 거예요.'),
+  ('옹알이', '말을 배우기 전 아기가 "아바바" 하고 내는 소리예요.'),
+  ('소근육', '손가락처럼 작고 세밀하게 움직이는 근육이에요.'),
+  ('대근육', '팔·다리처럼 크게 움직이는 근육이에요. 걷기·뛰기에 쓰여요.'),
+  ('스크린 타임', 'TV·휴대폰·태블릿 같은 화면을 보는 시간이에요.'),
+  ('중위소득', '우리나라 가구를 소득 순서로 줄 세웠을 때 딱 가운데 있는 가구의 소득이에요.'),
+  ('바우처', '정해진 곳에서 돈처럼 쓸 수 있는 이용권이에요.'),
+  ('보육료', '어린이집에 다니는 데 드는 비용이에요.'),
+  ('퓨레', '채소나 과일을 곱게 갈아 부드럽게 만든 음식이에요.'),
+  ('보충식', '젖이나 분유 말고 더 먹이는 음식, 곧 이유식이에요.'),
+  ('발달 선별검사', '아이 발달이 나이에 맞게 자라는지 간단히 살펴보는 검사예요.'),
+], key=lambda x: -len(x[0]))
+# 🔎 페이지 주제별 관련 검색어 (네이버 키워드 도구에서 많이 찾던 말 위주)
+KW_TOPIC = {
+  'sleep': ['수면교육', '분리수면', '아기 낮잠', '밤에 깨는 아기', '배변훈련', '아기 양치'],
+  'food': ['이유식', '이유식 시작', '이유식 단계표', '소고기 이유식', '아기 간식', '편식'],
+  'lang': ['아기 언어발달', '말 늦은 아기', '책 읽기', '아기 영상 노출', '동요 추천'],
+  'play': ['아기놀이', '엄마표 놀이', '개월수별 놀이', '촉감놀이', '집에서 놀이'],
+  'mind': ['떼쓰기', '애착', '분리불안', '아기 훈육', '칭찬'],
+  'health': ['영유아검진', '예방접종', '아기 키 몸무게', '아기 백분위', '안전수면'],
+  'together': ['공동육아', '독박육아', '육아 모임'],
+}
+KW_DIR = {
+  'plays': ['아기놀이', '엄마표 놀이', '집에서 아기 놀이', '개월수별 놀이'],
+  'age': ['개월수별 놀이', '아기놀이', '엄마표 놀이', '돌 아기 놀이'],
+  'principles': ['놀이 원리', '아기 발달', '엄마표 놀이'],
+  'support': ['첫만남이용권', '부모급여', '육아휴직', '아이돌봄서비스', '6+6 육아휴직'],
+  'daycare': ['어린이집', '어린이집 입소', '어린이집 비용', '어린이집 평가'],
+}
+
+def page_keywords(path):
+  top = path.split('/')[0] if '/' in path else ''
+  if path.startswith('info/'): return KW_TOPIC.get(path[5:-5], [])
+  if top in ('research', 'tips', 'food'):
+    return KW_TOPIC.get(TOPIC_OF_PAGE.get(path, ''), []) or (KW_TOPIC['food'] if top == 'food' else [])
+  if top in KW_DIR: return KW_DIR[top]
+  return {'index.html': ['독박육아', '공동육아', '아기놀이', '엄마표 놀이', '이유식', '수면교육'], 'growth.html': ['아기 키 몸무게', '아기 백분위', '영유아검진', '머리둘레', '이유식 양'],
+          'songs.html': ['동요 추천', '아기 동요', '율동', '자장가'], 'food.html': KW_TOPIC['food'], 'research.html': ['육아 연구', '아기 발달', '놀이 연구'],
+          'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도']}.get(path, [])
+
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
@@ -714,6 +778,8 @@ segs(); render();
   for g in rs['food']['groups']:
     for it in g['items']:
       entries['food'].append(('food/' + it['id'] + '.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind']), '🥣'))
+  for tp_, rows_ in entries.items():
+    for r_ in rows_: TOPIC_OF_PAGE[r_[0]] = tp_
   os.makedirs(os.path.join(OUT, 'info'), exist_ok=True)
   bysrc = '<p class="src" style="margin-top:14px">출처 종류별로 보기: <a href="../tips.html">💡 육아 상식</a> · <a href="../research.html">📚 연구·논문</a> · <a href="../food.html">🥣 이유식</a></p>'
   for sl, ic, nm in TOPICS:
@@ -823,6 +889,44 @@ chips.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)retu
 const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}else q.focus();})();</script>'''
   sbody = sbody.replace('__SV__', sver)
   files['search.html'] = page('통합 검색 | 오늘도 독박육아', '놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원을 한 번에 찾아요.', sbody, 'search.html', 'search.html')
+
+  # ── 📖 쉬운 말 풀이 + 🔎 관련 검색어 (검색 색인을 만든 뒤에 덧붙여요: 색인에는 본문만)
+  def gloss_and_keywords(path, html_):
+    top = path.split('/')[0] if '/' in path else ''
+    art = top in GLOSS_DIRS and not path.endswith('index.html')
+    m = re.search(r'<main>(.*)</main>', html_, re.S)
+    if not m: return html_
+    body_ = m.group(1)
+    used = []
+    if art:
+      out, depth_a, skip = [], 0, 0
+      for part in re.split(r'(<[^>]+>)', body_):
+        if part.startswith('<'):
+          tg = part.lower()
+          if tg.startswith('<a ') or tg == '<a>': depth_a += 1
+          elif tg.startswith('</a'): depth_a = max(0, depth_a - 1)
+          elif re.match(r'<(h1|h2|h3|script|style|title|button|summary)\b', tg): skip += 1
+          elif re.match(r'</(h1|h2|h3|script|style|title|button|summary)>', tg): skip = max(0, skip - 1)
+          out.append(part); continue
+        if depth_a or skip or not part.strip(): out.append(part); continue
+        for term, d in GLOSS:
+          if term in used or term not in part: continue
+          if any(term in u for u in used): continue   # '철결핍성 빈혈'을 풀었으면 '빈혈'은 또 안 풀어요
+          part = part.replace(term, f'<abbr class="gl" title="{e(d)}">{term}</abbr>', 1); used.append(term)
+        out.append(part)
+      body_ = ''.join(out)
+      if used:
+        box = '<div class="box gloss"><h2>📖 어려운 말 풀이</h2><dl>' + ''.join(f'<dt>{t}</dt><dd>{e(dict(GLOSS)[t])}</dd>' for t in used) + '</dl></div>'
+        body_ = body_.replace('<h2>📚 출처</h2>', box + '<h2>📚 출처</h2>', 1) if '<h2>📚 출처</h2>' in body_ else body_.replace('</article>', box + '</article>', 1) if '</article>' in body_ else body_ + box
+    # 🔎 관련 검색어: 글 주제에 맞는 말을 누르면 사이트 안 검색으로 (같은 말로 찾는 사람에게 이어 줘요)
+    kws = page_keywords(path)
+    if kws:
+      up_ = '../' * path.count('/')
+      body_ += '<div class="wrap"><section class="blk kwbox"><p class="kw-h">🔎 이런 말로도 찾아보세요</p><div class="kw">' + ''.join(f'<a href="{up_}search.html?q={quote(k)}">#{e(k)}</a>' for k in kws) + '</div></section></div>'
+      html_ = html_.replace('<meta name="description"', f'<meta name="keywords" content="{e(", ".join(kws))}">\n<meta name="description"', 1)
+    return html_[:m.start(1)] + body_ + html_[m.end(1):] if False else re.sub(r'<main>.*</main>', lambda _: '<main>' + body_ + '</main>', html_, count=1, flags=re.S)
+  for path in list(files):
+    if path.endswith('.html') and path not in ('admin.html', 'search.html', '404.html'): files[path] = gloss_and_keywords(path, files[path])
 
   # ── 쓰기 + sitemap
   for path, txt in files.items():
