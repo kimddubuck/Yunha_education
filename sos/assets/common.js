@@ -266,7 +266,8 @@ function likeBtn(d, key, ref, opts = {}){
   const val = opts.val || true;
   const b = document.createElement('button'); b.type = 'button'; b.className = 'like' + (opts.cls ? ' ' + opts.cls : '');
   const paint = () => { const on = !!((d.lk || {})[key]), n = likeCount(d); b.setAttribute('aria-pressed', on);
-    b.innerHTML = `<span class="lk-ic">${on ? '❤️' : '🤍'}</span><b>${n}</b>`; b.setAttribute('aria-label', `${on ? '좋아요 취소' : '좋아요'} (지금 ${n}명)`); };
+    // 댓글(mini)은 인스타그램처럼 오른쪽에 선 하트(♡/♥), 숫자는 있을 때만 아래 작게
+    b.innerHTML = opts.cls === 'mini' ? `<span class="lk-ic">${on ? '♥' : '♡'}</span><b>${n || ''}</b>` : `<span class="lk-ic">${on ? '❤️' : '🤍'}</span><b>${n}</b>`; b.setAttribute('aria-label', `${on ? '좋아요 취소' : '좋아요'} (지금 ${n}명)`); };
   paint();
   b.addEventListener('click', async () => {
     if(!ME.uid || !key || b.disabled) return;
