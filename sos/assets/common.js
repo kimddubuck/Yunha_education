@@ -112,20 +112,28 @@ const SLOGANS = [
   document.addEventListener('click', e => { if(done){ done = false; e.preventDefault(); e.stopPropagation(); } }, true);
   document.addEventListener('contextmenu', e => { if(e.target.closest && e.target.closest('.cp')) e.preventDefault(); }, true);   // 휴대폰 기본 메뉴 대신 우리 복사
 })();
-// 🙋 SOS 달력 밑 한 줄: 내성적인 이웃도 먼저 누를 수 있게 5초마다 바뀌어요 (누르면 바로 다음)
+// 🙋 SOS 달력 밑 전광판: 내성적인 이웃도 먼저 누를 수 있게 글귀가 오른쪽에서 왼쪽으로 계속 흘러가요 (패러디 섞어서)
 const NUDGES = [
+  '🙅 SOS가 <b>죄는 아니잖아요</b>',
   '👀 다들 보고만 있어요. <b>첫 번째가 되어 주세요</b>',
+  '🍚 밥은 먹고 육아하냐? <b>SOS 꾹</b>',
   '😤 뭐가 부끄러워요? <b>내가 힘들어 죽겠는데</b>',
+  '🏝 니가 가라 하와이? <b>니가 와라 키즈룸</b>',
   '🌱 한 명이 누르면 <b>두 번째는 훨씬 쉬워져요</b>',
+  '🦸 어벤져스도 혼자 안 싸워요. <b>육아 어셈블!</b>',
   '🙋 눈치 말고 <b>먼저 꾹!</b> 누가 먼저 누르나 기다리는 중 👀',
+  '🎤 나만 아니면 돼? <b>나만 힘든 거 아니에요</b>',
   '🙈 SOS 누른다고 <b>모임을 열 필요는 없어요</b>'];
-let nudgeI = 0;
-function nextNudge(){
-  nudgeI = (nudgeI + 1) % NUDGES.length;
-  document.querySelectorAll('.sos-nudge').forEach(el => { el.classList.add('fade'); setTimeout(() => { el.innerHTML = NUDGES[nudgeI]; el.classList.remove('fade'); }, 350); });
+const NUDGE_HTML = (() => { const one = NUDGES.map(t => `<span class="tk-i">${t}</span>`).join('');
+  return `<span class="tk-run">${one}</span><span class="tk-run" aria-hidden="true">${one}</span>`; })();   // 두 벌 이어 붙여 끊김 없이 돌아요
+const NUDGE_T0 = Date.now();
+function nudgeTicker(root){   // 달력을 다시 그려도 흐르던 자리에서 이어서 (처음부터 다시 시작 X)
+  (root || document).querySelectorAll('.sos-nudge').forEach(el => {
+    const run = el.querySelector('.tk-run'); if(!run) return;
+    const d = Math.max(20, run.scrollWidth / 45);   // 1초에 45px
+    el.style.setProperty('--tk-d', d + 's'); el.style.setProperty('--tk-delay', -(((Date.now() - NUDGE_T0) / 1000) % d) + 's');
+  });
 }
-let nudgeT = setInterval(() => { if(!document.hidden && document.querySelector('.sos-nudge')) nextNudge(); }, 5000);
-document.addEventListener('click', e => { if(!e.target.closest('.sos-nudge')) return; nextNudge(); clearInterval(nudgeT); nudgeT = setInterval(() => { if(!document.hidden && document.querySelector('.sos-nudge')) nextNudge(); }, 5000); });
 function startSlogan(){
   const el = document.getElementById('slogan'); if(!el) return;
   let i = 0, timer = null;
@@ -610,11 +618,12 @@ function sosSummary(){
       return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
     // 한 화면에 방 제목·SOS·모임이 다 보이게 짧게: 안내 한 줄, 시간 칸은 한 줄짜리 (다가오는 SOS 목록은 빼고 날짜 탭으로 봐요)
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
-      <p class="sos-nudge" title="누르면 다음 글귀">${NUDGES[nudgeI]}</p>
+      <p class="sos-nudge" aria-label="SOS 장려 글귀"><span class="tk">${NUDGE_HTML}</span></p>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-note1">👆 시간을 누르면 누가 보냈는지 보여요</p>
       <div class="sos-today">${cells}</div>`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
+    nudgeTicker(box);
   };
   box.addEventListener('click', e => {
     const hb = e.target.closest('[data-sos-hour]');
