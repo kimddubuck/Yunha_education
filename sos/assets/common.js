@@ -262,6 +262,14 @@ function likeWho(d){
   p.addEventListener('click', () => sosInfo({icon: '❤️', title: `좋아요 ${names.length}명`, body: `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>`}));
   return p;
 }
+// 댓글 밑 작은 글자: '❤️ 가영맘 외 1명' — 누르면 전체 이름 팝업 (이름이 있을 때만)
+function likeWhoMini(d){
+  const names = likeNames(d); if(!names.length) return null;
+  const p = document.createElement('button'); p.type = 'button'; p.className = 'like-who mini';
+  p.textContent = `❤️ ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}명` : ''}`;
+  p.addEventListener('click', () => sosInfo({icon: '❤️', title: `좋아요 ${names.length}명`, body: `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>`}));
+  return p;
+}
 function likeBtn(d, key, ref, opts = {}){
   const val = opts.val || true;
   const b = document.createElement('button'); b.type = 'button'; b.className = 'like' + (opts.cls ? ' ' + opts.cls : '');

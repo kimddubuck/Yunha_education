@@ -1369,3 +1369,5 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .pop .comment-list li{padding-right:30px}
 .idea-del{color:var(--muted)!important;border-color:var(--line)!important;background:transparent!important}
 .like{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.like-who.mini{display:inline;margin:0;font-size:12px;color:var(--muted);text-align:left}
+.like-who.mini::before{content:none}
