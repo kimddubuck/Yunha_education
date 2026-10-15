@@ -30,7 +30,7 @@
   let st = {}; try{ st = JSON.parse(localStorage.getItem('dokbakKid') || '{}'); }catch(e){}
   if(st.y) y.value = st.y; if(st.m) m.value = st.m;
   document.querySelectorAll('#gsex button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (st.s || ''))));
-  if(st.w) $('#gw').value = st.w; if(st.h) $('#gh').value = st.h;
+  if(st.w) $('#gw').value = st.w; if(st.h) $('#gh').value = st.h; if(st.pre) $('#gpre').value = st.pre;
 
   function months(){
     const by = Number(y.value), bm = Number(m.value); if(!by || !bm) return null;
@@ -41,15 +41,19 @@
     return n < 0 ? null : n;
   }
   function render(){
-    const n = months(), s = document.querySelector('#gsex [aria-pressed="true"]')?.dataset.v || '';
-    st = {y: y.value, m: m.value, s, w: $('#gw').value, h: $('#gh').value}; try{ localStorage.setItem('dokbakKid', JSON.stringify(st)); }catch(e){}
+    const n0 = months(), s = document.querySelector('#gsex [aria-pressed="true"]')?.dataset.v || '';
+    // 37주 미만 출생은 두 돌까지 '교정 개월'(예정일 기준)로 키·몸무게를 봐요 (영유아 검진과 같은 방식)
+    const pre = Number($('#gpre').value) || 0;
+    const corr = n0 !== null && pre >= 3 && n0 < 24;
+    const n = corr ? Math.max(0, Math.floor(n0 - pre * 7 / 30.44)) : n0;
+    st = {y: y.value, m: m.value, s, w: $('#gw').value, h: $('#gh').value, pre: $('#gpre').value}; try{ localStorage.setItem('dokbakKid', JSON.stringify(st)); }catch(e){}
     if(n === null){ out.innerHTML = '<p class="src">태어난 해와 달을 골라 주세요.</p>'; return; }
-    const yrs = Math.floor(n / 12), rem = n % 12;
-    const pct = Math.min(100, Math.round(n / 72 * 100));
-    let h = `<div class="box ghero"><div class="gage"><span class="gnum">${n}</span><span class="gunit">개월</span></div><div class="gage-r"><b>만 ${yrs}세 ${rem}개월</b><div class="gbar"><i style="width:${pct}%"></i></div><small>0개월 ───────── 만 6세(72개월)</small></div>
+    const yrs = Math.floor(n0 / 12), rem = n0 % 12;
+    const pct = Math.min(100, Math.round(n0 / 72 * 100));
+    let h = `<div class="box ghero"><div class="gage"><span class="gnum">${n0}</span><span class="gunit">개월</span></div><div class="gage-r"><b>만 ${yrs}세 ${rem}개월</b>${corr ? `<br><small style="color:var(--g-main);font-weight:700">교정 개월 ${n}개월 (예정일 기준, 키·몸무게는 이걸로 봐요)</small>` : ''}<div class="gbar"><i style="width:${pct}%"></i></div><small>0개월 ───────── 만 6세(72개월)</small></div>
       <p class="src" style="flex-basis:100%;margin:6px 0 0">태어난 날짜를 안 적으면 15일로 계산해요. 1~2주 차이는 아래 숫자에 거의 영향이 없어요.</p></div>`;
     // 📏 키·몸무게: 3~97백분위 범위 막대 + 내 아이 표시
-    h += `<div class="box"><h2>📏 이 개월의 키·몸무게</h2><p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
+    h += `<div class="box"><h2>📏 이 개월의 키·몸무게</h2>${corr ? `<p class="gck-now">${pre}주 일찍 태어나서 두 돌까지는 <b>교정 개월 ${n}개월</b> 기준으로 봐요. 영유아 검진도 같은 방식이에요.</p>` : ''}<p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
     if(!s) h += '<p class="src">성별을 고르면 숫자가 보여요. 남녀 기준이 달라요.</p>';
     else if(n > 60) h += '<p class="src">WHO 기준은 60개월(만 5세)까지만 있어요. 그 뒤는 질병관리청 2017 성장도표를 봐 주세요 (아래 출처).</p>';
     else {
@@ -73,9 +77,9 @@
     }
     h += '</div>';
     // 🥄 먹는 양: 타일 3개 (끼니 · 한 끼 양 · 하루 열량)
-    const f = FEED.find(x => n >= x[0] && x[1] >= n);
+    const f = FEED.find(x => n0 >= x[0] && x[1] >= n0);
     if(f){
-      const kcal = n >= 72 ? (s === 'g' ? 1500 : 1700) : f[4], meals = f[5], snack = f[6], cup = f[7];
+      const kcal = n0 >= 72 ? (s === 'g' ? 1500 : 1700) : f[4], meals = f[5], snack = f[6], cup = f[7];
       const bowls = meals ? '🍚'.repeat(meals[0]) + (meals[1] > meals[0] ? '<span class="dim">🍚</span>' : '') : '🍼';
       const cupsvg = cup != null ? `<svg viewBox="0 0 40 48" class="gcup" aria-hidden="true"><path d="M6 6h28l-3 36H9z" fill="none" stroke="currentColor" stroke-width="2.5"/><clipPath id="cc"><path d="M6 6h28l-3 36H9z"/></clipPath><rect clip-path="url(#cc)" x="0" y="${(42 - 36 * cup[1] + 1).toFixed(1)}" width="40" height="${(36 * cup[1] + 6).toFixed(1)}" fill="currentColor" opacity=".35"/><rect clip-path="url(#cc)" x="0" y="${(42 - 36 * cup[0] + 1).toFixed(1)}" width="40" height="${(36 * cup[0] + 6).toFixed(1)}" fill="currentColor" opacity=".55"/></svg>` : '';
       h += `<div class="box"><h2>🥄 이 시기 하루 먹는 양</h2><div class="gtiles">
@@ -86,16 +90,16 @@
       <p class="src">열량은 2020 한국인 영양소 섭취기준의 '에너지 필요추정량'(평균 체격·보통 활동 기준)이고, 끼니 수와 한 끼 양은 WHO 이유식 안내예요. 아이마다 달라서 배고픔·배부름 신호가 먼저예요. 얼마나 먹을지는 아이가 정해요.</p></div>`;
     }
     // 🩺 검진: 8단계 타임라인
-    const cur = CHECK.find(c => n >= c[1] && n <= c[2]), next = CHECK.find(c => c[1] > n);
+    const cur = CHECK.find(c => n0 >= c[1] && n0 <= c[2]), next = CHECK.find(c => c[1] > n0);
     h += '<div class="box"><h2>🩺 영유아 건강검진</h2>';
     if(cur) h += `<p class="gck-now">지금 <b>${cur[0]} 검진 시기</b>예요 (${cur[3]}). 아직 안 받았으면 소아과에 예약해요. 본인 부담은 없어요.</p>`;
-    else if(next) h += `<p class="gck-now">다음은 <b>${next[0]} 검진</b>(${next[3]})이에요. <b>${Math.max(0, Math.ceil(next[1] - n))}개월</b>쯤 뒤예요.</p>`;
+    else if(next) h += `<p class="gck-now">다음은 <b>${next[0]} 검진</b>(${next[3]})이에요. <b>${Math.max(0, Math.ceil(next[1] - n0))}개월</b>쯤 뒤예요.</p>`;
     else h += '<p class="gck-now">8차(66~71개월)까지 모두 지났어요. 다음은 초등학교 입학 뒤 학생 건강검사예요.</p>';
-    h += `<ol class="gtl">${CHECK.map(c => { const st = cur === c ? 'now' : n > c[2] ? 'done' : ''; return `<li class="${st}"><i>${st === 'done' ? '✓' : c[0].replace('차', '')}</i><b>${c[0]}</b><span>${c[3]}</span></li>`; }).join('')}</ol>`;
+    h += `<ol class="gtl">${CHECK.map(c => { const st = cur === c ? 'now' : n0 > c[2] ? 'done' : ''; return `<li class="${st}"><i>${st === 'done' ? '✓' : c[0].replace('차', '')}</i><b>${c[0]}</b><span>${c[3]}</span></li>`; }).join('')}</ol>`;
     h += '<p class="src">1차(생후 14~35일)는 2021년생부터예요. 검진은 국민건강보험공단이 지정한 소아과·병원에서 받고, 키·몸무게·머리둘레 백분위와 발달 선별검사(K-DST)를 해요. 자세한 건 <a href="tips.html">육아 상식</a>의 영유아 건강검진 글을 봐 주세요.</p></div>';
     out.innerHTML = h;
   }
-  [y, m, $('#gd'), $('#gw'), $('#gh')].forEach(el => el.addEventListener('input', render));
+  [y, m, $('#gd'), $('#gw'), $('#gh'), $('#gpre')].forEach(el => el.addEventListener('input', render));
   $('#gsex').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; document.querySelectorAll('#gsex button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); });
   render();
 })();

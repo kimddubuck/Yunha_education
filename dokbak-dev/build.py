@@ -552,6 +552,7 @@ segs(); render();
 <div class="box gform">
   <div class="row"><span>태어난 때</span><div class="gin"><select id="gy" aria-label="태어난 해"><option value="">해</option></select><select id="gm" aria-label="태어난 달"><option value="">달</option></select><input id="gd" type="number" min="1" max="31" placeholder="일 (선택)" aria-label="태어난 날"></div></div>
   <div class="row"><span>성별</span><div class="seg" id="gsex"><button type="button" data-v="b" aria-pressed="false">👦 남자</button><button type="button" data-v="g" aria-pressed="false">👧 여자</button></div></div>
+  <div class="row"><span>일찍 태어남</span><div class="gin"><select id="gpre" aria-label="예정일보다 몇 주 일찍"><option value="0">예정일쯤(37주 이상)</option><option value="3">3주 일찍 (36주)</option><option value="4">4주 일찍 (35주)</option><option value="5">5주 일찍 (34주)</option><option value="6">6주 일찍 (33주)</option><option value="8">8주 일찍 (31주)</option><option value="10">10주 일찍 (29주)</option><option value="12">12주 일찍 (27주)</option></select></div></div>
   <div class="row"><span>지금 (선택)</span><div class="gin"><input id="gw" type="number" step="0.1" min="1" max="60" placeholder="몸무게 kg" aria-label="몸무게"><input id="gh" type="number" step="0.1" min="30" max="150" placeholder="키 cm" aria-label="키"></div></div>
   <p class="src" style="margin:8px 0 0">몸무게·키를 적으면 같은 개월 아이들 사이에서 몇 백분위인지도 알려 줘요.</p>
 </div>
