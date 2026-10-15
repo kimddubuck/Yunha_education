@@ -218,7 +218,7 @@ service cloud.firestore {
             && (!('to' in request.resource.data)   // ↪ 답글이면 원래 댓글 아이디 (v14)
                 || (request.resource.data.to is string && request.resource.data.to.size() >= 1 && request.resource.data.to.size() <= 40))
             && request.resource.data.text is string
-            && request.resource.data.text.size() > 0
+            && (request.resource.data.text.size() > 0 || request.resource.data.get('img', '') != '')   // v19: 사진만도 돼요
             && request.resource.data.text.size() <= 300
             && (!('kh' in request.resource.data)
                 || (request.resource.data.kh is string && request.resource.data.kh.size() == 64))
@@ -237,7 +237,7 @@ service cloud.firestore {
             && request.resource.data.text is string
             && request.resource.data.text.size() <= 300
             && ((request.resource.data.get('deleted', false) == true && request.resource.data.text == '')
-                || (request.resource.data.get('deleted', false) == false && request.resource.data.text.size() > 0))
+                || (request.resource.data.get('deleted', false) == false && (request.resource.data.text.size() > 0 || request.resource.data.get('img', '') != '')))
             && request.resource.data.editedAt == request.time;
         }
       }
@@ -314,7 +314,7 @@ service cloud.firestore {
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.n == myNick(roomKey)
             && request.resource.data.text is string
-            && request.resource.data.text.size() > 0
+            && (request.resource.data.text.size() > 0 || request.resource.data.get('img', '') != '')   // v19: 사진만도 돼요
             && request.resource.data.text.size() <= 300
             && (!('to' in request.resource.data)
                 || (request.resource.data.to is string && request.resource.data.to.size() >= 1 && request.resource.data.to.size() <= 40))
@@ -352,7 +352,7 @@ service cloud.firestore {
             && exists(post()) && get(post()).data.get('deleted', false) == false
             && request.resource.data.keys().hasOnly(['b', 'kh', 'createdAt', 'expireAt', 'img', 'url'])
             && attachOk(request.resource.data)
-            && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 300
+            && request.resource.data.b is string && (request.resource.data.b.size() > 0 || request.resource.data.get('img', '') != '') && request.resource.data.b.size() <= 300   // v19: 사진만도 돼요
             && request.resource.data.kh is string && request.resource.data.kh.size() == 64
             && request.resource.data.createdAt == request.time
             && request.resource.data.expireAt is timestamp

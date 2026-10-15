@@ -178,8 +178,9 @@ function openPhoto(id){
   });
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const text = inp.value.trim(); if(!text) return;
+    const text = inp.value.trim();
     let atv = {}; try{ atv = at ? at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+    if(!text && !atv.img) return;   // 글이 없어도 사진만 있으면 올라가요 (v19)
     const rt = replyTo, btn = form.querySelector('button[type="submit"]'); btn.disabled = true;
     try{
       const ref = mealCmts(id).doc();
@@ -187,8 +188,8 @@ function openPhoto(id){
       rememberMyCmt(id, ref.id); inp.value = ''; replyTo = null; if(at) at.clear(); draw();
       // 🔔 알림: 사진 올린 사람에게 + 답글이면 그 댓글 쓴 사람에게 (같은 사람이면 한 번만)
       if(typeof pushMealComment === 'function'){
-        if(rt) pushMealComment(d, rt.uid, text, true);
-        if(!rt || rt.uid !== d.uid) pushMealComment(d, d.uid, text, false);
+        if(rt) pushMealComment(d, rt.uid, text || '📷 사진', true);
+        if(!rt || rt.uid !== d.uid) pushMealComment(d, d.uid, text || '📷 사진', false);
       }
     }catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); else alert('댓글을 저장하지 못했어요'); }
     btn.disabled = false;

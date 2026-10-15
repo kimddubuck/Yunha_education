@@ -383,8 +383,9 @@ $('#meetList').addEventListener('submit', async e => {
   const f = e.target.closest('[data-comment]'); if(!f) return;
   e.preventDefault();
   const id = f.dataset.comment, text = f.querySelector('input').value.trim();
-  if(!text || !meet.col) return;
+  if(!meet.col) return;
   let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ meetSay('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+  if(!text && !at.img) return;   // 글이 없어도 사진만 있으면 올라가요 (v19)
   meet.drafts[id] = ''; f.querySelector('input').value = '';   // 먼저 비우고, 실패하면 되돌려요
   if(meet.atDrafts) delete meet.atDrafts[id]; if(f._at) f._at.clear();
   try{
@@ -396,8 +397,8 @@ $('#meetList').addEventListener('submit', async e => {
     await ref.set({text, ...at, kh: await sha256hex(k), uid: ME.uid, n: ME.nick, ...(rt ? {to: rt.root} : {}), ...(m ? ttl(m.date) : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
     delete meet.replyTo[id];
     // 🔔 알림: 답글이면 그 댓글 쓴 사람에게, 그리고 모임 주최자에게 (주최자가 답글 받는 사람이면 한 번만)
-    if(rt && typeof pushMeetReply === 'function') pushMeetReply(m || {id}, rt.uid, text);
-    if(m && !isMine(m) && !(rt && m.uid && rt.uid === m.uid) && typeof pushMeetComment === 'function') pushMeetComment(m, text);
+    if(rt && typeof pushMeetReply === 'function') pushMeetReply(m || {id}, rt.uid, text || '📷 사진');
+    if(m && !isMine(m) && !(rt && m.uid && rt.uid === m.uid) && typeof pushMeetComment === 'function') pushMeetComment(m, text || '📷 사진');
   }catch(err){
     meet.drafts[id] = text; if(meet.atDrafts) meet.atDrafts[id] = at; renderMeets();
     meetSay('댓글을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.');

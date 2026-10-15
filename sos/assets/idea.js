@@ -141,9 +141,10 @@ async function removeDoc(ref, path){
   });
   $i('#ideaList').addEventListener('submit', async e => {
     const f = e.target.closest('[data-idea]'); if(!f) return; e.preventDefault();
-    const inp = f.querySelector('input'), b = inp.value.trim(); if(!b) return;
+    const inp = f.querySelector('input'), b = inp.value.trim();
     const x = idea.items.find(y => y.id === f.dataset.idea); if(!x) return;
     let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+    if(!b && !at.img) return;   // 글이 없어도 사진만 있으면 올라가요 (v19)
     inp.value = ''; delete idea.drafts[x.id]; if(idea.atDrafts) delete idea.atDrafts[x.id]; if(f._at) f._at.clear();
     try{
       const ref = idea.col.doc(x.id).collection('comments').doc(), k = secret();
