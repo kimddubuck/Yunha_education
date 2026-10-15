@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610152317">
+<link rel="manifest" href="manifest.webmanifest?v=202610152319">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610152317">
-<script src="assets/gate.js?v=202610152317"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610152319">
+<script src="assets/gate.js?v=202610152319"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -85,8 +85,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610152317"></script>
-<script src="assets/push.js?v=202610152317"></script>
+<script src="assets/common.js?v=202610152319"></script>
+<script src="assets/push.js?v=202610152319"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -177,7 +177,7 @@ function homeCmtDraw(id){
   const pv = document.querySelector(`[data-cpv="${id}"]`); if(!pv) return;
   const cs = homeCmt.data[id] || []; pv.hidden = !cs.length; pv.innerHTML = '';
   cs.forEach(c => { const r = document.createElement('p'); const b = document.createElement('b'); b.textContent = c.n || '이웃'; const t = document.createElement('span'); t.textContent = c.text; r.append(b, t); pv.appendChild(r); });
-  const cm = pv.nextElementSibling; if(cm) cm.textContent = cs.length ? '💬 댓글 전체 보기 · 남기기' : '💬 댓글 보기 · 남기기';
+  const cm = pv.parentNode.querySelector('.meet-foot > .cmt'); if(cm) cm.textContent = cs.length ? '💬 댓글 전체 보기 · 남기기' : '💬 댓글 보기 · 남기기';
 }
 function homeCmtWatch(id){
   if(homeCmt.subs[id]){ homeCmtDraw(id); return; }
