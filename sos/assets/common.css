@@ -1340,3 +1340,21 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .like-who{display:block;margin:4px 0 0;padding:0;border:0;background:none;font:inherit;font-size:12.5px;color:var(--muted);line-height:1.5;text-align:left;cursor:pointer;text-wrap:pretty}
 .like-who:active{opacity:.7}
 .pop .like-who{margin:-6px auto 10px;text-align:center}
+
+/* 모임 카드 정리 (v17): 빨간 글씨·테두리 없이 차분하게. 주요 버튼은 댓글 하나, 나머지는 회색 작은 버튼 */
+.ops .act.edit,.ops .act.del,.ops .cancel-meet{border-color:var(--line)!important;color:var(--muted)!important;font-weight:700!important;background:transparent!important;box-shadow:none!important}
+.ops .act.del.confirm,.ops .cancel-meet.confirm{background:#e8382f!important;border-color:#e8382f!important;color:#fff!important;animation:none}
+.ops .own-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px}
+.ops .own-row > .act:only-child{grid-column:1 / -1}
+.ops .own-row > .act{margin-top:0!important;min-height:30px!important;font-size:12.5px!important;white-space:normal;text-align:center}
+.ops .mod-row{display:flex!important;justify-content:flex-end;align-items:center;gap:4px 10px;margin-top:0;padding-top:2px}
+.ops .mod-row .mod-btn{min-height:0!important;padding:3px 6px!important;border:0!important;border-radius:8px;background:transparent!important;box-shadow:none!important;color:var(--muted)!important;font-size:12px!important;font-weight:600!important;text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
+.ops .mod-row .mod-btn.danger{color:var(--muted)!important;border:0!important}
+.ops .mod-row .mod-flag{margin-right:auto;background:rgba(242,181,49,.16);color:#d9a021;font-weight:700}
+/* 댓글 묶음: 카드 안에서 한 단 어둡게, 얇은 테두리로 경계만 */
+.ops .meet-body > .comments{margin-top:8px;padding:10px 12px;background:color-mix(in srgb,var(--bg) 60%,var(--tag));border:1px solid var(--line);border-radius:12px}
+.ops .comment-list li{padding:6px 0}
+.ops .comment-list > li + li{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.comment-mod button,.comment-mod .danger{border:0!important;background:transparent!important;color:var(--muted)!important;padding:0 3px!important;font-size:13px!important;opacity:.7}
+.comment-mod .mod-flag{background:rgba(242,181,49,.16);color:#d9a021}
+.meet-body > .like-who{margin-top:-2px}

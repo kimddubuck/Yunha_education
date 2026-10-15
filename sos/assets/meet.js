@@ -103,17 +103,20 @@ function meetCard(o, past){
   row.append(jb, nb, lb); body.append(row);
   const lw = likeWho(o); if(lw) body.append(lw);   // 누가 눌렀는지
   body.append(cb);
+  // ✏️ 수정 · 🗑 취소는 한 줄에 작게 (연 사람·방장만 보여요)
+  const own = document.createElement('div'); own.className = 'own-row';
   if(isMine(o)){   // ⏰ 연 사람은 끝나는 시간을 정하거나 바꿀 수 있어요
     const t = document.createElement('button'); t.type = 'button'; t.className = 'act edit'; t.dataset.editMeet = o.id;
-    t.textContent = '✏️ 모임 수정하기';
-    body.appendChild(t);
+    t.textContent = '✏️ 모임 수정';
+    own.appendChild(t);
   }
   if(isMine(o) || ME.owner){
     const x = document.createElement('button'); x.type = 'button'; x.className = 'cancel-meet act del' + (meet.confirm===o.id ? ' confirm' : ''); x.dataset.cancelMeet = o.id;
     x.textContent = meet.cancelErr && meet.cancelErr.id===o.id ? meet.cancelErr.msg
-      : meet.confirm===o.id ? '⚠️ 정말 취소할까요?\n한 번 더 누르면 취소돼요' : isMine(o) ? '🗑 내가 연 모임 취소하기' : '🗑 모임 취소하기 (방장)';
-    body.appendChild(x);
+      : meet.confirm===o.id ? '⚠️ 정말 취소할까요?\n한 번 더 누르면 취소돼요' : isMine(o) ? '🗑 모임 취소' : '🗑 모임 취소 (방장)';
+    own.appendChild(x);
   }
+  if(own.children.length) body.appendChild(own);
 
   // 🚩 신고 (남의 글) · 🗑 방장 권한으로 내리기
   const mod = document.createElement('div'); mod.className = 'mod-row';
