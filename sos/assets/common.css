@@ -1393,3 +1393,7 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .cf-send{flex:none;border:0;background:none;color:#4f8cff;font:inherit;font-size:15px;font-weight:800;padding:6px 8px;cursor:pointer;opacity:.4;transition:opacity .15s}
 .comment-form.ig.has .cf-send{opacity:1}
 .comment-form.ig .attach-row{margin:0}
+.push-what{list-style:none;margin:6px 0 8px;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
+.push-what li{padding:8px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.45;text-wrap:pretty}
+.push-what-note{margin:4px 0 0;font-size:12.5px;color:var(--muted);text-align:center;text-wrap:balance}
+.push-what li small{display:block;margin-top:2px;font-size:12px;color:var(--muted)}

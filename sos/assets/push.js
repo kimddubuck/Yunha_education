@@ -294,6 +294,7 @@ function pushHelp(){
     <p class="ph-tip">이 휴대폰에만 알림이 와요. 안 오면 아래 순서대로 확인해 주세요.</p>
     <p class="ph-lead">방 이름 옆 <b>🔔 = 알림 켜짐</b>, <b>🔕 = 꺼짐</b>. 눌러서 방마다 켜고 꺼요.<br>딱 4단계예요. <b>홈 화면에 설치한 앱</b>에서 켜야 잘 와요.</p>
     ${pushIsIOS() ? ios + android : android + ios}
+    <details class="ph-os"><summary>📬 어떤 알림이 오나요?</summary>${PUSH_WHAT}</details>
   </details>`;
 }
 
@@ -323,6 +324,16 @@ function pushOpenHelp(from){
   if(!h && typeof showRooms === 'function'){ showRooms(true); h = document.querySelector('#gate .push-help'); }   // 홈 제목 종이면 방 목록의 안내를 열어요
   if(h){ h.open = true; const more = h.closest('details.g-more'); if(more) more.open = true; h.scrollIntoView({block: 'center'}); }
 }
+// 🔔 알림을 켜면 어떤 알림이 오는지 한 번 보여 줘요
+const PUSH_WHAT = `<ul class="push-what">
+  <li><b>🙌 새 모임</b>이 열리거나 바뀌면<small>👉 방 사람 모두</small></li>
+  <li><b>🆘 SOS</b>가 내가 누른 시간에 몰리면<small>👉 그 시간 누른 사람</small></li>
+  <li><b>⏰ 모임 1시간 전</b> 리마인드<small>👉 참석한 사람</small></li>
+  <li><b>🙋 내 모임</b>에 참석·댓글이 늘면 · 연 사람</li>
+  <li><b>🍚 식단 사진</b>이 올라오면<small>👉 방 사람 모두</small></li>
+  <li><b>💬 내 사진·내 댓글</b>에 댓글·답글이 달리면 · 나에게만</li>
+</ul><p class="push-what-note">🙈 익명게시판과 ❤️ 좋아요는 알림이 없어요. 끄려면 방 이름 옆 🔔를 한 번 더 누르면 돼요.</p>`;
+function pushWhatInfo(){ if(typeof sosInfo === 'function') sosInfo({icon: '🔔', title: '이런 알림이 와요', body: PUSH_WHAT}); }
 async function pushBellClick(btn){
   const id = btn.dataset.bell;
   if(!pushSupported()){
@@ -344,7 +355,7 @@ async function pushBellClick(btn){
       // 처음 켤 때는 누른 방만 켜요 (다른 방은 각자 🔕 를 눌러 켜요)
       if(allOff) pushLS.set('sosPushMuted', sosRooms().map(r => r.roomId).filter(x => x !== id));
       else pushSetRoom(id, true);
-      if(await pushSync(true)) pushToast('🔔 이 방 알림을 켰어요');
+      if(await pushSync(true)){ pushToast('🔔 이 방 알림을 켰어요'); pushWhatInfo(); }
       else{
         if(allOff) pushLS.set('sosPushOn', false);
         alert('알림을 켜지 못했어요. 알림 허용을 눌렀는지 확인하고 다시 해 주세요.' + (pushLastError ? `\n(원인: ${pushLastError})` : '') + '\n\n「📖 알림 설정 방법 · 안 될 때」를 확인해 주세요.');
