@@ -340,6 +340,7 @@ def build():
   shutil.copytree(os.path.join(DEV, 'vendor', 'leaflet'), os.path.join(OUT, 'assets', 'leaflet'))
   shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
   shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
+  if os.path.isdir(os.path.join(DEV, 'play-photos')): shutil.copytree(os.path.join(DEV, 'play-photos'), os.path.join(OUT, 'assets', 'plays'))   # 👨‍🍼 아빠가 해 본 놀이 사진 (plays.json 의 photo)
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
   # 🧪 AI가 만든 놀이(후보)는 공개 페이지로 만들지 않고, 관리자 비밀번호로만 받아 보게 서버 함수 안에 넣어요 (/api/aiplays)
@@ -349,9 +350,29 @@ def build():
   files = {}
 
   # ── 놀이 하나하나 (검색으로 들어오는 페이지)
+  # 📚 놀이 원리 → 근거 연구 글, 🌱 키우는 힘 → 육아 정보 주제 (놀이 페이지 아래 '같이 읽으면 좋은 글')
+  PR_READ = {k: ['schema'] for k in ('넣고빼기', '옮기기', '굴리고던지기', '감싸고풀기', '꽂고잇기', '변신')} | {'숨기고찾기': ['piaget'], '흉내역할': ['play-aap', 'parten'], '몸으로도전': ['risky']}
+  SK_TOPIC = {'언어': 'lang', '정서': 'mind', '사회성': 'mind', '대근육': 'play', '소근육': 'play', '오감': 'play', '인지': 'play', '창의': 'play'}
+  RTITLE = {it['id']: it['t'] for g in json.load(open(os.path.join(DEV, 'research.json'), encoding='utf-8'))['groups'] for it in g['items']}
+  TNAME = {sl: (ic, nm) for sl, ic, nm in TOPICS}
+  def src_line(k): return ('<br><small class="src">📚 근거: ' + e(PR_SRC[k]) + '</small>') if PR_SRC.get(k) else ''
   for p in rows:
     same = [q for q in rows if q is not p and set(q['principles']) & set(p['principles']) and in_band(q, p['ageMin'], p['ageMax'])][:4]
-    why = ''.join(f'<li>{PR[k][0]} <b>{pn(k)}</b>: {PR[k][1]} <a href="../principles/{PR_SLUG[k]}.html">더 보기</a></li>' for k in p['principles'])
+    why = ''.join(f'<li>{PR[k][0]} <b>{pn(k)}</b>: {PR[k][1]} <a href="../principles/{PR_SLUG[k]}.html">더 보기</a>{src_line(k)}</li>' for k in p['principles'])
+    # 📅 이 놀이를 할 수 있는 개월수 (개월수별 놀이 페이지로)
+    bands = [(sl, nm) for sl, nm, lo, hi in BANDS if in_band(p, lo, hi)]
+    ages = ''.join(f'<a class="chip" href="../age/{sl}.html">{e(nm)}</a>' for sl, nm in bands)
+    # 📖 같이 읽으면 좋은 글: 원리의 근거 연구 + 키우는 힘에 맞는 육아 정보 주제 (+ 여럿이면 공동육아)
+    reads = []
+    for k in p['principles']:
+      for rid in PR_READ.get(k, []):
+        if rid in RTITLE and ('../research/' + rid + '.html') not in [h for h, _ in reads]: reads.append(('../research/' + rid + '.html', '📚 ' + RTITLE[rid]))
+    for t in dict.fromkeys(SK_TOPIC[k] for k in p['skills'] if k in SK_TOPIC):
+      reads.append((f'../info/{t}.html', f'{TNAME[t][0]} 육아 정보: {TNAME[t][1]}'))
+    if p['group']: reads.append(('../info/together.html', f'{TNAME["together"][0]} 육아 정보: {TNAME["together"][1]}'))
+    readbox = ('<div class="box"><h2>📖 같이 읽으면 좋은 글</h2><ul>' + ''.join('<li><a href="' + h + '">' + e(t) + '</a></li>' for h, t in reads[:5]) + '</ul></div>') if reads else ''
+    photo = ('<img src="../assets/plays/' + e(p['photo']) + '" alt="' + e(p['name']) + ' 해 본 사진" loading="lazy">') if p.get('photo') else ''
+    dad = ('<div class="box dad"><h2>👨‍🍼 아빠가 해 봤어요</h2><p>' + e(p['dad']) + '</p>' + photo + '</div>') if p.get('dad') else ''
     ld = {'@context': 'https://schema.org', '@type': 'HowTo', 'name': p['name'], 'totalTime': f'PT{p["minutes"]}M',
           'supply': [{'@type': 'HowToSupply', 'name': m} for m in p['materials']],
           'step': [{'@type': 'HowToStep', 'text': s} for s in p['steps']]}
@@ -373,9 +394,12 @@ def build():
   <div class="box"><h2>🧺 준비물</h2><ul>{''.join(f'<li>{e(m)}</li>' for m in p['materials'])}</ul></div>
   {f'<div class="box swap"><h2>🔁 없으면 이걸로</h2><ul>{"".join(f"<li>{e(x)}</li>" for x in p.get("swaps", []))}</ul></div>' if p.get('swaps') else ''}
   <div class="box"><h2>👣 이렇게 해요</h2><ol>{''.join(f'<li>{e(s)}</li>' for s in p['steps'])}</ol></div>
-  {f'<div class="box"><h2>💡 엄마 꿀팁</h2><p>{e(p["tip"])}</p></div>' if p['tip'] else ''}
+  {dad}
+  {f'<div class="box"><h2>💡 꿀팁</h2><p>{e(p["tip"])}</p></div>' if p['tip'] else ''}
   {f'<div class="box safe"><h2>⚠️ 안전하게</h2><p>{e(p["safety"])}</p></div>' if p['safety'] and p['status'] != '후보' else ''}
   {'<p class="tag sun" style="margin-top:14px">👨‍👩‍👧 공동육아 모임에서 여럿이 하기 좋아요</p>' if p['group'] else ''}
+  {f'<div class="box"><h2>📅 이 개월수에 해 보세요</h2><div class="chips" style="margin:0">{ages}</div></div>' if ages else ''}
+  {readbox}
 </article>
 <aside class="side">{SOS_BRIDGE}
   {f'<div class="box" style="margin-top:0"><h2>🔁 비슷한 놀이</h2><div class="cards" style="grid-template-columns:1fr">{"".join(card(q, "../") for q in same)}</div></div>' if same else ''}

@@ -563,3 +563,6 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .kw-h{font-size:14px;color:var(--soft);margin:0 0 6px}
 .kw{display:flex;flex-wrap:wrap;gap:6px}
 .kw a{font-size:14px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none}
+/* 👨‍🍼 아빠가 해 봤어요 (놀이 페이지) */
+.box.dad{background:var(--sun-tint);border-color:transparent}
+.box.dad img{display:block;width:100%;max-width:520px;border-radius:12px;margin-top:10px}
