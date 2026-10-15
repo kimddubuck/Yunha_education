@@ -1405,3 +1405,4 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 /* 📋 꾹 눌러 복사 */
 .cp{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;transition:background-color .2s;border-radius:6px}
 .cp.cp-on{background-color:color-mix(in srgb,var(--pick,#ffd54a) 30%,transparent)}
+[data-sos] .sos-sub-s.sos-nudge{font-size:14px;margin:2px 0 4px}

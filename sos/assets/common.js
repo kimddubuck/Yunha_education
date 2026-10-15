@@ -120,25 +120,37 @@ const NUDGES = [
   '💬 가는 SOS가 있어야 <b>오는 SOS도 있다</b>',
   '🐦 일찍 일어나는 SOS가 <b>모임을 만든다</b>',
   '🦸 어벤져스도 혼자 안 싸워요. <b>육아 어셈블!</b>'];
-// 한 문장씩: 오른쪽 끝에서 들어와 왼쪽 끝으로 다 빠져나가면 다음 문장이 들어와요
+// 📅 SOS 예약 달력 전광판: 일주일 치를 미리 눌러 두자는 글귀 (data-set="plan")
+const PLAN_NUDGES = [
+  '📅 오늘만 말고 <b>이번 주 통째로</b> 미리 SOS 꾹',
+  '🧺 장보기도 일주일 치, <b>SOS도 일주일 치</b>',
+  '🌂 유비무환! <b>미리 SOS면 독박 없다</b>',
+  '📝 다음 주 SOS를 <b>오늘 미리</b> 걸어 두세요',
+  '🍱 반찬도 미리, <b>SOS도 미리</b>',
+  '👆 여러 날 여러 시간 <b>한꺼번에 눌러도 OK</b>',
+  '🙌 SOS가 모이면 <b>모임이 열려요</b>'];
+const TICKERS = { home: NUDGES, plan: PLAN_NUDGES };
+// 한 문장씩: 오른쪽 끝에서 들어와 왼쪽 끝으로 다 빠져나가면 다음 문장이 들어와요 (전광판마다 따로 돌아요)
 const NUDGE_SPEED = 55;   // 1초에 55px
-const nudge = { i: 0, t0: Date.now(), timer: null };
+const tick = {};
+const tickOf = set => tick[set] || (tick[set] = { i: 0, t0: Date.now(), timer: null });
 function nudgePaint(root){   // 달력을 다시 그려도 흐르던 자리에서 이어서 (처음부터 다시 시작 X)
   (root || document).querySelectorAll('.sos-nudge').forEach(el => {
-    if(el.dataset.i !== String(nudge.i)){ el.innerHTML = `<span class="tk">${NUDGES[nudge.i]}</span>`; el.dataset.i = nudge.i; }
+    const set = el.dataset.set || 'home', list = TICKERS[set] || NUDGES, st = tickOf(set);
+    if(el.dataset.i !== String(st.i)){ el.innerHTML = `<span class="tk">${list[st.i % list.length]}</span>`; el.dataset.i = st.i; }
     const tk = el.firstElementChild, W = el.clientWidth, w = tk.scrollWidth, d = (W + w) / NUDGE_SPEED;
     el.style.setProperty('--tk-from', W + 'px'); el.style.setProperty('--tk-to', -w + 'px');
-    el.style.setProperty('--tk-d', d + 's'); el.style.setProperty('--tk-delay', -((Date.now() - nudge.t0) / 1000) + 's');
+    el.style.setProperty('--tk-d', d + 's'); el.style.setProperty('--tk-delay', -((Date.now() - st.t0) / 1000) + 's');
+    if(!st.timer) nudgeNext(set);
   });
 }
-function nudgeNext(){   // 지금 문장이 다 지나가면 다음 문장
-  clearTimeout(nudge.timer);
-  const el = document.querySelector('.sos-nudge');
-  if(!el || !el.firstElementChild){ nudge.timer = setTimeout(nudgeNext, 1000); return; }
-  const d = (el.clientWidth + el.firstElementChild.scrollWidth) / NUDGE_SPEED * 1000, left = d - (Date.now() - nudge.t0);
-  nudge.timer = setTimeout(() => { nudge.i = (nudge.i + 1) % NUDGES.length; nudge.t0 = Date.now(); nudgePaint(document); nudgeNext(); }, Math.max(200, left));
+function nudgeNext(set){   // 지금 문장이 다 지나가면 다음 문장
+  const st = tickOf(set); clearTimeout(st.timer);
+  const el = document.querySelector(set === 'home' ? '.sos-nudge:not([data-set]), .sos-nudge[data-set="home"]' : `.sos-nudge[data-set="${set}"]`);
+  if(!el || !el.firstElementChild){ st.timer = setTimeout(() => nudgeNext(set), 1000); return; }
+  const d = (el.clientWidth + el.firstElementChild.scrollWidth) / NUDGE_SPEED * 1000, left = d - (Date.now() - st.t0);
+  st.timer = setTimeout(() => { st.i = (st.i + 1) % (TICKERS[set] || NUDGES).length; st.t0 = Date.now(); nudgePaint(document); nudgeNext(set); }, Math.max(200, left));
 }
-setTimeout(nudgeNext, 1000);
 function startSlogan(){
   const el = document.getElementById('slogan'); if(!el) return;
   let i = 0, timer = null;
@@ -526,7 +538,7 @@ function sosInit(){
   const root = document.querySelector('[data-sos]'); if(!root) return;
   let data = {}, col = null, broken = false;
   root.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count"></p></div>
-    <p class="sos-sub sos-sub-s">독박하는 날, 눈치 보지 말고 <b>먼저 SOS 꾹!</b> 🙋<br>누가 먼저 누르나 기다리는 중! SOS가 모이면 모임이 열려요</p>
+    <p class="sos-sub sos-sub-s sos-nudge" data-set="plan" aria-label="SOS 예약 글귀"></p>
     <div class="sos-picker"></div>
     <button type="button" class="sos-btn"></button>
     <div class="sos-mine" hidden></div>
@@ -536,6 +548,7 @@ function sosInit(){
       <p class="brave-sub">SOS가 몰린 시간에 내가 먼저 모임을 열면<br><b>누군가의 독박이 끝나요</b> 🫶</p>
       <a href="#new" class="sos-make brave-btn"></a>
     </div>`;
+  nudgePaint(root);   // 📅 위 전광판 시작
   // 💪 용기 상자는 SOS 달력 카드 아래, 모임 만들기 양식 바로 위로 옮겨요 (버튼을 누르면 양식이 그 아래 펼쳐져요)
   const brave = root.querySelector('.sos-brave'), anchor = document.getElementById('meetForm');
   if(anchor) anchor.before(brave);
