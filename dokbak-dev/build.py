@@ -143,9 +143,9 @@ def page(title, desc, body, path, active='', extra_head=''):
   # 메뉴 6개로 묶어요. 묶음 안의 작은 탭(subnav)은 그 묶음 페이지 위에 보여요
   GROUPS = [('plays/', '놀이', [('plays/', '🔍 놀이 찾기'), ('age/', '📅 개월수별'), ('principles.html', '🧠 놀이 원리')]),
             ('growth.html', '우리 아이 지금', []),
-            ('food.html', '이유식', []),
-            ('tips.html', '육아 정보', [('tips.html', '💡 육아 상식'), ('research.html', '📚 연구·논문')]),
-            ('daycare/', '어린이집·지원', [('daycare/', '🏫 어린이집'), ('support.html', '🎁 지원')]),
+            ('tips.html', '육아 정보', [('tips.html', '💡 육아 상식'), ('research.html', '📚 연구·논문'), ('food.html', '🥣 이유식')]),
+            ('daycare/', '어린이집', []),
+            ('support.html', '국가지원', []),
             ('map.html', '육아 지도', [])]
   has = lambda h: h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))
   GROUPS = [(h, t, [c for c in cs if has(c[0])]) for h, t, cs in GROUPS if has(h)]
@@ -541,7 +541,7 @@ segs(); render();
 <script src="assets/leaflet/leaflet.js"></script><script src="assets/map.js?v={V}"></script>'''
   # ── 👶 우리 아이 지금: 생년월·성별 → 개월수, WHO 키·몸무게 백분위, 시기별 먹는 양, 영유아검진 시기
   LMSJ = open(os.path.join(DEV, 'data', 'who_lms_0_60.json'), encoding='utf-8').read().strip()
-  GSRC = [('WHO Child Growth Standards (아동 성장 기준) · 키·몸무게 LMS 표', '세계보건기구(WHO) · 2006', 'https://www.who.int/tools/child-growth-standards/standards', '6개국 8,440명의 모유 수유 아기를 따라가 만든 0~5세 성장 기준이에요. 이 페이지의 키·몸무게 백분위는 이 표의 L·M·S 값으로 계산해요.'),
+  GSRC = [('WHO Child Growth Standards (아동 성장 기준) · 키·몸무게 LMS 표', '세계보건기구(WHO) · 2006', 'https://www.who.int/tools/child-growth-standards/standards', '6개국 8,440명의 모유 수유 아기를 따라가 만든 0~5세 성장 기준이에요. 이 페이지의 키·몸무게·머리둘레 등수는 이 표의 L·M·S 값으로 계산해요.'),
           ('2017 소아청소년 성장도표', '질병관리청·대한소아과학회 · 2017', '', '우리나라 영유아 검진에서 쓰는 성장도표예요. 0~35개월은 WHO 기준을 그대로 쓰고, 36개월부터는 우리나라 아이 자료로 만들어서 WHO 숫자와 조금 달라요. 이 사이트에서는 원문 표를 직접 열어 보지 못해 WHO 표로 대신 계산하고 그 차이를 적어 두었어요.'),
           ('Infant and young child feeding: Model chapter for textbooks (표 4·5)', '세계보건기구(WHO) · 2009', 'https://www.ncbi.nlm.nih.gov/books/NBK148957/', '6~8개월 하루 2~3끼(2~3큰술에서 250mL 컵 ½까지), 9~11개월 3~4끼 + 간식 1~2번(컵 ½), 12~23개월 3~4끼 + 간식 1~2번(컵 ¾~1) 안내가 여기 있어요. 2003년 PAHO/WHO 이유식 원칙을 교과서용으로 정리한 자료예요.'),
           ('2020 한국인 영양소 섭취기준 · 에너지 필요추정량', '보건복지부·한국영양학회 · 2020', '', '0~5개월 500, 6~11개월 600, 1~2세 900, 3~5세 1,400, 6~8세 남 1,700·여 1,500kcal예요. 평균 체격·보통 활동량 기준이라 아이마다 달라요. 원문 표는 검색으로 확인한 2차 자료(어린이집 식단 안내 등)를 바탕으로 했어요.'),
@@ -553,9 +553,9 @@ segs(); render();
   <div class="row"><span>태어난 때</span><div class="gin"><select id="gy" aria-label="태어난 해"><option value="">해</option></select><select id="gm" aria-label="태어난 달"><option value="">달</option></select><input id="gd" type="number" min="1" max="31" placeholder="일 (선택)" aria-label="태어난 날"></div></div>
   <div class="row"><span>성별</span><div class="seg" id="gsex"><button type="button" data-v="b" aria-pressed="false">👦 남자</button><button type="button" data-v="g" aria-pressed="false">👧 여자</button></div></div>
   <div class="row"><span>일찍 태어남</span><div class="gin"><select id="gpre" aria-label="예정일보다 몇 주 일찍"><option value="0">예정일쯤(37주 이상)</option><option value="3">3주 일찍 (36주)</option><option value="4">4주 일찍 (35주)</option><option value="5">5주 일찍 (34주)</option><option value="6">6주 일찍 (33주)</option><option value="8">8주 일찍 (31주)</option><option value="10">10주 일찍 (29주)</option><option value="12">12주 일찍 (27주)</option></select></div></div>
-  <div class="row"><span>지금 (선택)</span><div class="gin"><input id="gw" type="number" step="0.1" min="1" max="60" placeholder="몸무게 kg" aria-label="몸무게"><input id="gh" type="number" step="0.1" min="30" max="150" placeholder="키 cm" aria-label="키"></div></div>
+  <div class="row"><span>지금 (선택)</span><div class="gin"><input id="gw" type="number" step="0.1" min="1" max="60" placeholder="몸무게 kg" aria-label="몸무게"><input id="gh" type="number" step="0.1" min="30" max="150" placeholder="키 cm" aria-label="키"><input id="gc" type="number" step="0.1" min="25" max="60" placeholder="머리둘레 cm" aria-label="머리둘레"></div></div>
   <div class="row"><span>잰 날 (선택)</span><div class="gin"><input id="gwhen" type="date" aria-label="키·몸무게를 잰 날"></div></div>
-  <p class="src" style="margin:8px 0 0">몸무게·키를 적으면 같은 개월 아이 100명 중 몇 등인지도 알려 줘요. 예전에 잰 값(검진 결과지 등)이면 '잰 날'을 같이 적어야 그때 개월수로 계산해요.</p>
+  <p class="src" style="margin:8px 0 0">몸무게·키·머리둘레를 적으면 같은 개월 아이 100명 중 몇 등인지도 알려 줘요. 예전에 잰 값(검진 결과지 등)이면 '잰 날'을 같이 적어야 그때 개월수로 계산해요.</p>
 </div>
 <div id="gout"></div>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>

@@ -30,7 +30,7 @@
   let st = {}; try{ st = JSON.parse(localStorage.getItem('dokbakKid') || '{}'); }catch(e){}
   if(st.y) y.value = st.y; if(st.m) m.value = st.m;
   document.querySelectorAll('#gsex button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (st.s || ''))));
-  if(st.w) $('#gw').value = st.w; if(st.h) $('#gh').value = st.h; if(st.pre) $('#gpre').value = st.pre; if(st.when) $('#gwhen').value = st.when;
+  if(st.w) $('#gw').value = st.w; if(st.h) $('#gh').value = st.h; if(st.c) $('#gc').value = st.c; if(st.pre) $('#gpre').value = st.pre; if(st.when) $('#gwhen').value = st.when;
 
   function months(at = now){
     const by = Number(y.value), bm = Number(m.value); if(!by || !bm) return null;
@@ -50,19 +50,19 @@
     const corr = nm !== null && pre >= 3 && nm < 24;
     const n = nm === null ? n0 : corr ? Math.max(0, Math.floor(nm - pre * 7 / 30.44)) : nm;
     const whenNote = wd && nm !== null ? `<p class="gck-now">📅 ${wd.getFullYear()}년 ${wd.getMonth() + 1}월 ${wd.getDate()}일에 잰 값이라 <b>그때 개월수(${nm}개월)</b> 기준으로 봐요.</p>` : '';
-    st = {y: y.value, m: m.value, s, w: $('#gw').value, h: $('#gh').value, pre: $('#gpre').value, when: $('#gwhen').value}; try{ localStorage.setItem('dokbakKid', JSON.stringify(st)); }catch(e){}
+    st = {y: y.value, m: m.value, s, w: $('#gw').value, h: $('#gh').value, c: $('#gc').value, pre: $('#gpre').value, when: $('#gwhen').value}; try{ localStorage.setItem('dokbakKid', JSON.stringify(st)); }catch(e){}
     if(n === null){ out.innerHTML = '<p class="src">태어난 해와 달을 골라 주세요.</p>'; return; }
     const yrs = Math.floor(n0 / 12), rem = n0 % 12;
     const pct = Math.min(100, Math.round(n0 / 72 * 100));
     let h = `<div class="box ghero"><div class="gage"><span class="gnum">${n0}</span><span class="gunit">개월</span></div><div class="gage-r"><b>만 ${yrs}세 ${rem}개월</b>${corr ? `<br><small style="color:var(--g-main);font-weight:700">교정 개월 ${n}개월 (예정일 기준, 키·몸무게는 이걸로 봐요)</small>` : ''}<div class="gbar"><i style="width:${pct}%"></i></div><small>0개월 ───────── 만 6세(72개월)</small></div>
       <p class="src" style="flex-basis:100%;margin:6px 0 0">태어난 날짜를 안 적으면 15일로 계산해요. 1~2주 차이는 아래 숫자에 거의 영향이 없어요.</p></div>`;
     // 📏 키·몸무게: 3~97백분위 범위 막대 + 내 아이 표시
-    h += `<div class="box"><h2>📏 이 개월의 키·몸무게</h2>${whenNote}${corr ? `<p class="gck-now">${pre}주 일찍 태어나서 두 돌까지는 <b>교정 개월 ${n}개월</b> 기준으로 봐요. 영유아 검진도 같은 방식이에요.</p>` : ''}<p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
+    h += `<div class="box"><h2>📏 이 개월의 키·몸무게·머리둘레</h2>${whenNote}${corr ? `<p class="gck-now">${pre}주 일찍 태어나서 두 돌까지는 <b>교정 개월 ${n}개월</b> 기준으로 봐요. 영유아 검진도 같은 방식이에요.</p>` : ''}<p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
     if(!s) h += '<p class="src">성별을 고르면 숫자가 보여요. 남녀 기준이 달라요.</p>';
     else if(n > 60) h += '<p class="src">WHO 기준은 60개월(만 5세)까지만 있어요. 그 뒤는 질병관리청 2017 성장도표를 봐 주세요 (아래 출처).</p>';
     else {
-      const w = LMS[s + 'w'][n], hh = LMS[s + 'h'][n];
-      const mw = Number($('#gw').value), mh = Number($('#gh').value);
+      const w = LMS[s + 'w'][n], hh = LMS[s + 'h'][n], hc = LMS[s + 'c'][n];
+      const mw = Number($('#gw').value), mh = Number($('#gh').value), mc = Number($('#gc').value);
       const band = (name, icon, lms, u, mine, dec) => {
         const lo = val(lms, Z[3]), mid = val(lms, Z[50]), hi = val(lms, Z[97]);
         const f = x => dec ? r1(x) : Math.round(x);
@@ -76,7 +76,7 @@
           <div class="gtrack"><i class="grng" style="left:${px(lo).toFixed(1)}%;width:${(px(hi) - px(lo)).toFixed(1)}%"></i><i class="gmid" style="left:${px(mid).toFixed(1)}%"></i>${me ? me.split('</span>')[0] + '</span>' : ''}</div>
           <div class="glab"><span style="left:${px(lo).toFixed(1)}%">작은 편<br><b>${f(lo)}${u}</b><small>97등</small></span><span class="c" style="left:${px(mid).toFixed(1)}%">중간<br><b>${f(mid)}${u}</b><small>50등</small></span><span class="r" style="left:${px(hi).toFixed(1)}%">큰 편<br><b>${f(hi)}${u}</b><small>3등</small></span></div>${me ? me.split('</span>')[1] : ''}</div>`;
       };
-      h += band('몸무게', '⚖️', w, 'kg', mw, true) + band('키', '📏', hh, 'cm', mh, true);
+      h += band('몸무게', '⚖️', w, 'kg', mw, true) + band('키', '📏', hh, 'cm', mh, true) + band('머리둘레', '🧢', hc, 'cm', mc, true);
       h += `<p class="src">진한 막대가 보통 범위(100명 중 3등~97등)예요. ${n < 36 ? '우리나라 2017 성장도표는 0~35개월에 세계보건기구(WHO) 성장 기준을 그대로 쓰기 때문에 영유아 검진 결과와 같은 숫자예요.' : '36개월부터 우리나라 2017 성장도표는 한국 아이 자료로 따로 만들어져 있는데, 이 사이트는 그 표를 아직 못 구해서 세계보건기구(WHO) 기준으로 계산해요. 등수가 조금 다를 수 있으니 검진 결과지의 숫자가 기준이에요.'} 범위를 벗어나거나 등수가 갑자기 크게 바뀌면 소아과에서 상의해요.</p>`;
     }
     h += '</div>';
@@ -103,7 +103,7 @@
     h += '<p class="src">1차(생후 14~35일)는 2021년생부터예요. 검진은 국민건강보험공단이 지정한 소아과·병원에서 받고, 키·몸무게·머리둘레 백분위와 발달 선별검사(K-DST)를 해요. 자세한 건 <a href="tips.html">육아 상식</a>의 영유아 건강검진 글을 봐 주세요.</p></div>';
     out.innerHTML = h;
   }
-  [y, m, $('#gd'), $('#gw'), $('#gh'), $('#gpre'), $('#gwhen')].forEach(el => el.addEventListener('input', render));
+  [y, m, $('#gd'), $('#gw'), $('#gh'), $('#gc'), $('#gpre'), $('#gwhen')].forEach(el => el.addEventListener('input', render));
   $('#gsex').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; document.querySelectorAll('#gsex button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); });
   render();
 })();
