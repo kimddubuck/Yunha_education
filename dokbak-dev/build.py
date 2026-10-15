@@ -896,7 +896,7 @@ segs(); render();
 <div class="box why"><h2>📚 왜 노래를 불러 주면 좋을까요?</h2><ul>{sref}</ul><p class="src" style="margin:6px 0 0">위 연구는 아기를 달래고 관심을 끄는 효과를 본 거예요. 노래가 지능·발달을 높인다는 뜻은 아니에요.</p></div>
 <div class="box"><h2>🎤 이렇게 불러 주세요</h2><ul><li><b>같은 노래를 반복</b>해요. 익숙한 노래일수록 달래는 효과가 컸어요.</li><li>틀어 주기보다 <b>직접 불러</b> 주세요. 노래 실력은 상관없어요.</li><li>보챌 때는 말로 달래기보다 노래로 바꿔 보세요.</li></ul></div>
 {sg}
-<div class="box newp"><h2>🧪 율동 설명은 AI가 정리했어요</h2><p>노래 고르기와 율동 동작은 <b>AI(인공지능)가</b> 널리 알려진 동요와 손유희를 바탕으로 정리한 거예요. 참고용으로 봐 주시고, 아이 나이와 반응에 맞게 바꿔 주세요. 가사는 저작권 때문에 싣지 않아요.</p></div>
+<p class="src" style="margin-top:14px">ℹ️ 율동 동작은 널리 알려진 동요·손유희를 바탕으로 AI 도움을 받아 정리했어요. 아이 나이와 반응에 맞게 바꿔 주세요. 가사는 저작권 때문에 싣지 않아요.</p>
 <p style="margin-top:14px">💃 <a href="plays/nursery-dance.html">동요 율동 놀이</a> · <a href="tips/same-book-again.html">같은 책을 또 읽어 달라는 이유</a></p>
 </section></div>'''
   files['songs.html'] = page('아이 동요 추천 · 개월수별 동요와 율동 | 오늘도 독박육아', '0~12개월 자장가·손유희부터 3세 이상 노래 놀이까지 개월수별 아이 동요 추천과 율동. 노래가 아기를 달래는 효과에 대한 연구도 함께.', songs_body, 'songs.html', 'songs.html')
