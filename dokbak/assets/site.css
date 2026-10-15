@@ -509,3 +509,5 @@ footer p{font-size:14px;color:var(--soft)}
 .gme-t{font-size:15px;line-height:1.5}
 .gme-t .grank{font-family:var(--display);font-size:22px;color:var(--g-me)}
 .gme-t small{display:inline-block;margin-top:2px}
+.rchips{margin:10px 0 4px}
+.rchips button small{opacity:.7;font-size:11px;margin-left:2px}

@@ -460,7 +460,14 @@ segs(); render();
   def brow(href, title, meta, bdg):
     return f'<a class="bd-row" href="{href}"><span class="bd-main"><span class="bd-t">{e(title)}</span><span class="bd-meta">{e(meta)}</span></span>{bdg}</a>'
   def rboard(gs, folder):
-    return ''.join(f'<p class="bd-cat">{e(g["title"])}</p><div class="bd">' + ''.join(brow(f'{folder}/{it["id"]}.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind'])) for it in g['items']) + '</div>' for g in gs)
+    return ''.join(f'<p class="bd-cat" data-cat="{e(g.get("cat", ""))}">{e(g["title"])}</p><div class="bd" data-cat="{e(g.get("cat", ""))}">' + ''.join(brow(f'{folder}/{it["id"]}.html', it['t'], it['src'], badge(it['yr'], it['kind']) if it['yr'] else badge(it['kind'])) for it in g['items']) + '</div>' for g in gs)
+  # 세부 분류 칩: 누르면 그 분류의 묶음만 보여요 (주소 #분류 로 기억)
+  RCATS = [('놀이', '🧸'), ('잠·습관', '😴'), ('먹기', '🍚'), ('말 배우기', '🗣'), ('공동육아', '🤝'), ('공공 자료', '🇰🇷')]
+  def rchips(gs):
+    cnt = {c: sum(len(g['items']) for g in gs if g.get('cat') == c) for c, _ in RCATS}
+    chips = '<button type="button" data-rc="" aria-pressed="true">전체</button>' + ''.join(f'<button type="button" data-rc="{e(c)}" aria-pressed="false">{ic} {e(c)} <small>{cnt[c]}</small></button>' for c, ic in RCATS if cnt[c])
+    return f'''<div class="seg rchips" id="rchips">{chips}</div>
+<script>(function(){{const w=document.getElementById('rchips');const go=c=>{{w.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.rc===c)));document.querySelectorAll('[data-cat]').forEach(el=>{{el.hidden=!!c&&el.dataset.cat!==c;}});}};w.addEventListener('click',ev=>{{const b=ev.target.closest('button');if(!b)return;go(b.dataset.rc);history.replaceState(null,'',b.dataset.rc?'#'+encodeURIComponent(b.dataset.rc):location.pathname);}});const h=decodeURIComponent(location.hash.slice(1));if(h&&[...w.querySelectorAll('button')].some(b=>b.dataset.rc===h))go(h);}})();</script>'''
   def rposts(gs, folder, list_href, list_name):
     items = [it for g in gs for it in g['items']]
     for i, it in enumerate(items):
@@ -475,12 +482,13 @@ segs(); render();
 <h2>📚 출처</h2><div class="box ref"><p class="who" style="margin:0">📄 원문: {orig}<br>{e(it["who"])}</p></div>{''.join(f'<div class="box ref"><p class="who" style="margin:0">📄 {link(x.get("url"), x["name"])}<br>{e(x["who"])}</p><p class="ppl">👤 <b>누가 쓴 자료예요?</b> {e(x["people"])}</p></div>' for x in it.get('src2', []))}
 <p class="src">{e(rs["checked"])}</p>{pager}</article></div>'''
       files[f'{folder}/{it["id"]}.html'] = page(f'{it["t"]} · {list_name} | 오늘도 독박육아', it['sum'][:150], body, f'{folder}/{it["id"]}.html', list_href)
-  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 교육</p><section class="blk prose" style="padding-top:12px">
-<h1>📚 놀이·교육 연구</h1><p>{e(rs["intro"])}</p>
+  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 연구·논문</p><section class="blk prose" style="padding-top:12px">
+<h1>📚 연구·논문</h1><p>놀이, 잠·습관, 먹기, 말 배우기, 공동육아에 대해 연구와 공공 자료가 뭐라고 했는지 모았어요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요. 아래 칩을 누르면 분류별로 볼 수 있어요.</p>
+{rchips(rs['groups'])}
 {rboard(rs['groups'], 'research')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="food.html">🥄 이유식·유아식 연구도 보기</a></p></section></div>'''
-  files['research.html'] = page('놀이·교육 연구 · 놀이가 왜 중요할까 | 오늘도 독박육아', '미국소아과학회 놀이 보고서, 놀이 도식 이론, 사회적 놀이 단계, 안내된 놀이 연구, 누리과정까지. 엄마표 놀이의 바탕이 된 연구를 쉽게 정리했어요.', body, 'research.html', 'research.html')
-  rposts(rs['groups'], 'research', 'research.html', '교육')
+  files['research.html'] = page('연구·논문 · 놀이·잠·먹기·말·공동육아 | 오늘도 독박육아', '놀이, 수면·양치·배변 습관, 편식·간식, 말 배우기, 공동육아에 대한 연구와 공공 자료를 저자·출처와 함께 쉽게 정리했어요.', body, 'research.html', 'research.html')
+  rposts(rs['groups'], 'research', 'research.html', '연구·논문')
   fd = rs['food']
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 이유식</p><section class="blk prose" style="padding-top:12px">
 <h1>🥄 이유식·유아식 연구</h1><p>{e(fd["intro"])}</p>
