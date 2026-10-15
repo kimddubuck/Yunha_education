@@ -553,6 +553,7 @@ segs(); render();
   files['terms.html'] = page('이용약관 | 오늘도 독박육아', '오늘도 독박육아 이용약관', prose('약관', f'''<h1>이용약관</h1>
 <h2>1. 사이트 이용</h2><p>누구나 무료로 볼 수 있어요. 글과 놀이 정리는 운영자가 직접 쓴 것이라, 출처를 밝히면 개인적으로 공유해도 괜찮아요. 통째로 복사해 다른 곳에 올리는 건 안 돼요.</p>
 <h2>2. 놀이 정보</h2><p>놀이는 일반적인 참고 정보예요. 아이의 나이·발달·건강에 맞는지는 보호자가 판단해 주세요. 모든 놀이는 어른이 옆에서 지켜볼 때 해 주세요. 놀이 중 생긴 사고에 대해 사이트가 책임지기 어려워요.</p>
+<h2>2-1. 건강·발달·지원 정보</h2><p>육아 정보·연구·이유식 글은 공식 기관 안내와 연구를 쉽게 옮긴 <b>일반 정보</b>예요. 의사의 진료나 상담을 대신하지 않아요. 아이 건강·발달이 걱정되면 소아청소년과 의사와 상의해 주세요. 국가지원 금액·조건은 바뀔 수 있으니 신청 전에 공식 누리집에서 꼭 확인해 주세요.</p>
 <h2>3. 바뀔 수 있어요</h2><p>약관이 바뀌면 이 페이지에 알려 드려요.</p>
 <h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {datetime.date.today():%Y년 %m월 %d일}</p>'''), 'terms.html')
 
@@ -915,6 +916,9 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
           part = part.replace(term, f'<abbr class="gl" title="{e(d)}">{term}</abbr>', 1); used.append(term)
         out.append(part)
       body_ = ''.join(out)
+      if top in ('research', 'tips', 'food', 'principles'):   # 🩺 건강 정보 안내 (의학적 조언이 아니에요)
+        note_ = '<p class="src health-note">🩺 이 글은 일반 정보예요. 의사의 진료를 대신하지 않아요. 아이마다 다르니 걱정되면 소아청소년과 의사와 상의해 주세요.</p>'
+        body_ = body_.replace('<h2>📚 출처</h2>', note_ + '<h2>📚 출처</h2>', 1) if '<h2>📚 출처</h2>' in body_ else body_.replace('</article>', note_ + '</article>', 1)
       if used:
         box = '<div class="box gloss"><h2>📖 어려운 말 풀이</h2><dl>' + ''.join(f'<dt>{t}</dt><dd>{e(dict(GLOSS)[t])}</dd>' for t in used) + '</dl></div>'
         body_ = body_.replace('<h2>📚 출처</h2>', box + '<h2>📚 출처</h2>', 1) if '<h2>📚 출처</h2>' in body_ else body_.replace('</article>', box + '</article>', 1) if '</article>' in body_ else body_ + box
