@@ -134,27 +134,25 @@ const MEET_NUDGES = [
   '🥀 무반응은 <b>용기를 줄어들게 해요</b>',
   '❤️ 하트 하나가 <b>주최자를 위로해요</b>'];
 const TICKERS = { home: NUDGES, plan: PLAN_NUDGES, meet: MEET_NUDGES };
-// 한 문장씩: 오른쪽 끝에서 들어와 왼쪽 끝으로 다 빠져나가면 다음 문장이 들어와요 (전광판마다 따로 돌아요)
-const NUDGE_SPEED = 75;   // 1초에 75px
+// 맨 위 글귀처럼 3초마다 문장이 살짝 바뀌어요 (흐르지 않고 제자리에서 · 글귀 묶음마다 따로)
+const NUDGE_MS = 3000;
 const tick = {};
-const tickOf = set => tick[set] || (tick[set] = { i: 0, t0: Date.now(), timer: null });
-function nudgePaint(root){   // 달력을 다시 그려도 흐르던 자리에서 이어서 (처음부터 다시 시작 X)
+const tickOf = set => tick[set] || (tick[set] = { i: 0 });
+function nudgePaint(root){   // 다시 그려도 지금 보이던 문장 그대로
   (root || document).querySelectorAll('.sos-nudge').forEach(el => {
     const set = el.dataset.set || 'home', list = TICKERS[set] || NUDGES, st = tickOf(set);
     if(el.dataset.i !== String(st.i)){ el.innerHTML = `<span class="tk">${list[st.i % list.length]}</span>`; el.dataset.i = st.i; }
-    const tk = el.firstElementChild, W = el.clientWidth, w = tk.scrollWidth, d = (W + w) / NUDGE_SPEED;
-    el.style.setProperty('--tk-from', W + 'px'); el.style.setProperty('--tk-to', -w + 'px');
-    el.style.setProperty('--tk-d', d + 's'); el.style.setProperty('--tk-delay', -((Date.now() - st.t0) / 1000) + 's');
-    if(!st.timer) nudgeNext(set);
   });
 }
-function nudgeNext(set){   // 지금 문장이 다 지나가면 다음 문장
-  const st = tickOf(set); clearTimeout(st.timer);
-  const el = document.querySelector(set === 'home' ? '.sos-nudge:not([data-set]), .sos-nudge[data-set="home"]' : `.sos-nudge[data-set="${set}"]`);
-  if(!el || !el.firstElementChild){ st.timer = setTimeout(() => nudgeNext(set), 1000); return; }
-  const d = (el.clientWidth + el.firstElementChild.scrollWidth) / NUDGE_SPEED * 1000, left = d - (Date.now() - st.t0);
-  st.timer = setTimeout(() => { st.i = (st.i + 1) % (TICKERS[set] || NUDGES).length; st.t0 = Date.now(); nudgePaint(document); nudgeNext(set); }, Math.max(200, left));
-}
+setInterval(() => {
+  if(document.hidden) return;
+  const sets = new Set([...document.querySelectorAll('.sos-nudge:not([hidden])')].map(el => el.dataset.set || 'home'));
+  sets.forEach(set => {
+    const els = [...document.querySelectorAll('.sos-nudge')].filter(el => (el.dataset.set || 'home') === set);
+    els.forEach(el => el.classList.add('fade'));
+    setTimeout(() => { const st = tickOf(set); st.i = (st.i + 1) % (TICKERS[set] || NUDGES).length; nudgePaint(document); els.forEach(el => el.classList.remove('fade')); }, 300);
+  });
+}, NUDGE_MS);
 function startSlogan(){
   const el = document.getElementById('slogan'); if(!el) return;
   let i = 0, timer = null;

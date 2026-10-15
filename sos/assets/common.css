@@ -1397,11 +1397,11 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .push-what li{padding:8px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.45;text-wrap:pretty}
 .push-what-note{margin:4px 0 0;font-size:12.5px;color:var(--muted);text-align:center;text-wrap:balance}
 .push-what li small{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
-/* 🙋 SOS 달력 밑 전광판: 한 문장씩 오른쪽 끝(--tk-from) → 왼쪽 끝 밖(--tk-to)으로 */
-.sos-nudge{display:block;overflow:hidden;white-space:nowrap;text-overflow:clip;min-height:1.5em;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
-.sos-nudge .tk{display:inline-block;letter-spacing:.08em;will-change:transform;transform:translateX(var(--tk-from,100%));animation:sos-tk var(--tk-d,12s) linear forwards;animation-delay:var(--tk-delay,0s)}
-@keyframes sos-tk{from{transform:translateX(var(--tk-from,100%))}to{transform:translateX(var(--tk-to,-100%))}}
-@media (prefers-reduced-motion: reduce){.sos-nudge .tk{animation:none;transform:none}}
+/* 🙋 SOS 달력·모임 글귀: 3초마다 제자리에서 살짝 바뀌어요 (맨 위 글귀처럼) */
+.sos-nudge{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:opacity .3s}
+.sos-nudge.fade{opacity:0}
+.sos-nudge .tk{letter-spacing:.02em}
+
 /* 📋 꾹 눌러 복사 */
 .cp{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;transition:background-color .2s;border-radius:6px}
 .cp.cp-on{background-color:color-mix(in srgb,var(--pick,#ffd54a) 30%,transparent)}
