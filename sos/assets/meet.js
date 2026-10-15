@@ -72,7 +72,7 @@ function meetCard(o, past){
   const w = document.createElement('span'); w.className = 'op-when';
   w.textContent = `${dayLabel(o.date)} ${meetWhen(o)}${o.date===today ? ' · 오늘' : ''}`;
   const hs = document.createElement('span'); hs.className = 'host-tag'; hs.textContent = o.host ? `👑 ${o.host} 주최` : '';
-  const p = document.createElement('p'); p.className = 'op-text'; p.textContent = o.text;   // 글은 textContent로만
+  const p = document.createElement('p'); p.className = 'op-text cp'; p.textContent = o.text;   // 글은 textContent로만
   const av = (typeof attachView === 'function') ? attachView(o) : null;
   // 👀 참석자 — 시간 줄 오른쪽 위 (누르면 누가 참석·불참했는지 닉네임 팝업). 지난 모임도 같은 모양
   const who = document.createElement('button'); who.type = 'button'; who.className = 'who-mini'; who.dataset.voters = o.id; who.textContent = '👀 참석자';
@@ -141,7 +141,7 @@ function meetCard(o, past){
         ci.appendChild(ef); ul.appendChild(ci); return;
       }
       if(c.n){ const cn = document.createElement('b'); cn.className = 'comment-nick'; cn.textContent = c.n; ci.appendChild(cn); }
-      const ct = document.createElement('span'); ct.textContent = c.text;
+      const ct = document.createElement('span'); ct.className = 'cp'; ct.textContent = c.text;
       const cw = document.createElement('small'); cw.textContent = fmtTime(c.createdAt) + (c.editedAt ? ' · 수정됨' : '');
       ci.append(ct, cw);
       ci.appendChild(likeBtn(c, ME.uid, meet.col.doc(o.id).collection('comments').doc(c.id), {val: ME.nick, cls: 'mini'}));   // ❤️ 댓글 좋아요 (v18)

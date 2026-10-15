@@ -1398,3 +1398,6 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .push-what-note{margin:4px 0 0;font-size:12.5px;color:var(--muted);text-align:center;text-wrap:balance}
 .push-what li small{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
 .sos-nudge{transition:opacity .35s;cursor:pointer}.sos-nudge.fade{opacity:0}
+/* 📋 꾹 눌러 복사 */
+.cp{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;transition:background-color .2s;border-radius:6px}
+.cp.cp-on{background-color:color-mix(in srgb,var(--pick,#ffd54a) 30%,transparent)}

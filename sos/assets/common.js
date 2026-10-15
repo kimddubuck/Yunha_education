@@ -92,6 +92,26 @@ const SLOGANS = [
   ['🎯', '육아의 궁극적인 목표는', '독립이에요', ''],
   ['🪞', '아이는', '부모의 거울이에요', ''],
   ['🌿', '아이는 목수처럼 짓는 게 아니라,', '정원사처럼 가꾸는 거예요', '']];
+// 📋 글·댓글 꾹 누르면 복사 (.cp): 0.5초 누르고 있으면 글자를 클립보드에 넣고 알려 줘요. 누른 뒤 따라오는 탭(펼치기 등)은 막아요
+(function(){
+  let t = null, x0 = 0, y0 = 0, done = false;
+  const copy = async el => {
+    const txt = (el.innerText || el.textContent || '').trim(); if(!txt) return;
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){ const ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:-99px;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e2){} ta.remove(); }
+    el.classList.add('cp-on'); setTimeout(() => el.classList.remove('cp-on'), 700);
+    if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
+    if(typeof pushToast === 'function') pushToast('📋 복사했어요');
+  };
+  document.addEventListener('pointerdown', e => {
+    const el = e.target.closest && e.target.closest('.cp'); clearTimeout(t); done = false; if(!el || e.button > 0) return;
+    x0 = e.clientX; y0 = e.clientY; t = setTimeout(() => { done = true; copy(el); }, 500);
+  }, true);
+  document.addEventListener('pointermove', e => { if(t && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)) clearTimeout(t); }, true);
+  ['pointerup', 'pointercancel', 'scroll'].forEach(k => document.addEventListener(k, () => clearTimeout(t), true));
+  document.addEventListener('click', e => { if(done){ done = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('contextmenu', e => { if(e.target.closest && e.target.closest('.cp')) e.preventDefault(); }, true);   // 휴대폰 기본 메뉴 대신 우리 복사
+})();
 // 🙋 SOS 달력 밑 한 줄: 내성적인 이웃도 먼저 누를 수 있게 5초마다 바뀌어요 (누르면 바로 다음)
 const NUDGES = [
   '👀 다들 보고만 있어요. <b>첫 번째가 되어 주세요</b>',

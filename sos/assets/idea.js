@@ -33,7 +33,7 @@ function renderIdeas(){
     const li = document.createElement('li'); li.className = 'idea-card'; li.dataset.id = x.id;
     const mine = !!keys[ipath(x.id)], opened = idea.open.has(x.id);
     li.innerHTML = `<button type="button" class="idea-head" data-toggle="${x.id}" aria-expanded="${opened}"><b class="idea-t"><span class="idea-cat">${catName(x.c || 'talk')}</span></b><span class="idea-m">🙈 익명 · ${ago(x.createdAt)}${mine ? ' · 내 글' : ''}</span></button>
-      <p class="idea-b"></p>`;
+      <p class="idea-b cp"></p>`;
     li.querySelector('.idea-t').appendChild(document.createTextNode(x.t));
     const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
     if(opened && typeof attachView === 'function'){ const av = attachView(x); if(av) b.insertAdjacentElement('afterend', av); }
@@ -50,7 +50,7 @@ function renderIdeas(){
       cs.forEach(c => {
         const ci = document.createElement('li');
         const cn = document.createElement('b'); cn.className = 'comment-nick'; cn.textContent = '익명';
-        const ct = document.createElement('span'); ct.textContent = c.b;
+        const ct = document.createElement('span'); ct.className = 'cp'; ct.textContent = c.b;
         const cw = document.createElement('small'); cw.textContent = ago(c.createdAt);
         ci.append(cn, ct, cw);
         // ❤️ 댓글 좋아요 (v18): 글처럼 댓글마다 다른 지문

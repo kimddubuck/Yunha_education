@@ -130,7 +130,7 @@ function openPhoto(id){
   const label = (MEAL_SLOTS.find(s => s[0] === d.slot) || ['', ''])[1];
   const box = sosInfo({icon: '', title: `${d.n} · ${label}`, body: `<img class="meal-big" src="${d.img}" alt="">
     <p class="meal-meta">${dayLabel(d.date)} ${fmtHm(d.createdAt)}${d.mo != null ? ` · 👶 ${d.mo}개월` : ''}</p>
-    <div class="meal-line"><p class="meal-memo"></p><span class="meal-like"></span></div>
+    <div class="meal-line"><p class="meal-memo cp"></p><span class="meal-like"></span></div>
     <div class="comments meal-cmts"><ul class="comment-list"><li class="hint">댓글을 불러오는 중…</li></ul>
       <p class="reply-chip" hidden><span></span><button type="button" data-mc-cancel>취소</button></p>
       <form class="comment-form"><input type="text" maxlength="300" placeholder="댓글 달기 (예: 레시피 궁금해요!)" aria-label="댓글"><button class="btn" type="submit">달기</button></form></div>
@@ -149,7 +149,7 @@ function openPhoto(id){
     ordered.forEach(c => {
       const li = document.createElement('li'); if(!isRoot(c)) li.className = 'reply';
       const n = document.createElement('b'); n.className = 'comment-nick'; n.textContent = c.n || '';
-      const t = document.createElement('span'); t.textContent = c.text;
+      const t = document.createElement('span'); t.className = 'cp'; t.textContent = c.text;
       const w = document.createElement('small'); w.textContent = fmtHm(c.createdAt);
       const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'reply-btn'; rb.dataset.mcReply = c.id; rb.textContent = '↪ 답글';
       li.append(n, t, w, likeBtn(c, ME.uid, mealCmts(d.id).doc(c.id), {val: ME.nick, cls: 'mini'}));   // ❤️ 댓글 좋아요 (v18)
