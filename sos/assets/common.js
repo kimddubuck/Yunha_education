@@ -134,8 +134,8 @@ const MEET_NUDGES = [
   '🥀 무반응은 <b>용기를 줄어들게 해요</b>',
   '❤️ 하트 하나가 <b>주최자를 위로해요</b>'];
 const TICKERS = { home: NUDGES, plan: PLAN_NUDGES, meet: MEET_NUDGES };
-// 맨 위 글귀처럼 3초마다 문장이 살짝 바뀌어요 (흐르지 않고 제자리에서 · 글귀 묶음마다 따로)
-const NUDGE_MS = 3000;
+// 맨 위 글귀처럼 5초마다 문장이 살짝 바뀌어요 (흐르지 않고 제자리에서 · 글귀 묶음마다 따로)
+const NUDGE_MS = 5000;
 const tick = {};
 const tickOf = set => tick[set] || (tick[set] = { i: 0 });
 function nudgePaint(root){   // 다시 그려도 지금 보이던 문장 그대로
