@@ -11,7 +11,14 @@ const MEAL_IC = {
 const MEAL_SLOTS = [['b', '🌅 아침'], ['l', '☀️ 점심'], ['d', '🌙 저녁']];   // 간식은 빼고 끼니만 (서버 규칙에는 s1·s2가 남아 있어도 괜찮아요)
 const MEAL_DAYS = 3;           // 3일치만 보고 3일 뒤 자동 삭제 (서버 규칙은 32일까지 허용)
 const MY_MEALS = 'sosMyMeals'; // 내가 올린 사진 위치 (탈퇴·방 빼기 때 지우려고 기억)
-const meal = { date: todayStr(), docs: [], unsub: null, onlyMine: false, broken: false };
+const meal = { date: todayStr(), docs: [], unsub: null, onlyMine: false, broken: false, cc: {}, ccAt: {} };   // cc: 사진별 댓글 수 (2분마다 다시 세요)
+// ❤️ 좋아요 수 · 💬 댓글 수 배지 (사진 왼쪽 위)
+const mealBadges = d => `${likeCount(d) ? `<span class="meal-lk">❤️ ${likeCount(d)}</span>` : ''}${meal.cc[d.id] ? `<span class="meal-lk">💬 ${meal.cc[d.id]}</span>` : ''}`;
+function mealPaintBadges(id){ const d = meal.docs.find(x => x.id === id), el = d && document.querySelector(`.meal-card[data-open="${id}"] .meal-bdg`); if(el) el.innerHTML = mealBadges(d); }
+function mealCountComments(){   // 보이는 사진들의 댓글 수 (사진마다 댓글만큼 읽어요 · 3일 뒤 지워져서 적어요)
+  meal.docs.forEach(d => { if(Date.now() - (meal.ccAt[d.id] || 0) < 120000) return; meal.ccAt[d.id] = Date.now();
+    try{ mealCmts(d.id).get().then(q => { const n = q.size; if(meal.cc[d.id] !== n){ meal.cc[d.id] = n; mealPaintBadges(d.id); } }).catch(() => {}); }catch(e){} });
+}
 // 끼니 접기: 제목을 누르면 사진 줄을 접었다 폈다 해요 (이 휴대폰에 기억)
 const MEAL_FOLD = 'sosMealFold';
 const mealFold = (() => { try{ return new Set(JSON.parse(localStorage.getItem(MEAL_FOLD) || '[]')); }catch(e){ return new Set(); } })();
@@ -46,7 +53,7 @@ function renderMeal(){
     const cards = ds.map(d => `<figure class="meal-card" data-open="${d.id}">
         <img src="${d.img}" alt="${esc(d.n)}님의 ${esc(label.slice(3))} 사진" loading="lazy">
         ${canDel(d) ? `<button type="button" class="meal-del" data-del="${d.id}" aria-label="사진 지우기">✕</button>` : ''}
-        ${likeCount(d) ? `<span class="meal-lk">❤️ ${likeCount(d)}</span>` : ''}
+        <span class="meal-bdg">${mealBadges(d)}</span>
         <figcaption><b>${esc(d.n)}</b><span>${[d.mo != null ? `${d.mo}개월` : '', d.memo ? esc(d.memo) : ''].filter(Boolean).join(' · ') || '&nbsp;'}</span></figcaption></figure>`).join('');
     // ＋ 는 바로 카메라로 찍기, 🖼 앨범은 휴대폰 사진에서 고르기
     const add = !canAdd ? '' : ds.length ? `<button type="button" class="meal-add" data-add="${slot}" aria-label="${esc(label.slice(3))} 사진 찍어 올리기">📷<small>찍기</small></button>`
@@ -57,6 +64,7 @@ function renderMeal(){
     const shut = mealFold.has(slot);
     return `<section class="meal-slot${shut ? ' shut' : ''}"><h3><button type="button" class="meal-fold" data-fold="${slot}" aria-expanded="${!shut}">${MEAL_IC[slot]}<span>${label.slice(3)}</span> <small>${ds.length}장</small><i aria-hidden="true">${shut ? '▸ 펼치기' : '▾'}</i></button>${shut ? '' : alb}</h3>${shut ? '' : body}</section>`;
   }).join('');
+  setTimeout(mealCountComments, 0);   // 💬 댓글 수
 }
 
 function watchDay(){
@@ -166,6 +174,7 @@ function openPhoto(id){
   const unsub = mealCmts(id).orderBy('createdAt').limit(100).onSnapshot(q => {
     if(!box.isConnected){ unsub(); return; }
     list = q.docs.map(x => ({id: x.id, ...x.data()})); draw();
+    meal.cc[id] = list.length; meal.ccAt[id] = Date.now(); mealPaintBadges(id);   // 💬 배지도 바로 맞춰요
   }, () => { ul.innerHTML = '<li class="hint">댓글을 불러오지 못했어요.</li>'; });
   const watch = setInterval(() => { if(!box.isConnected){ unsub(); clearInterval(watch); } }, 1000);
   box.addEventListener('click', async e => {

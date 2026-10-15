@@ -1406,3 +1406,7 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .cp{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;transition:background-color .2s;border-radius:6px}
 .cp.cp-on{background-color:color-mix(in srgb,var(--pick,#ffd54a) 30%,transparent)}
 [data-sos] .sos-sub-s.sos-nudge{font-size:14px;margin:2px 0 4px}
+/* ❤️ 좋아요 · 💬 댓글 수 배지: 사진 왼쪽 위에 나란히 */
+.meal-card .meal-bdg{position:absolute;left:6px;top:6px;display:flex;gap:4px}
+.meal-card .meal-bdg:empty{display:none}
+.meal-card .meal-bdg .meal-lk{position:static}
