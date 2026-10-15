@@ -118,6 +118,7 @@ const NUDGES = [
   '🕳 하늘이 무너져도 <b>SOS는 있다</b>',
   '🍚 밥은 먹고 육아하냐? <b>SOS 꾹</b>',
   '💬 가는 SOS가 있어야 <b>오는 SOS도 있다</b>',
+  '🐦 일찍 일어나는 SOS가 <b>모임을 만든다</b>',
   '🦸 어벤져스도 혼자 안 싸워요. <b>육아 어셈블!</b>'];
 const NUDGE_HTML = (() => { const one = NUDGES.map(t => `<span class="tk-i">${t}</span>`).join('');
   return `<span class="tk-run">${one}</span><span class="tk-run" aria-hidden="true">${one}</span>`; })();   // 두 벌 이어 붙여 끊김 없이 돌아요
