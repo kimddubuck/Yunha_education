@@ -13,7 +13,9 @@ SITE_VERIFY = {'google-site-verification': 'LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4Np
 BASE = 'https://dokbak.pages.dev'   # 도메인이 정해지면 여기만 바꿔요 (sitemap · 공유 주소에 쓰여요)
 APP = 'https://gongdong-sos.pages.dev/'
 CONTACT = 'ifb1321@gmail.com'       # 공동육아 SOS 이용약관에 공개된 운영자 문의 메일과 같아요
-SHOW = {'확정', '해봄', '후보'}       # 후보 = 원리로 새로 만든 놀이 (아직 직접 해 보기 전) → '🧪 새 놀이' 표시를 달고 올려요
+SHOW = {'확정', '해봄'}       # 후보(AI가 원리로 새로 만든 놀이, 아직 직접 해 보기 전)는 애드센스 승인 전까지 올리지 않아요. 직접 해 보고 '해봄'으로 바꾸면 올라가요
+AI_ON = '후보' in SHOW   # AI 놀이를 올릴 때만 'AI가 만든 놀이' 안내를 보여요
+AI_FOOT = '<p class="src" style="margin:0 0 6px">🧪 새 놀이 표시는 AI(인공지능)가 놀이 원리로 만든 놀이예요. 참고용으로만 봐 주세요.</p>' if AI_ON else ''
 V = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
 e = lambda s: html.escape(str(s), quote=True)
@@ -273,7 +275,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <footer><div class="wrap">
   <a class="logo" href="{up}./"><img src="{up}assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
   <p>독박육아 하는 날을 덜 외롭게.<br>집에 있는 물건으로 하는 놀이와 공동육아 도구를 만들어요.</p>
-  <p class="src" style="margin:0 0 6px">🧪 새 놀이 표시는 AI(인공지능)가 놀이 원리로 만든 놀이예요. 참고용으로만 봐 주세요.</p><div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
+  {AI_FOOT}<div class="flinks"><a href="{up}about.html">소개</a><a href="{up}privacy.html">개인정보처리방침</a><a href="{up}terms.html">이용약관</a><a href="{APP}">공동육아 SOS</a><span>문의 {CONTACT}</span></div>
 </div></footer>
 {'' if path == 'admin.html' else BEACON}
 </body>
@@ -386,7 +388,7 @@ def build():
   <div class="row"><span>인원</span><div class="seg" data-k="g"><button type="button" data-v="" aria-pressed="true">상관없음</button><button type="button" data-v="1">👨‍👩‍👧 여럿이 하기 좋은 것</button></div></div>
 </div>
 <p class="count" id="count"></p>
-<p class="src" style="margin:0 0 10px">🧪 새 놀이 = AI(인공지능)가 놀이 원리로 만든 놀이예요. 사람이 해 본 건 아니라 참고용이에요.</p><div class="cards" id="list">{''.join(card(p, '../') for p in rows)}</div>
+{'<p class="src" style="margin:0 0 10px">🧪 새 놀이 = AI(인공지능)가 놀이 원리로 만든 놀이예요. 사람이 해 본 건 아니라 참고용이에요.</p>' if AI_ON else ''}<div class="cards" id="list">{''.join(card(p, '../') for p in rows)}</div>
 </section>
 <section class="blk">{SOS_BRIDGE}</section></div>
 <script>
@@ -539,7 +541,7 @@ segs(); render();
   files['about.html'] = page('소개 | 오늘도 독박육아', '오늘도 독박육아는 독박육아 하는 날을 덜 외롭게 만드는 놀이 정보 사이트예요.', prose('소개', f'''<h1>☕ 오늘도 독박육아</h1>
 <p>혼자 아이를 보는 날, 제일 막막한 건 "오늘 뭐 하고 놀지?"예요. 이 사이트는 그 질문에 바로 답하려고 만들었어요.</p>
 <h2>무엇을 하나요</h2><ul><li>개월수별로 집에 있는 물건으로 하는 놀이를 모아요.</li><li>아이가 왜 그 놀이를 좋아하는지 <a href="principles.html">놀이 원리</a>로 설명해요.</li><li>혼자 버티기 힘든 날엔 이웃과 함께하는 <a href="{APP}">공동육아 SOS</a>로 이어 드려요.</li></ul>
-<h2>놀이 정보에 대해</h2><p>놀이는 두 가지예요. 직접 해 보고 정리한 놀이와, <b>🧪 새 놀이</b> 표시가 붙은 <b>AI(인공지능)가 만든 놀이</b>예요. AI 놀이는 놀이 원리와 안전 원칙에 맞춰 만들고 검토했지만 사람이 해 본 건 아니라서 <b>참고용</b>이에요. 아이마다 발달 속도가 다르니 개월수는 참고로만 봐 주세요. 놀이할 때는 꼭 어른이 옆에서 지켜봐 주세요.</p>
+<h2>놀이 정보에 대해</h2><p>{'놀이는 두 가지예요. 직접 해 보고 정리한 놀이와, <b>🧪 새 놀이</b> 표시가 붙은 <b>AI(인공지능)가 만든 놀이</b>예요. AI 놀이는 놀이 원리와 안전 원칙에 맞춰 만들고 검토했지만 사람이 해 본 건 아니라서 <b>참고용</b>이에요.' if AI_ON else '여기 놀이는 <b>직접 해 보고 정리한 놀이</b>예요. 새 놀이는 직접 해 본 뒤에 하나씩 올려요.'} 아이마다 발달 속도가 다르니 개월수는 참고로만 봐 주세요. 놀이할 때는 꼭 어른이 옆에서 지켜봐 주세요.</p>
 <h2>문의</h2><p>{CONTACT}</p>'''), 'about.html')
   files['privacy.html'] = page('개인정보처리방침 | 오늘도 독박육아', '오늘도 독박육아 개인정보처리방침', prose('개인정보', f'''<h1>개인정보처리방침</h1>
 <p>오늘도 독박육아(이하 "사이트")는 회원가입이 없고, 이름·연락처 같은 개인정보를 받지 않아요.</p>
