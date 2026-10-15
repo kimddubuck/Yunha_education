@@ -166,8 +166,8 @@ def link(u, t):
 
 def sum3box(x):
   return ('<div class="sum3"><p class="sum3-h">📌 3줄 요약</p><ol>' + ''.join(f'<li>{e(t)}</li>' for t in x['sum3']) + '</ol></div>') if x.get('sum3') else ''
-def endbox(x):
-  return f'<div class="endbox"><p class="sum3-h">✅ 정리하면</p><p>{e(x["end"])}</p></div>' if x.get('end') else ''
+def endbox(x):   # 맨 위 '📌 3줄 요약'과 같은 말을 끝에서 또 하지 않아요 (요약이 없는 글만 끝 정리를 보여요)
+  return f'<div class="endbox"><p class="sum3-h">✅ 정리하면</p><p>{e(x["end"])}</p></div>' if x.get('end') and not x.get('sum3') else ''
 
 # Cloudflare Pages는 /a.html 을 /a 로 넘겨요(308). 검색엔진에는 넘어간 뒤 주소를 알려 줘야 '가져올 수 없음'·중복이 안 생겨요
 def pretty(path):
@@ -368,7 +368,7 @@ def build():
   {NEWBOX if p['status'] == '후보' else ''}
   {f'<div class="box safe"><h2>⚠️ 먼저 읽어 주세요</h2><p>{e(p["safety"])}</p></div>' if p['status'] == '후보' and p['safety'] else ''}
   <div class="box why"><h2>💭 아이가 왜 좋아할까?</h2><ul>{why}</ul></div>
-  <div class="box grow"><h2>🌱 이 놀이로 자라는 힘</h2><ul>{''.join(f'<li>{SKILL[k][0]} <b>{k}</b>: {SKILL[k][1]}</li>' for k in p['skills'])}</ul><p class="src" style="margin:8px 0 0">놀이 하나로 한 번에 자라진 않아요. 자주, 짧게, 아이가 즐거울 때 하는 게 제일이에요.</p></div>
+  <div class="box grow"><h2>🌱 이 놀이로 자라는 힘</h2><ul>{''.join(f'<li>{SKILL[k][0]} <b>{k}</b>: {SKILL[k][1]}</li>' for k in p['skills'])}</ul></div>
   <div class="box"><h2>🧺 준비물</h2><ul>{''.join(f'<li>{e(m)}</li>' for m in p['materials'])}</ul></div>
   {f'<div class="box swap"><h2>🔁 없으면 이걸로</h2><ul>{"".join(f"<li>{e(x)}</li>" for x in p.get("swaps", []))}</ul></div>' if p.get('swaps') else ''}
   <div class="box"><h2>👣 이렇게 해요</h2><ol>{''.join(f'<li>{e(s)}</li>' for s in p['steps'])}</ol></div>
@@ -547,6 +547,7 @@ segs(); render();
   prose = lambda t, h: f'<div class="wrap"><section class="blk prose">{h}</section></div>'
   files['about.html'] = page('소개 | 오늘도 독박육아', '오늘도 독박육아는 독박육아 하는 날을 덜 외롭게 만드는 놀이 정보 사이트예요.', prose('소개', f'''<h1>☕ 오늘도 독박육아</h1>
 <p>혼자 아이를 보는 날, 제일 막막한 건 "오늘 뭐 하고 놀지?"예요. 이 사이트는 그 질문에 바로 답하려고 만들었어요.</p>
+<h2 id="how">📝 자료를 고르고 옮기는 방법</h2><ul><li>정부 기관(질병관리청·식약처·보건복지부 등), 학회, 학술지에 실린 연구처럼 <b>누가 썼는지 분명한 자료</b>만 골라요.</li><li>원문 전체를 옮기지 않고 초록·보도자료·공식 안내에 적힌 내용을 <b>쉬운 말로 옮겨요</b>. 자료에 없는 내용은 덧붙이지 않아요.</li><li>글마다 원문 링크와 쓴 사람(기관·저자)을 밝혀요. 출처는 2026년 10월에 검색으로 확인했어요.</li><li>금액·조건처럼 바뀔 수 있는 내용은 신청 전에 공식 누리집에서 꼭 다시 확인해 주세요.</li></ul>
 <h2>👨‍🍼 만든 사람</h2><p><b>육아휴직을 하고 아이를 혼자 보는 아빠</b>가 직접 만들었어요. 독박육아를 하면서 필요했던 것들을 하나씩 만들었어요.</p><ul><li><b>오늘도 독박육아</b>: 집에 있는 물건으로 바로 할 수 있는 놀이와, 믿을 만한 기관·연구에서 가져온 육아 정보를 쉬운 말로 모았어요.</li><li><b><a href="{APP}">공동육아 SOS</a></b>: 혼자 버티기 힘든 날, 같은 단지 엄마 아빠와 시간을 맞춰 함께 보려고 만든 앱이에요.</li></ul><p>놀이는 직접 해 본 것만 올리고, 육아 정보는 글마다 누가 쓴 자료인지 출처를 밝혀요.</p>
 <h2>무엇을 하나요</h2><ul><li>개월수별로 집에 있는 물건으로 하는 놀이를 모아요.</li><li>아이가 왜 그 놀이를 좋아하는지 <a href="principles.html">놀이 원리</a>로 설명해요.</li><li>혼자 버티기 힘든 날엔 이웃과 함께하는 <a href="{APP}">공동육아 SOS</a>로 이어 드려요.</li></ul>
 <h2>놀이 정보에 대해</h2><p>{'놀이는 두 가지예요. 직접 해 보고 정리한 놀이와, <b>🧪 새 놀이</b> 표시가 붙은 <b>AI(인공지능)가 만든 놀이</b>예요. AI 놀이는 놀이 원리와 안전 원칙에 맞춰 만들고 검토했지만 사람이 해 본 건 아니라서 <b>참고용</b>이에요.' if AI_ON else '여기 놀이는 <b>직접 해 보고 정리한 놀이</b>예요. 새 놀이는 직접 해 본 뒤에 하나씩 올려요.'} 아이마다 발달 속도가 다르니 개월수는 참고로만 봐 주세요. 놀이할 때는 꼭 어른이 옆에서 지켜봐 주세요.</p>
@@ -595,7 +596,7 @@ segs(); render();
 <article class="blk prose post" style="padding-top:12px"><h1>{e(it["t"])}</h1><p class="post-meta">{e(it["src"])}{when} · {e(it["kind"])}</p>
 {sum3box(it)}{'' if it.get('sum3') else f'<p class="lead2">{e(it["sum"])}</p>'}{''.join(f'<h2>{e(x["h"])}</h2><p>{e(x["p"])}</p>' for x in it.get('secs', []))}{'' if it.get('sum3') else f'<p class="use">👉 {e(it["use"])}</p>'}{endbox(it)}{ppl}
 <h2>📚 출처</h2><div class="box ref"><p class="who" style="margin:0">📄 원문: {orig}<br>{e(it["who"])}</p></div>{''.join(f'<div class="box ref"><p class="who" style="margin:0">📄 {link(x.get("url"), x["name"])}<br>{e(x["who"])}</p><p class="ppl">👤 <b>누가 쓴 자료예요?</b> {e(x["people"])}</p></div>' for x in it.get('src2', []))}
-<p class="src">{e(rs["checked"])}</p>{pager}</article></div>'''
+<p class="src">🔎 출처는 2026년 10월에 확인했어요 · <a href="../about.html#how">자료를 고르고 옮기는 방법</a></p>{pager}</article></div>'''
       files[f'{folder}/{it["id"]}.html'] = page(f'{it["t"]} · {list_name} | 오늘도 독박육아', it['sum'][:150], body, f'{folder}/{it["id"]}.html', list_href)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 연구·논문</p><section class="blk prose" style="padding-top:12px">
 <h1>📚 연구·논문</h1><p>놀이, 잠·습관, 먹기, 말 배우기, 공동육아에 대해 연구와 공공 자료가 뭐라고 했는지 모았어요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요. 아래 칩을 누르면 분류별로 볼 수 있어요.</p>
@@ -645,7 +646,7 @@ segs(); render();
 <article class="blk prose post" style="padding-top:12px"><h1>{e(c["t"])}</h1><p class="post-meta">{e(meta)}</p>
 <p class="lead2">{e(c["lead"])}</p>{sum3box(c)}{secs}{note}{endbox(c)}
 <h2>📚 출처</h2>{srcs}
-<p class="src">자료에 적힌 내용만 옮겼어요. 아이마다 다를 수 있으니 걱정되면 소아과 의사와 상의하세요.</p>{pager}</article></div>'''
+<p class="src">🔎 자료에 적힌 내용만 옮겼어요 · <a href="../about.html#how">자료를 고르고 옮기는 방법</a></p>{pager}</article></div>'''
       files[f'{slug}/{c["id"]}.html'] = page(f'{c["t"]} · {bname} | 오늘도 독박육아', c['lead'][:150], body, f'{slug}/{c["id"]}.html', f'{slug}.html')
 
   # ── 🗺 육아 지도 (내 주변 소아청소년과 · 문 연 약국)
@@ -730,7 +731,7 @@ segs(); render();
       body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="./">{e(G["title"])}</a> › {e(sec["title"])}</p>
 <article class="blk prose guide" style="padding-top:12px"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1>{e(sec["title"])}</h1>
 {blocks}
-{LEGEND}<p class="src">{e(G["source"])}</p>{DAYCARE_SRC if sl == 'daycare' else ''}{pager}{tool}</article></div>'''
+{LEGEND}<p class="src">{'📚 교육부 「2026년도 보육사업안내」 기준 · <a href="./#src">출처와 확인 방법 보기</a>' if sl == 'daycare' else e(G["source"])}</p>{pager}{tool}</article></div>'''
       first = next((b for b in sec['blocks'] if 'p' in b or 'list' in b), None)
       if first and 'p' in first: d = first['p']
       elif first: d = ' '.join(x['b'] for x in first['list'][:3])
@@ -756,7 +757,7 @@ segs(); render();
 <div class="sh"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1 style="font-size:clamp(26px,5vw,36px)">{e(G["title"])}</h1><p>{e(G["intro"])}</p></div>
 {tool}
 <div style="margin-top:14px">{cards}</div>
-{DAYCARE_SRC if sl == 'daycare' else ''}
+<div id="src">{DAYCARE_SRC if sl == 'daycare' else ''}</div>
 <p class="src">{e(G["source"])}</p>
 {'<p style="margin-top:12px"><a class="btn ghost" href="../brands.html">🏢 프뢰벨·몬테소리·눈높이… 이름 풀이</a></p>' if sl == 'daycare' else ''}</section></div>'''
     files[f'{sl}/index.html'] = page(f'{G["title"]} | 오늘도 독박육아', G['desc'], body, f'{sl}/index.html', f'{sl}/')
