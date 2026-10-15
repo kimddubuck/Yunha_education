@@ -125,7 +125,7 @@ def in_band(p, lo, hi):
   return p['ageMin'] <= hi and p['ageMax'] >= lo
 
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
-OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'www.healthychildren.org', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
+OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'www.ncbi.nlm.nih.gov', 'www.healthychildren.org', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
 def okurl(u):
   m = re.match(r'https://([^/]+)/', u or '')
   return bool(m) and m.group(1) in OK_HOSTS
@@ -140,7 +140,7 @@ def endbox(x):
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
-  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육'), ('tips.html', '육아 상식'), ('support.html', '지원'), ('map.html', '육아 지도')]
+  nav = [('plays/', '놀이 찾기'), ('age/', '개월수별'), ('principles.html', '놀이 원리'), ('daycare/', '어린이집'), ('food.html', '이유식'), ('research.html', '교육'), ('tips.html', '육아 상식'), ('support.html', '지원'), ('growth.html', '우리 아이 지금'), ('map.html', '육아 지도')]
   nav = [(h, t) for h, t in nav if h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))]
   navh = ''.join(f'<a href="{up}{h or "./"}"{CUR if active == h else ""}>{t}</a>' for h, t in nav)
   return f'''<!doctype html>
@@ -221,6 +221,7 @@ def build():
   # 🗺 육아 지도: 지도 라이브러리(Leaflet, BSD-2) · 지도 스크립트 · 공공데이터 심부름꾼 함수(Cloudflare Pages Functions)
   shutil.copytree(os.path.join(DEV, 'vendor', 'leaflet'), os.path.join(OUT, 'assets', 'leaflet'))
   shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
+  shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
   files = {}
@@ -430,7 +431,7 @@ segs(); render();
 <h2>문의</h2><p>{CONTACT}</p>'''), 'about.html')
   files['privacy.html'] = page('개인정보처리방침 | 오늘도 독박육아', '오늘도 독박육아 개인정보처리방침', prose('개인정보', f'''<h1>개인정보처리방침</h1>
 <p>오늘도 독박육아(이하 "사이트")는 회원가입이 없고, 이름·연락처 같은 개인정보를 받지 않아요.</p>
-<h2>저장하는 것</h2><ul><li>내 브라우저에만: 마지막으로 고른 아기 개월수 (다음에 왔을 때 편하게 보이려고). 서버로 보내지 않아요.</li></ul>
+<h2>저장하는 것</h2><ul><li>내 브라우저에만: 마지막으로 고른 아기 개월수 (다음에 왔을 때 편하게 보이려고). 서버로 보내지 않아요.</li><li>내 브라우저에만: 「👶 우리 아이 지금」에 적은 태어난 해·달·날, 성별, 키·몸무게. 계산도 휴대폰 안에서만 하고 서버로 보내지 않아요. 브라우저 기록을 지우면 같이 지워져요.</li></ul>
 <h2>방문 통계 (Cloudflare Web Analytics)</h2><p>사이트를 더 낫게 만들기 위해 <b>Cloudflare Web Analytics</b>로 방문 통계를 봐요. 이 도구는 <b>쿠키를 쓰지 않고</b>, 누가 왔는지 개인을 알아보지 않아요. 집계되는 것은 날짜별 방문·조회 수, 많이 본 페이지, 어디서 들어왔는지(검색·링크 등), 기기와 브라우저 종류, 나라·지역 단위의 대략적인 위치예요. IP 주소는 집계에만 잠깐 쓰이고 저장하지 않아요. 자세한 내용은 <a href="https://www.cloudflare.com/web-analytics/" rel="noopener">Cloudflare 안내</a>를 봐 주세요.</p>
 <h2>🗺 육아 지도</h2><p>「📍 내 위치」를 누르면 브라우저가 위치 허용을 물어봐요. 허용하면 내 위치는 <b>이 휴대폰에서만</b> 지도를 옮기는 데 쓰고, 서버에는 약 100m 단위로 반올림한 좌표만 보내요. 서버는 이 반올림한 좌표를 공공데이터포털(건강보험심사평가원·국립중앙의료원·행정안전부)에 전달해 주변 병원·약국·놀이시설을 찾고, 카카오 로컬 API에는 어느 시도인지 확인하는 데만 보내요. 위치는 어디에도 저장하지 않고, 같은 동네의 검색 결과만 잠깐 캐시해요.</p>
 <h2>쿠키와 광고</h2><p>앞으로 광고(Google 애드센스)를 붙이면, Google 같은 광고 사업자가 쿠키를 써서 이 사이트와 다른 사이트 방문 기록을 바탕으로 광고를 보여 줄 수 있어요. 맞춤 광고는 <a href="https://adssettings.google.com" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 광고를 붙이면 이 내용을 다시 알려 드려요.</p>
@@ -529,6 +530,27 @@ segs(); render();
 <p class="src">자료: 건강보험심사평가원 병원정보서비스(소아청소년과)·의료기관별상세정보서비스(진료시간), 국립중앙의료원 전국 약국 정보(오늘 영업시간), 행정안전부 전국어린이놀이시설정보·안전검사정보(키즈카페 등 놀이제공영업소·공공도서관·육아종합지원센터·박물관, 운영 중인 곳만), 한국건강가정진흥원 전국 공동육아나눔터 기관현황(2025.11.10), 부산광역시 육아종합지원센터 현황(2026.5.22, 지금은 부산만 있어요). 시설 위치는 주소로 찾은 거라 조금 다를 수 있어요. 병원·약국이 신고한 시간이라 <b>임시 휴진·공휴일은 반영되지 않을 수 있어요.</b> <b>가기 전에 꼭 전화로 확인해 주세요.</b><br>📍 내 위치는 이 휴대폰에서만 쓰고 저장하지 않아요. 지도: © OpenStreetMap · 주소 검색: 카카오</p>
 </section></div>
 <script src="assets/leaflet/leaflet.js"></script><script src="assets/map.js?v={V}"></script>'''
+  # ── 👶 우리 아이 지금: 생년월·성별 → 개월수, WHO 키·몸무게 백분위, 시기별 먹는 양, 영유아검진 시기
+  LMSJ = open(os.path.join(DEV, 'data', 'who_lms_0_60.json'), encoding='utf-8').read().strip()
+  GSRC = [('WHO Child Growth Standards (아동 성장 기준) · 키·몸무게 LMS 표', '세계보건기구(WHO) · 2006', 'https://www.who.int/tools/child-growth-standards/standards', '6개국 8,440명의 모유 수유 아기를 따라가 만든 0~5세 성장 기준이에요. 이 페이지의 키·몸무게 백분위는 이 표의 L·M·S 값으로 계산해요.'),
+          ('2017 소아청소년 성장도표', '질병관리청·대한소아과학회 · 2017', '', '우리나라 영유아 검진에서 쓰는 성장도표예요. 0~35개월은 WHO 기준을 그대로 쓰고, 36개월부터는 우리나라 아이 자료로 만들어서 WHO 숫자와 조금 달라요. 이 사이트에서는 원문 표를 직접 열어 보지 못해 WHO 표로 대신 계산하고 그 차이를 적어 두었어요.'),
+          ('Infant and young child feeding: Model chapter for textbooks (표 4·5)', '세계보건기구(WHO) · 2009', 'https://www.ncbi.nlm.nih.gov/books/NBK148957/', '6~8개월 하루 2~3끼(2~3큰술에서 250mL 컵 ½까지), 9~11개월 3~4끼 + 간식 1~2번(컵 ½), 12~23개월 3~4끼 + 간식 1~2번(컵 ¾~1) 안내가 여기 있어요. 2003년 PAHO/WHO 이유식 원칙을 교과서용으로 정리한 자료예요.'),
+          ('2020 한국인 영양소 섭취기준 · 에너지 필요추정량', '보건복지부·한국영양학회 · 2020', '', '0~5개월 500, 6~11개월 600, 1~2세 900, 3~5세 1,400, 6~8세 남 1,700·여 1,500kcal예요. 평균 체격·보통 활동량 기준이라 아이마다 달라요. 원문 표는 검색으로 확인한 2차 자료(어린이집 식단 안내 등)를 바탕으로 했어요.'),
+          ('영유아 건강검진 안내', '국민건강보험공단', 'https://www.nhis.or.kr/nhis/healthin/wbhaca04800m01.do', '8차 검진 시기(생후 14~35일부터 66~71개월까지)와 검진 기관 찾기 안내예요. 1차 검진은 2021년 1월 1일 출생아부터예요.')]
+  gsrc = ''.join(f'<details class="srcd"><summary>📄 {e(n)} <small>{e(k)}</small></summary><p>{e(t)}{(" <a href=%s rel=noopener>원문 열기</a>" % u) if u else ""}</p></details>' for n, k, u, t in GSRC)
+  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 우리 아이 지금</p>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">👶 우리 아이 지금</span><h1 style="font-size:clamp(26px,5vw,36px)">몇 개월이고, 얼마나 크고, 얼마나 먹을까?</h1><p>태어난 해·달과 성별만 고르면 지금 개월수에 맞는 키·몸무게 범위, 하루 먹는 양, 영유아 검진 시기를 보여 줘요. 적은 내용은 이 휴대폰에만 남아요.</p></div>
+<div class="box gform">
+  <div class="row"><span>태어난 때</span><div class="gin"><select id="gy" aria-label="태어난 해"><option value="">해</option></select><select id="gm" aria-label="태어난 달"><option value="">달</option></select><input id="gd" type="number" min="1" max="31" placeholder="일 (선택)" aria-label="태어난 날"></div></div>
+  <div class="row"><span>성별</span><div class="seg" id="gsex"><button type="button" data-v="b" aria-pressed="false">👦 남자</button><button type="button" data-v="g" aria-pressed="false">👧 여자</button></div></div>
+  <div class="row"><span>지금 (선택)</span><div class="gin"><input id="gw" type="number" step="0.1" min="1" max="60" placeholder="몸무게 kg" aria-label="몸무게"><input id="gh" type="number" step="0.1" min="30" max="150" placeholder="키 cm" aria-label="키"></div></div>
+  <p class="src" style="margin:8px 0 0">몸무게·키를 적으면 같은 개월 아이들 사이에서 몇 백분위인지도 알려 줘요.</p>
+</div>
+<div id="gout"></div>
+<div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>
+</section></div>'''
+  files['growth.html'] = page('우리 아이 지금 · 개월수별 키·몸무게·식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게 범위(WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', body, 'growth.html', 'growth.html',
+    f'<script>window.WHO_LMS={LMSJ};</script><script defer src="assets/growth.js?v={V}"></script>')
   files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')
 
   # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
