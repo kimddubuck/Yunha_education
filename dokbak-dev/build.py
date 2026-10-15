@@ -554,7 +554,8 @@ segs(); render();
   <div class="row"><span>성별</span><div class="seg" id="gsex"><button type="button" data-v="b" aria-pressed="false">👦 남자</button><button type="button" data-v="g" aria-pressed="false">👧 여자</button></div></div>
   <div class="row"><span>일찍 태어남</span><div class="gin"><select id="gpre" aria-label="예정일보다 몇 주 일찍"><option value="0">예정일쯤(37주 이상)</option><option value="3">3주 일찍 (36주)</option><option value="4">4주 일찍 (35주)</option><option value="5">5주 일찍 (34주)</option><option value="6">6주 일찍 (33주)</option><option value="8">8주 일찍 (31주)</option><option value="10">10주 일찍 (29주)</option><option value="12">12주 일찍 (27주)</option></select></div></div>
   <div class="row"><span>지금 (선택)</span><div class="gin"><input id="gw" type="number" step="0.1" min="1" max="60" placeholder="몸무게 kg" aria-label="몸무게"><input id="gh" type="number" step="0.1" min="30" max="150" placeholder="키 cm" aria-label="키"></div></div>
-  <p class="src" style="margin:8px 0 0">몸무게·키를 적으면 같은 개월 아이들 사이에서 몇 백분위인지도 알려 줘요.</p>
+  <div class="row"><span>잰 날 (선택)</span><div class="gin"><input id="gwhen" type="date" aria-label="키·몸무게를 잰 날"></div></div>
+  <p class="src" style="margin:8px 0 0">몸무게·키를 적으면 같은 개월 아이 100명 중 몇 등인지도 알려 줘요. 예전에 잰 값(검진 결과지 등)이면 '잰 날'을 같이 적어야 그때 개월수로 계산해요.</p>
 </div>
 <div id="gout"></div>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>

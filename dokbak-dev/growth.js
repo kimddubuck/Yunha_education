@@ -30,30 +30,34 @@
   let st = {}; try{ st = JSON.parse(localStorage.getItem('dokbakKid') || '{}'); }catch(e){}
   if(st.y) y.value = st.y; if(st.m) m.value = st.m;
   document.querySelectorAll('#gsex button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (st.s || ''))));
-  if(st.w) $('#gw').value = st.w; if(st.h) $('#gh').value = st.h; if(st.pre) $('#gpre').value = st.pre;
+  if(st.w) $('#gw').value = st.w; if(st.h) $('#gh').value = st.h; if(st.pre) $('#gpre').value = st.pre; if(st.when) $('#gwhen').value = st.when;
 
-  function months(){
+  function months(at = now){
     const by = Number(y.value), bm = Number(m.value); if(!by || !bm) return null;
     const d = Number($('#gd').value) || 15;   // 날짜를 모르면 15일로 쳐요
     const birth = new Date(by, bm - 1, d);
-    let n = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
-    if(now.getDate() < birth.getDate()) n--;
+    let n = (at.getFullYear() - birth.getFullYear()) * 12 + (at.getMonth() - birth.getMonth());
+    if(at.getDate() < birth.getDate()) n--;
     return n < 0 ? null : n;
   }
+  // 키·몸무게를 잰 날 (비어 있으면 오늘)
+  function whenDate(){ const v = $('#gwhen').value; if(!v) return null; const d = new Date(v + 'T12:00:00'); return isNaN(d) ? null : d; }
   function render(){
     const n0 = months(), s = document.querySelector('#gsex [aria-pressed="true"]')?.dataset.v || '';
     // 37주 미만 출생은 두 돌까지 '교정 개월'(예정일 기준)로 키·몸무게를 봐요 (영유아 검진과 같은 방식)
     const pre = Number($('#gpre').value) || 0;
-    const corr = n0 !== null && pre >= 3 && n0 < 24;
-    const n = corr ? Math.max(0, Math.floor(n0 - pre * 7 / 30.44)) : n0;
-    st = {y: y.value, m: m.value, s, w: $('#gw').value, h: $('#gh').value, pre: $('#gpre').value}; try{ localStorage.setItem('dokbakKid', JSON.stringify(st)); }catch(e){}
+    const wd = whenDate(), nm = wd ? months(wd) : n0;   // 키·몸무게는 '잰 날'의 개월수로
+    const corr = nm !== null && pre >= 3 && nm < 24;
+    const n = nm === null ? n0 : corr ? Math.max(0, Math.floor(nm - pre * 7 / 30.44)) : nm;
+    const whenNote = wd && nm !== null ? `<p class="gck-now">📅 ${wd.getFullYear()}년 ${wd.getMonth() + 1}월 ${wd.getDate()}일에 잰 값이라 <b>그때 개월수(${nm}개월)</b> 기준으로 봐요.</p>` : '';
+    st = {y: y.value, m: m.value, s, w: $('#gw').value, h: $('#gh').value, pre: $('#gpre').value, when: $('#gwhen').value}; try{ localStorage.setItem('dokbakKid', JSON.stringify(st)); }catch(e){}
     if(n === null){ out.innerHTML = '<p class="src">태어난 해와 달을 골라 주세요.</p>'; return; }
     const yrs = Math.floor(n0 / 12), rem = n0 % 12;
     const pct = Math.min(100, Math.round(n0 / 72 * 100));
     let h = `<div class="box ghero"><div class="gage"><span class="gnum">${n0}</span><span class="gunit">개월</span></div><div class="gage-r"><b>만 ${yrs}세 ${rem}개월</b>${corr ? `<br><small style="color:var(--g-main);font-weight:700">교정 개월 ${n}개월 (예정일 기준, 키·몸무게는 이걸로 봐요)</small>` : ''}<div class="gbar"><i style="width:${pct}%"></i></div><small>0개월 ───────── 만 6세(72개월)</small></div>
       <p class="src" style="flex-basis:100%;margin:6px 0 0">태어난 날짜를 안 적으면 15일로 계산해요. 1~2주 차이는 아래 숫자에 거의 영향이 없어요.</p></div>`;
     // 📏 키·몸무게: 3~97백분위 범위 막대 + 내 아이 표시
-    h += `<div class="box"><h2>📏 이 개월의 키·몸무게</h2>${corr ? `<p class="gck-now">${pre}주 일찍 태어나서 두 돌까지는 <b>교정 개월 ${n}개월</b> 기준으로 봐요. 영유아 검진도 같은 방식이에요.</p>` : ''}<p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
+    h += `<div class="box"><h2>📏 이 개월의 키·몸무게</h2>${whenNote}${corr ? `<p class="gck-now">${pre}주 일찍 태어나서 두 돌까지는 <b>교정 개월 ${n}개월</b> 기준으로 봐요. 영유아 검진도 같은 방식이에요.</p>` : ''}<p class="src" style="margin:-4px 0 6px">${n < 36 ? '대한민국 2017 소아청소년 성장도표 기준이에요 (영유아 검진 결과지와 같은 숫자).' : '36개월부터는 우리나라 성장도표 표를 아직 못 구해서 WHO 기준으로 대신 계산해요. 검진 결과지의 숫자가 기준이에요.'}</p>`;
     if(!s) h += '<p class="src">성별을 고르면 숫자가 보여요. 남녀 기준이 달라요.</p>';
     else if(n > 60) h += '<p class="src">WHO 기준은 60개월(만 5세)까지만 있어요. 그 뒤는 질병관리청 2017 성장도표를 봐 주세요 (아래 출처).</p>';
     else {
@@ -99,7 +103,7 @@
     h += '<p class="src">1차(생후 14~35일)는 2021년생부터예요. 검진은 국민건강보험공단이 지정한 소아과·병원에서 받고, 키·몸무게·머리둘레 백분위와 발달 선별검사(K-DST)를 해요. 자세한 건 <a href="tips.html">육아 상식</a>의 영유아 건강검진 글을 봐 주세요.</p></div>';
     out.innerHTML = h;
   }
-  [y, m, $('#gd'), $('#gw'), $('#gh'), $('#gpre')].forEach(el => el.addEventListener('input', render));
+  [y, m, $('#gd'), $('#gw'), $('#gh'), $('#gpre'), $('#gwhen')].forEach(el => el.addEventListener('input', render));
   $('#gsex').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; document.querySelectorAll('#gsex button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); });
   render();
 })();
