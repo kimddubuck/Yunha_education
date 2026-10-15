@@ -235,7 +235,11 @@ def card(p, up):
   return (f'<a class="card" href="{up}plays/{p["id"]}.html"><span class="meta">{age_range(p)} · {PLACE_ICON[p["place"]]} {p["place"]}{" · 👨‍👩‍👧 여럿이" if p["group"] else ""}{" · 🧪 새 놀이" if p["status"] == "후보" else ""}</span>'
           f'<h3>{e(p["name"])}</h3><p>{e(p["steps"][0])}</p><span class="sk">{" · ".join(SKILL[k][0] + " " + k for k in p["skills"])}</span></a>')
 
-SOS_BRIDGE = f'''<div class="bridge"><p>이 놀이, <b>혼자 하기 버거우면</b>?<br>같은 단지 엄마 아빠와 같이 해요.</p><a class="btn sos" href="{APP}">🆘 이 시간에 SOS 보내기</a></div>'''
+SOS_BRIDGE = f'''<div class="appcard"><p class="ac-q">이 놀이, <b>혼자 하기 버거우면</b>? 같은 단지 엄마 아빠와 같이 해요.</p>
+<a class="ac-top" href="{APP}"><img src="/assets/sos-app.png" alt="" width="52" height="52"><span><span class="nw"><b>공동육아 SOS</b><em>웹앱</em></span><small>이웃과 시간 맞춰 같이 키우는 앱</small></span></a>
+<ul class="ac-f"><li>🆘 SOS 달력</li><li>🙌 모임 열기</li><li>🍚 식단공유</li><li>🙈 익명게시판</li></ul>
+<p class="ac-s">설치 없이 링크로 바로 열려요 · 홈 화면에 추가하면 앱처럼 써요 · 가입 없이 닉네임만</p>
+<div class="ac-b"><a class="btn teal" href="{APP}">🆘 앱 열기</a><a class="btn ghost" href="{APP}guide.html">📖 사용법</a></div></div>'''
 SOS_BAND = f'''<div class="band">
   <div>
     <h2>🆘 혼자 버티기 힘든 날,<br>공동육아 SOS</h2>
@@ -247,7 +251,7 @@ SOS_BAND = f'''<div class="band">
     <div class="r"><span>우리 단지 공동육아</span><span>👥 9</span></div>
     <div style="font-weight:700">🆘 내일 SOS 4명</div>
     <div class="d"><span>13시</span><span class="h">14시 2</span><span class="h">15시 3</span><span>16시</span></div>
-    <div class="m">🙌 <b>15시 키즈룸 비눗방울 놀이</b><br>참석 3 · 미확정 1</div>
+    <div class="m">🙌 <b>15시 키즈룸 비눗방울 놀이</b><br>참석 3 · ❤️ 2</div>
     <div class="b">💪 모임 열기</div>
   </div></div>
 </div>'''
@@ -260,6 +264,7 @@ def build():
   for d in ('assets', 'plays', 'age', 'principles'): os.makedirs(os.path.join(OUT, d), exist_ok=True)
   shutil.copy(os.path.join(DEV, 'site.css'), os.path.join(OUT, 'assets', 'site.css'))
   shutil.copy(os.path.join(DEV, 'icon.svg'), os.path.join(OUT, 'assets', 'icon.svg'))
+  shutil.copy(os.path.join(ROOT, 'sos', 'assets', 'icon-sos-192.png'), os.path.join(OUT, 'assets', 'sos-app.png'))   # 공동육아 SOS 앱 아이콘 (앱 소개 카드)
   # 🗺 육아 지도: 지도 라이브러리(Leaflet, BSD-2) · 지도 스크립트 · 공공데이터 심부름꾼 함수(Cloudflare Pages Functions)
   shutil.copytree(os.path.join(DEV, 'vendor', 'leaflet'), os.path.join(OUT, 'assets', 'leaflet'))
   shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
