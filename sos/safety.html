@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610150727">
+<link rel="manifest" href="manifest.webmanifest?v=202610150845">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610150727">
-<script src="assets/gate.js?v=202610150727"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610150845">
+<script src="assets/gate.js?v=202610150845"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -50,7 +50,7 @@
         <div><b>🆘 SOS</b><span>날짜·시간<br>+ <em>닉네임</em></span></div>
         <div><b>🙌 모임</b><span>날짜·장소 글<br>참석·댓글·❤️ <em>닉네임</em></span></div>
         <div><b>🏠 방</b><span><em>방 이름만</em><br><span class="nw">비밀번호는</span> <span class="nw">저장 안 해요</span></span></div>
-        <div><b>🍚 식단</b><span><span class="nw">작게 줄인 사진</span><br>+ <em>닉네임</em><br><span class="nw">3일 뒤 삭제</span></span></div>
+        <div><b>🍚 식단공유</b><span><span class="nw">작게 줄인 사진</span><br>+ <em>닉네임</em><br><span class="nw">3일 뒤 삭제</span></span></div>
         <div><b>🙈 익명게시판</b><span>제목·내용·댓글<br><em>닉네임 없음</em><br><span class="nw">3일 뒤 삭제</span></span></div>
       </div>
       <p class="safe-auto">⏳ 모임 날짜·장소는 <b>우리 방 사람만</b> 볼 수 있어요.<span class="ttl-only"> <b>지난 모임·댓글·SOS는 3일 뒤 자동으로 지워져요.</b></span></p>
@@ -151,8 +151,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610150727"></script>
-<script src="assets/push.js?v=202610150727"></script>
+<script src="assets/common.js?v=202610150845"></script>
+<script src="assets/push.js?v=202610150845"></script>
 <script>
 document.getElementById('deleteMe').addEventListener('click', async e => {
   const owning = sosRooms().filter(r => r.owner).map(r => r.name);   // 내가 방장인 방이 있으면 먼저 알려 줘요

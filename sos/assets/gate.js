@@ -809,7 +809,7 @@ const GATE_HOW_INVITE = `      <div class="g-guide">
           <li>독박 예정인 날엔 <b>🆘 SOS 요청</b>만 꾹</li>
           <li>SOS가 몰린 시간을 보고, 용기 낸 한 명이 <b>🙌 모임</b>을 열어요.</li>
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
-          <li>오늘 뭐 먹이지? <b>🍚 식단</b> 탭에서 이웃 식단을 구경해요.</li>
+          <li>오늘 뭐 먹이지? <b>🍚 식단공유</b> 탭에서 이웃 식단을 구경해요.</li>
         </ol>
         <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
       </div>`;
