@@ -128,7 +128,6 @@ async function removeDoc(ref, path){
     try{
       const ref = idea.col.doc(), k = secret();
       setIdeaKey(ipath(ref.id), k);
-      if(typeof pushIdeaNew === 'function') setTimeout(() => pushIdeaNew(false), 0);   // 🔔 방 전체 (익명 유지)
       await ref.set({t, b, c: idea.cat, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + IDEA_DAYS * 864e5)});
       title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000'; if(idea.attach) idea.attach.clear();
@@ -157,7 +156,6 @@ async function removeDoc(ref, path){
     try{
       const ref = idea.col.doc(x.id).collection('comments').doc(), k = secret();
       setIdeaKey(ipath(x.id, ref.id), k);
-      if(typeof pushIdeaNew === 'function') setTimeout(() => pushIdeaNew(true), 0);
       await ref.set({b, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(), expireAt: x.expireAt});
     }catch(err){ inp.value = b; if(idea.atDrafts) idea.atDrafts[x.id] = at; if(typeof sosTrouble === 'function') sosTrouble(err); }
   });

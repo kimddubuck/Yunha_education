@@ -224,11 +224,7 @@ async function pushMealNew(id, slotLabel, memo){
   if(!PUSH_VAPID || !ROOM) return;
   pushNotify(TO_ROOM, `🍚 ${ME.nick}님이 ${slotLabel} 사진을 올렸어요`, `${ROOM.name} · ${memo ? String(memo).slice(0, 40) : '오늘은 뭐 먹이지? 이웃 식단 보러 가요'}`, pushLink('meal.html'), 'meal-' + id);
 }
-// 🙈 익명게시판에 새 글·댓글: 방 전체에, 누가 썼는지는 알림에도 안 실어요 (보낸 사람 표시를 빼서 쓴 사람도 똑같이 받아요)
-async function pushIdeaNew(isComment){
-  if(!PUSH_VAPID || !ROOM) return;
-  pushNotify(TO_ROOM, isComment ? '🙈 익명게시판에 새 댓글이 달렸어요' : '🙈 익명게시판에 새 글이 올라왔어요', `${ROOM.name} · 누가 썼는지는 아무도 몰라요`, pushLink('idea.html'), 'idea-new', {anon: true});
-}
+// 🙈 익명게시판은 알림을 보내지 않아요 (익명이라 받을 사람도, 보낸 사람 표시도 없어요)
 // 🍚 식단 사진에 댓글: 사진 올린 사람에게 / 답글: 그 댓글을 쓴 사람에게
 async function pushMealComment(d, uid, text, reply){
   if(!PUSH_VAPID || !ROOM || !uid || uid === ME.uid) return;
