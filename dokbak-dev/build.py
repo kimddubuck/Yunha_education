@@ -714,7 +714,9 @@ segs(); render();
     body = strip(re.sub(r'<div class="box newp">.*?</div>|<p class="crumb">.*?</p>|<div class="pager">.*?</div>', ' ', mm.group(1), flags=re.S)) if mm else ''   # 공통 안내·길 표시는 빼요
     k = next(lab for pre, lab in SKIND if path.startswith(pre))
     sidx.append({'u': path.replace('index.html', ''), 't': t, 'd': d[:110], 'k': k, 'x': body[:380 if path.startswith('plays/') else 650]})
-  open(os.path.join(OUT, 'search.json'), 'w', encoding='utf-8').write(json.dumps(sidx, ensure_ascii=False, separators=(',', ':')))
+  sjs = json.dumps(sidx, ensure_ascii=False, separators=(',', ':'))
+  open(os.path.join(OUT, 'search.json'), 'w', encoding='utf-8').write(sjs)
+  import hashlib; sver = hashlib.md5(sjs.encode()).hexdigest()[:8]
   sbody = '''<div class="wrap"><section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">🔍 통합 검색</span><h1 style="font-size:clamp(24px,5vw,34px)">무엇이 궁금하세요?</h1><p>놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원까지 한 번에 찾아요.</p></div>
 <form class="sbox" id="sform" role="search"><input id="sq" type="search" placeholder="예: 수면교육, 이유식, 비눗방울, 육아휴직" aria-label="검색어" autocomplete="off" enterkeyhint="search"><button type="submit" aria-label="찾기">찾기</button></form>
 <div class="schips" id="schips"></div>
@@ -722,12 +724,12 @@ segs(); render();
 <script>(function(){const q=document.getElementById('sq'),res=document.getElementById('sres'),cnt=document.getElementById('scount'),chips=document.getElementById('schips');
 const POP=['수면교육','이유식','떼쓰기','양치','배변','영상','책 읽기','비눗방울','숨바꼭질','육아휴직','부모급여','어린이집 비용','예방접종','공동육아'];
 chips.innerHTML=POP.map(w=>`<button type="button">${w}</button>`).join('');
-let idx=null;const load=()=>idx?Promise.resolve(idx):fetch('search.json').then(r=>r.json()).then(j=>idx=j.map(o=>Object.assign(o,{_t:o.t.toLowerCase(),_a:(o.t+' '+o.d+' '+o.x).toLowerCase().replace(/\s+/g,'')})));
+let idx=null;const load=()=>idx?Promise.resolve(idx):fetch(new URL('search.json?v=__SV__',location.href),{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(j=>idx=j.map(o=>Object.assign(o,{_t:o.t.toLowerCase(),_a:(o.t+' '+o.d+' '+o.x).toLowerCase().replace(/\s+/g,'')})));
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mark=(s,ws)=>{let h=esc(s);ws.forEach(w=>{if(w)h=h.split(esc(w)).join('<mark>'+esc(w)+'</mark>');});return h;};
 function snip(o,ws){const src=o.d+' '+o.x;const low=src.toLowerCase();let i=-1;for(const w of ws){i=low.indexOf(w);if(i>=0)break;}if(i<0)return o.d||src.slice(0,80);const a=Math.max(0,i-30);return(a?'…':'')+src.slice(a,a+90)+'…';}
 async function run(v){v=(v||'').trim();history.replaceState(null,'',v?'?q='+encodeURIComponent(v):location.pathname);chips.hidden=!!v;
- if(!v){res.innerHTML='';cnt.textContent='';return;}await load();
+ if(!v){res.innerHTML='';cnt.textContent='';return;}if(!idx)cnt.textContent='찾는 중…';try{await load();}catch(e){idx=null;cnt.textContent='검색 목록을 못 불러왔어요. 잠시 뒤 다시 눌러 주세요. ('+e.message+')';return;}
  const ws=v.toLowerCase().split(/\s+/).filter(Boolean),wn=ws.map(w=>w.replace(/\s+/g,''));
  const hit=idx.map(o=>{let sc=0;for(let i=0;i<ws.length;i++){const w=ws[i];if(o._t.includes(w))sc+=10;else if(o._a.includes(wn[i]))sc+=2;else return null;}if(o._t.startsWith(ws[0]))sc+=3;return[sc,o];}).filter(Boolean).sort((a,b)=>b[0]-a[0]).slice(0,60);
  cnt.textContent=hit.length?`"${v}" 찾은 결과 ${hit.length}개`:`"${v}"에 맞는 글이 없어요. 더 짧은 말로 찾아 보세요.`;
@@ -736,6 +738,7 @@ document.getElementById('sform').addEventListener('submit',e=>{e.preventDefault(
 let tm;q.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(()=>run(q.value),200);});
 chips.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;q.value=b.textContent;run(q.value);});
 const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}else q.focus();})();</script>'''
+  sbody = sbody.replace('__SV__', sver)
   files['search.html'] = page('통합 검색 | 오늘도 독박육아', '놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원을 한 번에 찾아요.', sbody, 'search.html', 'search.html')
 
   # ── 쓰기 + sitemap
