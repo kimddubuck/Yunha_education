@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610150609">
+<link rel="manifest" href="manifest.webmanifest?v=202610150623">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610150609">
-<script src="assets/gate.js?v=202610150609"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610150623">
+<script src="assets/gate.js?v=202610150623"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -60,6 +60,7 @@
       <h2>🔔 알림을 켜면</h2>
       <p style="margin:0">휴대폰의 <b>알림 주소</b>만 Google 알림 서버에 등록돼요. 이름·전화번호는 보내지 않고, <b>알림 끄기</b>를 누르면 바로 빠져요.</p>
       <p>💬 내 사진·내 댓글에 댓글이나 답글이 달리면 <b>나에게만</b> 알림이 가요. 알림에는 방 이름·닉네임·글 앞부분이 보여요.</p>
+      <p>🍚 식단 사진이 올라오면 방 사람 모두에게 올린 사람 닉네임·끼니·메모가 알림으로 가요. 🙈 익명게시판에 새 글·댓글이 올라오면 "새 글이 올라왔어요"라고만 가고, 누가 썼는지는 알림에도 없어요.</p>
     </section>
 
     <section class="safe-card">
@@ -150,8 +151,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610150609"></script>
-<script src="assets/push.js?v=202610150609"></script>
+<script src="assets/common.js?v=202610150623"></script>
+<script src="assets/push.js?v=202610150623"></script>
 <script>
 document.getElementById('deleteMe').addEventListener('click', async e => {
   const owning = sosRooms().filter(r => r.owner).map(r => r.name);   // 내가 방장인 방이 있으면 먼저 알려 줘요

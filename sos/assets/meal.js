@@ -113,6 +113,7 @@ function askUpload(slot, img){
       await ref.set(data);
       rememberMine(ref.id);
       box.remove();
+      if(typeof pushMealNew === 'function') pushMealNew(ref.id, (MEAL_SLOTS.find(s => s[0] === slot) || ['', '식단'])[1].replace(/^\S+\s/, ''), memo);   // 🔔 방 사람들에게
       if(typeof pushToast === 'function') pushToast('🍚 올렸어요! 우리 방 사람들이 볼 수 있어요');
     }catch(err){ b.disabled = false; b.textContent = '⚠️ 못 올렸어요 · 다시 누르기'; if(typeof sosTrouble === 'function') sosTrouble(err); }
   });

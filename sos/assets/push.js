@@ -154,12 +154,12 @@ async function pushDropRoom(room){
 //  - 서버가 '이 방의 멤버가 맞는지' 확인해요: 내 로그인 증표(idToken)와 방 열쇠를 함께 보내고, 채널 이름은 서버가 만들어요
 //    (방에서 내보내진 사람은 방 열쇠를 알아도 알림을 보낼 수 없어요)
 //  - to: {kind: 'room'} = 방 전체 채널, {kind: 'meet', meetId} = 모임 주최자 채널
-async function pushNotify(to, title, body, link, tag){
+async function pushNotify(to, title, body, link, tag, opt = {}){
   if(!PUSH_VAPID || !ROOM) return;
   try{
     const user = await sosAuth(); if(!user) return;
     const idToken = await user.getIdToken();
-    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', to: to.to || '', date: to.date || '', hours: to.hours || [], title, body, link, tag, from: await pushMe() });
+    const r = await pushApi({ action: 'notify', key: ROOM.key, uid: user.uid, idToken, kind: to.kind, meetId: to.meetId || '', to: to.to || '', date: to.date || '', hours: to.hours || [], title, body, link, tag, from: opt.anon ? '' : await pushMe() });
     if(!r && pushLastError && !/429/.test(pushLastError)) pushToast('⚠️ 방 사람들에게 알림을 보내지 못했어요 (' + pushLastError.slice(0, 60) + ')');   // 베타: 원인을 화면에 보여 줘요
   }catch(e){ pushToast('⚠️ 알림을 보내지 못했어요 (인터넷 연결 확인)'); }
 }
@@ -175,7 +175,7 @@ async function pushNewMeet(meetId, date, slot, host){
     pushLS.set('sosPushMeetTopics', [...pushLS.get('sosPushMeetTopics', []), {t, room: ROOM.roomId}].slice(-30));
     pushSync(false).catch(() => {});
   }
-  return pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 참석·미확정·불참 중 하나를 눌러 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
+  return pushNotify(TO_ROOM, `🙌 새 모임 · ${dayLabel(date)} ${slot || ''}`.trim(), `${ROOM.name} · 참석·불참 중 하나를 눌러 주세요 🙋`, pushLink('index.html') + '&go=m' + meetId, 'meet-' + meetId);
 }
 // ✏️ 모임이 바뀌면 방 사람들에게 알려요 (같은 모임 알림을 새 내용으로 바꿔요)
 function pushEditMeet(meetId, date, when){
@@ -218,6 +218,16 @@ async function pushMeetComment(o, text){
 async function pushMeetReply(o, uid, text){
   if(!PUSH_VAPID || !ROOM || !uid || uid === ME.uid) return;
   pushNotify(toUser(uid), '↪ 내 댓글에 답글이 달렸어요', `${ROOM.name} · ${ME.nick}: ${String(text).slice(0, 60)}`, pushLink('meet.html') + '&go=c' + o.id, 'rep-' + o.id);
+}
+// 🍚 식단 사진을 올리면 방 사람들에게 (올린 사람 본인은 안 받아요)
+async function pushMealNew(id, slotLabel, memo){
+  if(!PUSH_VAPID || !ROOM) return;
+  pushNotify(TO_ROOM, `🍚 ${ME.nick}님이 ${slotLabel} 사진을 올렸어요`, `${ROOM.name} · ${memo ? String(memo).slice(0, 40) : '오늘은 뭐 먹이지? 이웃 식단 보러 가요'}`, pushLink('meal.html'), 'meal-' + id);
+}
+// 🙈 익명게시판에 새 글·댓글: 방 전체에, 누가 썼는지는 알림에도 안 실어요 (보낸 사람 표시를 빼서 쓴 사람도 똑같이 받아요)
+async function pushIdeaNew(isComment){
+  if(!PUSH_VAPID || !ROOM) return;
+  pushNotify(TO_ROOM, isComment ? '🙈 익명게시판에 새 댓글이 달렸어요' : '🙈 익명게시판에 새 글이 올라왔어요', `${ROOM.name} · 누가 썼는지는 아무도 몰라요`, pushLink('idea.html'), 'idea-new', {anon: true});
 }
 // 🍚 식단 사진에 댓글: 사진 올린 사람에게 / 답글: 그 댓글을 쓴 사람에게
 async function pushMealComment(d, uid, text, reply){
