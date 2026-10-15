@@ -54,7 +54,7 @@ export async function onRequestPost({ request, env }) {
   try {
     if (b.r) {
       const r = new URL(String(b.r)), h = r.hostname.toLowerCase();
-      if (h === host || h === 'dokbak.pages.dev' || h.endsWith('.dokbak.pages.dev')) s = '사이트 안';
+      if (h === host || h === 'dokbak.pages.dev' || h.endsWith('.dokbak.pages.dev') || h.endsWith('xn--iq1br1ns0hr0b.com')) s = '사이트 안';
       else {
         s = (SRC.find(([re]) => re.test(h)) || [, h.replace(/^(www|m)\./, '').slice(0, 60)])[1];
         q = (r.searchParams.get('query') || r.searchParams.get('q') || r.searchParams.get('keyword') || '').trim().slice(0, 40);

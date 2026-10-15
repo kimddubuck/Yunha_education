@@ -10,7 +10,7 @@ DEV = os.path.join(ROOT, 'dokbak-dev')
 OUT = os.path.join(ROOT, 'dokbak')
 # 구글 서치 콘솔 · 네이버 서치어드바이저 '소유 확인' HTML 태그의 content 값만 넣어요 (비밀 키 아님, 비우면 안 넣어요)
 SITE_VERIFY = {'google-site-verification': 'LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4NpfnuWqSw', 'naver-site-verification': '24c64ae8aaef959ea969cfde87a96b063cd368ef'}
-BASE = 'https://dokbak.pages.dev'   # 도메인이 정해지면 여기만 바꿔요 (sitemap · 공유 주소에 쓰여요)
+BASE = 'https://xn--iq1br1ns0hr0b.com'   # 독박육아.com (한글 도메인의 영문 표기). sitemap · 대표 주소에 쓰여요
 APP = 'https://gongdong-sos.pages.dev/'
 CONTACT = 'ifb1321@gmail.com'       # 공동육아 SOS 이용약관에 공개된 운영자 문의 메일과 같아요
 SHOW = {'확정', '해봄'}       # 후보(AI가 원리로 새로 만든 놀이, 아직 직접 해 보기 전)는 애드센스 승인 전까지 올리지 않아요. 직접 해 보고 '해봄'으로 바꾸면 올라가요
