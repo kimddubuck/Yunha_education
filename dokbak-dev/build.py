@@ -126,6 +126,10 @@ def in_band(p, lo, hi):
 
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
 # 📚 육아 정보 주제 탭: 육아 상식·연구·이유식 글을 출처 종류가 아니라 주제로 묶어요
+# 🔎 네이버 키워드 도구로 많이 찾는 말을 페이지 <title>에만 덧붙여요 (화면 제목은 그대로)
+TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
+AGE_SEO = {'10-12m': '(돌 아기)', '13-18m': '(돌 지난 아기)'}
+PLAY_SEO = {'shadow': ' (집에서 그림자극장)', 'c-puppet-shadow-story': ' (그림자극장)'}
 TOPICS = [('play', '🧸', '놀이·발달'), ('mind', '💛', '마음·행동'), ('lang', '🗣', '말·책·미디어'), ('food', '🍚', '먹기·이유식'),
           ('sleep', '😴', '잠·배변·양치'), ('health', '🩺', '건강·검진·안전'), ('together', '🤝', '공동육아')]
 TOPIC_SHORT = {'play': '놀이', 'mind': '마음', 'lang': '말·미디어', 'food': '먹기', 'sleep': '잠·습관', 'health': '건강·안전', 'together': '공동육아'}   # 작은 탭에 쓰는 짧은 이름
@@ -286,7 +290,7 @@ def build():
 <aside class="side">{SOS_BRIDGE}
   {f'<div class="box" style="margin-top:0"><h2>🔁 비슷한 놀이</h2><div class="cards" style="grid-template-columns:1fr">{"".join(card(q, "../") for q in same)}</div></div>' if same else ''}
 </aside></div></div>'''
-    files[f'plays/{p["id"]}.html'] = page(f'{p["name"]} · {age_range(p)} 엄마표 놀이 | 오늘도 독박육아',
+    files[f'plays/{p["id"]}.html'] = page(f'{p["name"]}{PLAY_SEO.get(p["id"], "")} · {age_range(p)} 엄마표 놀이 | 오늘도 독박육아',
       f'{age_range(p)} 아기와 집에서 하는 {p["name"]}. 준비물: {", ".join(p["materials"][:3])}. 하는 방법과 안전 수칙까지.',
       body, f'plays/{p["id"]}.html', 'plays/', f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>\n')
 
@@ -335,7 +339,7 @@ draw();
 <div class="sh"><span class="ey">개월수별 놀이</span><h1 style="font-size:clamp(26px,5vw,36px)">📅 {n} 놀이 {len(lst)}가지</h1><p>{BAND_INTRO[s]}</p></div>
 <div class="cards">{''.join(card(p, '../') for p in lst) or '<p class="none">준비 중이에요.</p>'}</div></section>
 <section class="blk">{SOS_BRIDGE}</section></div>'''
-    files[f'age/{s}.html'] = page(f'{n} 아기 놀이 {len(lst)}가지 · 엄마표 놀이 | 오늘도 독박육아', f'{n} 아기와 집에서 하는 엄마표 놀이 {len(lst)}가지. {BAND_INTRO[s]}', body, f'age/{s}.html', 'age/')
+    files[f'age/{s}.html'] = page(f'{n}{AGE_SEO.get(s, "")} 아기놀이 {len(lst)}가지 · 엄마표 놀이 | 오늘도 독박육아', f'{n} 아기와 집에서 하는 엄마표 놀이 {len(lst)}가지. {BAND_INTRO[s]}', body, f'age/{s}.html', 'age/')
   body = f'''<div class="wrap"><section class="blk"><div class="sh"><span class="ey">개월수별 놀이</span><h1 style="font-size:clamp(26px,5vw,36px)">📅 우리 아기 개월수에 맞는 놀이</h1><p>개월수를 고르면 그 시기에 딱 맞는 놀이를 모아 보여 드려요.</p></div>
 <div class="prs">{''.join(f'<a class="pr" href="{s}.html"><span class="meta">놀이 {sum(1 for p in rows if in_band(p, lo, hi))}가지</span><h3>{n}</h3><p>{BAND_INTRO[s]}</p></a>' for s, n, lo, hi in BANDS)}</div></section></div>'''
   files['age/index.html'] = page('개월수별 엄마표 놀이 | 오늘도 독박육아', '0~3개월부터 5~7세까지 개월수별로 맞는 엄마표 놀이를 모았어요.', body, 'age/index.html', 'age/')
@@ -448,7 +452,7 @@ document.querySelector('.form').addEventListener('click', ev => {{ const b = ev.
 document.getElementById('shuffle').onclick = () => {{ st.seed++; render(); }};
 segs(); render();
 </script>'''
-  files['index.html'] = page('오늘도 독박육아 · 개월수별 엄마표 놀이', '독박육아 하는 날, 아기 개월수만 고르면 집에 있는 물건으로 바로 할 수 있는 엄마표 놀이를 골라 드려요. 같이 키우는 공동육아 SOS까지.', body, 'index.html', '')
+  files['index.html'] = page('오늘도 독박육아 · 개월수별 아기놀이·엄마표 놀이', '독박육아 하는 날, 아기 개월수만 고르면 집에 있는 물건으로 바로 할 수 있는 엄마표 놀이를 골라 드려요. 같이 키우는 공동육아 SOS까지.', body, 'index.html', '')
 
   # ── 소개 · 개인정보 · 약관 (광고 승인에 꼭 필요해요)
   prose = lambda t, h: f'<div class="wrap"><section class="blk prose">{h}</section></div>'
@@ -513,7 +517,7 @@ segs(); render();
 <h1>🥄 이유식·유아식 연구</h1><p>{e(fd["intro"])}</p>
 {rboard(fd['groups'], 'food')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="research.html">📚 놀이·교육 연구도 보기</a></p></section></div>'''
-  files['food.html'] = page('이유식·유아식 연구 · 언제 시작하고 뭘 먹일까 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
+  files['food.html'] = page('아기 이유식 시작 시기·소고기·철분 · 이유식 연구 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
   rposts(fd['groups'], 'food', 'food.html', '이유식')
 
   # ── 칼럼 게시판 (dokbak-dev/columns/*.json · 육아 상식, 지원)
@@ -587,7 +591,7 @@ segs(); render();
 <div id="gout"></div>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>
 </section></div>'''
-  files['growth.html'] = page('우리 아이 지금 · 개월수별 키·몸무게·식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게 범위(WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', gbody, 'growth.html', 'growth.html',
+  files['growth.html'] = page('아기 키·몸무게 백분위 계산 · 개월수별 식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게·머리둘레 백분위(100명 중 몇 등, WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', gbody, 'growth.html', 'growth.html',
     f'<script>window.WHO_LMS={LMSJ};</script><script defer src="assets/growth.js?v={V}"></script>')
   files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')
 
@@ -699,7 +703,7 @@ segs(); render();
 <h1>{ic} {e(nm)}</h1><p>{e(TOPIC_INTRO[sl])} 글 {len(entries[sl])}개예요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요.</p>
 <div class="bd">{trows}</div>{bysrc}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
-    files[f'info/{sl}.html'] = page(f'{nm} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
+    files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
 
   # ── 🔍 통합 검색: 만든 페이지 전부에서 제목·설명·본문을 뽑아 search.json 으로 (휴대폰에서 바로 찾아요)
   SKIND = [('plays/', '🧸 놀이'), ('age/', '📅 개월수별'), ('principles', '🧠 놀이 원리'), ('tips/', '💡 육아 상식'), ('research/', '📚 연구·논문'),
