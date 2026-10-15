@@ -269,7 +269,15 @@ function likeBtn(d, key, ref, opts = {}){
     // 댓글(mini)은 인스타그램처럼 오른쪽에 선 하트(♡/♥), 숫자는 있을 때만 아래 작게
     b.innerHTML = opts.cls === 'mini' ? `<span class="lk-ic">${on ? '♥' : '♡'}</span><b>${n || ''}</b>` : `<span class="lk-ic">${on ? '❤️' : '🤍'}</span><b>${n}</b>`; b.setAttribute('aria-label', `${on ? '좋아요 취소' : '좋아요'} (지금 ${n}명)`); };
   paint();
+  // 댓글 하트를 꾹 누르면(0.5초) 누가 눌렀는지 이름 팝업 (모임·식단만. 익명게시판은 이름이 없어요)
+  let hold = null, held = false;
+  const showNames = () => { const names = likeNames(d); if(!names.length) return; held = true;
+    sosInfo({icon: '❤️', title: `좋아요 ${names.length}명`, body: `<div class="who-list">${names.map(n => `<span class="who-chip">${esc(n)}</span>`).join('')}</div>`}); };
+  b.addEventListener('pointerdown', () => { held = false; clearTimeout(hold); hold = setTimeout(showNames, 500); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(hold)));
+  b.addEventListener('contextmenu', e => { if(likeNames(d).length) e.preventDefault(); });
   b.addEventListener('click', async () => {
+    if(held){ held = false; return; }
     if(!ME.uid || !key || b.disabled) return;
     const on = !!((d.lk || {})[key]); b.disabled = true;
     d.lk = {...(d.lk || {})}; if(on) delete d.lk[key]; else d.lk[key] = val; paint(); if(opts.after) opts.after();   // 먼저 그리고 저장해요

@@ -1368,3 +1368,4 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .like.mini:not(:disabled):active .lk-ic{transform:scale(1.25)}
 .pop .comment-list li{padding-right:30px}
 .idea-del{color:var(--muted)!important;border-color:var(--line)!important;background:transparent!important}
+.like{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
