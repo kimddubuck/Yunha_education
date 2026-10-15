@@ -183,13 +183,32 @@ function attachUI(form, opts){
   (opts.before ? opts.before : form).insertAdjacentElement(opts.before ? 'beforebegin' : 'beforeend', row);
   const st = { img: '' }, prev = row.querySelector('.at-prev'), img = prev.querySelector('img'), note = prev.querySelector('small');
   let tog = null;
+  let txt = null;
   if(opts.compact){
-    row.hidden = true;
-    tog = document.createElement('button'); tog.type = 'button'; tog.className = 'at-tog'; tog.textContent = '📎'; tog.setAttribute('aria-label', '사진·링크 붙이기'); tog.setAttribute('aria-pressed', 'false');
-    const sub = form.querySelector('button[type="submit"]'); if(sub) sub.insertAdjacentElement('beforebegin', tog); else form.appendChild(tog);
-    tog.addEventListener('click', () => { row.hidden = !row.hidden; if(!row.hidden) row.querySelector('.at-url').focus(); });
+    // 💬 인스타그램처럼: [이모지 한 줄] + [넓은 둥근 칸 안에 글 · 🖼 · 게시]
+    row.hidden = true; form.classList.add('ig');
+    txt = form.querySelector('input[type="text"]'); const sub = form.querySelector('button[type="submit"]');
+    tog = document.createElement('button'); tog.type = 'button'; tog.className = 'at-tog'; tog.setAttribute('aria-label', '사진·링크 붙이기'); tog.setAttribute('aria-pressed', 'false');
+    tog.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 15.5l-5-5L5 21"/></svg>';
+    const pill = document.createElement('div'); pill.className = 'cf-pill';
+    if(txt){ if(!/^답글/.test(txt.placeholder)) txt.placeholder = '댓글 달기…'; pill.appendChild(txt); }
+    pill.appendChild(tog);
+    if(sub){ sub.className = 'cf-send'; sub.textContent = '게시'; pill.appendChild(sub); }
+    form.insertBefore(pill, row);
+    const emo = document.createElement('div'); emo.className = 'cf-emo'; emo.setAttribute('aria-label', '이모지 넣기');
+    emo.innerHTML = ['❤️', '🙌', '🔥', '👏', '😢', '😍', '😮', '😂'].map(x => `<button type="button" data-emo="${x}" aria-label="${x} 넣기">${x}</button>`).join('');
+    emo.addEventListener('click', e => { const b = e.target.closest('[data-emo]'); if(!b || !txt) return;
+      const s = txt.selectionStart ?? txt.value.length, en = txt.selectionEnd ?? s;
+      txt.value = (txt.value.slice(0, s) + b.dataset.emo + txt.value.slice(en)).slice(0, Number(txt.maxLength) > 0 ? txt.maxLength : 300);
+      txt.focus(); const c = s + b.dataset.emo.length; try{ txt.setSelectionRange(c, c); }catch(err){}
+      txt.dispatchEvent(new Event('input', {bubbles: true})); });
+    form.insertBefore(emo, pill);
+    if(txt) txt.addEventListener('input', () => sync());
+    tog.addEventListener('click', () => { row.hidden = !row.hidden; });
   }
-  const changed = () => { if(tog) tog.setAttribute('aria-pressed', String(!!(st.img || row.querySelector('.at-url').value.trim()))); if(opts.onChange) opts.onChange({img: st.img, url: row.querySelector('.at-url').value}); };
+  // 글이나 사진이 있으면 '게시'가 진해져요
+  const sync = () => { if(txt) form.classList.toggle('has', !!(txt.value.trim() || st.img)); };
+  const changed = () => { if(tog) tog.setAttribute('aria-pressed', String(!!(st.img || row.querySelector('.at-url').value.trim()))); sync(); if(opts.onChange) opts.onChange({img: st.img, url: row.querySelector('.at-url').value}); };
   const pick = async inp => { const f = inp.files && inp.files[0]; if(!f) return;
     try{ st.img = await shrinkPhoto(f, {max: 320, limit: 28000}); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요 · 미리보기 크기로만 보여요`; prev.hidden = false; }
     catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; changed(); };

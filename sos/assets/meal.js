@@ -161,7 +161,7 @@ function openPhoto(id){
     });
     if(!list.length){ const e = document.createElement('li'); e.className = 'hint'; e.textContent = '첫 댓글을 남겨 보세요 💬'; ul.appendChild(e); }
     chip.hidden = !replyTo; if(replyTo) chip.querySelector('span').textContent = `↪ ${replyTo.n || '이웃'}님에게 답글`;
-    inp.placeholder = replyTo ? '답글 달기' : '댓글 달기 (예: 레시피 궁금해요!)';
+    inp.placeholder = replyTo ? '답글 달기' : '댓글 달기…';
   };
   const unsub = mealCmts(id).orderBy('createdAt').limit(100).onSnapshot(q => {
     if(!box.isConnected){ unsub(); return; }

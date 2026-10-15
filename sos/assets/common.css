@@ -1379,3 +1379,17 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .slogan.fade{opacity:0}
 .slogan .sl-who{font-size:10.5px;color:var(--muted);opacity:.8;margin-left:2px}
 @media (prefers-reduced-motion:reduce){.slogan{transition:none}}
+
+/* 💬 댓글 입력: 인스타그램처럼 (이모지 한 줄 + 넓은 둥근 칸 안에 글·사진·게시) */
+.comment-form.ig{display:flex;flex-direction:column;align-items:stretch;gap:6px;flex-wrap:nowrap}
+.cf-emo{display:flex;justify-content:space-between;gap:2px;padding:2px 2px 0}
+.cf-emo button{flex:1;border:0;background:none;font-size:21px;line-height:1;padding:4px 0;cursor:pointer;border-radius:10px}
+.cf-emo button:active{transform:scale(1.25)}
+.cf-pill{display:flex;align-items:center;gap:2px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 6px 3px 14px;min-height:44px}
+.cf-pill:focus-within{border-color:color-mix(in srgb,var(--fg) 45%,var(--line))}
+.comment-form.ig .cf-pill input{flex:1;min-width:0;border:0!important;background:none!important;padding:8px 2px!important;font-size:15px;color:var(--fg);outline:none;box-shadow:none}
+.comment-form.ig .at-tog{flex:none;border:0;background:none;color:var(--muted);padding:6px;min-height:0;border-radius:999px;display:flex;align-items:center}
+.comment-form.ig .at-tog[aria-pressed="true"]{color:#4f8cff;background:none}
+.cf-send{flex:none;border:0;background:none;color:#4f8cff;font:inherit;font-size:15px;font-weight:800;padding:6px 8px;cursor:pointer;opacity:.4;transition:opacity .15s}
+.comment-form.ig.has .cf-send{opacity:1}
+.comment-form.ig .attach-row{margin:0}

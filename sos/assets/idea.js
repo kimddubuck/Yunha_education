@@ -25,7 +25,7 @@ function renderIdeas(){
   const ul = $i('#ideaList'), keys = ideaKeys();
   const fo = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-idea]');   // 쓰는 중인 댓글은 지켜요
   const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('input').value} : null;
-  ul.querySelectorAll('[data-idea] input').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
+  ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
   const list = idea.items.filter(x => !x.deleted && (!idea.filter || (x.c || 'talk') === idea.filter));
   const fr = $i('#ideaFilter'); if(fr && !fr.childElementCount) fr.innerHTML = [['', '전체'], ...IDEA_CATS].map(([k, n]) => `<button type="button" data-filter="${k}" aria-pressed="${k === idea.filter}">${n}</button>`).join('');
   if(fr) fr.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === idea.filter)));
@@ -75,7 +75,7 @@ function renderIdeas(){
     }
     ul.appendChild(li);
   });
-  ul.querySelectorAll('[data-idea] input').forEach(i => { const d = idea.drafts[i.closest('[data-idea]').dataset.idea]; if(d) i.value = d; });
+  ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { const d = idea.drafts[i.closest('[data-idea]').dataset.idea]; if(d) i.value = d; });
   if(draft){ const i = ul.querySelector(`[data-idea="${draft.id}"] input`); if(i){ i.value = draft.v; i.focus(); } }
 }
 
