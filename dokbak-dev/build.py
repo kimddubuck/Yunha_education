@@ -161,6 +161,9 @@ def sum3box(x):
 def endbox(x):
   return f'<div class="endbox"><p class="sum3-h">✅ 정리하면</p><p>{e(x["end"])}</p></div>' if x.get('end') else ''
 
+# Cloudflare Pages는 /a.html 을 /a 로 넘겨요(308). 검색엔진에는 넘어간 뒤 주소를 알려 줘야 '가져올 수 없음'·중복이 안 생겨요
+def pretty(path):
+  return re.sub(r'(^|/)index\.html$', r'\1', path)[:-5] if path.endswith('.html') and not re.search(r'(^|/)index\.html$', path) else re.sub(r'(^|/)index\.html$', r'\1', path)
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
@@ -183,7 +186,7 @@ def page(title, desc, body, path, active='', extra_head=''):
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<link rel="canonical" href="{BASE}/{path.replace('index.html', '')}">
+<link rel="canonical" href="{BASE}/{pretty(path)}"><meta property="og:url" content="{BASE}/{pretty(path)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
 <meta name="theme-color" content="#2a9095">{''.join(f'<meta name="{k}" content="{e(v)}">' for k, v in SITE_VERIFY.items() if v)}
@@ -789,7 +792,7 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
     os.makedirs(os.path.dirname(os.path.join(OUT, path)), exist_ok=True)
     open(os.path.join(OUT, path), 'w', encoding='utf-8').write(txt)
   today = datetime.date.today().isoformat()
-  urls = ''.join(f'<url><loc>{BASE}/{p.replace("index.html", "")}</loc><lastmod>{today}</lastmod></url>' for p in sorted(files))
+  urls = ''.join(f'<url><loc>{BASE}/{pretty(p)}</loc><lastmod>{today}</lastmod></url>' for p in sorted(files))
   open(os.path.join(OUT, 'sitemap.xml'), 'w').write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
   open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n')
   open(os.path.join(OUT, '404.html'), 'w', encoding='utf-8').write(page('페이지를 찾을 수 없어요 | 오늘도 독박육아', '', '<div class="wrap"><section class="blk prose"><h1>🙈 페이지를 찾을 수 없어요</h1><p><a href="/">홈으로 가기</a></p></section></div>', '404.html'))
