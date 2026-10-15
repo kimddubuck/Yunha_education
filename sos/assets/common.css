@@ -1410,3 +1410,7 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .meal-card .meal-bdg{position:absolute;left:6px;top:6px;display:flex;gap:4px}
 .meal-card .meal-bdg:empty{display:none}
 .meal-card .meal-bdg .meal-lk{position:static}
+/* 📣 모임 투표 부탁 공유 — 댓글 버튼 옆 한 줄 (회색 테두리) */
+.ops .meet-foot{display:flex;gap:6px;width:100%;flex-basis:100%;grid-column:1 / -1;margin-top:5px;align-self:stretch}
+.ops .meet-foot > .act{margin:0!important;flex:1 1 auto;width:auto;min-width:0;white-space:nowrap}
+.ops .meet-foot > .act.meet-share{flex:0 0 auto;color:var(--muted);font-weight:700!important}

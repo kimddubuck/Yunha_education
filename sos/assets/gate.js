@@ -977,7 +977,7 @@ ${invite ? '' : GATE_PASTE}
   const iv = box.querySelector('.g-inv');   // 방 이름·초대한 사람은 글자로만
   if(iv){ iv.querySelector('.g-inv-name').textContent = '🏠 ' + INVITE_INFO.name; const by = iv.querySelector('.g-inv-by b'); if(by) by.textContent = INVITE_INFO.by; }
   if(gateInstall && box.querySelector('.g-install')) box.querySelector('.g-install').hidden = false;
-  const enter = room => { rememberRoom(room); markPicked(); location.href = 'index.html'; };
+  const enter = room => { rememberRoom(room); markPicked(); location.href = 'index.html' + (/^[mrs][\w-]{1,40}$/.test(SOS_GO) ? '?go=' + SOS_GO : ''); };   // 📣 모임 공유 링크로 왔으면 들어간 뒤 그 모임을 띄워요
   box.addEventListener('click', async e => {
     const step = n => { box.querySelector('.g-step1').hidden = n !== 1; box.querySelector('.g-step2').hidden = n !== 2; box.scrollTop = 0; };
     if(e.target.closest('.g-start')){ step(2); return; }

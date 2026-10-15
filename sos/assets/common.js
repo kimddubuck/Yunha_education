@@ -1033,6 +1033,18 @@ function sosGoSos(data){
   if(day < todayStr() || (day === todayStr() && h < new Date().getHours())){ if(typeof pushToast === 'function') pushToast('이미 지난 시간의 SOS예요'); return; }
   showSosNames(day, h, data[day], true);
 }
+// 📣 모임 투표 부탁 공유: 링크를 누르면 앱이 열리고 그 모임의 참석·불참 창이 바로 떠요 (?go=m아이디)
+function meetShareBtn(o){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'act meet-share'; b.textContent = '📣 공유';
+  b.addEventListener('click', async () => {
+    let url = ''; try{ url = inviteUrl() + '&go=m' + o.id; }catch(e){ return; }
+    const text = `[${ROOM.name}] ${dayLabel(o.date)} ${meetWhen(o)} 모임 🙌\n${o.text ? o.text.slice(0, 60) + '\n' : ''}\n참석·불참 중 하나만 꾹 눌러 주세요 🙋\n무반응은 주최자의 용기를 줄어들게 해요 🥲\n\n👇 누르면 바로 투표 창이 열려요\n${url}`;
+    if(navigator.share){ try{ await navigator.share({text}); return; }catch(e){ if(e.name === 'AbortError') return; } }
+    try{ await navigator.clipboard.writeText(text); if(typeof pushToast === 'function') pushToast('✅ 복사했어요! 단톡방에 붙여넣으세요'); }
+    catch(e){ window.prompt('아래 글을 복사해서 단톡방에 붙여넣으세요.', text); }
+  });
+  return b;
+}
 function sosGoMeet(list){
   if(!/^[mr][A-Za-z0-9]{1,40}$/.test(SOS_GO) || !ME.uid || !list) return;
   const remind = SOS_GO[0] === 'r', o = list.find(x => x.id === SOS_GO.slice(1)); SOS_GO = '';
