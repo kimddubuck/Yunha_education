@@ -65,7 +65,7 @@
       }
       const p = pay(i, w, m); sum += p.v;
       const base = p.why === 'cap' ? `상한 ${p.c.cap}만 원` : p.why === 'floor' ? '하한 70만 원' : `통상임금 ${p.c.rate}%`;
-      const note = later ? `${base} <small>6+6 차액은 배우자 ${i}개월째가 끝난 뒤에</small>` : (mode === 's' && i <= 6 && i > common) ? `${base} <small>배우자가 ${common}개월만 써서 6+6 아님</small>` : base;
+      const note = later ? `${base} <small>차액은 배우자 ${i}개월째 뒤에</small>` : (mode === 's' && i <= 6 && i > common) ? `${base} <small>배우자 ${common}개월만 써서 6+6 아님</small>` : base;
       rows.push({i, sp, v: p.v, note, add: []});
       if(later){ const full = pay(i, w, 's').v, d = full - p.v; if(d > 0){ diff += d; late.push([new Date(later.getTime() + 86400000), i, d, full, p.v]); } }
     }
@@ -76,13 +76,13 @@
       const k = due.getFullYear() + '-' + (due.getMonth() + 1); (extra[k] = extra[k] || {due, list: []}).list.push([i, d, full, got]);
     }
     // "3개월째 차액 50만 (6+6 300만 − 받은 250만)" 처럼 뺄셈을 같이 적어요
-    const addTxt = add => add.map(([i, d, full, got]) => `${i}개월째 차액 ${man(d)} <small>6+6 ${man(full)} − 받은 ${man(got)}</small>`).join('<br>');
+    const addTxt = add => add.map(([i, d, full, got]) => `${i}개월째 차액 ${man(d)} <small>${full}만 − ${got}만</small>`).join('<br>');
     const settleBox = late.length ? `<p class="lp-total">💸 6+6 정산 모두: ${late.map(x => man(x[2])).join(' + ')} = <b>${man(diff)}</b> <small>(${won(diff)}, ${late.length}번에 나눠서)</small></p>` : '';
     const html = rows.map(r => { const sp = r.sp, tot = r.v + r.add.reduce((a, [, d]) => a + d, 0);
       const when = sp ? `<small>${fmt(sp.a, r.i === 1 || sp.a.getMonth() === 0)}~${fmt(sp.b)}</small>` : '';
-      return `<tr${sp && sp.now ? ' class="lp-now"' : sp && sp.past ? ' class="lp-past"' : ''}${r.add.length ? ' data-add="1"' : ''}><td>${r.i}개월째${sp && sp.now ? ' <b>← 이번 달</b>' : ''}${when}</td><td>${r.note}${r.add.length ? `<br><b>+ ${addTxt(r.add)}</b>` : ''}</td><td class="num">${won(tot)}</td></tr>`; })
+      return `<tr${sp && sp.now ? ' class="lp-now"' : sp && sp.past ? ' class="lp-past"' : ''}${r.add.length ? ' data-add="1"' : ''}><td>${r.i}개월째${sp && sp.now ? ' <b>← 이번 달</b>' : ''}${when}</td><td>${r.note}${r.add.length ? `<br><b>+ ${addTxt(r.add)}</b>` : ''}</td><td class="num">${man(tot)}</td></tr>`; })
       .concat(Object.values(extra).sort((a, b) => a.due - b.due).map(x => { const tot = x.list.reduce((a, [, d]) => a + d, 0);
-        return `<tr data-add="1"><td>휴직 끝난 뒤<small>${x.due.getFullYear()}.${x.due.getMonth() + 1}</small></td><td><b>${addTxt(x.list)}</b></td><td class="num">${won(tot)}</td></tr>`; })).join('') + (late.length ? `<tr class="lp-tot"><td colspan="2">6+6 정산 합계 <small>${late.map(x => man(x[2])).join(' + ')}</small></td><td class="num">${won(diff)}</td></tr>` : '');
+        return `<tr data-add="1"><td>휴직 끝난 뒤<small>${x.due.getFullYear()}.${x.due.getMonth() + 1}</small></td><td><b>${addTxt(x.list)}</b></td><td class="num">${man(tot)}</td></tr>`; })).join('') + (late.length ? `<tr class="lp-tot"><td colspan="2">6+6 정산 합계 <small>${late.map(x => man(x[2])).join(' + ')}</small></td><td class="num">${man(diff)}</td></tr>` : '');
     sum += diff;
     return {sum, end, diff, common, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${html}</tbody></table></div>${settleBox}`};
   }
