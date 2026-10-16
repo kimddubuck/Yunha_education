@@ -594,3 +594,5 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .lp-t tr.lp-now td b{color:var(--teal-ink);font-size:12px}
 .lp-t tr.lp-past td{color:var(--soft)}
 .gform .row>span{flex-basis:84px}
+.lp-t tr.lp-settle td{background:var(--teal-tint);font-weight:700}
+.lp-t tr.lp-settle td small{font-weight:400}
