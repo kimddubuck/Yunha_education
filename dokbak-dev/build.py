@@ -726,6 +726,23 @@ segs(); render();
 <tr><td>7개월째부터</td><td>80% · 상한 160만</td><td>80% · 상한 160만</td><td>80% · 상한 160만</td></tr>
 </tbody></table></div>
 <p>계산한 금액이 월 70만 원보다 적으면 70만 원을 받아요(하한). 2025년부터 사후지급(일부를 복직 뒤에 주던 방식)이 없어져서, 휴직하는 동안 매달 전액을 받아요.</p>
+<h2>🧒 6+6, 왜 한 번에 안 주고 나눠서 줄까요?</h2>
+<p>쉽게 말하면 이래요. <b>엄마가 3개월째를 더 받으려면, 아빠도 3개월째를 써야 해요.</b> 나라는 아빠가 나중에 몇 달 쓸지 미리 알 수 없어요. 그래서 아빠가 한 달 쓸 때마다 "아, 둘 다 1개월째 썼네" 하고 엄마 몫을 한 달씩 올려 줘요.</p>
+<div class="ss">
+  <p class="ss-h">① 엄마가 먼저 6개월 써요 <small>아직은 보통 급여예요</small></p>
+  <div class="ss-row"><span class="ss-who">👩 엄마</span><div class="ss-m">{''.join(f'<i class="g">{k}</i>' for k in range(1, 7))}</div></div>
+  <div class="ss-row"><span class="ss-who">👨 아빠</span><div class="ss-m">{''.join('<i class="e">?</i>' for k in range(6))}</div></div>
+  <p class="ss-h">② 아빠가 나중에 3개월 써요 <small>겹치는 1·2·3개월째만 올라가요</small></p>
+  <div class="ss-row"><span class="ss-who">👩 엄마</span><div class="ss-m"><i class="t">1</i><i class="t">2</i><i class="t">3</i><i class="g">4</i><i class="g">5</i><i class="g">6</i></div></div>
+  <div class="ss-row"><span class="ss-who">👨 아빠</span><div class="ss-m"><i class="t">1</i><i class="t">2</i><i class="t">3</i><i class="e"></i><i class="e"></i><i class="e"></i></div></div>
+  <div class="ss-row ss-pay"><span class="ss-who">💸 엄마가<br>더 받는 돈</span><div class="ss-m"><i class="p">0</i><i class="p">0</i><i class="p">50</i><i class="e">×</i><i class="e">×</i><i class="e">×</i></div></div>
+  <p class="ss-note">아빠 1개월째가 끝나면 엄마 1개월째 차액, 아빠 2개월째가 끝나면 2개월째 차액… 이렇게 <b>한 달씩 따로</b> 들어와요. 아빠가 3개월만 쓰면 엄마의 4·5·6개월째는 그대로예요. (숫자는 엄마 통상임금 300만 원일 때 더 받는 돈, 만 원 단위 예시예요. 1·2개월째는 상한이 똑같이 250만 원이라 0이에요.)</p>
+  <p class="ss-h">③ 아빠도 6개월 다 쓰면 <small>엄마 6개월이 모두 올라가요</small></p>
+  <div class="ss-row"><span class="ss-who">👩 엄마</span><div class="ss-m">{''.join(f'<i class="t">{k}</i>' for k in range(1, 7))}</div></div>
+  <div class="ss-row"><span class="ss-who">👨 아빠</span><div class="ss-m">{''.join(f'<i class="t">{k}</i>' for k in range(1, 7))}</div></div>
+  <div class="ss-row ss-pay"><span class="ss-who">💸 엄마가<br>더 받는 돈</span><div class="ss-m"><i class="p">0</i><i class="p">0</i><i class="p">50</i><i class="p">100</i><i class="p">100</i><i class="p">100</i></div></div>
+</div>
+<p class="src">같은 색 칸 = 둘이 겹치는 개월. 겹치는 칸만 6+6 금액(상한 250·250·300·350·400·450만 원)으로 올라가요. 엄마·아빠 순서가 바뀌어도 똑같아요.</p>
 <h2>👫 6+6은 언제 되나요</h2>
 <p>아기가 생후 18개월이 되기 전에 엄마·아빠가 둘 다 육아휴직을 쓰면 돼요. 동시에 써도 되고, 한 사람이 먼저 쓰고 다른 사람이 나중에 써도 돼요. 6+6 상향은 두 사람이 공통으로 쓴 개월에만 붙어요. 내 3개월째가 300만 원으로 오르려면 배우자도 3개월째를 써야 해요. 그래서 먼저 쓰는 사람은 일반 급여로 받다가, 배우자의 1개월째·2개월째·3개월째…가 끝날 때마다 그달의 차액을 따로 받아요. 한 번에 받는 게 아니에요. 한 사람이 3개월만 쓰면 다른 사람도 3개월째까지만 올라가요. 계산기에 두 사람 시작일과 기간을 넣으면 이 정산이 달마다 표에 보여요. 공무원과 사립학교 교원은 대상이 아니에요. 부모가 각각 3개월 이상 쓰면 육아휴직 기간이 1년 6개월까지 늘어나요.</p>
 <h2>✅ 받으려면</h2>
