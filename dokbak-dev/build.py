@@ -3,7 +3,7 @@ import re
 #  play-data/plays.json (놀이 데이터) → dokbak/ (올릴 정적 사이트)
 #  사용: python3 dokbak-dev/build.py
 #  놀이를 고치거나 더하면 play-data 에서 고치고 이 스크립트를 다시 돌리면 페이지가 전부 새로 만들어져요.
-import json, os, shutil, html, datetime
+import json, os, shutil, html, datetime, hashlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEV = os.path.join(ROOT, 'dokbak-dev')
@@ -235,6 +235,9 @@ def page_keywords(path):
           'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도']}.get(path, [])
 
 NOINDEX = {'404.html', 'search.html', 'admin.html'} | {f'principles/{PR_SLUG[k]}.html' for k, v in PR_SRC.items() if not v}   # 연구 근거 없는 '놀이 만들기용 분류'는 검색엔진에 안 내보내요
+# 개인정보처리방침·이용약관 시행일: 내용을 바꿀 때만 손으로 고쳐요 (빌드할 때마다 바뀌면 안 돼요)
+POLICY_DATE = '2026년 10월 15일'
+
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
   up = '../' * depth
@@ -585,7 +588,7 @@ segs(); render();
 <h2>🗺 육아 지도</h2><p>「📍 내 위치」를 누르면 브라우저가 위치 허용을 물어봐요. 허용하면 내 위치는 <b>이 휴대폰에서만</b> 지도를 옮기는 데 쓰고, 서버에는 약 100m 단위로 반올림한 좌표만 보내요. 서버는 이 반올림한 좌표를 공공데이터포털(건강보험심사평가원·국립중앙의료원·행정안전부)에 전달해 주변 병원·약국·놀이시설을 찾고, 카카오 로컬 API에는 어느 시도인지 확인하는 데만 보내요. 위치는 어디에도 저장하지 않고, 같은 동네의 검색 결과만 잠깐 캐시해요.</p>
 <h2>쿠키와 광고 (Google 애드센스)</h2><p>이 사이트는 Google 애드센스 광고를 실을 수 있어요. 광고를 실으면 이렇게 돼요.</p><ul><li>Google을 포함한 제3자 광고 공급업체는 <b>쿠키</b>를 써서, 이용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여 줘요.</li><li>Google은 광고 쿠키를 써서 이 사이트와 인터넷의 다른 사이트 방문 기록을 바탕으로 광고를 게재할 수 있어요.</li><li>맞춤 광고는 <a href="https://adssettings.google.com" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 다른 광고 공급업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>에서 끌 수 있어요.</li><li>Google이 정보를 어떻게 쓰는지는 <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">Google 파트너 사이트 정보 이용 안내</a>에서 볼 수 있어요.</li></ul>
 <h2>공동육아 SOS</h2><p>공동육아 SOS 앱은 따로 운영되며, 그 앱의 개인정보 안내를 따라요.</p>
-<h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {datetime.date.today():%Y년 %m월 %d일}</p>'''), 'privacy.html')
+<h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {POLICY_DATE}</p>'''), 'privacy.html')
   files['contact.html'] = page('문의 | 오늘도 독박육아', '오늘도 독박육아 문의하기 · 잘못된 정보 알리기 · 놀이 제안', prose('문의', f'''<h1>✉️ 문의</h1>
 <p>궁금한 점, 잘못된 정보, 이런 놀이·정보가 있으면 좋겠다는 제안을 메일로 보내 주세요.</p>
 <div class="box"><h2>📮 메일</h2><p style="font-size:18px;margin:0"><a href="mailto:{CONTACT}">{CONTACT}</a></p><p class="src" style="margin:6px 0 0">보통 며칠 안에 답장해요. 아이 이름·연락처 같은 개인정보는 꼭 필요할 때만 적어 주세요.</p></div>
@@ -595,7 +598,7 @@ segs(); render();
 <h2>2. 놀이 정보</h2><p>놀이는 일반적인 참고 정보예요. 아이의 나이·발달·건강에 맞는지는 보호자가 판단해 주세요. 모든 놀이는 어른이 옆에서 지켜볼 때 해 주세요. 놀이 중 생긴 사고에 대해 사이트가 책임지기 어려워요.</p>
 <h2>2-1. 건강·발달·지원 정보</h2><p>육아 정보·연구·이유식 글은 공식 기관 안내와 연구를 쉽게 옮긴 <b>일반 정보</b>예요. 의사의 진료나 상담을 대신하지 않아요. 아이 건강·발달이 걱정되면 소아청소년과 의사와 상의해 주세요. 국가지원 금액·조건은 바뀔 수 있으니 신청 전에 공식 누리집에서 꼭 확인해 주세요.</p>
 <h2>3. 바뀔 수 있어요</h2><p>약관이 바뀌면 이 페이지에 알려 드려요.</p>
-<h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {datetime.date.today():%Y년 %m월 %d일}</p>'''), 'terms.html')
+<h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {POLICY_DATE}</p>'''), 'terms.html')
 
 
   # ── 참고한 연구
@@ -986,8 +989,18 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
   for path, txt in files.items():
     os.makedirs(os.path.dirname(os.path.join(OUT, path)), exist_ok=True)
     open(os.path.join(OUT, path), 'w', encoding='utf-8').write(txt)
+  # sitemap lastmod: 본문(<main>)이 실제로 바뀐 페이지만 날짜를 새로 적어요 (빌드할 때마다 전부 '오늘'로 바꾸면 검색엔진이 날짜를 믿지 않아요)
   today = datetime.date.today().isoformat()
-  urls = ''.join(f'<url><loc>{BASE}/{pretty(p)}</loc><lastmod>{today}</lastmod></url>' for p in sorted(files) if p not in NOINDEX)
+  lm_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'lastmod.json')
+  try: lm = json.load(open(lm_path, encoding='utf-8'))
+  except Exception: lm = {}
+  for p_ in files:
+    mm = re.search(r'<main>.*</main>', files[p_], re.S)
+    h_ = hashlib.sha1((mm.group(0) if mm else files[p_]).encode()).hexdigest()[:12]
+    if lm.get(p_, [None])[0] != h_: lm[p_] = [h_, today]
+  lm = {k: v for k, v in sorted(lm.items()) if k in files}
+  json.dump(lm, open(lm_path, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+  urls = ''.join(f'<url><loc>{BASE}/{pretty(p)}</loc><lastmod>{lm[p][1]}</lastmod></url>' for p in sorted(files) if p not in NOINDEX)
   open(os.path.join(OUT, 'sitemap.xml'), 'w').write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
   open(os.path.join(OUT, 'admin.html'), 'w', encoding='utf-8').write(page('방문 통계 | 오늘도 독박육아', '', ADMIN_BODY, 'admin.html', '', '<meta name="robots" content="noindex,nofollow">'))
   open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: {BASE}/sitemap.xml\n')
