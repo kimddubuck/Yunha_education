@@ -67,22 +67,24 @@
       const base = p.why === 'cap' ? `상한 ${p.c.cap}만 원` : p.why === 'floor' ? '하한 70만 원' : `통상임금 ${p.c.rate}%`;
       const note = later ? `${base} <small>6+6 차액은 배우자 ${i}개월째가 끝난 뒤에</small>` : (mode === 's' && i <= 6 && i > common) ? `${base} <small>배우자가 ${common}개월만 써서 6+6 아님</small>` : base;
       rows.push({i, sp, v: p.v, note, add: []});
-      if(later){ const d = pay(i, w, 's').v - p.v; if(d > 0){ diff += d; late.push([new Date(later.getTime() + 86400000), i, d]); } }
+      if(later){ const full = pay(i, w, 's').v, d = full - p.v; if(d > 0){ diff += d; late.push([new Date(later.getTime() + 86400000), i, d, full, p.v]); } }
     }
     // 차액을 실제로 들어오는 달 줄에 더해요
-    for(const [due, i, d] of late){
+    for(const [due, i, d, full, got] of late){
       const r = rows.find(x => x.sp && x.sp.a <= due && due <= x.sp.b);
-      if(r){ r.add.push([i, d]); continue; }
-      const k = due.getFullYear() + '-' + (due.getMonth() + 1); (extra[k] = extra[k] || {due, list: []}).list.push([i, d]);
+      if(r){ r.add.push([i, d, full, got]); continue; }
+      const k = due.getFullYear() + '-' + (due.getMonth() + 1); (extra[k] = extra[k] || {due, list: []}).list.push([i, d, full, got]);
     }
-    const addTxt = add => add.map(([i, d]) => `${i}개월째 차액 ${man(d)}`).join(' + ');
+    // "3개월째 차액 50만 (6+6 300만 − 받은 250만)" 처럼 뺄셈을 같이 적어요
+    const addTxt = add => add.map(([i, d, full, got]) => `${i}개월째 차액 ${man(d)} <small>6+6 ${man(full)} − 받은 ${man(got)}</small>`).join('<br>');
+    const settleBox = late.length ? `<p class="lp-total">💸 6+6 정산 모두: ${late.map(x => man(x[2])).join(' + ')} = <b>${man(diff)}</b> <small>(${won(diff)}, ${late.length}번에 나눠서)</small></p>` : '';
     const html = rows.map(r => { const sp = r.sp, tot = r.v + r.add.reduce((a, [, d]) => a + d, 0);
       const when = sp ? `<small>${fmt(sp.a, r.i === 1 || sp.a.getMonth() === 0)}~${fmt(sp.b)}</small>` : '';
       return `<tr${sp && sp.now ? ' class="lp-now"' : sp && sp.past ? ' class="lp-past"' : ''}${r.add.length ? ' data-add="1"' : ''}><td>${r.i}개월째${sp && sp.now ? ' <b>← 이번 달</b>' : ''}${when}</td><td>${r.note}${r.add.length ? `<br><b>+ ${addTxt(r.add)}</b>` : ''}</td><td class="num">${won(tot)}</td></tr>`; })
       .concat(Object.values(extra).sort((a, b) => a.due - b.due).map(x => { const tot = x.list.reduce((a, [, d]) => a + d, 0);
-        return `<tr data-add="1"><td>휴직 끝난 뒤<small>${x.due.getFullYear()}.${x.due.getMonth() + 1}</small></td><td><b>${addTxt(x.list)}</b></td><td class="num">${won(tot)}</td></tr>`; })).join('');
+        return `<tr data-add="1"><td>휴직 끝난 뒤<small>${x.due.getFullYear()}.${x.due.getMonth() + 1}</small></td><td><b>${addTxt(x.list)}</b></td><td class="num">${won(tot)}</td></tr>`; })).join('') + (late.length ? `<tr class="lp-tot"><td colspan="2">6+6 정산 합계 <small>${late.map(x => man(x[2])).join(' + ')}</small></td><td class="num">${won(diff)}</td></tr>` : '');
     sum += diff;
-    return {sum, end, diff, common, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${html}</tbody></table></div>`};
+    return {sum, end, diff, common, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${html}</tbody></table></div>${settleBox}`};
   }
 
   function render(){
@@ -95,12 +97,12 @@
     if(!(w > 0)){ out.innerHTML = '<p class="lp-empty">👆 통상임금을 넣으면 달마다 받는 돈을 계산해 드려요.</p>'; return; }
     const start = parseD(st.d), start2 = parseD(st.d2);
     const me = table(w, st.n, st.mode, start, st.mode === 's' ? {start: start2, n: Number(st.w2) > 0 ? st.n2 : 6} : null);
-    let html = `<div class="lp-sum"><span>${st.mode === 's' ? '나' : '육아휴직'} ${st.n}개월 동안</span><b>${won(me.sum)}</b><small>한 달 평균 ${man(me.sum / st.n)}${start ? ` · ${fmt(start, true)}부터 ${fmt(me.end, true)}까지` : ''}</small></div>`;
+    let html = `<div class="lp-sum"><span>${st.mode === 's' ? '나' : '육아휴직'} ${st.n}개월 동안</span><b>${won(me.sum)}</b><small>${me.diff > 0 ? `6+6 정산 ${man(me.diff)} 포함 · ` : ''}한 달 평균 ${man(me.sum / st.n)}${start ? ` · ${fmt(start, true)}부터 ${fmt(me.end, true)}까지` : ''}</small></div>`;
         if(st.mode === 's'){
       const w2 = Number(st.w2);
       if(w2 > 0){
         const you = table(w2, st.n2, 's', start2, {start, n: st.n});
-        html += `<div class="lp-sum lp-sum2"><span>배우자 ${st.n2}개월 동안</span><b>${won(you.sum)}</b><small>부부 합계 ${won(me.sum + you.sum)}${start2 ? ` · ${fmt(start2, true)}부터 ${fmt(you.end, true)}까지` : ''}</small></div>`;
+        html += `<div class="lp-sum lp-sum2"><span>배우자 ${st.n2}개월 동안</span><b>${won(you.sum)}</b><small>${you.diff > 0 ? `6+6 정산 ${man(you.diff)} 포함 · ` : ''}부부 합계 ${won(me.sum + you.sum)}${start2 ? ` · ${fmt(start2, true)}부터 ${fmt(you.end, true)}까지` : ''}</small></div>`;
         const alone = table(w, st.n, 'g', null, null).sum;
         html += `<p class="lp-cmp">같은 조건에서 나만 쓰면(일반 육아휴직 급여) <b>${won(alone)}</b>이에요. 6+6으로 나는 <b>${won(me.sum - alone)}</b> 더 받아요.</p>`;
         if(me.common < Math.min(6, st.n) || you.common < Math.min(6, st.n2)) html += `<p class="lp-cmp">6+6 상향은 두 사람이 <b>공통으로 쓴 ${me.common}개월</b>에만 붙어요. 한 사람이 ${me.common}개월만 쓰면 다른 사람도 ${me.common}개월째까지만 올라가요.</p>`;
