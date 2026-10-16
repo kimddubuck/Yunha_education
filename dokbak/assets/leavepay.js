@@ -46,24 +46,35 @@
     sel.value = String(Math.min(val, max));
   }
 
-  // 6+6에서 먼저 쓰는 사람: 배우자가 휴직을 시작하기 전에 끝난 달은 일반 급여로 받고,
-  // 배우자가 시작한 뒤(배우자가 급여를 신청할 때) 그동안의 차액을 한 번에 정산받아요. other = 배우자 휴직 시작일
+  // 6+6 특례는 부모가 "공통으로 쓴 개월"에만 붙어요 (고용노동부 안내).
+  //  - 내 k개월째 상향분은 배우자도 k개월째를 다 써야 붙어요. 그 전에 받는 달은 일반 급여로 먼저 받고, 배우자의 k개월째가 끝나면 차액을 받아요(달마다 따로).
+  //  - 배우자가 3개월만 쓰면 나도 3개월째까지만 특례예요.
+  // w 통상임금, n 내 개월수, mode g/s/h, start 내 시작일, other = {start, n} 배우자 (6+6일 때만)
   function table(w, n, mode, start, other){
-    let sum = 0, end = null, diff = 0, settled = false;
-    const rows = [];
-    const settle = () => { if(diff > 0 && !settled){ settled = true; rows.push(`<tr class="lp-settle"><td>6+6 차액 정산<small>배우자가 휴직 급여를 신청하면 한 번에</small></td><td>그동안 덜 받은 몫</td><td class="num">+${won(diff)}</td></tr>`); } };
+    let sum = 0, end = null, diff = 0;
+    const common = mode === 's' ? Math.min(6, n, other && other.n ? other.n : 6) : 0;
+    const items = [];   // {t: 정렬용 날짜, html}
     for(let i = 1; i <= n; i++){
       const sp = span(start, i); if(sp) end = sp.b;
-      const early = mode === 's' && i <= 6 && sp && other && sp.b < other;   // 배우자가 시작하기 전에 끝난 달 (7개월째부터는 어차피 같아요)
-      if(!early) settle();
-      const p = pay(i, w, early ? 'g' : mode); sum += p.v;
-      if(early) diff += pay(i, w, 's').v - p.v;
-      const note = early ? `일반 급여로 먼저 (${p.why === 'cap' ? `상한 ${p.c.cap}만 원` : `통상임금 ${p.c.rate}%`})` : p.why === 'cap' ? `상한 ${p.c.cap}만 원` : p.why === 'floor' ? '하한 70만 원' : `통상임금 ${p.c.rate}%`;
+      let m = mode, later = null;   // later: 이 달의 상향분을 배우자 k개월째가 끝난 뒤에 받아요
+      if(mode === 's' && i <= 6){
+        if(i > common) m = 'g';   // 배우자가 그만큼 안 써서 특례가 안 붙는 달
+        else if(sp && other && other.start){ const o = span(other.start, i); if(o.b > sp.b){ m = 'g'; later = o.b; } }
+      }
+      const p = pay(i, w, m); sum += p.v;
+      const base = p.why === 'cap' ? `상한 ${p.c.cap}만 원` : p.why === 'floor' ? '하한 70만 원' : `통상임금 ${p.c.rate}%`;
+      const note = later ? `먼저 일반 급여로 (${base})` : (mode === 's' && i <= 6 && i > common) ? `일반 급여 (${base}) · 배우자가 ${common}개월만 써서` : base;
       const when = sp ? `<small>${fmt(sp.a, i === 1 || sp.a.getMonth() === 0)}~${fmt(sp.b)}</small>` : '';
-      rows.push(`<tr${sp && sp.now ? ' class="lp-now"' : sp && sp.past ? ' class="lp-past"' : ''}><td>${i}개월째${sp && sp.now ? ' <b>← 이번 달</b>' : ''}${when}</td><td>${note}</td><td class="num">${won(p.v)}</td></tr>`);
+      items.push({t: sp ? sp.a.getTime() : i, html: `<tr${sp && sp.now ? ' class="lp-now"' : sp && sp.past ? ' class="lp-past"' : ''}><td>${i}개월째${sp && sp.now ? ' <b>← 이번 달</b>' : ''}${when}</td><td>${note}</td><td class="num">${won(p.v)}</td></tr>`});
+      if(later){
+        const d = pay(i, w, 's').v - p.v;
+        if(d > 0){ diff += d; const due = new Date(later.getTime() + 86400000);
+          items.push({t: due.getTime(), html: `<tr class="lp-settle"><td>${i}개월째 차액<small>배우자 ${i}개월째(~${fmt(later, true)})가 끝난 뒤</small></td><td>6+6으로 다시 계산</td><td class="num">+${won(d)}</td></tr>`}); }
+      }
     }
-    settle(); sum += diff;
-    return {sum, end, diff, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`};
+    items.sort((a, b) => a.t - b.t);
+    sum += diff;
+    return {sum, end, diff, common, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${items.map(x => x.html).join('')}</tbody></table></div>`};
   }
 
   function render(){
@@ -75,16 +86,17 @@
     const w = Number(st.w), out = $('#lpOut');
     if(!(w > 0)){ out.innerHTML = '<p class="lp-empty">👆 통상임금을 넣으면 달마다 받는 돈을 계산해 드려요.</p>'; return; }
     const start = parseD(st.d), start2 = parseD(st.d2);
-    const me = table(w, st.n, st.mode, start, st.mode === 's' ? start2 : null);
+    const me = table(w, st.n, st.mode, start, st.mode === 's' ? {start: start2, n: Number(st.w2) > 0 ? st.n2 : 6} : null);
     let html = `<div class="lp-sum"><span>${st.mode === 's' ? '나' : '육아휴직'} ${st.n}개월 동안</span><b>${won(me.sum)}</b><small>한 달 평균 ${man(me.sum / st.n)}${start ? ` · ${fmt(start, true)}부터 ${fmt(me.end, true)}까지` : ''}</small></div>`;
         if(st.mode === 's'){
       const w2 = Number(st.w2);
       if(w2 > 0){
-        const you = table(w2, st.n2, 's', start2, start);
+        const you = table(w2, st.n2, 's', start2, {start, n: st.n});
         html += `<div class="lp-sum lp-sum2"><span>배우자 ${st.n2}개월 동안</span><b>${won(you.sum)}</b><small>부부 합계 ${won(me.sum + you.sum)}${start2 ? ` · ${fmt(start2, true)}부터 ${fmt(you.end, true)}까지` : ''}</small></div>`;
-        const alone = table(w, st.n, 'g', null).sum;
+        const alone = table(w, st.n, 'g', null, null).sum;
         html += `<p class="lp-cmp">같은 조건에서 나만 쓰면(일반 육아휴직 급여) <b>${won(alone)}</b>이에요. 6+6으로 나는 <b>${won(me.sum - alone)}</b> 더 받아요.</p>`;
-        if(me.diff > 0 || you.diff > 0) html += `<p class="lp-cmp">${me.diff > 0 ? '내가' : '배우자가'} 먼저 휴직을 시작했어요. 배우자가 시작하기 전에 끝난 달은 일반 급여로 받고, 나중에 시작한 사람이 급여를 신청하면 6+6 기준으로 다시 계산해서 <b>${won(me.diff || you.diff)}</b>을 한 번에 정산받아요.</p>`;
+        if(me.common < Math.min(6, st.n) || you.common < Math.min(6, st.n2)) html += `<p class="lp-cmp">6+6 상향은 두 사람이 <b>공통으로 쓴 ${me.common}개월</b>에만 붙어요. 한 사람이 ${me.common}개월만 쓰면 다른 사람도 ${me.common}개월째까지만 올라가요.</p>`;
+        if(me.diff > 0 || you.diff > 0) html += `<p class="lp-cmp">${me.diff > 0 ? '내가' : '배우자가'} 먼저 시작했어요. 내 k개월째 상향분은 배우자도 k개월째를 다 써야 붙어요. 그래서 먼저 쓴 사람은 일반 급여로 받다가, 배우자의 1개월째·2개월째…가 끝날 때마다 그달의 차액(모두 <b>${won(me.diff || you.diff)}</b>)을 따로 받아요.</p>`;
         html += `<details class="lp-d" open><summary>📋 나 · 달마다</summary>${me.html}</details><details class="lp-d"><summary>📋 배우자 · 달마다</summary>${you.html}</details>`;
       } else {
         html += `<p class="lp-cmp">배우자 통상임금도 넣으면 부부 합계와 일반 급여와의 차이를 보여 드려요.</p><details class="lp-d" open><summary>📋 달마다</summary>${me.html}</details>`;
