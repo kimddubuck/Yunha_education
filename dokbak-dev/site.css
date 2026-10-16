@@ -631,3 +631,17 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .lp-t th:first-child,.lp-t td:first-child{width:27%;white-space:normal;overflow-wrap:anywhere}
 .lp-t th.num,.lp-t td.num{width:26%;white-space:normal}
 .lp-t td:nth-child(2){overflow-wrap:anywhere}
+.lp-both th:first-child,.lp-both td:first-child{width:21%}
+.lp-both th.num,.lp-both td.num{width:auto}
+.lp-both td.num small{display:block;font-weight:400;color:var(--soft);font-size:10.5px;line-height:1.3}
+.lp-both td.lp-none{color:var(--line)}
+.lp-both td:first-child b{display:block;color:var(--teal-ink);font-size:11px}
+.lp-note{margin:6px 0 0;font-size:12.5px;color:var(--soft)}
+.lp-both th,.lp-both td{padding:5px 3px}
+.lp-both th:first-child,.lp-both td:first-child{width:17%;white-space:nowrap}
+.lp-both td:first-child small{display:block;color:var(--teal-ink);font-size:10px;font-weight:700}
+.lp-both td.num{font-size:13.5px;white-space:nowrap}
+.lp-both td.num small{font-size:10px}
+.lp-both td.lp-plus{color:var(--teal-ink);font-weight:700}
+.lp-both tr.lp-year td{padding:8px 3px 2px;font-size:11.5px;font-weight:700;color:var(--soft);border-bottom:0;background:transparent}
+.lp-dh{margin:0 0 4px;font-weight:700;font-size:14.5px}
