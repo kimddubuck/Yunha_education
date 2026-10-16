@@ -78,8 +78,8 @@
     // "3개월째 차액 50만 (6+6 300만 − 받은 250만)" 처럼 뺄셈을 같이 적어요
     // 📅 달력 달마다 (부부 한눈에 표용): {'2025-10': {v, i, add}}
     const cal = {};
-    rows.forEach(r => { if(!r.sp) return; const k = r.sp.a.getFullYear() + '-' + (r.sp.a.getMonth() + 1); cal[k] = {v: r.v + r.add.reduce((a, [, d]) => a + d, 0), i: r.i, add: r.add.map(x => x[1])}; });
-    Object.entries(extra).forEach(([k, x]) => { cal[k] = {v: x.list.reduce((a, [, d]) => a + d, 0), i: 0, add: x.list.map(y => y[1])}; });
+    rows.forEach(r => { if(!r.sp) return; const k = r.sp.a.getFullYear() + '-' + (r.sp.a.getMonth() + 1); cal[k] = {v: r.v + r.add.reduce((a, [, d]) => a + d, 0), i: r.i, add: r.add.map(x => x[1]), calc: r.add.map(x => `${x[2]}−${x[3]}`), six: r.add.length > 0 || (mode === 's' && r.i <= common && !r.note.includes('6+6 아님') && !r.note.includes('차액은 배우자'))}; });
+    Object.entries(extra).forEach(([k, x]) => { cal[k] = {v: x.list.reduce((a, [, d]) => a + d, 0), i: 0, add: x.list.map(y => y[1]), calc: x.list.map(y => `${y[2]}−${y[3]}`), six: true}; });
     const addTxt = add => add.map(([i, d, full, got, fl, gl]) => `${i}개월째 차액 ${man(d)} <small>${fl} − 먼저 받은 ${gl}</small>`).join('<br>');
     const settleBox = late.length ? `<p class="lp-total">💸 6+6 정산 모두: ${late.map(x => man(x[2])).join(' + ')} = <b>${man(diff)}</b> <small>(${won(diff)}, ${late.length}번에 나눠서)</small></p>` : '';
     const html = rows.map(r => { const sp = r.sp, tot = r.v + r.add.reduce((a, [, d]) => a + d, 0);
@@ -97,12 +97,14 @@
     const now = new Date(), ny = now.getFullYear(), nm = now.getMonth() + 1;
     const mw = v => (Math.round(v * 10) / 10).toLocaleString('ko-KR') + '만';   // 좁게: '250만'
     let tm = 0, ty = 0, py = 0;
-    const cell = c => c ? `<td class="num${c.add.length ? ' lp-plus' : ''}">${mw(c.v)}<small>${c.i ? c.i + '개월째' : '정산'}${c.add.length ? ' +' + c.add.map(d => d + '만').join('+') : ''}</small></td>` : '<td class="num lp-none">–</td>';
+    // 칸: 금액 / 개월째 / (차액이 있으면) +50만 ← 300−250
+    const cell = c => c ? `<td class="num${c.add.length ? ' lp-plus' : ''}${c.six ? ' lp-six' : ''}">${mw(c.v)}<small>${c.i ? c.i + '개월째' : '정산'}</small>${c.add.length ? `<small class="lp-calc">+${c.add.map(d => d + '만').join('+')} <i>${c.calc.join(', ')}</i></small>` : ''}</td>` : '<td class="num lp-none">–</td>';
     let rows = '';
     keys.forEach(([y, m]) => { const k = y + '-' + m, a = me.cal[k], b = you.cal[k]; tm += a ? a.v : 0; ty += b ? b.v : 0;
       if(y !== py){ rows += `<tr class="lp-year"><td colspan="4">${y}년</td></tr>`; py = y; }
-      rows += `<tr${y === ny && m === nm ? ' class="lp-now"' : ''}><td>${m}월${y === ny && m === nm ? '<small>이번 달</small>' : ''}</td>${cell(a)}${cell(b)}<td class="num"><b>${mw((a ? a.v : 0) + (b ? b.v : 0))}</b></td></tr>`; });
-    return `<div class="lp-tw"><table class="lp-t lp-both"><thead><tr><th>달</th><th class="num">나</th><th class="num">배우자</th><th class="num">합계</th></tr></thead><tbody>${rows}<tr class="lp-tot"><td>모두</td><td class="num">${mw(tm)}</td><td class="num">${mw(ty)}</td><td class="num">${mw(tm + ty)}</td></tr></tbody></table></div><p class="lp-note">단위는 만 원이에요. 각 달은 그달에 시작하는 '개월째' 급여예요. 실제 입금은 그달이 끝나고 신청한 뒤라 한 달쯤 늦어요. '+50만'은 그달에 같이 들어오는 6+6 차액이에요.</p>`;
+      const six = (a && a.six) || (b && b.six);   // 6+6이 붙는 달(겹치는 개월·차액)은 띠로 강조
+      rows += `<tr class="${y === ny && m === nm ? 'lp-now' : ''}${six ? ' lp-66' : ''}"><td>${m}월${y === ny && m === nm ? '<small>이번 달</small>' : ''}</td>${cell(a)}${cell(b)}<td class="num"><b>${mw((a ? a.v : 0) + (b ? b.v : 0))}</b></td></tr>`; });
+    return `<div class="lp-tw"><table class="lp-t lp-both"><thead><tr><th>달</th><th class="num">나</th><th class="num">배우자</th><th class="num">합계</th></tr></thead><tbody>${rows}<tr class="lp-tot"><td>모두</td><td class="num">${mw(tm)}</td><td class="num">${mw(ty)}</td><td class="num">${mw(tm + ty)}</td></tr></tbody></table></div><p class="lp-note">단위는 만 원이에요. 각 달은 그달에 시작하는 '개월째' 급여예요. 실제 입금은 그달이 끝나고 신청한 뒤라 한 달쯤 늦어요. 색 띠가 있는 달은 6+6이 붙는 달이에요. '+50만 300−250'은 그달에 같이 들어오는 차액이고, 뒤 숫자는 '6+6 금액 − 먼저 받은 금액'(만 원)이에요.</p>`;
   }
   function render(){
     document.querySelectorAll('#lpMode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === st.mode)));

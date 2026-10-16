@@ -645,3 +645,8 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .lp-both td.lp-plus{color:var(--teal-ink);font-weight:700}
 .lp-both tr.lp-year td{padding:8px 3px 2px;font-size:11.5px;font-weight:700;color:var(--soft);border-bottom:0;background:transparent}
 .lp-dh{margin:0 0 4px;font-weight:700;font-size:14.5px}
+.lp-both tr.lp-66 td{background:var(--teal-tint)}
+.lp-both tr.lp-66 td:first-child{box-shadow:inset 3px 0 0 var(--teal)}
+.lp-both tr.lp-now td{box-shadow:inset 0 -2px 0 var(--teal)}
+.lp-both td.num small.lp-calc{color:var(--teal-ink);font-weight:700;font-size:10px}
+.lp-both td.num small.lp-calc i{font-style:normal;font-weight:400;color:var(--soft);font-size:9.5px;letter-spacing:-.02em}
