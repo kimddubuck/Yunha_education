@@ -125,6 +125,7 @@
         const alone = table(w, st.n, 'g', null, null).sum;
         html += `<p class="lp-cmp">같은 조건에서 나만 쓰면(일반 육아휴직 급여) <b>${won(alone)}</b>이에요. 6+6으로 나는 <b>${won(me.sum - alone)}</b> 더 받아요.</p>`;
         if(me.common < Math.min(6, st.n) || you.common < Math.min(6, st.n2)) html += `<p class="lp-cmp">6+6 상향은 두 사람이 <b>공통으로 쓴 ${me.common}개월</b>에만 붙어요. 한 사람이 ${me.common}개월만 쓰면 다른 사람도 ${me.common}개월째까지만 올라가요.</p>`;
+        if(me.diff > 0 || you.diff > 0) html += `<p class="lp-warn">⚠️ <b>차액이 들어오는 시점은 확실하지 않아요.</b> 공식 자료에는 "나중에 쓰는 사람의 급여를 줄 때 먼저 쓴 사람의 차액을 준다"고만 적혀 있어요. 이 표는 배우자의 k개월째가 끝난 달에 k개월째 차액이 들어온다고 보고 그렸어요(실제로 그렇게 받았다는 경험을 참고했어요). 금액 합계는 같지만 들어오는 달은 다를 수 있으니 참고만 하고, 고용24 지급 내역이나 고용센터(1350)에서 확인하세요.</p>`;
         if(me.diff > 0 || you.diff > 0) html += `<p class="lp-cmp">${me.diff > 0 ? '내가' : '배우자가'} 먼저 시작했어요. 내 k개월째 상향분은 배우자도 k개월째를 다 써야 붙어요. 그래서 먼저 쓴 사람은 보통 급여로 받다가, 배우자의 1개월째·2개월째…가 끝날 때마다 그달 차액이 더해져 들어와요(모두 <b>${won(me.diff || you.diff)}</b>). 아래 표의 굵은 줄이 그 달이에요.</p>`;
         if(start && start2) html += `<div class="lp-d lp-main"><p class="lp-dh">👫 부부 한눈에 · 달마다</p>${both(me, you)}</div>`;
         html += `<details class="lp-d"${start && start2 ? '' : ' open'}><summary>📋 나 · 자세히</summary>${me.html}</details><details class="lp-d"><summary>📋 배우자 · 자세히</summary>${you.html}</details>`;
