@@ -25,7 +25,18 @@
   const won = v => Math.round(v * MAN).toLocaleString('ko-KR') + '원';
   const man = v => (Math.round(v * 10) / 10).toLocaleString('ko-KR') + '만 원';
 
-  const st = {mode: 'g', w: '', n: 12, w2: '', n2: 6};
+  const st = {mode: 'g', w: '', n: 12, w2: '', n2: 6, d: '', d2: ''};
+  // 휴직 시작일 기준 i번째 달의 기간 (예: 11/10 시작 → 1개월째 11/10~12/9). 날짜가 없으면 null
+  const pad = n => String(n).padStart(2, '0');
+  const addM = (d, k) => { const x = new Date(d.getFullYear(), d.getMonth() + k, 1); const last = new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate(); x.setDate(Math.min(d.getDate(), last)); return x; };
+  const parseD = v => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+  const fmt = (d, year) => (year ? d.getFullYear() + '.' : '') + (d.getMonth() + 1) + '.' + d.getDate();
+  function span(start, i){
+    if(!start) return null;
+    const a = addM(start, i - 1), b = new Date(addM(start, i).getTime() - 86400000);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return {a, b, now: a <= today && today <= b, past: b < today};
+  }
   try{ Object.assign(st, JSON.parse(localStorage.getItem('dokbakLeave') || '{}')); }catch(e){}
   const save = () => { try{ localStorage.setItem('dokbakLeave', JSON.stringify(st)); }catch(e){} };
 
@@ -35,15 +46,17 @@
     sel.value = String(Math.min(val, max));
   }
 
-  function table(w, n, mode){
-    let sum = 0;
+  function table(w, n, mode, start){
+    let sum = 0, end = null;
     const rows = [];
     for(let i = 1; i <= n; i++){
       const p = pay(i, w, mode); sum += p.v;
       const note = p.why === 'cap' ? `상한 ${p.c.cap}만 원` : p.why === 'floor' ? '하한 70만 원' : `통상임금 ${p.c.rate}%`;
-      rows.push(`<tr><td>${i}개월째</td><td>${note}</td><td class="num">${won(p.v)}</td></tr>`);
+      const sp = span(start, i); if(sp) end = sp.b;
+      const when = sp ? `<small>${fmt(sp.a, i === 1 || sp.a.getMonth() === 0)}~${fmt(sp.b)}</small>` : '';
+      rows.push(`<tr${sp && sp.now ? ' class="lp-now"' : sp && sp.past ? ' class="lp-past"' : ''}><td>${i}개월째${sp && sp.now ? ' <b>← 이번 달</b>' : ''}${when}</td><td>${note}</td><td class="num">${won(p.v)}</td></tr>`);
     }
-    return {sum, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`};
+    return {sum, end, html: `<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>계산</th><th class="num">받는 돈</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`};
   }
 
   function render(){
@@ -54,14 +67,15 @@
     st.n = Number($('#lpN').value);
     const w = Number(st.w), out = $('#lpOut');
     if(!(w > 0)){ out.innerHTML = '<p class="lp-empty">👆 통상임금을 넣으면 달마다 받는 돈을 계산해 드려요.</p>'; return; }
-    const me = table(w, st.n, st.mode);
-    let html = `<div class="lp-sum"><span>${st.mode === 's' ? '나' : '육아휴직'} ${st.n}개월 동안</span><b>${won(me.sum)}</b><small>한 달 평균 ${man(me.sum / st.n)}</small></div>`;
-    if(st.mode === 's'){
+    const start = parseD(st.d), start2 = parseD(st.d2);
+    const me = table(w, st.n, st.mode, start);
+    let html = `<div class="lp-sum"><span>${st.mode === 's' ? '나' : '육아휴직'} ${st.n}개월 동안</span><b>${won(me.sum)}</b><small>한 달 평균 ${man(me.sum / st.n)}${start ? ` · ${fmt(start, true)}부터 ${fmt(me.end, true)}까지` : ''}</small></div>`;
+        if(st.mode === 's'){
       const w2 = Number(st.w2);
       if(w2 > 0){
-        const you = table(w2, st.n2, 's');
-        html += `<div class="lp-sum lp-sum2"><span>배우자 ${st.n2}개월 동안</span><b>${won(you.sum)}</b><small>부부 합계 ${won(me.sum + you.sum)}</small></div>`;
-        const alone = table(w, st.n, 'g').sum;
+        const you = table(w2, st.n2, 's', start2);
+        html += `<div class="lp-sum lp-sum2"><span>배우자 ${st.n2}개월 동안</span><b>${won(you.sum)}</b><small>부부 합계 ${won(me.sum + you.sum)}${start2 ? ` · ${fmt(start2, true)}부터 ${fmt(you.end, true)}까지` : ''}</small></div>`;
+        const alone = table(w, st.n, 'g', null).sum;
         html += `<p class="lp-cmp">같은 조건에서 나만 쓰면(일반 육아휴직 급여) <b>${won(alone)}</b>이에요. 6+6으로 나는 <b>${won(me.sum - alone)}</b> 더 받아요.</p>`;
         html += `<details class="lp-d" open><summary>📋 나 · 달마다</summary>${me.html}</details><details class="lp-d"><summary>📋 배우자 · 달마다</summary>${you.html}</details>`;
       } else {
@@ -76,7 +90,7 @@
 
   $('#lpMode').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; st.mode = b.dataset.v; save(); render(); });
   const bind = (id, k, num) => { const el = $(id); el.value = st[k]; el.addEventListener('input', () => { st[k] = num ? el.value.replace(/[^\d.]/g, '') : el.value; save(); render(); }); };
-  bind('#lpW', 'w', true); bind('#lpW2', 'w2', true);
+  bind('#lpW', 'w', true); bind('#lpW2', 'w2', true); bind('#lpD', 'd'); bind('#lpD2', 'd2');
   $('#lpN').addEventListener('change', e => { st.n = Number(e.target.value); save(); render(); });
   $('#lpN2').addEventListener('change', e => { st.n2 = Number(e.target.value); save(); render(); });
   render();

@@ -13,8 +13,8 @@
 <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
-<link rel="stylesheet" href="../assets/site.css?v=202610160505">
-<script defer src="../assets/leavepay.js?v=202610160505"></script></head>
+<link rel="stylesheet" href="../assets/site.css?v=202610160633">
+<script defer src="../assets/leavepay.js?v=202610160633"></script></head>
 <body>
 <header class="top"><div class="wrap">
   <a class="logo" href=".././"><img src="../assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
@@ -24,13 +24,15 @@
 </div></header>
 <main>
 <div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../support.html">지원</a> › 육아휴직 급여 계산기</p>
-<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">💰 계산기</span><h1 style="font-size:clamp(26px,5vw,36px)">육아휴직 급여, 달마다 얼마 받을까?</h1><p>통상임금과 휴직 개월수만 넣으면 달마다 받는 돈과 합계를 계산해요. 부부가 함께 쓰는 6+6 부모육아휴직제, 한부모 근로자도 고를 수 있어요. 넣은 숫자는 이 휴대폰에만 남아요.</p></div>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">💰 계산기</span><h1 style="font-size:clamp(26px,5vw,36px)">육아휴직 급여, 달마다 얼마 받을까?</h1><p>통상임금과 휴직 시작일, 개월수를 넣으면 달마다 받는 돈과 합계를 계산해요. 시작일을 넣으면 몇 월 며칠부터 며칠까지가 몇 개월째인지, 이번 달은 얼마인지도 보여 줘요. 부부가 함께 쓰는 6+6 부모육아휴직제, 한부모 근로자도 고를 수 있어요. 넣은 숫자는 이 휴대폰에만 남아요.</p></div>
 <div class="box gform">
   <div class="row"><span>누가 쓰나요</span><div class="seg" id="lpMode"><button type="button" data-v="g" aria-pressed="true">🙋 나 혼자</button><button type="button" data-v="s" aria-pressed="false">👫 부부 함께 (6+6)</button><button type="button" data-v="h" aria-pressed="false">👤 한부모</button></div></div>
   <div class="row"><span>통상임금</span><div class="gin"><input id="lpW" type="text" inputmode="decimal" placeholder="한 달 통상임금 (만 원) 예: 320" aria-label="내 통상임금 (만 원)"></div></div>
+  <div class="row"><span>휴직 시작일</span><div class="gin"><input id="lpD" type="date" aria-label="내 휴직 시작일"></div></div>
   <div class="row"><span>휴직 기간</span><div class="gin"><select id="lpN" aria-label="내 휴직 개월수"></select></div></div>
   <div id="lpPartner" hidden>
     <div class="row"><span>배우자 통상임금</span><div class="gin"><input id="lpW2" type="text" inputmode="decimal" placeholder="배우자 통상임금 (만 원)" aria-label="배우자 통상임금 (만 원)"></div></div>
+    <div class="row"><span>배우자 시작일</span><div class="gin"><input id="lpD2" type="date" aria-label="배우자 휴직 시작일"></div></div>
     <div class="row"><span>배우자 기간</span><div class="gin"><select id="lpN2" aria-label="배우자 휴직 개월수"></select></div></div>
   </div>
   <p class="src" style="margin:8px 0 0">통상임금은 기본급처럼 매달 정해서 받는 돈이에요. 급여명세서의 기본급과 고정수당을 더해 보면 돼요. 야근 수당, 성과급처럼 달마다 달라지는 돈은 빼요.</p>
@@ -51,7 +53,7 @@
 <p>아기가 생후 18개월이 되기 전에 엄마·아빠가 둘 다 육아휴직을 쓰면 돼요. 동시에 써도 되고, 한 사람이 먼저 쓰고 다른 사람이 나중에 써도 돼요. 나중에 쓰는 사람이 신청할 때 먼저 쓴 사람의 첫 6개월도 6+6 기준으로 다시 계산해서 차액을 줘요. 공무원과 사립학교 교원은 대상이 아니에요. 부모가 각각 3개월 이상 쓰면 육아휴직 기간이 1년 6개월까지 늘어나요.</p>
 <h2>✅ 받으려면</h2>
 <p>휴직을 시작한 날 기준으로 고용보험 가입 기간(피보험 단위기간)이 180일 이상이어야 해요. 휴직을 시작하고 1개월이 지난 뒤부터, 휴직이 끝난 뒤 12개월 안에 고용24에서 신청해요. 기한이 지나면 받을 수 없어요.</p>
-<p class="gnote">⚠️ 이 계산기는 고용노동부 안내 기준을 그대로 적용해 본 거예요. 한 달을 다 채우지 못한 달(일할 계산), 휴직 중에 회사에서 받는 돈, 단기 육아휴직(1~2주)은 계산하지 않아요. 한부모·장애아동 부모의 기간 연장 기준은 자료에서 확인하지 못해 12개월까지만 계산해요. 신청 전에 고용센터(국번 없이 1350)에서 내 경우를 꼭 확인하세요.</p>
+<p class="gnote">⚠️ 이 계산기는 고용노동부 안내 기준을 그대로 적용해 본 거예요. '개월째'는 휴직 시작일부터 한 달씩 세요(11월 10일 시작이면 1개월째는 11월 10일~12월 9일). 급여는 보통 그달이 지난 뒤 신청해서 받아요. 한 달을 다 채우지 못한 달(일할 계산), 휴직 중에 회사에서 받는 돈, 단기 육아휴직(1~2주)은 계산하지 않아요. 한부모·장애아동 부모의 기간 연장 기준은 자료에서 확인하지 못해 12개월까지만 계산해요. 신청 전에 고용센터(국번 없이 1350)에서 내 경우를 꼭 확인하세요.</p>
 <p>📖 더 읽기: <a href="parental-leave-pay.html">육아휴직 급여는 한 달에 얼마까지 나올까?</a> · <a href="six-plus-six.html">6+6 부모육아휴직제 사례별 계산</a> · <a href="maternity-paternity-leave.html">출산휴가와 배우자 출산휴가</a></p>
 </div>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 2026년 10월에 확인한 기준이에요.</p><details class="srcd"><summary>📄 육아휴직급여 제도안내 <small>고용24(work24.go.kr) · 고용노동부 제도안내</small></summary><p>고용노동부가 운영하는 고용보험·육아휴직급여 안내와 신청 누리집이에요. 달마다 몇 %, 상한 얼마인지와 신청 기한이 여기 있어요. <a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000251&systId=SI00000402" rel="noopener">원문 열기</a></p></details><details class="srcd"><summary>📄 생후 18개월 이내 자녀가 있다면 &#x27;6+6 부모육아휴직제&#x27; <small>대한민국 정책브리핑(korea.kr) · 고용노동부 카드뉴스</small></summary><p>6+6 부모육아휴직제의 달마다 상한(250·250·300·350·400·450만 원)이 이 자료에 있어요. <a href="https://www.korea.kr/multi/visualNewsView.do?newsId=148930202" rel="noopener">원문 열기</a></p></details><details class="srcd"><summary>📄 고용보험법 시행령 제95조(육아휴직 급여)·제95조의3(부모 모두 육아휴직 시 특례) <small>국가법령정보센터(law.go.kr)</small></summary><p>육아휴직 급여의 비율·상한·하한(월 70만 원)과 6+6 특례의 법 조문이에요. <a href="https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EC%9A%A9%EB%B3%B4%ED%97%98%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9" rel="noopener">원문 열기</a></p></details></div>

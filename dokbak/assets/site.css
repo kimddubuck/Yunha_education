@@ -589,3 +589,8 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .tools a b{font-size:15.5px}
 .tools a span{font-size:13px;color:var(--soft);line-height:1.45}
 @media (min-width:720px){.tools{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.lp-t td small{display:block;color:var(--soft);font-size:12px;font-variant-numeric:tabular-nums}
+.lp-t tr.lp-now td{background:var(--teal-tint)}
+.lp-t tr.lp-now td b{color:var(--teal-ink);font-size:12px}
+.lp-t tr.lp-past td{color:var(--soft)}
+.gform .row>span{flex-basis:84px}
