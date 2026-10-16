@@ -343,6 +343,7 @@ def build():
   shutil.copytree(os.path.join(DEV, 'vendor', 'leaflet'), os.path.join(OUT, 'assets', 'leaflet'))
   shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
   shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
+  shutil.copy(os.path.join(DEV, 'leavepay.js'), os.path.join(OUT, 'assets', 'leavepay.js'))
   if os.path.isdir(os.path.join(DEV, 'play-photos')): shutil.copytree(os.path.join(DEV, 'play-photos'), os.path.join(OUT, 'assets', 'plays'))   # 👨‍🍼 아빠가 해 본 놀이 사진 (plays.json 의 photo)
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
@@ -509,6 +510,18 @@ draw();
 </div></section>
 
 <section class="blk"><div class="wrap">
+  <div class="sh"><span class="ey">바로 써 보는 도구</span><h2>🧰 넣으면 바로 알려 줘요</h2></div>
+  <div class="tools">
+    <a href="growth.html"><b>👶 우리 아이 지금</b><span>생년월만 넣으면 키·몸무게 등수, 먹는 양, 검진 시기</span></a>
+    <a href="support/leave-pay-calc.html"><b>💰 육아휴직 급여 계산기</b><span>통상임금만 넣으면 달마다 받는 돈 (6+6 포함)</span></a>
+    <a href="food/stages.html"><b>🥣 이유식 단계표</b><span>개월수별 끼니 수·한 끼 양을 종이컵으로</span></a>
+    <a href="map.html"><b>🗺 육아 지도</b><span>내 주변 소아과, 지금 문 연 약국</span></a>
+    <a href="plays/"><b>🔎 놀이 찾기</b><span>개월수·장소·키우고 싶은 힘으로 골라요</span></a>
+    <a href="#sos"><b>🆘 공동육아 SOS</b><span>독박인 시간을 눌러 이웃과 모임을 열어요</span></a>
+  </div>
+</div></section>
+
+<section class="blk"><div class="wrap">
   <div class="sh"><span class="ey">개월수별 놀이</span><h2>📅 우리 아기 개월수에 맞는 놀이</h2></div>
   <div class="chips grid4">{''.join(f'<a class="chip" href="age/{s}.html">{short(s, n)}</a>' for s, n, a, b in BANDS)}</div>
   <h2 style="margin-top:18px">🌱 키우고 싶은 힘으로 찾기</h2>
@@ -651,6 +664,7 @@ segs(); render();
              '아기는 왜 낯을 가리고 떼를 쓸까? 시기별 행동, 잠과 안전, 말과 책, 애착과 훈육까지 연구와 공식 기관 자료로 정리했어요.'),
             ('support', '지원', '🎁', '부모급여, 아동수당, 첫만남이용권, 육아휴직처럼 나라에서 받을 수 있는 지원을 정부 누리집 자료로 정리했어요. 금액과 조건은 바뀔 수 있으니 신청 전에 원문을 꼭 확인하세요.',
              '부모급여·아동수당·첫만남이용권·보육료·육아휴직 급여 등 나라에서 주는 육아 지원을 정부 자료로 정리했어요.')]
+  CALC_BOX = '<a class="box" href="leave-pay-calc.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>💰 육아휴직 급여 계산기</b> — 통상임금만 넣으면 달마다 받는 돈을 바로 계산해요 ›</a>'
   short_age = lambda c: re.sub(r'\s*\(.*?\)', '', c.get('age', ''))
   for slug, bname, bicon, bintro, bdesc in BOARDS:
     fp = os.path.join(DEV, 'columns', slug + '.json')
@@ -664,7 +678,7 @@ segs(); render();
     lst = ''.join(f'<p class="bd-cat">{e(cat)}</p><div class="bd">' + ''.join(brow(f'{slug}/{c["id"]}.html', c['t'], c['lead'], badge(c['yr'][:4], '기준') if c.get('yr') else f'<span class="bd-badge wide"><b>{e(short_age(c))}</b></span>') for c in posts if c['cat'] == cat) + '</div>' for cat in cats)
     body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › {bname}</p><section class="blk prose" style="padding-top:12px">
 <h1>{bicon} {bname}</h1><p>{e(bintro)}</p>
-{lst}
+{CALC_BOX.replace('href="', 'href="support/') if slug == 'support' else ''}{lst}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 검색으로 확인한 원문 문장을 바탕으로 정리했어요.</p></section></div>'''
     files[f'{slug}.html'] = page(f'{bname} | 오늘도 독박육아', bdesc, body, f'{slug}.html', f'{slug}.html')
     for i, c in enumerate(posts):
@@ -676,10 +690,51 @@ segs(); render();
       meta = ' · '.join(v for v in [c['cat'], c.get('age', ''), c.get('basis') or ((c['yr'][:4] + '년 기준') if c.get('yr') else '')] if v)
       body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../{slug}.html">{bname}</a> › {e(c["cat"])}</p>
 <article class="blk prose post" style="padding-top:12px"><h1>{e(c["t"])}</h1><p class="post-meta">{e(meta)}</p>
-<p class="lead2">{e(c["lead"])}</p>{sum3box(c)}{secs}{note}{endbox(c)}
+<p class="lead2">{e(c["lead"])}</p>{CALC_BOX if c['id'] in ('parental-leave-pay', 'six-plus-six') else ''}{sum3box(c)}{secs}{note}{endbox(c)}
 <h2>📚 출처</h2>{srcs}
 <p class="src">🔎 자료에 적힌 내용만 옮겼어요 · <a href="../about.html#how">자료를 고르고 옮기는 방법</a></p>{pager}</article></div>'''
       files[f'{slug}/{c["id"]}.html'] = page(f'{c["t"]} · {bname} | 오늘도 독박육아', c['lead'][:150], body, f'{slug}/{c["id"]}.html', f'{slug}.html')
+
+  # ── 💰 육아휴직 급여 계산기 (support/leave-pay-calc.html · 계산은 assets/leavepay.js)
+  LP_SRC = [('육아휴직급여 제도안내', '고용24(work24.go.kr) · 고용노동부 제도안내', 'https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000251&systId=SI00000402', '고용노동부가 운영하는 고용보험·육아휴직급여 안내와 신청 누리집이에요. 달마다 몇 %, 상한 얼마인지와 신청 기한이 여기 있어요.'),
+            ("생후 18개월 이내 자녀가 있다면 '6+6 부모육아휴직제'", '대한민국 정책브리핑(korea.kr) · 고용노동부 카드뉴스', 'https://www.korea.kr/multi/visualNewsView.do?newsId=148930202', '6+6 부모육아휴직제의 달마다 상한(250·250·300·350·400·450만 원)이 이 자료에 있어요.'),
+            ('고용보험법 시행령 제95조(육아휴직 급여)·제95조의3(부모 모두 육아휴직 시 특례)', '국가법령정보센터(law.go.kr)', 'https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EC%9A%A9%EB%B3%B4%ED%97%98%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9', '육아휴직 급여의 비율·상한·하한(월 70만 원)과 6+6 특례의 법 조문이에요.')]
+  lsrc = ''.join(f'<details class="srcd"><summary>📄 {e(n)} <small>{e(k)}</small></summary><p>{e(t)} <a href="{u}" rel="noopener">원문 열기</a></p></details>' for n, k, u, t in LP_SRC)
+  lbody = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../support.html">지원</a> › 육아휴직 급여 계산기</p>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">💰 계산기</span><h1 style="font-size:clamp(26px,5vw,36px)">육아휴직 급여, 달마다 얼마 받을까?</h1><p>통상임금과 휴직 개월수만 넣으면 달마다 받는 돈과 합계를 계산해요. 부부가 함께 쓰는 6+6 부모육아휴직제, 한부모 근로자도 고를 수 있어요. 넣은 숫자는 이 휴대폰에만 남아요.</p></div>
+<div class="box gform">
+  <div class="row"><span>누가 쓰나요</span><div class="seg" id="lpMode"><button type="button" data-v="g" aria-pressed="true">🙋 나 혼자</button><button type="button" data-v="s" aria-pressed="false">👫 부부 함께 (6+6)</button><button type="button" data-v="h" aria-pressed="false">👤 한부모</button></div></div>
+  <div class="row"><span>통상임금</span><div class="gin"><input id="lpW" type="text" inputmode="decimal" placeholder="한 달 통상임금 (만 원) 예: 320" aria-label="내 통상임금 (만 원)"></div></div>
+  <div class="row"><span>휴직 기간</span><div class="gin"><select id="lpN" aria-label="내 휴직 개월수"></select></div></div>
+  <div id="lpPartner" hidden>
+    <div class="row"><span>배우자 통상임금</span><div class="gin"><input id="lpW2" type="text" inputmode="decimal" placeholder="배우자 통상임금 (만 원)" aria-label="배우자 통상임금 (만 원)"></div></div>
+    <div class="row"><span>배우자 기간</span><div class="gin"><select id="lpN2" aria-label="배우자 휴직 개월수"></select></div></div>
+  </div>
+  <p class="src" style="margin:8px 0 0">통상임금은 기본급처럼 매달 정해서 받는 돈이에요. 급여명세서의 기본급과 고정수당을 더해 보면 돼요. 야근 수당, 성과급처럼 달마다 달라지는 돈은 빼요.</p>
+</div>
+<div id="lpOut" class="lp-out" aria-live="polite"></div>
+
+<div class="box prose"><h2>🧮 이렇게 계산해요</h2>
+<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>나 혼자 (일반)</th><th>한부모</th><th>부부 함께 (6+6)</th></tr></thead><tbody>
+<tr><td>1~2개월째</td><td>100% · 상한 250만</td><td>100% · 상한 300만</td><td>100% · 상한 250만</td></tr>
+<tr><td>3개월째</td><td>100% · 상한 250만</td><td>100% · 상한 300만</td><td>100% · 상한 300만</td></tr>
+<tr><td>4개월째</td><td>100% · 상한 200만</td><td>100% · 상한 200만</td><td>100% · 상한 350만</td></tr>
+<tr><td>5개월째</td><td>100% · 상한 200만</td><td>100% · 상한 200만</td><td>100% · 상한 400만</td></tr>
+<tr><td>6개월째</td><td>100% · 상한 200만</td><td>100% · 상한 200만</td><td>100% · 상한 450만</td></tr>
+<tr><td>7개월째부터</td><td>80% · 상한 160만</td><td>80% · 상한 160만</td><td>80% · 상한 160만</td></tr>
+</tbody></table></div>
+<p>계산한 금액이 월 70만 원보다 적으면 70만 원을 받아요(하한). 2025년부터 사후지급(일부를 복직 뒤에 주던 방식)이 없어져서, 휴직하는 동안 매달 전액을 받아요.</p>
+<h2>👫 6+6은 언제 되나요</h2>
+<p>아기가 생후 18개월이 되기 전에 엄마·아빠가 둘 다 육아휴직을 쓰면 돼요. 동시에 써도 되고, 한 사람이 먼저 쓰고 다른 사람이 나중에 써도 돼요. 나중에 쓰는 사람이 신청할 때 먼저 쓴 사람의 첫 6개월도 6+6 기준으로 다시 계산해서 차액을 줘요. 공무원과 사립학교 교원은 대상이 아니에요. 부모가 각각 3개월 이상 쓰면 육아휴직 기간이 1년 6개월까지 늘어나요.</p>
+<h2>✅ 받으려면</h2>
+<p>휴직을 시작한 날 기준으로 고용보험 가입 기간(피보험 단위기간)이 180일 이상이어야 해요. 휴직을 시작하고 1개월이 지난 뒤부터, 휴직이 끝난 뒤 12개월 안에 고용24에서 신청해요. 기한이 지나면 받을 수 없어요.</p>
+<p class="gnote">⚠️ 이 계산기는 고용노동부 안내 기준을 그대로 적용해 본 거예요. 한 달을 다 채우지 못한 달(일할 계산), 휴직 중에 회사에서 받는 돈, 단기 육아휴직(1~2주)은 계산하지 않아요. 한부모·장애아동 부모의 기간 연장 기준은 자료에서 확인하지 못해 12개월까지만 계산해요. 신청 전에 고용센터(국번 없이 1350)에서 내 경우를 꼭 확인하세요.</p>
+<p>📖 더 읽기: <a href="parental-leave-pay.html">육아휴직 급여는 한 달에 얼마까지 나올까?</a> · <a href="six-plus-six.html">6+6 부모육아휴직제 사례별 계산</a> · <a href="maternity-paternity-leave.html">출산휴가와 배우자 출산휴가</a></p>
+</div>
+<div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 2026년 10월에 확인한 기준이에요.</p>{lsrc}</div>
+</section></div>'''
+  files['support/leave-pay-calc.html'] = page('육아휴직 급여 계산기 · 6+6 부모육아휴직제·한부모 달마다 금액 | 오늘도 독박육아', '통상임금과 휴직 개월수를 넣으면 육아휴직 급여를 달마다 계산해요. 6+6 부모육아휴직제(상한 최대 450만 원), 한부모 근로자, 7개월째부터 80%까지 2026년 기준으로 보여 줘요.', lbody, 'support/leave-pay-calc.html', 'support.html',
+    f'<script defer src="../assets/leavepay.js?v={V}"></script>')
 
   # ── 🗺 육아 지도 (내 주변 소아청소년과 · 문 연 약국)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 육아 지도</p><section class="blk prose" style="padding-top:12px;max-width:none">
@@ -984,6 +1039,22 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
     return html_[:m.start(1)] + body_ + html_[m.end(1):] if False else re.sub(r'<main>.*</main>', lambda _: '<main>' + body_ + '</main>', html_, count=1, flags=re.S)
   for path in list(files):
     if path.endswith('.html') and path not in ('admin.html', 'search.html', '404.html'): files[path] = gloss_and_keywords(path, files[path])
+
+  # ── 얇은 글은 검색엔진에서만 빼요 (사이트 안에서는 그대로 보여요): 본문 800자 미만 글은 noindex + 사이트맵 제외.
+  #    경험담·설명을 보태서 800자를 넘으면 다음 빌드에서 저절로 다시 검색에 나가요. 목록·도구·필수 페이지는 손대지 않아요.
+  THIN_MIN = 800
+  THIN_DIRS = ('plays/', 'daycare/', 'principles/', 'food/', 'research/', 'tips/', 'support/')
+  THIN_KEEP = {'food/stages.html', 'support/leave-pay-calc.html'}
+  def body_len(h):
+    mm = re.search(r'<main>(.*)</main>', h, re.S); b = mm.group(1) if mm else h
+    b = re.sub(r'<section class="blk kwbox">.*?</section>', '', b, flags=re.S)
+    b = re.sub(r'<(script|style)[^>]*>.*?</\1>', '', b, flags=re.S)
+    return len(re.sub(r'\s+', '', re.sub(r'<[^>]+>', '', b)))
+  thin = [p_ for p_ in files if p_.startswith(THIN_DIRS) and not p_.endswith('index.html') and p_ not in THIN_KEEP and p_ not in NOINDEX and body_len(files[p_]) < THIN_MIN]
+  for p_ in thin:
+    files[p_] = re.sub(r'<link rel="canonical" href="[^"]*"><meta property="og:url" content="[^"]*">', '<meta name="robots" content="noindex,follow">', files[p_], count=1)
+    NOINDEX.add(p_)
+  print(f'얇은 글 {len(thin)}개는 검색엔진에서만 빼요 (본문 {THIN_MIN}자 미만)')
 
   # ── 쓰기 + sitemap
   for path, txt in files.items():
