@@ -136,6 +136,8 @@ def in_band(p, lo, hi):
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
 # 📚 육아 정보 주제 탭: 육아 상식·연구·이유식 글을 출처 종류가 아니라 주제로 묶어요
 # 🔎 네이버 키워드 도구로 많이 찾는 말을 페이지 <title>에만 덧붙여요 (화면 제목은 그대로)
+# 🥣 유아식 모음 링크를 사이트 안에 걸지 여부: 애드센스 승인 전에는 False (페이지는 있지만 사이트 어디에서도 안 이어지고, 검색에도 안 나가요. SOS 앱 버튼으로만 들어와요)
+MEALS_PUBLIC = False
 MEALS_CARD = '<a class="box" href="../food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>'
 STG_CARD = '<a class="box" href="../food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>'   # 🥣 이유식 단계표 바로가기 (🍚 먹기 주제 맨 위)
 TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
@@ -657,8 +659,7 @@ segs(); render();
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 이유식</p><section class="blk prose" style="padding-top:12px">
 <h1>🥄 이유식·유아식 연구</h1><p>{e(fd["intro"])}</p>
 <a class="box" href="food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>
-<a class="box" href="food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>
-{rboard(fd['groups'], 'food')}
+{MEALS_CARD.replace('../food/', 'food/') if MEALS_PUBLIC else ''}{rboard(fd['groups'], 'food')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="research.html">📚 놀이·교육 연구도 보기</a></p></section></div>'''
   files['food.html'] = page('아기 이유식 시작 시기·소고기·철분 · 이유식 연구 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
   rposts(fd['groups'], 'food', 'food.html', '이유식')
@@ -911,7 +912,7 @@ segs(); render();
     trows = ''.join(brow('../' + h, t, m, b) for h, t, m, b, _ in entries[sl])
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › 육아 정보 › {e(nm)}</p><section class="blk prose" style="padding-top:12px">
 <h1>{ic} {e(nm)}</h1><p>{e(TOPIC_INTRO[sl])} 글 {len(entries[sl])}개예요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요.</p>
-{(STG_CARD + MEALS_CARD) if sl == 'food' else ''}<div class="bd">{trows}</div>{bysrc}
+{(STG_CARD + (MEALS_CARD if MEALS_PUBLIC else '')) if sl == 'food' else ''}<div class="bd">{trows}</div>{bysrc}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
     files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
 
