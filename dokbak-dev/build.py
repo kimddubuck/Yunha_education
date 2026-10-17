@@ -1003,6 +1003,7 @@ segs(); render();
   sidx = []
   for path, txt in sorted(files.items()):
     if path in ('404.html', 'privacy.html', 'terms.html', 'search.html') or not path.endswith('.html'): continue
+    if path == 'food/meals.html' and not MEALS_PUBLIC: continue   # 🥣 유아식 모음은 승인 전엔 사이트 검색에도 안 나와요
     tm = re.search(r'<title>(.*?)</title>', txt); dm = re.search(r'<meta name="description" content="(.*?)">', txt); mm = re.search(r'<main>(.*?)</main>', txt, re.S)
     t = html.unescape(tm.group(1)).split(' | ')[0].split(' · ')[0] if tm else path
     d = html.unescape(dm.group(1)) if dm else ''
