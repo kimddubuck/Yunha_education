@@ -126,7 +126,7 @@ function askUpload(slot, img){
       if(!box.querySelector('#mealPoolOff').checked){
         const pool = {img, slot, date: meal.date, createdAt: firebase.firestore.FieldValue.serverTimestamp()};
         if(memo) pool.memo = memo; if(age != null) pool.mo = age;
-        sosDb().collection('mealpool').doc(ref.id).set(pool).catch(() => {});
+        sosDb().collection('mealpool').doc(ref.id).set(pool).then(() => markPoolSent(ref.id)).catch(() => {});
       }
       box.remove();
       if(typeof pushMealNew === 'function') pushMealNew(ref.id, (MEAL_SLOTS.find(s => s[0] === slot) || ['', '식단'])[1].replace(/^\S+\s/, ''), memo);   // 🔔 방 사람들에게
@@ -141,6 +141,9 @@ const MY_MCMTS = 'sosMyMealCmts';
 function rememberMyCmt(mid, cid){ try{ const a = JSON.parse(localStorage.getItem(MY_MCMTS) || '[]'); a.push({key: ROOM.key, mid, cid}); localStorage.setItem(MY_MCMTS, JSON.stringify(a.slice(-300))); }catch(e){} }
 const mealCmts = id => roomRef().collection('meals').doc(id).collection('comments');
 
+const POOL_SENT = 'sosPoolSent';
+const poolSent = id => { try{ return JSON.parse(localStorage.getItem(POOL_SENT) || '[]').includes(id); }catch(e){ return false; } };
+const markPoolSent = id => { try{ const a = JSON.parse(localStorage.getItem(POOL_SENT) || '[]'); a.push(id); localStorage.setItem(POOL_SENT, JSON.stringify(a.slice(-300))); }catch(e){} };
 function openPhoto(id){
   const d = meal.docs.find(x => x.id === id); if(!d) return;
   const label = (MEAL_SLOTS.find(s => s[0] === d.slot) || ['', ''])[1];
@@ -150,8 +153,18 @@ function openPhoto(id){
     <div class="comments meal-cmts"><ul class="comment-list"><li class="hint">댓글을 불러오는 중…</li></ul>
       <p class="reply-chip" hidden><span></span><button type="button" data-mc-cancel>취소</button></p>
       <form class="comment-form"><input type="text" maxlength="300" placeholder="댓글 달기 (예: 레시피 궁금해요!)" aria-label="댓글"><button class="btn" type="submit">달기</button></form></div>
+    ${d.uid === ME.uid ? `<button type="button" class="btn block meal-pool-send" data-pool-send>${poolSent(d.id) ? '✅ 유아식 모음에 보냈어요' : '🥣 이 식단 유아식 모음에 보내기'}</button>` : ''}
     ${canDel(d) ? `<button type="button" class="btn danger block" data-del="${d.id}">🗑 이 사진 지우기${d.uid !== ME.uid ? ' (방장)' : ''}</button>` : ''}`});
   if(d.memo) box.querySelector('.meal-memo').textContent = d.memo;
+  // 🥣 내가 올린 식단을 직접 유아식 모음에 보내요 (모음 안내가 생기기 전에 올린 식단도 이렇게 보낼 수 있어요)
+  const ps = box.querySelector('[data-pool-send]');
+  if(ps) ps.addEventListener('click', async () => {
+    if(poolSent(d.id)) return; ps.disabled = true; ps.textContent = '보내는 중…';
+    const pool = {img: d.img, slot: d.slot, date: d.date, createdAt: firebase.firestore.FieldValue.serverTimestamp()};
+    if(d.memo) pool.memo = d.memo; if(d.mo != null) pool.mo = d.mo;
+    try{ await sosDb().collection('mealpool').doc(d.id).set(pool); markPoolSent(d.id); ps.textContent = '✅ 유아식 모음에 보냈어요'; }
+    catch(err){ if(err && err.code === 'permission-denied'){ markPoolSent(d.id); ps.textContent = '✅ 이미 보낸 식단이에요'; } else { ps.disabled = false; ps.textContent = '⚠️ 못 보냈어요 · 다시 누르기'; } }
+  });
   // ❤️ 좋아요 (v17) + 누가 눌렀는지 ('가영맘님 외 2명이 좋아해요'). 누를 때마다 그 줄도 다시 그려요
   const who = () => { box.querySelector('.like-who')?.remove(); const lw = likeWho(d); if(lw) box.querySelector('.meal-line').insertAdjacentElement('afterend', lw); };
   box.querySelector('.meal-like').appendChild(likeBtn(d, ME.uid, roomRef().collection('meals').doc(d.id), {val: ME.nick, after: who})); who();
