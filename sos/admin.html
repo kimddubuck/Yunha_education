@@ -12,9 +12,20 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610170311">
-<script src="assets/gate.js?v=202610170311"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610170323">
+<script src="assets/gate.js?v=202610170323"></script>
 <style>
+.pool{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.pool li{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line,#ddd);border-radius:12px;padding:8px}
+.pool img{width:72px;height:72px;object-fit:cover;border-radius:8px}
+.pool-t{display:flex;flex-direction:column;min-width:0;font-size:13.5px}
+.pool-t span{overflow-wrap:anywhere}
+.pool-t small{opacity:.7}
+.pool-b{display:flex;flex-direction:column;gap:6px}
+.pool-b button{font:inherit;font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit;cursor:pointer}
+.pool-b button.ok{font-weight:800}
+.pool-pub{margin-top:12px}
+.pool-pub summary{cursor:pointer;font-weight:700}
 /* 운영자 화면: 숫자 타일 → 주간 막대 → 방 표. 단일 색(teal) 막대, 상태색은 경고에만 */
 body{padding-block:20px 60px}
 .wrap.admin{display:flex;flex-direction:column;gap:18px;max-width:980px}
@@ -214,6 +225,13 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
       </tr></thead><tbody></tbody></table></div>
       <div id="roomsEmpty" class="empty" hidden>아직 방이 없어요.</div>
     </div>
+    <div class="card" id="poolCard">
+      <h2>🥣 유아식 모음 검토 <small>독박육아.com</small></h2>
+      <p>식단공유에 올라온 사진·메뉴·개월수예요 (닉네임 없음).<br><b>공개</b>를 누른 것만 독박육아.com 유아식 모음에 올라가요.<br>아이 얼굴·손, 집 안, 이상한 글은 <b>빼기</b>.</p>
+      <p class="ad-sub" id="poolSum">불러오는 중…</p>
+      <ul class="pool" id="poolList"></ul>
+      <details class="pool-pub"><summary>✅ 공개된 식단 <span id="pubN">0</span>개 (내리기)</summary><ul class="pool" id="pubList"></ul></details>
+    </div>
     <div class="err" id="err" hidden></div>
   </div>
 </div>
@@ -222,7 +240,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-/* 운영자 화면 — 서버 규칙 isAdmin() 에 등록된 번호(uid)로만 읽혀요. 이 화면은 어떤 데이터도 쓰지 않아요. */
+/* 운영자 화면 — 서버 규칙 isAdmin() 에 등록된 번호(uid)로만 읽혀요. 쓰는 건 🥣 유아식 모음 검토(공개·빼기·내리기)뿐이에요. */
 const $ = s => document.querySelector(s);
 const DAY = 864e5, now = Date.now();
 const ms = t => (t && t.toMillis) ? t.toMillis() : 0;
@@ -249,12 +267,42 @@ async function start(){
     rooms = snap.docs.map(d => ({key: d.id, ...d.data()}));
     try{ localStorage.setItem('sosNoCount', '1'); }catch(e){}   // 운영자 휴대폰은 방문자·조회수에서 빼요
     $('#setup').hidden = true; $('#dash').hidden = false; $('#live').classList.remove('off'); $('#live').querySelector('span').textContent = '실시간 · 방 ' + rooms.length;
-    loadDetails(db);
+    loadDetails(db); loadPool(db);
   }, err => {
     if(err.code === 'permission-denied'){ $('#setup').hidden = false; $('#dash').hidden = true; $('#setupMsg').textContent = '아직 운영자로 등록되지 않았어요. 위 순서대로 규칙에 번호를 넣고 게시해 주세요.'; }
     else showErr('방 목록을 읽지 못했어요: ' + (err.code || err.message));
     $('#live').querySelector('span').textContent = '연결 안 됨';
   });
+}
+// 🥣 유아식 모음: mealpool(검토 전) → 공개(mealpub 에 복사 후 pool 에서 지움) / 빼기(pool 에서 지움). mealpub 은 내리기(지움)
+const SLOT_NAME = {b: '🌅 아침', s1: '🍪 오전 간식', l: '☀️ 점심', s2: '🍪 오후 간식', d: '🌙 저녁'};
+let poolLoaded = false;
+async function loadPool(db){
+  if(poolLoaded) return; poolLoaded = true;
+  const esc = t => String(t || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const item = (d, pub) => { const x = d.data();
+    return `<li data-id="${d.id}"><img src="${esc(x.img)}" alt="" loading="lazy"><div class="pool-t"><b>${x.mo != null ? x.mo + '개월' : '개월 모름'} · ${SLOT_NAME[x.slot] || ''}</b><span>${esc(x.memo) || '<i>메뉴 없음</i>'}</span><small>${esc(x.date)}</small></div>
+      <div class="pool-b">${pub ? '<button type="button" data-pub-del>내리기</button>' : '<button type="button" class="ok" data-pool-ok>공개</button><button type="button" data-pool-no>빼기</button>'}</div></li>`; };
+  const draw = async () => {
+    try{
+      const [pool, pub] = await Promise.all([db.collection('mealpool').orderBy('createdAt', 'desc').limit(60).get(), db.collection('mealpub').orderBy('createdAt', 'desc').limit(200).get()]);
+      reads += pool.size + pub.size + 2;
+      $('#poolSum').textContent = pool.size ? `검토할 식단 ${pool.size}개` : '검토할 식단이 없어요.';
+      $('#poolList').innerHTML = pool.docs.map(d => item(d, false)).join('');
+      $('#pubN').textContent = pub.size; $('#pubList').innerHTML = pub.docs.map(d => item(d, true)).join('');
+    }catch(e){ $('#poolSum').textContent = e.code === 'permission-denied' ? '규칙(v20)을 아직 게시하지 않았어요. sos-dev/firestore.rules 를 붙여넣어 주세요.' : '불러오지 못했어요: ' + (e.code || e.message); }
+  };
+  $('#poolCard').addEventListener('click', async e => {
+    const b = e.target.closest('button'); const li = b && b.closest('li[data-id]'); if(!li) return;
+    const id = li.dataset.id; b.disabled = true;
+    try{
+      if(b.hasAttribute('data-pool-ok')){ const d = await db.collection('mealpool').doc(id).get(); if(d.exists){ await db.collection('mealpub').doc(id).set(d.data()); await d.ref.delete(); } }
+      else if(b.hasAttribute('data-pool-no')){ await db.collection('mealpool').doc(id).delete(); }
+      else if(b.hasAttribute('data-pub-del')){ if(!confirm('독박육아.com 에서 내릴까요?')){ b.disabled = false; return; } await db.collection('mealpub').doc(id).delete(); }
+      await draw();
+    }catch(err){ b.disabled = false; alert('하지 못했어요: ' + (err.code || err.message)); }
+  });
+  draw();
 }
 function showErr(t){ const e = $('#err'); e.hidden = false; e.textContent = t; }
 

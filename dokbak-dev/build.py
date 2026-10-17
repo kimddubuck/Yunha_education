@@ -136,6 +136,7 @@ def in_band(p, lo, hi):
 # 원문 링크: 확실히 열리는 주소만 (논문 DOI·PubMed·WHO·CDC·질병관리청 등). 나머지는 이름만 보여요.
 # 📚 육아 정보 주제 탭: 육아 상식·연구·이유식 글을 출처 종류가 아니라 주제로 묶어요
 # 🔎 네이버 키워드 도구로 많이 찾는 말을 페이지 <title>에만 덧붙여요 (화면 제목은 그대로)
+MEALS_CARD = '<a class="box" href="../food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>'
 STG_CARD = '<a class="box" href="../food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>'   # 🥣 이유식 단계표 바로가기 (🍚 먹기 주제 맨 위)
 TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
 AGE_SEO = {'10-12m': '(돌 아기)', '13-18m': '(돌 지난 아기)'}
@@ -237,7 +238,7 @@ def page_keywords(path):
 
 NOINDEX = {'404.html', 'search.html', 'admin.html'} | {f'principles/{PR_SLUG[k]}.html' for k, v in PR_SRC.items() if not v}   # 연구 근거 없는 '놀이 만들기용 분류'는 검색엔진에 안 내보내요
 # 개인정보처리방침·이용약관 시행일: 내용을 바꿀 때만 손으로 고쳐요 (빌드할 때마다 바뀌면 안 돼요)
-POLICY_DATE = '2026년 10월 15일'
+POLICY_DATE = '2026년 10월 17일'
 
 def page(title, desc, body, path, active='', extra_head=''):
   depth = path.count('/')
@@ -602,6 +603,7 @@ segs(); render();
 <h2>🗺 육아 지도</h2><p>「📍 내 위치」를 누르면 브라우저가 위치 허용을 물어봐요. 허용하면 내 위치는 <b>이 휴대폰에서만</b> 지도를 옮기는 데 쓰고, 서버에는 약 100m 단위로 반올림한 좌표만 보내요. 서버는 이 반올림한 좌표를 공공데이터포털(건강보험심사평가원·국립중앙의료원·행정안전부)에 전달해 주변 병원·약국·놀이시설을 찾고, 카카오 로컬 API에는 어느 시도인지 확인하는 데만 보내요. 위치는 어디에도 저장하지 않고, 같은 동네의 검색 결과만 잠깐 캐시해요.</p>
 <h2>쿠키와 광고 (Google 애드센스)</h2><p>이 사이트는 Google 애드센스 광고를 실을 수 있어요. 광고를 실으면 이렇게 돼요.</p><ul><li>Google을 포함한 제3자 광고 공급업체는 <b>쿠키</b>를 써서, 이용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 보여 줘요.</li><li>Google은 광고 쿠키를 써서 이 사이트와 인터넷의 다른 사이트 방문 기록을 바탕으로 광고를 게재할 수 있어요.</li><li>맞춤 광고는 <a href="https://adssettings.google.com" rel="noopener">Google 광고 설정</a>에서 끌 수 있어요. 다른 광고 공급업체의 맞춤 광고는 <a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>에서 끌 수 있어요.</li><li>Google이 정보를 어떻게 쓰는지는 <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">Google 파트너 사이트 정보 이용 안내</a>에서 볼 수 있어요.</li></ul>
 <h2>공동육아 SOS</h2><p>공동육아 SOS 앱은 따로 운영되며, 그 앱의 개인정보 안내를 따라요.</p>
+<h2>유아식 모음 사진</h2><p>유아식 모음(food/meals)의 사진·메뉴·개월수는 공동육아 SOS 이용자가 식단공유에 올린 것 가운데, 올린 사람이 빼지 않은 것을 운영자가 확인해 올린 거예요. 닉네임·방 이름 같은 정보는 처음부터 받지 않아요. 내리고 싶은 사진은 아래 문의로 알려 주세요.</p>
 <h2>문의</h2><p>{CONTACT}</p><p style="color:var(--soft)">시행일: {POLICY_DATE}</p>'''), 'privacy.html')
   files['contact.html'] = page('문의 | 오늘도 독박육아', '오늘도 독박육아 문의하기 · 잘못된 정보 알리기 · 놀이 제안', prose('문의', f'''<h1>✉️ 문의</h1>
 <p>궁금한 점, 잘못된 정보, 이런 놀이·정보가 있으면 좋겠다는 제안을 메일로 보내 주세요.</p>
@@ -655,6 +657,7 @@ segs(); render();
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 이유식</p><section class="blk prose" style="padding-top:12px">
 <h1>🥄 이유식·유아식 연구</h1><p>{e(fd["intro"])}</p>
 <a class="box" href="food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>
+<a class="box" href="food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>
 {rboard(fd['groups'], 'food')}
 <p class="src">{e(rs["checked"])}</p><p style="margin-top:10px"><a class="btn ghost" href="research.html">📚 놀이·교육 연구도 보기</a></p></section></div>'''
   files['food.html'] = page('아기 이유식 시작 시기·소고기·철분 · 이유식 연구 | 오늘도 독박육아', '질병관리청·식약처·대한소아청소년과학회 이유식 안내와 WHO 이유식 지침, 땅콩 알레르기 LEAP 연구, 아기 주도 이유식 연구, 꿀·주스 권고까지 자료에 적힌 내용만 정리했어요.', body, 'food.html', 'food.html')
@@ -908,7 +911,7 @@ segs(); render();
     trows = ''.join(brow('../' + h, t, m, b) for h, t, m, b, _ in entries[sl])
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › 육아 정보 › {e(nm)}</p><section class="blk prose" style="padding-top:12px">
 <h1>{ic} {e(nm)}</h1><p>{e(TOPIC_INTRO[sl])} 글 {len(entries[sl])}개예요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요.</p>
-{STG_CARD if sl == 'food' else ''}<div class="bd">{trows}</div>{bysrc}
+{(STG_CARD + MEALS_CARD) if sl == 'food' else ''}<div class="bd">{trows}</div>{bysrc}
 <p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
     files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
 
@@ -940,6 +943,19 @@ segs(); render();
 <div class="box ref"><h2>📚 출처</h2><ul><li>{link('https://www.who.int/publications/i/item/9789241597494', 'WHO (2009) Infant and young child feeding: Model chapter')} — 나이별 끼니 수·한 끼 양·질감</li><li>{link('https://www.who.int/publications/i/item/9789240081864', 'WHO (2023) 6~23개월 이유식 지침')} — 6개월 시작, 고기·채소 날마다, 반응하며 먹이기</li><li>질병관리청 · 식품의약품안전처 · 대한소아청소년과학회 안내 (각 링크 참고)</li></ul></div>
 <p style="margin-top:14px">📏 <a href="../growth.html">우리 아이 개월수별 키·몸무게와 하루 먹는 양 보기</a></p>
 </section></div>'''
+  # ── 🥣 유아식 모음 (food/meals): 공동육아 SOS 식단공유에서 운영자가 확인한 식단. 목록은 Pages Function(functions/food/meals.js)이 <!--MEALS--> 자리에 넣어요
+  meals_body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../food.html">이유식</a> › 유아식 모음</p>
+<section class="blk prose" style="padding-top:12px;max-width:none"><h1>🥣 유아식 모음 · 다른 집은 뭐 먹일까?</h1>
+<p class="mlead">공동육아 SOS 식단공유에 엄마 아빠들이 올린 <b>실제 유아식</b>이에요. 개월수별로 모았어요. 오늘 뭐 먹일지 막막할 때 메뉴 고르기에 써 보세요.</p>
+<!--MEALS-->
+<div class="box"><h2>📝 이 모음은 이렇게 만들어요</h2>
+<p>공동육아 SOS에서 식단 사진을 올릴 때 <b>닉네임 없이</b> 사진·메뉴·개월수만 함께 모여요. 올리는 사람이 원하지 않으면 그 식단은 빼고 올릴 수 있어요. 아이 얼굴이나 손, 집 안이 나온 사진은 운영자가 확인해서 올리지 않아요.</p>
+<p>메뉴와 양은 집집마다, 아이마다 달라요. 이 모음은 '이렇게 먹이세요'가 아니라 '다른 집은 이렇게 먹였어요'예요. 새 음식은 한 번에 하나씩, 알레르기가 있으면 소아과와 먼저 상의하세요.</p>
+<p>📖 함께 보면 좋은 글: <a href="stages.html">이유식 단계표 (개월수별 끼니·양)</a> · <a href="honey.html">꿀은 돌 지나서</a> · <a href="juice.html">과일주스는 언제부터?</a></p>
+<p class="src">사진 속 식단을 내리고 싶으면 <a href="../contact.html">문의</a>로 알려 주세요.</p></div>
+</section></div>'''
+  NOINDEX.add('food/meals.html')   # 식단이 12개 넘게 모이면 함수가 검색엔진에 열어요 (functions/food/meals.js OPEN_AT)
+  files['food/meals.html'] = page('유아식 식단 모음 · 12개월 돌아기 유아식 메뉴 아이디어 | 오늘도 독박육아', '다른 집은 오늘 뭐 먹였을까? 공동육아 엄마 아빠들이 올린 실제 유아식 사진과 메뉴를 개월수별로 모았어요.', meals_body, 'food/meals.html', 'food.html')
   files['food/stages.html'] = page('이유식 단계표 · 초기·중기·후기·완료기 시기별 양과 횟수 | 오늘도 독박육아', '6~8개월, 9~11개월, 12~23개월 이유식 하루 끼니 수, 한 끼 양, 질감을 WHO 안내 기준으로 정리했어요. 시작 신호, 철분(소고기), 피해야 할 음식까지.', stages_body, 'food/stages.html', 'food.html')
 
   # ── 🎵 동요 추천: 개월수별 동요 + 율동 (노래 제목만 싣고 가사는 싣지 않아요 · 율동은 AI가 정리)

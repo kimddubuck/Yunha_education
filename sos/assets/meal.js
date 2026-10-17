@@ -95,7 +95,9 @@ function askUpload(slot, img){
     <input class="meal-in" id="mealMemo" maxlength="40" placeholder="메모 (선택) 예: 소고기죽">
     <div class="meal-mo">👶 <select id="mealBy"><option value="">생년 (선택)</option>${yOpts}</select><select id="mealBm"><option value="">월</option>${mOpts}</select></div>
     <p class="hint meal-age" id="mealAge"></p>
-    <p class="hint meal-rule">📷 <b>음식만</b> 나오게 찍어 주세요 <span class="nw">(아이 얼굴·집 안 X)</span><br><span class="nw">👥 우리 방만 봐요</span> · <span class="nw">🗑 3일 뒤 자동 삭제</span></p>
+    <p class="hint meal-rule">📷 <b>음식만</b> 나오게 찍어 주세요 <span class="nw">(아이 얼굴·손·집 안 X)</span><br><span class="nw">👥 우리 방 사진은</span> <span class="nw">🗑 3일 뒤 자동 삭제</span></p>
+    <p class="hint meal-pool">🥣 이 식단(사진·메뉴·개월수)은 <b>닉네임 없이</b> <span class="nw">독박육아.com 유아식 모음에</span> <span class="nw">쌓여요.</span> <span class="nw">운영자가 확인한 것만 올라가요.</span></p>
+    <label class="meal-pool-off"><input type="checkbox" id="mealPoolOff"> 이번 식단은 모음에 넣지 않기</label>
     <button type="button" class="btn primary block" id="mealSend">올리기</button>`});
   const ageOf = () => {
     const y = +box.querySelector('#mealBy').value, m = +box.querySelector('#mealBm').value;
@@ -120,6 +122,12 @@ function askUpload(slot, img){
       if(age != null) data.mo = age;   // 생년월로 계산한 그날 개월수
       await ref.set(data);
       rememberMine(ref.id);
+      // 🥣 유아식 모음: 닉네임·uid 없이 사진·메뉴·개월수만 사본으로 (운영자가 확인한 것만 독박육아.com 에 올라가요). 실패해도 식단 올리기는 그대로
+      if(!box.querySelector('#mealPoolOff').checked){
+        const pool = {img, slot, date: meal.date, createdAt: firebase.firestore.FieldValue.serverTimestamp()};
+        if(memo) pool.memo = memo; if(age != null) pool.mo = age;
+        sosDb().collection('mealpool').doc(ref.id).set(pool).catch(() => {});
+      }
       box.remove();
       if(typeof pushMealNew === 'function') pushMealNew(ref.id, (MEAL_SLOTS.find(s => s[0] === slot) || ['', '식단'])[1].replace(/^\S+\s/, ''), memo);   // 🔔 방 사람들에게
       if(typeof pushToast === 'function') pushToast('🍚 올렸어요! 우리 방 사람들이 볼 수 있어요');

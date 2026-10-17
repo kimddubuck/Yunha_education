@@ -25,6 +25,7 @@ service cloud.firestore {
     // v16: 📷 사진(작게 줄인 data URL, 최대 80KB)·🔗 링크(http/https, 300자) 첨부 — 모임 글·익명게시판 글
     // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기. v18: 댓글(모임·식단·익명게시판)에도
     // v19: 📷 사진만 있는 댓글 허용 — 글(text/b)이 비어 있어도 사진(img)이 있으면 돼요 (모임·식단·익명게시판 댓글)
+    // v20: 🥣 유아식 모음 — 식단 사진·메뉴·개월수를 닉네임 없이 mealpool 에 쌓고, 운영자가 확인한 것만 mealpub(누구나 읽기)으로 옮겨요
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+'/'+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get('lk', {});
@@ -65,7 +66,7 @@ service cloud.firestore {
       return request.auth != null && get(/databases/$(database)/documents/rooms/$(roomKey)).data.get('ou', '') == request.auth.uid;
     }
     function nickOk(n) { return n is string && n.size() >= 1 && n.size() <= 20; }
-    // 🛠 운영자: admin.html 에 보이는 '내 번호'를 아래 목록에 넣어요. 모든 방의 숫자를 읽기만 할 수 있어요 (쓰기는 안 돼요)
+    // 🛠 운영자: admin.html 에 보이는 '내 번호'를 아래 목록에 넣어요. 모든 방의 숫자를 읽기만 할 수 있어요 (쓰기는 유아식 모음 검토만)
     function isAdmin() {
       return request.auth != null && request.auth.uid in ['여기에_내_번호'];
     }
@@ -85,6 +86,28 @@ service cloud.firestore {
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['p', 'v'])
         && request.resource.data.p == resource.data.p + 1
         && request.resource.data.v in [resource.data.v, resource.data.v + 1];
+    }
+
+    // v20: 🥣 유아식 모음 (독박육아.com 에 쌓는 식단)
+    //  mealpool: 식단을 올릴 때 함께 남는 사본. 닉네임·uid·방 이름은 없어요. 운영자만 읽고 지워요
+    function mealOk(d) {
+      return d.keys().hasOnly(['img', 'slot', 'memo', 'mo', 'date', 'createdAt'])
+        && d.img is string && d.img.size() <= 80000
+        && d.img.matches('^data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+$')
+        && d.slot in ['b', 's1', 'l', 's2', 'd']
+        && (!('memo' in d) || (d.memo is string && d.memo.size() <= 40))
+        && (!('mo' in d) || (d.mo is int && d.mo >= 0 && d.mo <= 72))
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+    match /mealpool/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if request.auth != null && mealOk(request.resource.data) && request.resource.data.createdAt == request.time;
+    }
+    //  mealpub: 운영자가 '공개'를 누른 것만. 누구나 읽어요 (독박육아.com 유아식 모음 페이지)
+    match /mealpub/{id} {
+      allow read: if true;
+      allow create: if isAdmin() && mealOk(request.resource.data) && request.resource.data.createdAt is timestamp;
+      allow delete: if isAdmin();
     }
 
     match /rooms/{roomKey} {
