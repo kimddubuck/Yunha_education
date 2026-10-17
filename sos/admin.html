@@ -12,9 +12,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610170420">
-<script src="assets/gate.js?v=202610170420"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610170423">
+<script src="assets/gate.js?v=202610170423"></script>
 <style>
+.rules-card{margin:0 0 14px}
+.rules-steps{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:10px;line-height:1.5}
+.rules-steps small{opacity:.75}
+.rules-msg{margin:10px 0 0;font-weight:700}
 .pool{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
 .pool li{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line,#ddd);border-radius:12px;padding:8px}
 .pool img{width:72px;height:72px;object-fit:cover;border-radius:8px}
@@ -173,6 +177,17 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
     <button type="button" class="btn" id="refresh" aria-label="새로고침">🔄<span class="rf-t"> 새로고침</span></button>
   </div>
 
+  <div class="card rules-card">
+    <h2>🔐 서버 규칙 업데이트 <small>v20 · 유아식 모음</small></h2>
+    <ol class="rules-steps">
+      <li><button type="button" class="btn primary" id="rulesCopy">📋 규칙 복사하기</button><br><small>이 휴대폰의 내 번호가 들어간 채로 복사돼요.</small></li>
+      <li><a class="btn" href="https://console.firebase.google.com/project/sos-calendar-f6bf7/firestore/databases/-default-/rules" target="_blank" rel="noopener">🔥 Firebase 규칙 화면 열기</a></li>
+      <li>규칙 칸을 <b>꾹 눌러 전체 선택</b> → <b>붙여넣기</b> → 위쪽 <b>게시</b></li>
+      <li>이 화면으로 돌아와 <b>🔄 새로고침</b> → 맨 아래 <b>🥣 유아식 모음 검토</b>가 보이면 끝</li>
+    </ol>
+    <p class="rules-msg" id="rulesMsg" hidden></p>
+  </div>
+
   <div class="setup" id="setup" hidden>
     <h2>🔑 처음 한 번만<br>이 브라우저를 운영자로 등록</h2>
     <ol>
@@ -304,6 +319,18 @@ async function loadPool(db){
   });
   draw();
 }
+// 🔐 규칙 복사: admin-rules.txt(최신 규칙)에 이 브라우저의 내 번호를 넣어 클립보드로
+document.addEventListener('click', async e => {
+  if(!e.target.closest('#rulesCopy')) return;
+  const msg = $('#rulesMsg'); msg.hidden = false; msg.textContent = '준비 중…';
+  try{
+    const user = await sosAuth(); if(!user) throw new Error('로그인 준비가 안 됐어요');
+    const txt = (await (await fetch('admin-rules.txt?t=' + Date.now(), {cache: 'no-store'})).text()).replace("'여기에_내_번호'", `'${user.uid}'`);
+    if(!txt.includes('mealpub')) throw new Error('규칙 파일을 읽지 못했어요');
+    try{ await navigator.clipboard.writeText(txt); msg.textContent = '✅ 복사했어요! 이제 2번 버튼으로 Firebase 규칙 화면을 여세요.'; }
+    catch(err){ msg.innerHTML = '자동 복사가 안 돼요. 아래 칸을 꾹 눌러 전체 선택 → 복사하세요.<textarea readonly rows="6" style="width:100%;margin-top:6px"></textarea>'; msg.querySelector('textarea').value = txt; }
+  }catch(err){ msg.textContent = '⚠️ ' + err.message; }
+});
 function showErr(t){ const e = $('#err'); e.hidden = false; e.textContent = t; }
 
 // 방마다: 멤버 전체(들어온 날·마지막 접속), 이번 주 SOS, 다가오는 모임 수

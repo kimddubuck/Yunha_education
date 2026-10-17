@@ -4,4 +4,6 @@
 cd "$(dirname "$0")/../sos" || exit 1
 v=$(date +%Y%m%d%H%M)
 sed -i -E "s#((src|href)=\"(assets/[a-z]+\.(js|css)|plays\.js|manifest\.webmanifest))(\?v=[0-9]+)?\"#\1?v=$v\"#g" *.html
+# 🔐 운영자 화면(admin.html)의 "규칙 복사" 버튼이 읽는 최신 규칙 (내 번호 자리는 비워 둔 채로)
+cp ../sos-dev/firestore.rules admin-rules.txt
 echo "v=$v"
