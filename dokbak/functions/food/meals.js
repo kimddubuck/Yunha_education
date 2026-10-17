@@ -1,6 +1,6 @@
 /* 오늘도 독박육아 · 🥣 유아식 모음 (GET /food/meals)
    공동육아 SOS 식단공유에서 운영자가 '공개'를 누른 식단(Firestore mealpub)을 읽어 정적 페이지(food/meals.html)의 <!--MEALS--> 자리에 넣어요.
-   닉네임·uid·방 이름은 처음부터 없어요. 사진은 /api/meal-img?id= 로 따로 받아요. 10분 캐시. 12개 이상 모이면 검색엔진에 열어요. */
+   닉네임·uid·방 이름은 처음부터 없어요. 사진은 /api/meal-img?id= 로 따로 받아요. 2분 캐시(비어 있으면 캐시 안 함). 12개 이상 모이면 검색엔진에 열어요. */
 const P = 'sos-calendar-f6bf7';
 const RUNQ = `https://firestore.googleapis.com/v1/projects/${P}/databases/(default)/documents:runQuery`;
 const SLOT = { b: '🌅 아침', s1: '🍪 오전 간식', l: '☀️ 점심', s2: '🍪 오후 간식', d: '🌙 저녁' };
@@ -37,7 +37,7 @@ export async function onRequestGet(ctx) {
   html = html.replace('<!--MEALS-->', render(list));
   // 충분히 모이면 검색엔진에 열어요 (얇은 페이지로 보이지 않게)
   if (list.length >= OPEN_AT) html = html.replace('<meta name="robots" content="noindex,follow">', '<link rel="canonical" href="https://xn--iq1br1ns0hr0b.com/food/meals">');
-  const res = new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=600' } });
-  ctx.waitUntil(cache.put(key, res.clone()));
+  const res = new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': list.length ? 'public, max-age=120' : 'no-store' } });
+  if (list.length) ctx.waitUntil(cache.put(key, res.clone()));   // 비어 있을 땐 캐시하지 않아요 (공개하자마자 보이게)
   return res;
 }
