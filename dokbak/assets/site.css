@@ -663,3 +663,14 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .mm-meta{color:var(--soft);font-size:12.5px}
 .mm-memo{overflow-wrap:anywhere}
 .mm-empty{color:var(--soft);margin:14px 0}
+/* 💉 예방접종 계산기 */
+.vx-t td:first-child{width:auto;white-space:normal}
+.vx-t td small{display:block;color:var(--soft);font-size:12px}
+.vx-t tr.vx-mon td{padding:10px 4px 2px;font-size:12px;font-weight:700;color:var(--soft);border-bottom:0;background:transparent}
+.vx-t tr.vx-past td{color:var(--soft)}
+.vx-t tr.vx-past td b{font-weight:600}
+.vx-t tr.vx-now td{background:var(--teal-tint)}
+.vx-now{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--teal);color:var(--on-teal,#fff);margin-left:4px;vertical-align:1px}
+.vx-t td.num{width:31%;white-space:normal}
+.vx-t td:first-child b{display:inline;white-space:normal}
+.vx-t td:first-child{line-height:1.45}

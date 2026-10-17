@@ -138,6 +138,8 @@ def in_band(p, lo, hi):
 # 🔎 네이버 키워드 도구로 많이 찾는 말을 페이지 <title>에만 덧붙여요 (화면 제목은 그대로)
 # 🥣 유아식 모음 링크를 사이트 안에 걸지 여부: 애드센스 승인 전에는 False (페이지는 있지만 사이트 어디에서도 안 이어지고, 검색에도 안 나가요. SOS 앱 버튼으로만 들어와요)
 MEALS_PUBLIC = False
+# 💉 예방접종 계산기: 운영자가 질병관리청 공식 표와 맞춰 본 뒤 True (그 전엔 검색·링크 없이 주소로만)
+VACCINE_OK = False
 MEALS_CARD = '<a class="box" href="../food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>'
 STG_CARD = '<a class="box" href="../food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>'   # 🥣 이유식 단계표 바로가기 (🍚 먹기 주제 맨 위)
 TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
@@ -348,6 +350,7 @@ def build():
   shutil.copy(os.path.join(DEV, 'map.js'), os.path.join(OUT, 'assets', 'map.js'))
   shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
   shutil.copy(os.path.join(DEV, 'leavepay.js'), os.path.join(OUT, 'assets', 'leavepay.js'))
+  shutil.copy(os.path.join(DEV, 'vaccine.js'), os.path.join(OUT, 'assets', 'vaccine.js'))
   if os.path.isdir(os.path.join(DEV, 'play-photos')): shutil.copytree(os.path.join(DEV, 'play-photos'), os.path.join(OUT, 'assets', 'plays'))   # 👨‍🍼 아빠가 해 본 놀이 사진 (plays.json 의 photo)
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
@@ -760,6 +763,30 @@ segs(); render();
   files['support/leave-pay-calc.html'] = page('육아휴직 급여 계산기 · 6+6 부모육아휴직제·한부모 달마다 금액 | 오늘도 독박육아', '통상임금과 휴직 개월수를 넣으면 육아휴직 급여를 달마다 계산해요. 6+6 부모육아휴직제(상한 최대 450만 원), 한부모 근로자, 7개월째부터 80%까지 2026년 기준으로 보여 줘요.', lbody, 'support/leave-pay-calc.html', 'support.html',
     f'<script defer src="../assets/leavepay.js?v={V}"></script>')
 
+  # ── 💉 예방접종·영유아검진 날짜 계산기 (vaccine.html · 계산은 assets/vaccine.js)
+  #    VACCINE_OK = False 인 동안은 검색엔진에 안 내보내고 사이트 어디에도 링크를 걸지 않아요 (운영자가 질병관리청 공식 표와 맞춰 본 뒤 True)
+  if not VACCINE_OK: NOINDEX.add('vaccine.html')
+  VX_SRC = [('표준예방접종일정표 (어린이)', '질병관리청 · 예방접종도우미(nip.kdca.go.kr)', 'https://nip.kdca.go.kr/irhp/index.jsp', '나라에서 정한 어린이 예방접종의 종류·차수·권장 시기 표예요. 이 계산기의 날짜는 이 표의 권장 시기를 생일에 더해 계산했어요. 내 아이가 실제로 맞은 기록도 여기서 볼 수 있어요.'),
+            ('b형 헤모필루스 인플루엔자(Hib) 접종 안내', '질병관리청 · 예방접종도우미', 'https://nip.kdca.go.kr/irhp/infm/goVcntInfo.do?menuLv=1&menuCd=1105', '생후 2·4·6개월, 12~15개월 모두 4회 접종이라는 안내예요.'),
+            ('영유아 건강검진 안내', '국민건강보험공단', 'https://www.nhis.or.kr/nhis/healthin/wbhaca04800m01.do', '8차 검진 시기(생후 14~35일부터 66~71개월까지)와 검진 기관 찾기 안내예요.')]
+  vsrc = ''.join(f'<details class="srcd"><summary>📄 {e(n)} <small>{e(k)}</small></summary><p>{e(t)} <a href="{u}" rel="noopener">원문 열기</a></p></details>' for n, k, u, t in VX_SRC)
+  vbody = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 예방접종·검진 날짜</p>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">💉 계산기</span><h1 style="font-size:clamp(26px,5vw,36px)">우리 아이 예방접종·검진, 언제 맞을까?</h1><p>태어난 날만 넣으면 0~6세 국가예방접종과 영유아 건강검진 날짜를 달력 순서대로 보여 줘요. 지금 맞을 때인 것은 따로 표시해요. 넣은 날짜는 이 휴대폰에만 남아요.</p></div>
+<div class="box gform">
+  <div class="row"><span>태어난 날</span><div class="gin"><input id="vxBirth" type="date" aria-label="아이 태어난 날"></div></div>
+  <div class="row"><span>보기</span><div class="seg" id="vxKind"><button type="button" data-k="v" aria-pressed="true">💉 예방접종</button><button type="button" data-k="c" aria-pressed="true">🩺 영유아검진</button></div></div>
+</div>
+<div id="vxOut" class="lp-out" aria-live="polite"></div>
+<div class="box prose"><h2>📌 이렇게 보면 돼요</h2>
+<p>날짜는 질병관리청 표준예방접종일정표의 '권장 시기'를 생일에 더한 거예요. 예를 들어 '2개월'은 생후 2개월이 되는 날부터예요. 권장 시기 안에서 아이 컨디션이 좋은 날 맞으면 돼요. 아프거나 열이 나면 미뤄도 되고, 늦어졌다고 처음부터 다시 맞지는 않아요. 소아과에서 이어서 맞는 일정을 알려 줘요.</p>
+<p>로타바이러스는 백신 종류에 따라 2번 또는 3번 맞아요. 일본뇌염은 불활성화 백신 기준이고, 생백신은 2번 맞아요. 독감은 6개월부터 해마다 가을에 맞아요.</p>
+<p class="gnote">⚠️ 이 계산기는 권장 시기를 알려 주는 참고용이에요. 이른둥이, 이미 맞은 기록, 백신 종류에 따라 일정이 달라질 수 있어요. 내 아이의 실제 접종 기록과 다음 접종일은 예방접종도우미(nip.kdca.go.kr) 앱이나 소아과에서 확인하세요.</p>
+<p>📖 더 보기: <a href="growth.html">우리 아이 지금 (키·몸무게·검진 시기)</a></p></div>
+<div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요.</p>{vsrc}</div>
+</section></div>'''
+  files['vaccine.html'] = page('아기 예방접종 일정 계산기 · 영유아검진 시기 | 오늘도 독박육아', '태어난 날만 넣으면 B형간염·DTaP·폴리오·Hib·폐렴구균·로타·MMR·수두·A형간염·일본뇌염 국가예방접종과 영유아 건강검진 날짜를 달력 순서로 보여 줘요.', vbody, 'vaccine.html', 'growth.html',
+    f'<script defer src="assets/vaccine.js?v={V}"></script>')
+
   # ── 🗺 육아 지도 (내 주변 소아청소년과 · 문 연 약국)
   body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 육아 지도</p><section class="blk prose" style="padding-top:12px;max-width:none">
 <h1>🗺 육아 지도</h1><p class="mlead">아이가 아플 때, 내 주변 <span class="nw"><b>소아청소년과</b>와</span> <span class="nw"><b>지금 문 연 약국</b>을</span> 찾아요. <span class="nw"><b>키즈카페·공공 놀이시설</b>,</span> <span class="nw"><b>육아종합지원센터</b>·</span><span class="nw"><b>공동육아나눔터</b>도</span> 볼 수 있어요.</p>
@@ -1003,7 +1030,8 @@ segs(); render();
   sidx = []
   for path, txt in sorted(files.items()):
     if path in ('404.html', 'privacy.html', 'terms.html', 'search.html') or not path.endswith('.html'): continue
-    if path == 'food/meals.html' and not MEALS_PUBLIC: continue   # 🥣 유아식 모음은 승인 전엔 사이트 검색에도 안 나와요
+    if path == 'food/meals.html' and not MEALS_PUBLIC: continue
+    if path == 'vaccine.html' and not VACCINE_OK: continue   # 🥣 유아식 모음은 승인 전엔 사이트 검색에도 안 나와요
     tm = re.search(r'<title>(.*?)</title>', txt); dm = re.search(r'<meta name="description" content="(.*?)">', txt); mm = re.search(r'<main>(.*?)</main>', txt, re.S)
     t = html.unescape(tm.group(1)).split(' | ')[0].split(' · ')[0] if tm else path
     d = html.unescape(dm.group(1)) if dm else ''
