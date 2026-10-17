@@ -29,7 +29,7 @@ function render(list) {
 
 export async function onRequestGet(ctx) {
   const { request, env } = ctx;
-  const cache = caches.default, key = new Request(new URL('/food/meals?v=cache', request.url).toString());
+  const cache = caches.default, key = new Request(new URL('/food/meals?v=c2', request.url).toString());
   const hit = await cache.match(key); if (hit) return hit;
   const page = await env.ASSETS.fetch(new URL('/food/meals', request.url));
   let html = await page.text(), list = [];
