@@ -12,8 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS 운영">
-<link rel="stylesheet" href="assets/common.css?v=202610170423">
-<script src="assets/gate.js?v=202610170423"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610170429">
+<script src="assets/gate.js?v=202610170429"></script>
 <style>
 .rules-card{margin:0 0 14px}
 .rules-steps{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:10px;line-height:1.5}
@@ -177,7 +177,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
     <button type="button" class="btn" id="refresh" aria-label="새로고침">🔄<span class="rf-t"> 새로고침</span></button>
   </div>
 
-  <div class="card rules-card">
+  <div class="card rules-card" id="rulesCard" hidden>
     <h2>🔐 서버 규칙 업데이트 <small>v20 · 유아식 모음</small></h2>
     <ol class="rules-steps">
       <li><button type="button" class="btn primary" id="rulesCopy">📋 규칙 복사하기</button><br><small>이 휴대폰의 내 번호가 들어간 채로 복사돼요.</small></li>
@@ -246,6 +246,7 @@ details.dorm summary{cursor:pointer;color:var(--accent-ink)}
       <p class="ad-sub" id="poolSum">불러오는 중…</p>
       <ul class="pool" id="poolList"></ul>
       <details class="pool-pub"><summary>✅ 공개된 식단 <span id="pubN">0</span>개 (내리기)</summary><ul class="pool" id="pubList"></ul></details>
+      <p class="ad-sub" style="margin-top:12px"><button type="button" class="btn" id="rulesShow" style="font-size:12px;padding:4px 10px">🔐 서버 규칙 다시 넣기</button></p>
     </div>
     <div class="err" id="err" hidden></div>
   </div>
@@ -305,7 +306,8 @@ async function loadPool(db){
       $('#poolSum').textContent = pool.size ? `검토할 식단 ${pool.size}개` : '검토할 식단이 없어요.';
       $('#poolList').innerHTML = pool.docs.map(d => item(d, false)).join('');
       $('#pubN').textContent = pub.size; $('#pubList').innerHTML = pub.docs.map(d => item(d, true)).join('');
-    }catch(e){ $('#poolSum').textContent = e.code === 'permission-denied' ? '규칙(v20)을 아직 게시하지 않았어요. sos-dev/firestore.rules 를 붙여넣어 주세요.' : '불러오지 못했어요: ' + (e.code || e.message); }
+    }catch(e){ if(e.code === 'permission-denied') $('#rulesCard').hidden = false;   // 규칙이 옛날 거면 그때만 '규칙 업데이트' 칸을 보여요
+      $('#poolSum').textContent = e.code === 'permission-denied' ? '규칙(v20)을 아직 게시하지 않았어요. sos-dev/firestore.rules 를 붙여넣어 주세요.' : '불러오지 못했어요: ' + (e.code || e.message); }
   };
   $('#poolCard').addEventListener('click', async e => {
     const b = e.target.closest('button'); const li = b && b.closest('li[data-id]'); if(!li) return;
@@ -321,6 +323,7 @@ async function loadPool(db){
 }
 // 🔐 규칙 복사: admin-rules.txt(최신 규칙)에 이 브라우저의 내 번호를 넣어 클립보드로
 document.addEventListener('click', async e => {
+  if(e.target.closest('#rulesShow')){ $('#rulesCard').hidden = false; $('#rulesCard').scrollIntoView({behavior: 'smooth'}); return; }
   if(!e.target.closest('#rulesCopy')) return;
   const msg = $('#rulesMsg'); msg.hidden = false; msg.textContent = '준비 중…';
   try{
