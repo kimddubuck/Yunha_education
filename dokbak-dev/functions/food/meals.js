@@ -5,7 +5,7 @@ const P = 'sos-calendar-f6bf7';
 const RUNQ = `https://firestore.googleapis.com/v1/projects/${P}/databases/(default)/documents:runQuery`;
 const SLOT = { b: '🌅 아침', s1: '🍪 오전 간식', l: '☀️ 점심', s2: '🍪 오후 간식', d: '🌙 저녁' };
 const BANDS = [[6, 8, '6~8개월'], [9, 11, '9~11개월'], [12, 17, '12~17개월'], [18, 23, '18~23개월'], [24, 72, '24개월 이상']];
-const OPEN_AT = 12;
+const OPEN_AT = Infinity;   // 애드센스 승인 전까지는 검색엔진에 안 내보내요. 승인 뒤 12로 바꿔요
 const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const val = f => f ? (f.stringValue ?? (f.integerValue != null ? Number(f.integerValue) : f.timestampValue)) : undefined;
 
