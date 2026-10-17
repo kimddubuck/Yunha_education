@@ -1,0 +1,159 @@
+/* 🙈 익명게시판 — 우리 방 사람만 보는 익명 게시판 (제목·내용·댓글 모두 익명)
+   저장: rooms/{방 열쇠}/ideas/{id} {t, b, kh, createdAt, expireAt}, 댓글은 그 아래 comments {b, kh, createdAt, expireAt}
+   닉네임·로그인 번호(uid)는 저장하지 않아요. 내 글인지는 이 휴대폰에만 있는 비밀값(k)으로만 알아요 (서버에는 지문 kh 만).
+   지우기: 쓴 휴대폰(비밀값 확인) 또는 방장. 3일 뒤 자동 삭제. */
+const $i = s => document.querySelector(s);
+const IDEA_DAYS = 3, IDEA_KEYS = 'sosIdeaKeys';   // v16: 3일 뒤 자동 삭제
+const idea = {lkey: {},  col: null, items: [], open: new Set(), cmts: {}, subs: {}, drafts: {}, cat: 'talk', filter: '' };
+// 말머리 (서버 규칙 v16의 목록과 같아야 해요)
+const IDEA_CATS = [['talk', '💬 수다·고민'], ['place', '🧺 피크닉·나들이'], ['club', '📚 독서'], ['buy', '🛒 공구'], ['idea', '💡 꿀팁'], ['etc', '🙂 기타']];   // 코드는 규칙 v16 그대로, 이름만 바꿨어요
+const catName = c => (IDEA_CATS.find(x => x[0] === c) || ['', ''])[1];
+
+const ideaKeys = () => { try{ return JSON.parse(localStorage.getItem(IDEA_KEYS) || '{}'); }catch(e){ return {}; } };
+function setIdeaKey(path, k){ try{ const m = ideaKeys(); m[path] = k; localStorage.setItem(IDEA_KEYS, JSON.stringify(m)); }catch(e){} }
+const ipath = (id, cid) => `rooms/${ROOM.key}/ideas/${id}` + (cid ? `/comments/${cid}` : '');
+const secret = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+async function sha(t){ const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return Array.from(new Uint8Array(h), b => b.toString(16).padStart(2, '0')).join(''); }
+function ago(ts){
+  if(!ts || !ts.toDate) return '방금';
+  const m = Math.floor((Date.now() - ts.toDate().getTime()) / 60000);
+  if(m < 1) return '방금'; if(m < 60) return `${m}분 전`; const h = Math.floor(m / 60); if(h < 24) return `${h}시간 전`;
+  const d = ts.toDate(); return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function renderIdeas(){
+  const ul = $i('#ideaList'), keys = ideaKeys();
+  const fo = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-idea]');   // 쓰는 중인 댓글은 지켜요
+  const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('textarea, input[type="text"]').value} : null;
+  ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
+  const list = idea.items.filter(x => !x.deleted);   // 말머리는 글에 붙어만 있고, 걸러 보기는 없어요
+  if(!list.length){ ul.innerHTML = `<li class="hint idea-empty">아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂</li>`; return; }
+  ul.innerHTML = '';
+  list.forEach(x => {
+    const li = document.createElement('li'); li.className = 'idea-card'; li.dataset.id = x.id;
+    const mine = !!keys[ipath(x.id)], opened = idea.open.has(x.id);
+    li.innerHTML = `<button type="button" class="idea-head" data-toggle="${x.id}" aria-expanded="${opened}"><b class="idea-t"><span class="idea-cat">${catName(x.c || 'talk')}</span></b><span class="idea-m">🙈 익명 · ${ago(x.createdAt)}${mine ? ' · 내 글' : ''}</span></button>
+      <p class="idea-b cp"></p>`;
+    li.querySelector('.idea-t').appendChild(document.createTextNode(x.t));
+    const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
+    if(opened && typeof attachView === 'function'){ const av = attachView(x); if(av) b.insertAdjacentElement('afterend', av); }
+    // ❤️ 좋아요 (v17): 누가 눌렀는지 안 남게 글마다 다른 지문(내 번호+글 번호)을 칸 이름으로 써요
+    const foot = document.createElement('div'); foot.className = 'idea-foot';
+    if(!opened){ const more = document.createElement('button'); more.type = 'button'; more.className = 'idea-more'; more.dataset.toggle = x.id; more.textContent = '💬 펼쳐서 댓글 보기'; foot.appendChild(more); }
+    foot.appendChild(likeBtn(x, idea.lkey[x.id] || '', idea.col.doc(x.id)));
+    if(!idea.lkey[x.id] && ME.uid) sha(ME.uid + '/' + x.id).then(h => { idea.lkey[x.id] = h; const lb = li.querySelector('.idea-foot .like'); if(lb) lb.replaceWith(likeBtn(x, h, idea.col.doc(x.id))); });
+    li.appendChild(foot);
+    if(opened){
+      const cs = (idea.cmts[x.id] || []).filter(c => !c.deleted);
+      const box = document.createElement('div'); box.className = 'comments idea-cmts';
+      const cl = document.createElement('ul'); cl.className = 'comment-list';
+      cs.forEach(c => {
+        const ci = document.createElement('li');
+        const cn = document.createElement('b'); cn.className = 'comment-nick'; cn.textContent = '익명';
+        const ct = document.createElement('span'); ct.className = 'cp'; ct.textContent = c.b;
+        const cw = document.createElement('small'); cw.textContent = ago(c.createdAt);
+        ci.append(cn, ct, cw);
+        // ❤️ 댓글 좋아요 (v18): 글처럼 댓글마다 다른 지문
+        const ck = 'c:' + c.id, cref = idea.col.doc(x.id).collection('comments').doc(c.id);
+        ci.appendChild(likeBtn(c, idea.lkey[ck] || '', cref, {cls: 'mini'}));
+        if(!idea.lkey[ck] && ME.uid) sha(ME.uid + '/' + c.id).then(h => { idea.lkey[ck] = h; const lb = ci.querySelector('.like'); if(lb) lb.replaceWith(likeBtn(c, h, cref, {cls: 'mini'})); });
+        if(typeof attachView === 'function'){ const av = attachView(c); if(av) ci.appendChild(av); }
+        const own = !!keys[ipath(x.id, c.id)];
+        if(own || ME.owner){ const a = document.createElement('span'); a.className = 'comment-act';
+          a.innerHTML = `<button type="button" data-cdel="${c.id}" data-idea="${x.id}">${own ? '삭제' : '삭제(방장)'}</button>`; ci.appendChild(a); }
+        cl.appendChild(ci);
+      });
+      if(!cs.length) cl.innerHTML = '<li class="hint">아직 댓글이 없어요.</li>';
+      const f = document.createElement('form'); f.className = 'comment-form'; f.dataset.idea = x.id;
+      f.innerHTML = `<input type="text" maxlength="300" placeholder="익명으로 댓글 달기" aria-label="익명 댓글"><button class="btn" type="submit">달기</button>`;
+      box.append(cl, f); li.appendChild(box);
+      if(typeof attachUI === 'function'){ idea.atDrafts = idea.atDrafts || {}; f._at = attachUI(f, {compact: true, onChange: v => { idea.atDrafts[x.id] = v; }}); f._at.set(idea.atDrafts[x.id] || {}); }
+      if(mine || ME.owner){ const d = document.createElement('button'); d.type = 'button'; d.className = 'idea-del'; d.dataset.del = x.id;
+        d.textContent = mine ? '🗑 내 글 지우기' : '🗑 방장 권한으로 지우기'; li.appendChild(d); }
+    }
+    ul.appendChild(li);
+  });
+  ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { const d = idea.drafts[i.closest('[data-idea]').dataset.idea]; if(d) i.value = d; });
+  if(draft){ const i = ul.querySelector(`[data-idea="${draft.id}"] input`); if(i){ i.value = draft.v; i.focus(); } }
+}
+
+function watchCmts(id){
+  if(idea.subs[id]) return;
+  idea.subs[id] = idea.col.doc(id).collection('comments').orderBy('createdAt').limit(200).onSnapshot(q => {
+    idea.cmts[id] = q.docs.map(d => ({id: d.id, ...d.data()})); renderIdeas();
+  }, () => {});
+}
+
+// 내 글·댓글 지우기: 비밀값으로 '지움' 표시 (서버가 지문으로 확인) · 방장은 그냥 지워요
+async function removeDoc(ref, path){
+  const k = ideaKeys()[path];
+  const isPost = !path.includes('/comments/');
+  if(k){ await ref.update({...(isPost ? {t: ''} : {}), b: '', img: '', url: '', deleted: true, k}); return; }
+  if(ME.owner){
+    if(isPost){ const cs = await ref.collection('comments').get(); await Promise.all(cs.docs.map(c => c.ref.delete().catch(() => {}))); }
+    await ref.delete();
+  }
+}
+
+(function initIdea(){
+  if(!$i('#ideaList')) return;
+  const form = $i('#ideaForm'), title = $i('#ideaTitle'), body = $i('#ideaBody');
+  $i('#ideaOpen').addEventListener('click', () => { form.hidden = false; $i('#ideaOpen').hidden = true; title.focus(); });
+  $i('#ideaCancel').addEventListener('click', () => { form.hidden = true; $i('#ideaOpen').hidden = false; });
+  body.addEventListener('input', () => { $i('#ideaCount').textContent = `${body.value.length} / 1000`; });
+  if(typeof attachUI === 'function') idea.attach = attachUI(form, {before: $i('#ideaAttach')});
+  // 🏷 말머리 고르기 (글쓰기) · 말머리로 보기 (목록)
+  const cats = $i('#ideaCats'); cats.innerHTML = IDEA_CATS.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="${k === idea.cat}">${n}</button>`).join('');
+  cats.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; idea.cat = b.dataset.cat; cats.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    title.placeholder = {talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', place: '제목 (예: 이번 주말 공원 피크닉 같이 가실 분?)', club: '제목 (예: 그림책 같이 읽을 분 모여요)', buy: '제목 (예: 기저귀 공구 같이 하실 분?)', idea: '제목 (예: 밤잠 꿀팁 하나 공유해요)', etc: '제목'}[idea.cat] || '제목'; });
+  sosReady().then(ok => {
+    if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
+    idea.col = roomRef().collection('ideas');
+    idea.col.orderBy('createdAt', 'desc').limit(100).onSnapshot(q => {
+      const now = Date.now();
+      idea.items = q.docs.map(d => ({id: d.id, ...d.data()})).filter(x => !x.expireAt || x.expireAt.toMillis() > now);
+      renderIdeas();
+    }, () => { $i('#ideaList').innerHTML = '<li class="hint">🙈 익명게시판을 준비하고 있어요. 잠시 뒤 다시 열어 주세요.</li>'; });
+    document.addEventListener('sos:owner', renderIdeas);
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const t = title.value.trim(), b = body.value.trim();
+    if(!t || !b){ (t ? body : title).focus(); return; }
+    let at = {}; try{ at = idea.attach ? idea.attach.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+    const btn = $i('#ideaSend'); btn.disabled = true; btn.textContent = '올리는 중…';
+    try{
+      const ref = idea.col.doc(), k = secret();
+      setIdeaKey(ipath(ref.id), k);
+      await ref.set({t, b, c: idea.cat, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + IDEA_DAYS * 864e5)});
+      title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000'; if(idea.attach) idea.attach.clear();
+      form.hidden = true; $i('#ideaOpen').hidden = false;
+      if(typeof pushToast === 'function') pushToast('🙈 익명으로 올렸어요');
+    }catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); else alert('올리지 못했어요. 잠시 뒤 다시 해 주세요.'); }
+    btn.disabled = false; btn.textContent = '익명으로 올리기';
+  });
+  $i('#ideaList').addEventListener('click', async e => {
+    const tg = e.target.closest('[data-toggle]');
+    if(tg){ const id = tg.dataset.toggle; if(idea.open.has(id)) idea.open.delete(id); else { idea.open.add(id); watchCmts(id); } renderIdeas(); return; }
+    const del = e.target.closest('[data-del]');
+    if(del){ if(!confirm('이 글을 지울까요? 댓글도 함께 안 보이게 돼요.')) return; del.disabled = true;
+      try{ await removeDoc(idea.col.doc(del.dataset.del), ipath(del.dataset.del)); }catch(err){ del.disabled = false; if(typeof sosTrouble === 'function') sosTrouble(err); } return; }
+    const cd = e.target.closest('[data-cdel]');
+    if(cd){ if(!confirm('이 댓글을 지울까요?')) return; cd.disabled = true;
+      try{ await removeDoc(idea.col.doc(cd.dataset.idea).collection('comments').doc(cd.dataset.cdel), ipath(cd.dataset.idea, cd.dataset.cdel)); }catch(err){ cd.disabled = false; if(typeof sosTrouble === 'function') sosTrouble(err); } }
+  });
+  $i('#ideaList').addEventListener('submit', async e => {
+    const f = e.target.closest('[data-idea]'); if(!f) return; e.preventDefault();
+    const inp = f.querySelector('textarea, input[type="text"]'), b = inp.value.trim();
+    const x = idea.items.find(y => y.id === f.dataset.idea); if(!x) return;
+    let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+    if(!b && !at.img) return;   // 글이 없어도 사진만 있으면 올라가요 (v19)
+    inp.value = ''; delete idea.drafts[x.id]; if(idea.atDrafts) delete idea.atDrafts[x.id]; if(f._at) f._at.clear();
+    try{
+      const ref = idea.col.doc(x.id).collection('comments').doc(), k = secret();
+      setIdeaKey(ipath(x.id, ref.id), k);
+      await ref.set({b, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(), expireAt: x.expireAt});
+    }catch(err){ inp.value = b; if(idea.atDrafts) idea.atDrafts[x.id] = at; if(typeof sosTrouble === 'function') sosTrouble(err); }
+  });
+})();

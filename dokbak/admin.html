@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>방문 통계 | 오늘도 독박육아</title>
+<meta name="description" content="">
+<meta name="robots" content="noindex,follow">
+<meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
+<meta property="og:title" content="방문 통계 | 오늘도 독박육아"><meta property="og:description" content="">
+<meta name="theme-color" content="#2a9095"><meta name="google-site-verification" content="LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4NpfnuWqSw"><meta name="google-site-verification" content="ZFMTOLEzDx_o9xWt52lDTOJko_3P7FKUIH1PbmnYO5o"><meta name="naver-site-verification" content="24c64ae8aaef959ea969cfde87a96b063cd368ef"><meta name="naver-site-verification" content="b140624f961775ae4658a9c4c45730b8fdad0d27">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="assets/site.css?v=202610170503">
+<meta name="robots" content="noindex,nofollow"></head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="./"><img src="assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
+  <nav class="nav" aria-label="메뉴"><a href="plays/">놀이</a><a href="growth.html">우리 아이 지금</a><a href="info/play.html">육아 정보</a><a href="daycare/">어린이집</a><a href="support.html">국가지원</a><a href="map.html">육아 지도</a></nav>
+  <a class="top-search" href="search.html" aria-label="통합 검색"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></a>
+  <a class="top-sos" href="https://gongdong-sos.pages.dev/" aria-label="공동육아 SOS"><i>🆘 </i><span class="sos-long">공동육아 </span>SOS</a>
+</div></header>
+<main>
+<!-- 📊 방문 통계 (운영자용). build.py 가 dokbak/admin.html 로 감싸요. 검색엔진에는 안 보여요(noindex · robots Disallow). 공동육아 SOS 운영 현황처럼 한 화면에 모아 봐요. -->
+<style>
+body>header.top,body>footer,.subnav{display:none}
+.adm{padding-top:14px;padding-bottom:28px}
+.adm [hidden]{display:none!important}
+.adm .hd{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.adm .hd h1{font-size:22px;margin:0;white-space:nowrap}
+.adm .hd .live{font-size:13px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.adm .hd .live i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fb27f;margin-right:4px;vertical-align:1px}
+.adm .ib{margin-left:auto;display:flex;gap:6px}
+.adm .ib button{font:inherit;font-size:15px;min-width:40px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;padding:0 10px}
+.adm .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:3px;margin:0 0 10px}
+.adm .seg button{font:inherit;font-size:14px;border:0;border-radius:9px;padding:7px 0;background:none;color:var(--soft);cursor:pointer}
+.adm .seg button[aria-pressed=true]{background:var(--teal);color:var(--on-teal);font-weight:700}
+.adm .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}
+.adm .tile{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.adm .tile b{display:block;font-size:clamp(22px,7vw,30px);line-height:1.1}
+.adm .tile span{display:block;font-size:14px;color:var(--soft);margin-top:2px}
+.adm .tile small{display:block;font-size:12.5px;color:var(--ink);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:0 0 10px}
+.adm .card h2{display:flex;align-items:baseline;gap:6px;font-size:17px;margin:0 0 6px}
+.adm .card h2 b{margin-left:auto;font-size:22px}
+.adm .card h2 small{font-size:13px;font-weight:400;color:var(--soft)}
+.adm svg{display:block;width:100%;height:auto}
+.adm .grid2{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:720px){.adm .grid2{grid-template-columns:1fr 1fr}.adm .grid2 .card{margin:0}}
+.adm .bars{list-style:none;padding:0;margin:0}
+.adm .bars li{display:grid;grid-template-columns:1fr auto;gap:1px 10px;padding:5px 0;font-size:14.5px}
+.adm .bars li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm .bars li span a{color:inherit}
+.adm .bars li em{font-style:normal;font-weight:700}
+.adm .bars li i{grid-column:1/-1;height:4px;border-radius:2px;background:var(--teal);opacity:.75}
+.adm .bars small{color:var(--soft)}
+.adm .bars .land{display:block;font-size:12.5px;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm .bars .none{color:var(--soft);display:block}
+.adm .note{font-size:12.5px;color:var(--soft);margin:6px 0 0}
+.adm input[type=password]{flex:1;min-width:0;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg,transparent);color:var(--ink)}
+.adm .row{display:flex;gap:8px}
+.adm .aip{border-top:1px solid var(--line);padding:8px 0}.adm .aip summary{cursor:pointer;list-style:none}.adm .aip summary small{color:var(--soft)}.adm .aip p,.adm .aip ol{font-size:14.5px;margin:6px 0}.adm .card h2 small{margin-left:4px}
+.adm .me{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.adm .me button{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:none;color:var(--ink);cursor:pointer;margin-left:auto}
+</style>
+<div class="wrap adm">
+<div class="hd"><h1>📊 방문 통계</h1><span class="live" id="live"><i></i>독박육아</span>
+<div class="ib" id="ib" hidden><button type="button" id="rf" aria-label="새로고침">🔄</button><button type="button" id="out">로그아웃</button></div></div>
+
+<form id="login" class="card" hidden><h2>🔒 운영자 비밀번호</h2>
+<p class="note" style="margin:0 0 8px">Cloudflare에 넣어 둔 <b>ADMIN_KEY</b>를 입력해요. 이 기기에만 기억하고, 이 기기는 '내 방문'으로 따로 세요.</p>
+<div class="row"><input id="pw" type="password" autocomplete="current-password" placeholder="비밀번호"><button class="btn teal" type="submit">보기</button></div>
+<p id="msg" class="note" style="color:var(--sos)"></p></form>
+
+<div id="setup" class="card" hidden><h2>⚙️ 처음 한 번만 설정해요</h2><ol style="padding-left:20px;margin:0;font-size:14.5px">
+<li>Cloudflare → <b>Storage &amp; Databases → D1</b> → Create → 이름 <code>dokbak-stats</code></li>
+<li>Workers &amp; Pages → <b>dokbak</b> → Settings → <b>Bindings</b> → Add → D1 database → 이름 <code>STATS</code></li>
+<li>같은 Settings → <b>Variables and Secrets</b> → Secret <code>ADMIN_KEY</code> = 나만 아는 비밀번호</li>
+<li>Deployments → 맨 위 배포 ⋯ → <b>Retry deployment</b></li></ol>
+<p id="setupState" class="note"></p></div>
+
+<div id="view" hidden>
+<div class="seg" id="range"><button type="button" data-d="1">오늘</button><button type="button" data-d="7">7일</button><button type="button" data-d="30">30일</button><button type="button" data-d="90">90일</button></div>
+<div class="tiles">
+<div class="tile"><b id="tUv">-</b><span>방문자</span><small id="sUv"></small></div>
+<div class="tile"><b id="tSe">-</b><span>방문</span><small id="sSe"></small></div>
+<div class="tile"><b id="tPv">-</b><span>조회수</span><small id="sPv"></small></div>
+<div class="tile"><b id="tSos">-</b><span>SOS 이동</span><small id="sSos"></small></div>
+<div class="tile"><b id="tSrc">-</b><span>검색 유입</span><small id="sSrc"></small></div>
+<div class="tile"><b id="tMine">-</b><span>내 방문</span><small>따로 셈</small></div></div>
+
+<div class="card"><h2>📈 날짜별 방문자 <b id="cTot"></b><small id="cSub"></small></h2><div id="chart"></div></div>
+
+<div class="grid2">
+<div class="card"><h2>🚪 들어온 곳</h2><ul class="bars" id="srcs"></ul><p class="note">들어온 곳 아래 작은 글씨 = 처음 본 페이지. 카카오톡·네이버 앱·인스타그램은 앱 안에서 연 것까지 구분해요. 직접 = 주소 입력·즐겨찾기·문자 링크</p></div>
+<div class="card"><h2>🔎 검색어</h2><ul class="bars" id="kws"></ul><p class="note">구글 검색어는 Search Console → 실적에서 봐요</p></div>
+<div class="card"><h2>📄 많이 본 페이지</h2><ul class="bars" id="pages"></ul></div>
+<div class="card"><h2>🆘 SOS 누른 페이지</h2><ul class="bars" id="sosPages"></ul></div>
+<div class="card"><h2>↗ 밖으로 나간 링크</h2><ul class="bars" id="outs"></ul></div>
+<div class="card"><h2>📱 기기</h2><ul class="bars" id="devs"></ul></div>
+</div>
+<div class="card ai" style="margin-top:10px"><h2>🧪 AI가 만든 놀이 <small>나만 보기 · 사이트엔 안 보여요</small></h2>
+<p class="note" style="margin:0 0 8px;white-space:normal">아직 직접 해 보기 전이라 공개하지 않은 놀이예요. 해 본 놀이는 이름을 알려 주면 '해봄'으로 바꿔 사이트에 올려요.</p>
+<button type="button" class="btn ghost" id="aiLoad">불러오기</button>
+<div id="aiBox" hidden><input id="aiQ" type="search" placeholder="놀이 이름·준비물로 찾기" style="width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);margin:6px 0">
+<div class="seg" id="aiAge" style="grid-template-columns:repeat(5,1fr)"><button type="button" data-a="" aria-pressed="true">전체</button><button type="button" data-a="0-12">0~12개월</button><button type="button" data-a="13-24">13~24개월</button><button type="button" data-a="25-48">2~3세</button><button type="button" data-a="49-99">4세+</button></div>
+<p class="note" id="aiCount"></p><div id="aiList"></div></div></div>
+<div class="card me" style="margin-top:10px"><span>🙋 이 기기: <b id="meState">-</b></span><button type="button" id="meBtn"></button></div>
+</div>
+</div>
+<script>(function(){
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),num=n=>(+n||0).toLocaleString('ko-KR');
+const SEARCH=['네이버','구글','다음','빙','줌'];
+let key='',days=7,titles={};try{key=localStorage.getItem('dk_admin')||'';days=+localStorage.getItem('dk_days')||7}catch(e){}
+// 페이지 주소 → 글 제목 (검색 목록에서). 통계를 그리기 전에 먼저 받아 둬요
+const titlesReady=fetch('search.json').then(r=>r.json()).then(j=>{j.forEach(o=>{titles['/'+(o.u||'').replace(/index\.html$/,'').replace(/\.html$/,'')]=o.t.split(' · ')[0]})}).catch(()=>{}).then(()=>{titles['/']='🏠 홈';titles['/admin']='📊 방문 통계'});
+const nm=p=>esc(titles[p]||p);
+function bars(el,rows,label,val,sub){const max=Math.max(1,...rows.map(r=>+r[val]||0));
+ $(el).innerHTML=rows.length?rows.slice(0,8).map(r=>`<li><span>${label(r)}</span><em>${num(r[val])}${sub?` <small>${sub(r)}</small>`:''}</em><i style="width:${Math.max(2,Math.round((+r[val]||0)/max*100))}%"></i></li>`).join(''):'<li><span class="none">아직 기록이 없어요</span></li>';}
+// 누적이 아니라 날짜별 방문자 선 그래프 (SOS 운영 현황과 같은 모양)
+function chart(ds,vals){const W=340,H=150,L=28,R=26,T=12,B=24,n=ds.length,mx=Math.max(4,...vals),st=Math.ceil(mx/4),top=st*4;
+ const x=i=>L+(n<2?(W-L-R)/2:i*(W-L-R)/(n-1)),y=v=>T+(H-T-B)*(1-v/top);
+ let g='';for(let k=0;k<=4;k++){const v=st*k;g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="currentColor" opacity=".12"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="currentColor" opacity=".6">${v}</text>`}
+ const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+ const every=Math.ceil(n/7);let xl='';ds.forEach((d,i)=>{if(i%every&&i!==n-1)return;const [, m, dd]=d.split('-');xl+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="10" fill="currentColor" opacity="${i?'.6':'1'}" font-weight="${i?400:700}">${i?+dd:+m+'/'+(+dd)}</text>`});
+ const last=vals[n-1];
+ $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="날짜별 방문자">${g}<polygon points="${x(0)},${y(0)} ${pts} ${x(n-1)},${y(0)}" fill="currentColor" opacity=".14"/><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="${x(n-1)}" cy="${y(last)}" r="4" fill="currentColor"/><text x="${x(n-1)+7}" y="${y(last)+4}" font-size="11" font-weight="700" fill="currentColor">${last}</text>${xl}</svg>`;}
+async function load(){
+ [...$('range').querySelectorAll('[data-d]')].forEach(b=>b.setAttribute('aria-pressed',+b.dataset.d===days));
+ let r;try{r=await fetch('/api/stats?days='+days,{headers:{'x-key':key},cache:'no-store'})}catch(e){$('msg').textContent='연결이 안 돼요. 잠시 뒤 다시 해 주세요.';return show('login')}
+ if(r.status===503){const j=await r.json().catch(()=>({setup:{}}));$('setupState').textContent=`지금 상태: 데이터베이스(STATS) ${j.setup&&j.setup.db?'✅':'❌'} · 비밀번호(ADMIN_KEY) ${j.setup&&j.setup.key?'✅':'❌'}`;return show('setup')}
+ if(r.status===401){try{localStorage.removeItem('dk_admin')}catch(e){}$('msg').textContent=key?'비밀번호가 달라요.':'';key='';return show('login')}
+ if(!r.ok){$('msg').textContent='통계를 못 불러왔어요 (HTTP '+r.status+')';return show('login')}
+ const j=await r.json();await titlesReady;try{if(!sessionStorage.getItem('dk_meinit')){sessionStorage.setItem('dk_meinit','1');if(!localStorage.getItem('dk_me_off'))localStorage.setItem('dk_me','1')}}catch(e){}
+ show('view');
+ const m={};j.daily.forEach(x=>m[x.d]=x);const all=[];for(let i=Math.max(j.days,7)-1;i>=0;i--)all.push(new Date(Date.now()+324e5-i*864e5).toISOString().slice(0,10));
+ const ds=all.slice(-days),g=d=>m[d]||{pv:0,uv:0,se:0},sum=(a,k)=>a.reduce((s,d)=>s+(+g(d)[k]||0),0);
+ const today=g(all[all.length-1]),yday=g(all[all.length-2]||'');
+ $('tUv').textContent=num(sum(ds,'uv'));$('tSe').textContent=num(sum(ds,'se'));$('tPv').textContent=num(sum(ds,'pv'));
+ $('sUv').textContent=days===1?`어제 ${num(yday.uv)}명`:`오늘 ${num(today.uv)}명`;$('sSe').textContent=days===1?`어제 ${num(yday.se)}번`:`오늘 ${num(today.se)}번`;
+ $('sPv').textContent=sum(ds,'se')?`방문당 ${(sum(ds,'pv')/sum(ds,'se')).toFixed(1)}쪽`:'';
+ const sos=(j.outs||[]).find(x=>x.h==='공동육아 SOS'),sosN=sos?+sos.n:0,seN=sum(ds,'se');
+ $('tSos').textContent=num(sosN);$('sSos').textContent=seN?`방문의 ${Math.round(sosN/seN*100)}%`:'';
+ const srch=j.srcs.filter(x=>SEARCH.includes(x.s)).reduce((a,x)=>a+(+x.se||0),0),top=j.srcs[0];
+ $('tSrc').textContent=num(srch);$('sSrc').textContent=top?`1위 ${top.s}`:'';
+ $('tMine').textContent=num((j.mine||[]).filter(x=>ds.includes(x.d)).reduce((a,x)=>a+(+x.pv||0),0));
+ const cd=days===1?all.slice(-7):ds;chart(cd,cd.map(d=>+g(d).uv||0));
+ $('cTot').textContent=num(sum(cd,'uv'))+'명';$('cSub').textContent=days===1?'최근 7일':`최근 7일 ${num(sum(all.slice(-7),'uv'))}명`;
+ const land={};(j.lands||[]).forEach(x=>{(land[x.s]=land[x.s]||[]).push(x)});
+ bars('srcs',j.srcs,x=>esc(x.s)+((land[x.s]||[]).length?`<span class="land">${land[x.s].slice(0,3).map(l=>`${nm(l.p)} ${num(l.se)}`).join(' · ')}</span>`:''),'se');
+ bars('kws',j.kws,x=>`${esc(x.q)} <small>· ${esc(x.s)}</small>`,'n');
+ bars('pages',j.pages,x=>`<a href="${esc(x.p)}">${nm(x.p)}</a>`,'pv');
+ bars('sosPages',j.outPages||[],x=>`<a href="${esc(x.p)}">${nm(x.p)}</a>`,'n');
+ bars('outs',(j.outs||[]).filter(x=>x.h!=='공동육아 SOS'),x=>esc(x.h),'n');
+ bars('devs',j.devs,x=>esc(x.dev),'pv',x=>`· ${num(x.uv)}명`);
+ meUI();}
+function meUI(){let on=false;try{on=!!localStorage.getItem('dk_me')}catch(e){}$('meState').textContent=on?'✅ 내 기기 (따로 셈)':'일반 방문으로 셈';$('meBtn').textContent=on?'일반으로 바꾸기':'내 기기로 표시';}
+function show(w){['login','setup','view'].forEach(i=>$(i).hidden=i!==w);$('ib').hidden=w!=='view';if(w==='login')$('pw').focus();}
+$('login').addEventListener('submit',e=>{e.preventDefault();key=$('pw').value.trim();if(!key)return;try{localStorage.setItem('dk_admin',key)}catch(e){}$('pw').value='';load();});
+$('range').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;days=+b.dataset.d;try{localStorage.setItem('dk_days',days)}catch(e){}load();});
+$('rf').addEventListener('click',load);
+$('out').addEventListener('click',()=>{try{localStorage.removeItem('dk_admin')}catch(e){}key='';$('msg').textContent='';show('login');});
+$('meBtn').addEventListener('click',()=>{let on=false;try{on=!!localStorage.getItem('dk_me');if(on){localStorage.removeItem('dk_me');localStorage.setItem('dk_me_off','1')}else{localStorage.setItem('dk_me','1');localStorage.removeItem('dk_me_off')}}catch(e){}meUI();});
+// 🧪 AI 놀이 (운영자만): /api/aiplays 는 비밀번호가 있어야 줘요
+let AI=null,aiAge='';
+function aiDraw(){const q=$('aiQ').value.trim().toLowerCase().replace(/\s+/g,''),[lo,hi]=aiAge?aiAge.split('-').map(Number):[0,999];
+ const L=AI.filter(p=>p.ageMax>=lo&&p.ageMin<=hi&&(!q||(p.name+(p.materials||[]).join('')+(p.keywords||[]).join('')).toLowerCase().replace(/\s+/g,'').includes(q)));
+ $('aiCount').textContent=`${L.length}개 / 전체 ${AI.length}개`;
+ $('aiList').innerHTML=L.map(p=>`<details class="aip"><summary><b>${esc(p.name)}</b> <small>${esc(p.a)} · ${esc(p.place)}${p.group?' · 여럿이':''}</small></summary>
+  <p><b>준비물</b> ${esc((p.materials||[]).join(', '))}</p><ol>${(p.steps||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
+  ${p.tip?`<p>💡 ${esc(p.tip)}</p>`:''}${p.safety?`<p>⚠️ ${esc(p.safety)}</p>`:''}<p class="note">id: ${esc(p.id)}</p></details>`).join('');}
+$('aiLoad').addEventListener('click',async()=>{const b=$('aiLoad');b.disabled=true;b.textContent='불러오는 중…';
+ try{const r=await fetch('/api/aiplays',{headers:{'x-key':key},cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);AI=(await r.json()).plays;b.hidden=true;$('aiBox').hidden=false;aiDraw();}
+ catch(e){b.disabled=false;b.textContent='다시 불러오기 ('+e.message+')';}});
+$('aiQ').addEventListener('input',()=>AI&&aiDraw());
+$('aiAge').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;aiAge=b.dataset.a;[...$('aiAge').children].forEach(x=>x.setAttribute('aria-pressed',x===b));aiDraw();});
+key?load():show('login');})();</script>
+
+</main>
+<footer><div class="wrap">
+  <a class="logo" href="./"><img src="assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
+  <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 육아 정보 홈페이지와 <a href="https://gongdong-sos.pages.dev/">공동육아 웹앱</a>을 만들었어요.</p>
+  <div class="flinks"><a href="about.html">소개</a><a href="privacy.html">개인정보처리방침</a><a href="terms.html">이용약관</a><a href="https://gongdong-sos.pages.dev/">공동육아 SOS</a><a href="contact.html">문의</a><span>ifb1321@gmail.com</span></div>
+</div></footer>
+
+</body>
+</html>

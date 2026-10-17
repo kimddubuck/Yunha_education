@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="112" fill="#4E9C82"/>
+<!-- 엄마: 긴 머리, 웃으면서 눈물 -->
+<path d="M70 512 v-90 a118 100 0 0 1 236 0 v90z" fill="#F28B82"/>
+<path d="M92 330 q-10 -150 96 -170 q106 20 96 170z" fill="#5A3A22"/>
+<circle cx="188" cy="250" r="86" fill="#FFD3A8" stroke="#E8B68A" stroke-width="4"/>
+<path d="M104 236 q6 -96 84 -98 q78 2 84 98 q-36 -56 -84 -50 q-50 -4 -84 50z" fill="#5A3A22"/>
+<!-- 웃는 눈 (반달) -->
+<path d="M138 252 q16 -20 32 0" stroke="#2E2018" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M206 252 q16 -20 32 0" stroke="#2E2018" stroke-width="8" fill="none" stroke-linecap="round"/>
+<!-- 다크서클 -->
+<path d="M140 266 q14 10 28 0" stroke="#B88A6A" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M208 266 q14 10 28 0" stroke="#B88A6A" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+<!-- 눈물 -->
+<path d="M134 258 q-14 24 0 32 q14 -8 0 -32z" fill="#7EC8F2" stroke="#4FA8DA" stroke-width="3"/>
+<path d="M242 258 q14 24 0 32 q-14 -8 0 -32z" fill="#7EC8F2" stroke="#4FA8DA" stroke-width="3"/>
+<!-- 활짝 웃는 입 + 볼터치 -->
+<path d="M158 286 q30 34 60 0 z" fill="#8A3B2E"/>
+<circle cx="126" cy="284" r="12" fill="#F6A6A0" opacity=".8"/><circle cx="250" cy="284" r="12" fill="#F6A6A0" opacity=".8"/>
+<!-- 아기: 엄마 품, 머리카락 한 가닥, 방긋 -->
+<path d="M268 512 v-56 a84 70 0 0 1 168 0 v56z" fill="#FFD54A"/>
+<circle cx="352" cy="392" r="62" fill="#FFD3A8" stroke="#E8B68A" stroke-width="4"/>
+<path d="M352 332 q6 -26 24 -22" stroke="#5A3A22" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M322 388 q10 -12 20 0" stroke="#2E2018" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M362 388 q10 -12 20 0" stroke="#2E2018" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M336 410 q16 16 32 0" stroke="#8A3B2E" stroke-width="6" fill="none" stroke-linecap="round"/>
+<circle cx="312" cy="406" r="9" fill="#F6A6A0" opacity=".8"/><circle cx="392" cy="406" r="9" fill="#F6A6A0" opacity=".8"/>
+<!-- 엄마 팔이 아기를 감싸요 -->
+<path d="M262 470 q40 -40 110 -14" stroke="#F28B82" stroke-width="34" fill="none" stroke-linecap="round"/>
+</svg>

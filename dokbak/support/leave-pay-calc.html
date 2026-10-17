@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>육아휴직 급여 계산기 · 6+6 부모육아휴직제·한부모 달마다 금액 | 오늘도 독박육아</title>
+<meta name="keywords" content="첫만남이용권, 부모급여, 육아휴직, 아이돌봄서비스, 6+6 육아휴직">
+<meta name="description" content="통상임금과 휴직 개월수를 넣으면 육아휴직 급여를 달마다 계산해요. 6+6 부모육아휴직제(상한 최대 450만 원), 한부모 근로자, 7개월째부터 80%까지 2026년 기준으로 보여 줘요.">
+<link rel="canonical" href="https://xn--iq1br1ns0hr0b.com/support/leave-pay-calc"><meta property="og:url" content="https://xn--iq1br1ns0hr0b.com/support/leave-pay-calc">
+<meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
+<meta property="og:title" content="육아휴직 급여 계산기 · 6+6 부모육아휴직제·한부모 달마다 금액 | 오늘도 독박육아"><meta property="og:description" content="통상임금과 휴직 개월수를 넣으면 육아휴직 급여를 달마다 계산해요. 6+6 부모육아휴직제(상한 최대 450만 원), 한부모 근로자, 7개월째부터 80%까지 2026년 기준으로 보여 줘요.">
+<meta name="theme-color" content="#2a9095"><meta name="google-site-verification" content="LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4NpfnuWqSw"><meta name="google-site-verification" content="ZFMTOLEzDx_o9xWt52lDTOJko_3P7FKUIH1PbmnYO5o"><meta name="naver-site-verification" content="24c64ae8aaef959ea969cfde87a96b063cd368ef"><meta name="naver-site-verification" content="b140624f961775ae4658a9c4c45730b8fdad0d27">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="../assets/site.css?v=202610170503">
+<script defer src="../assets/leavepay.js?v=202610170503"></script></head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href=".././"><img src="../assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
+  <nav class="nav" aria-label="메뉴"><a href="../plays/">놀이</a><a href="../growth.html">우리 아이 지금</a><a href="../info/play.html">육아 정보</a><a href="../daycare/">어린이집</a><a href="../support.html" aria-current="page">국가지원</a><a href="../map.html">육아 지도</a></nav>
+  <a class="top-search" href="../search.html" aria-label="통합 검색"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></a>
+  <a class="top-sos" href="https://gongdong-sos.pages.dev/" aria-label="공동육아 SOS"><i>🆘 </i><span class="sos-long">공동육아 </span>SOS</a>
+</div></header>
+<main>
+<div class="wrap"><p class="crumb"><a href="../">홈</a> › <a href="../support.html">지원</a> › 육아휴직 급여 계산기</p>
+<section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">💰 계산기</span><h1 style="font-size:clamp(26px,5vw,36px)">육아휴직 급여, 달마다 얼마 받을까?</h1><p>통상임금과 휴직 시작일, 개월수를 넣으면 달마다 받는 돈과 합계를 계산해요. 시작일을 넣으면 몇 월 며칠부터 며칠까지가 몇 개월째인지, 이번 달은 얼마인지도 보여 줘요. 부부가 함께 쓰는 6+6 부모육아휴직제, 한부모 근로자도 고를 수 있어요. 넣은 숫자는 이 휴대폰에만 남아요.</p></div>
+<div class="box gform">
+  <div class="row"><span>누가 쓰나요</span><div class="seg" id="lpMode"><button type="button" data-v="g" aria-pressed="true">🙋 나 혼자</button><button type="button" data-v="s" aria-pressed="false">👫 부부 함께 (6+6)</button><button type="button" data-v="h" aria-pressed="false">👤 한부모</button></div></div>
+  <div class="row"><span>통상임금</span><div class="gin"><input id="lpW" type="text" inputmode="decimal" placeholder="한 달 통상임금 (만 원) 예: 320" aria-label="내 통상임금 (만 원)"></div></div>
+  <div class="row"><span>휴직 시작일</span><div class="gin"><input id="lpD" type="date" aria-label="내 휴직 시작일"></div></div>
+  <div class="row"><span>휴직 기간</span><div class="gin"><select id="lpN" aria-label="내 휴직 개월수"></select></div></div>
+  <div id="lpPartner" hidden>
+    <div class="row"><span>배우자 통상임금</span><div class="gin"><input id="lpW2" type="text" inputmode="decimal" placeholder="배우자 통상임금 (만 원)" aria-label="배우자 통상임금 (만 원)"></div></div>
+    <div class="row"><span>배우자 시작일</span><div class="gin"><input id="lpD2" type="date" aria-label="배우자 휴직 시작일"></div></div>
+    <div class="row"><span>배우자 기간</span><div class="gin"><select id="lpN2" aria-label="배우자 휴직 개월수"></select></div></div>
+  </div>
+  <p class="src" style="margin:8px 0 0">통상임금은 기본급처럼 매달 정해서 받는 돈이에요. 급여명세서의 기본급과 고정수당을 더해 보면 돼요. 야근 수당, 성과급처럼 달마다 달라지는 돈은 빼요.</p>
+</div>
+<div id="lpOut" class="lp-out" aria-live="polite"></div>
+
+<div class="box prose"><h2>🧮 이렇게 계산해요</h2>
+<div class="lp-tw"><table class="lp-t"><thead><tr><th>달</th><th>나 혼자 (일반)</th><th>한부모</th><th>부부 함께 (6+6)</th></tr></thead><tbody>
+<tr><td>1~2개월째</td><td>100% · 상한 250만</td><td>100% · 상한 300만</td><td>100% · 상한 250만</td></tr>
+<tr><td>3개월째</td><td>100% · 상한 250만</td><td>100% · 상한 300만</td><td>100% · 상한 300만</td></tr>
+<tr><td>4개월째</td><td>100% · 상한 200만</td><td>100% · 상한 200만</td><td>100% · 상한 350만</td></tr>
+<tr><td>5개월째</td><td>100% · 상한 200만</td><td>100% · 상한 200만</td><td>100% · 상한 400만</td></tr>
+<tr><td>6개월째</td><td>100% · 상한 200만</td><td>100% · 상한 200만</td><td>100% · 상한 450만</td></tr>
+<tr><td>7개월째부터</td><td>80% · 상한 160만</td><td>80% · 상한 160만</td><td>80% · 상한 160만</td></tr>
+</tbody></table></div>
+<p>계산한 금액이 월 70만 원보다 적으면 70만 원을 받아요(하한). 2025년부터 사후지급(일부를 복직 뒤에 주던 방식)이 없어져서, 휴직하는 동안 매달 전액을 받아요.</p>
+<h2>🧒 6+6, 왜 한 번에 안 주고 나눠서 줄까요?</h2>
+<p>쉽게 말하면 이래요. <b>엄마가 3개월째를 더 받으려면, 아빠도 3개월째를 써야 해요.</b> 나라는 아빠가 나중에 몇 달 쓸지 미리 알 수 없어요. 그래서 아빠가 한 달 쓸 때마다 "아, 둘 다 1개월째 썼네" 하고 엄마 몫을 한 달씩 올려 줘요.</p>
+<div class="ss">
+  <p class="ss-h">① 엄마가 먼저 6개월 써요 <small>아직은 보통 급여예요</small></p>
+  <div class="ss-row"><span class="ss-who">👩 엄마</span><div class="ss-m"><i class="g">1</i><i class="g">2</i><i class="g">3</i><i class="g">4</i><i class="g">5</i><i class="g">6</i></div></div>
+  <div class="ss-row"><span class="ss-who">👨 아빠</span><div class="ss-m"><i class="e">?</i><i class="e">?</i><i class="e">?</i><i class="e">?</i><i class="e">?</i><i class="e">?</i></div></div>
+  <p class="ss-h">② 아빠가 나중에 3개월 써요 <small>겹치는 1·2·3개월째만 올라가요</small></p>
+  <div class="ss-row"><span class="ss-who">👩 엄마</span><div class="ss-m"><i class="t">1</i><i class="t">2</i><i class="t">3</i><i class="g">4</i><i class="g">5</i><i class="g">6</i></div></div>
+  <div class="ss-row"><span class="ss-who">👨 아빠</span><div class="ss-m"><i class="t">1</i><i class="t">2</i><i class="t">3</i><i class="e"></i><i class="e"></i><i class="e"></i></div></div>
+  <div class="ss-row ss-pay"><span class="ss-who">💸 엄마가<br>더 받는 돈</span><div class="ss-m"><i class="p">0</i><i class="p">0</i><i class="p">50</i><i class="e">×</i><i class="e">×</i><i class="e">×</i></div></div>
+  <p class="ss-note">아빠 1개월째가 끝나면 엄마 1개월째 차액, 아빠 2개월째가 끝나면 2개월째 차액… 이렇게 <b>한 달씩 따로</b> 들어와요. 아빠가 3개월만 쓰면 엄마의 4·5·6개월째는 그대로예요. (숫자는 엄마 통상임금 300만 원일 때 더 받는 돈, 만 원 단위 예시예요. 1·2개월째는 상한이 똑같이 250만 원이라 0이에요.)</p>
+  <p class="ss-h">③ 아빠도 6개월 다 쓰면 <small>엄마 6개월이 모두 올라가요</small></p>
+  <div class="ss-row"><span class="ss-who">👩 엄마</span><div class="ss-m"><i class="t">1</i><i class="t">2</i><i class="t">3</i><i class="t">4</i><i class="t">5</i><i class="t">6</i></div></div>
+  <div class="ss-row"><span class="ss-who">👨 아빠</span><div class="ss-m"><i class="t">1</i><i class="t">2</i><i class="t">3</i><i class="t">4</i><i class="t">5</i><i class="t">6</i></div></div>
+  <div class="ss-row ss-pay"><span class="ss-who">💸 엄마가<br>더 받는 돈</span><div class="ss-m"><i class="p">0</i><i class="p">0</i><i class="p">50</i><i class="p">100</i><i class="p">100</i><i class="p">100</i></div></div>
+</div>
+<p class="src">같은 색 칸 = 둘이 겹치는 개월. 겹치는 칸만 6+6 금액(상한 250·250·300·350·400·450만 원)으로 올라가요. 엄마·아빠 순서가 바뀌어도 똑같아요.</p>
+<h2>👫 6+6은 언제 되나요</h2>
+<p>아기가 생후 18개월이 되기 전에 엄마·아빠가 둘 다 육아휴직을 쓰면 돼요. 동시에 써도 되고, 한 사람이 먼저 쓰고 다른 사람이 나중에 써도 돼요. 6+6 상향은 두 사람이 공통으로 쓴 개월에만 붙어요. 내 3개월째가 300만 원으로 오르려면 배우자도 3개월째를 써야 해요. 그래서 먼저 쓰는 사람은 일반 급여로 받다가, 배우자의 1개월째·2개월째·3개월째…가 끝날 때마다 그달의 차액을 따로 받아요. 한 번에 받는 게 아니에요. 한 사람이 3개월만 쓰면 다른 사람도 3개월째까지만 올라가요. 계산기에 두 사람 시작일과 기간을 넣으면 이 정산이 달마다 표에 보여요. 공무원과 사립학교 교원은 대상이 아니에요. 부모가 각각 3개월 이상 쓰면 육아휴직 기간이 1년 6개월까지 늘어나요.</p>
+<h2>✅ 받으려면</h2>
+<p>휴직을 시작한 날 기준으로 고용보험 가입 기간(피보험 단위기간)이 180일 이상이어야 해요. 휴직을 시작하고 1개월이 지난 뒤부터, 휴직이 끝난 뒤 12개월 안에 고용24에서 신청해요. 기한이 지나면 받을 수 없어요.</p>
+<p class="gnote">⚠️ 이 계산기는 고용노동부 안내 기준(2025년 1월 1일 이후 휴직 기간에 적용되는 금액)을 그대로 적용해 본 거예요. 2024년에 시작해 2025년 전에 받은 달은 예전 금액이라 달라요. 6+6이 '공통으로 쓴 개월'에만 붙는 건 고용보험법 시행령 제95조의3이 상한액을 '부모가 육아휴직을 사용한 기간이 각각 1개월인 경우 … 각각 6개월인 경우'로 나눠 정하고 있어서예요. '개월째'는 휴직 시작일부터 한 달씩 세요(11월 10일 시작이면 1개월째는 11월 10일~12월 9일). 급여는 보통 그달이 지난 뒤 신청해서 받아요. 한 달을 다 채우지 못한 달(일할 계산), 휴직 중에 회사에서 받는 돈, 단기 육아휴직(1~2주)은 계산하지 않아요. 한부모·장애아동 부모의 기간 연장 기준은 자료에서 확인하지 못해 12개월까지만 계산해요. 신청 전에 고용센터(국번 없이 1350)에서 내 경우를 꼭 확인하세요.</p>
+<p>📖 더 읽기: <a href="parental-leave-pay.html">육아휴직 급여는 한 달에 얼마까지 나올까?</a> · <a href="six-plus-six.html">6+6 부모육아휴직제 사례별 계산</a> · <a href="maternity-paternity-leave.html">출산휴가와 배우자 출산휴가</a></p>
+</div>
+<div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 2026년 10월에 확인한 기준이에요.</p><details class="srcd"><summary>📄 육아휴직급여 제도안내 <small>고용24(work24.go.kr) · 고용노동부 제도안내</small></summary><p>고용노동부가 운영하는 고용보험·육아휴직급여 안내와 신청 누리집이에요. 달마다 몇 %, 상한 얼마인지와 신청 기한이 여기 있어요. <a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000251&systId=SI00000402" rel="noopener">원문 열기</a></p></details><details class="srcd"><summary>📄 생후 18개월 이내 자녀가 있다면 &#x27;6+6 부모육아휴직제&#x27; <small>대한민국 정책브리핑(korea.kr) · 고용노동부 카드뉴스</small></summary><p>6+6 부모육아휴직제의 달마다 상한(250·250·300·350·400·450만 원)이 이 자료에 있어요. <a href="https://www.korea.kr/multi/visualNewsView.do?newsId=148930202" rel="noopener">원문 열기</a></p></details><details class="srcd"><summary>📄 고용보험법 시행령 제95조(육아휴직 급여)·제95조의3(부모 모두 육아휴직 시 특례) <small>국가법령정보센터(law.go.kr)</small></summary><p>육아휴직 급여의 비율·상한·하한(월 70만 원)과 6+6 특례의 법 조문이에요. <a href="https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EC%9A%A9%EB%B3%B4%ED%97%98%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9" rel="noopener">원문 열기</a></p></details></div>
+</section></div>
+<div class="wrap"><section class="blk kwbox"><p class="kw-h">🔎 이런 말로도 찾아보세요</p><div class="kw"><a href="../search.html?q=%EC%B2%AB%EB%A7%8C%EB%82%A8%EC%9D%B4%EC%9A%A9%EA%B6%8C">#첫만남이용권</a><a href="../search.html?q=%EB%B6%80%EB%AA%A8%EA%B8%89%EC%97%AC">#부모급여</a><a href="../search.html?q=%EC%9C%A1%EC%95%84%ED%9C%B4%EC%A7%81">#육아휴직</a><a href="../search.html?q=%EC%95%84%EC%9D%B4%EB%8F%8C%EB%B4%84%EC%84%9C%EB%B9%84%EC%8A%A4">#아이돌봄서비스</a><a href="../search.html?q=6%2B6%20%EC%9C%A1%EC%95%84%ED%9C%B4%EC%A7%81">#6+6 육아휴직</a></div></section></div></main>
+<footer><div class="wrap">
+  <a class="logo" href=".././"><img src="../assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
+  <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 육아 정보 홈페이지와 <a href="https://gongdong-sos.pages.dev/">공동육아 웹앱</a>을 만들었어요.</p>
+  <div class="flinks"><a href="../about.html">소개</a><a href="../privacy.html">개인정보처리방침</a><a href="../terms.html">이용약관</a><a href="https://gongdong-sos.pages.dev/">공동육아 SOS</a><a href="../contact.html">문의</a><span>ifb1321@gmail.com</span></div>
+</div></footer>
+<script>(function(){try{if(navigator.webdriver||location.hostname==='localhost')return;var me=0;try{me=localStorage.getItem('dk_me')?1:0}catch(e){}var send=function(o){var b=JSON.stringify(o);if(!(navigator.sendBeacon&&navigator.sendBeacon('/api/hit',b)))fetch('/api/hit',{method:'POST',body:b,keepalive:true})};var d=new Date(Date.now()+324e5).toISOString().slice(0,10),v=0,s=0;try{if(localStorage.getItem('dk_v')!==d){localStorage.setItem('dk_v',d);v=1}}catch(e){}try{if(!sessionStorage.getItem('dk_s')){sessionStorage.setItem('dk_s','1');s=1}}catch(e){}send({p:location.pathname,r:document.referrer,q:location.search,v:v,s:s,m:me});document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="http"]');if(a&&a.host!==location.host)send({o:a.href,p:location.pathname,m:me})},true)}catch(e){}})();</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>통합 검색 | 오늘도 독박육아</title>
+<meta name="description" content="놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원을 한 번에 찾아요.">
+<meta name="robots" content="noindex,follow">
+<meta property="og:type" content="website"><meta property="og:site_name" content="오늘도 독박육아">
+<meta property="og:title" content="통합 검색 | 오늘도 독박육아"><meta property="og:description" content="놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원을 한 번에 찾아요.">
+<meta name="theme-color" content="#2a9095"><meta name="google-site-verification" content="LrGoRs0_pYU-t2djW8amVjiKnZZFiM2-S4NpfnuWqSw"><meta name="google-site-verification" content="ZFMTOLEzDx_o9xWt52lDTOJko_3P7FKUIH1PbmnYO5o"><meta name="naver-site-verification" content="24c64ae8aaef959ea969cfde87a96b063cd368ef"><meta name="naver-site-verification" content="b140624f961775ae4658a9c4c45730b8fdad0d27">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="assets/site.css?v=202610170503">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="./"><img src="assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
+  <nav class="nav" aria-label="메뉴"><a href="plays/">놀이</a><a href="growth.html">우리 아이 지금</a><a href="info/play.html">육아 정보</a><a href="daycare/">어린이집</a><a href="support.html">국가지원</a><a href="map.html">육아 지도</a></nav>
+  <a class="top-search" href="search.html" aria-label="통합 검색"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></a>
+  <a class="top-sos" href="https://gongdong-sos.pages.dev/" aria-label="공동육아 SOS"><i>🆘 </i><span class="sos-long">공동육아 </span>SOS</a>
+</div></header>
+<main>
+<div class="wrap"><section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">🔍 통합 검색</span><h1 style="font-size:clamp(24px,5vw,34px)">무엇이 궁금하세요?</h1><p>놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원까지 한 번에 찾아요.</p></div>
+<form class="sbox" id="sform" role="search"><input id="sq" type="search" placeholder="예: 수면교육, 이유식, 비눗방울, 육아휴직" aria-label="검색어" autocomplete="off" enterkeyhint="search"><button type="submit" aria-label="찾기">찾기</button></form>
+<div class="schips" id="schips"></div>
+<p class="count" id="scount"></p><div class="bd" id="sres"></div></section></div>
+<script>(function(){const q=document.getElementById('sq'),res=document.getElementById('sres'),cnt=document.getElementById('scount'),chips=document.getElementById('schips');
+const POP=['수면교육','이유식','떼쓰기','양치','배변','영상','책 읽기','비눗방울','숨바꼭질','육아휴직','부모급여','어린이집 비용','예방접종','공동육아'];
+chips.innerHTML=POP.map(w=>`<button type="button">${w}</button>`).join('');
+let idx=null;const load=()=>idx?Promise.resolve(idx):fetch(new URL('search.json?v=3cc3fb4f',location.href),{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(j=>idx=j.map(o=>Object.assign(o,{_t:o.t.toLowerCase(),_a:(o.t+' '+o.d+' '+o.x).toLowerCase().replace(/\s+/g,'')})));
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mark=(s,ws)=>{let h=esc(s);ws.forEach(w=>{if(w)h=h.split(esc(w)).join('<mark>'+esc(w)+'</mark>');});return h;};
+function snip(o,ws){const src=o.d+' '+o.x;const low=src.toLowerCase();let i=-1;for(const w of ws){i=low.indexOf(w);if(i>=0)break;}if(i<0)return o.d||src.slice(0,80);const a=Math.max(0,i-30);return(a?'…':'')+src.slice(a,a+90)+'…';}
+async function run(v){v=(v||'').trim();history.replaceState(null,'',v?'?q='+encodeURIComponent(v):location.pathname);chips.hidden=!!v;
+ if(!v){res.innerHTML='';cnt.textContent='';return;}if(!idx)cnt.textContent='찾는 중…';try{await load();}catch(e){idx=null;cnt.textContent='검색 목록을 못 불러왔어요. 잠시 뒤 다시 눌러 주세요. ('+e.message+')';return;}
+ const ws=v.toLowerCase().split(/\s+/).filter(Boolean),wn=ws.map(w=>w.replace(/\s+/g,''));
+ const hit=idx.map(o=>{let sc=0;for(let i=0;i<ws.length;i++){const w=ws[i];if(o._t.includes(w))sc+=10;else if(o._a.includes(wn[i]))sc+=2;else return null;}if(o._t.startsWith(ws[0]))sc+=3;return[sc,o];}).filter(Boolean).sort((a,b)=>b[0]-a[0]).slice(0,60);
+ cnt.textContent=hit.length?`"${v}" 찾은 결과 ${hit.length}개`:`"${v}"에 맞는 글이 없어요. 더 짧은 말로 찾아 보세요.`;
+ res.innerHTML=hit.map(([,o])=>`<a class="bd-row" href="${o.u||'./'}"><span class="bd-main"><span class="bd-t">${mark(o.t,ws)}</span><span class="bd-meta">${mark(snip(o,ws),ws)}</span></span><span class="bd-badge wide"><b>${esc(o.k)}</b></span></a>`).join('');}
+document.getElementById('sform').addEventListener('submit',e=>{e.preventDefault();q.blur();run(q.value);});
+let tm;q.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(()=>run(q.value),200);});
+chips.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;q.value=b.textContent;run(q.value);});
+const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}else q.focus();})();</script>
+</main>
+<footer><div class="wrap">
+  <a class="logo" href="./"><img src="assets/icon.svg" alt="" width="30" height="30"><b>오늘도 독박육아</b></a>
+  <p>독박육아 하는 날을 덜 외롭게.<br>육아휴직하고 독박육아하는 아빠가 육아 정보 홈페이지와 <a href="https://gongdong-sos.pages.dev/">공동육아 웹앱</a>을 만들었어요.</p>
+  <div class="flinks"><a href="about.html">소개</a><a href="privacy.html">개인정보처리방침</a><a href="terms.html">이용약관</a><a href="https://gongdong-sos.pages.dev/">공동육아 SOS</a><a href="contact.html">문의</a><span>ifb1321@gmail.com</span></div>
+</div></footer>
+<script>(function(){try{if(navigator.webdriver||location.hostname==='localhost')return;var me=0;try{me=localStorage.getItem('dk_me')?1:0}catch(e){}var send=function(o){var b=JSON.stringify(o);if(!(navigator.sendBeacon&&navigator.sendBeacon('/api/hit',b)))fetch('/api/hit',{method:'POST',body:b,keepalive:true})};var d=new Date(Date.now()+324e5).toISOString().slice(0,10),v=0,s=0;try{if(localStorage.getItem('dk_v')!==d){localStorage.setItem('dk_v',d);v=1}}catch(e){}try{if(!sessionStorage.getItem('dk_s')){sessionStorage.setItem('dk_s','1');s=1}}catch(e){}send({p:location.pathname,r:document.referrer,q:location.search,v:v,s:s,m:me});document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="http"]');if(a&&a.host!==location.host)send({o:a.href,p:location.pathname,m:me})},true)}catch(e){}})();</script>
+</body>
+</html>

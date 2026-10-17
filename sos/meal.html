@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>식단공유 · 공동육아 SOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest?v=202610170449">
+<meta name="theme-color" content="#2a9095">
+<link rel="apple-touch-icon" href="assets/icon-sos-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="공동육아 SOS">
+<link rel="stylesheet" href="assets/common.css?v=202610170449">
+<script src="assets/gate.js?v=202610170449"></script>
+</head>
+<body>
+<div class="wrap single">
+  <nav class="site-nav" id="siteNav" data-page="meal" aria-label="메뉴"></nav>
+  <main>
+    <section class="sec meal-sec">
+      <div class="meal-top">
+        <h2><img class="meal-ic" src="assets/baby-eat.svg" alt=""> 우리 아이 식단</h2>
+        <div class="seg-tabs meal-seg"><button type="button" data-mine="0" aria-pressed="true">모두</button><button type="button" data-mine="1" aria-pressed="false">내 것만</button></div>
+      </div>
+      <p class="hint meal-note"><span class="nw">오늘은 뭐 먹이지? 🤔</span> <span class="nw">이웃 식단 보고 골라요</span><br><span class="nw meal-note2">🧠 올린 식단은 <b>집단지성 유아식 데이터</b>로 활용돼요</span></p>
+      <a class="meal-pool-link" href="https://xn--iq1br1ns0hr0b.com/food/meals?utm_source=sos" target="_blank" rel="noopener nofollow">🥣 우리 아이들이 먹은 유아식 모음 보러 가기 <small>›</small></a>
+      <button type="button" class="meal-pool-mine" id="poolMine" hidden></button>
+      <div class="meal-date">
+        <button type="button" class="meal-nav" id="mealPrev" aria-label="전날">‹</button>
+        <b id="mealDay"></b>
+        <button type="button" class="meal-nav" id="mealNext" aria-label="다음 날">›</button>
+      </div>
+      <div id="mealSlots"></div>
+      <input type="file" id="mealFile" accept="image/*" capture="environment" hidden>
+      <input type="file" id="mealAlbum" accept="image/*" hidden>
+    </section>
+    <p class="tiny-note">📷 음식만 나오게 찍어 주세요. 사진은 휴대폰에서 작게 줄여 올려요.<br>지우기는 <b>올린 사람</b>과 <b>방장</b>만 할 수 있어요.</p>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+<script src="assets/common.js?v=202610170449"></script>
+<script src="assets/push.js?v=202610170449"></script>
+<script src="assets/meal.js?v=202610170449"></script>
+</body>
+</html>
