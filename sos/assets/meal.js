@@ -276,4 +276,31 @@ async function mealGoPhoto(){
   document.querySelectorAll('[data-mine]').forEach(b => b.addEventListener('click', () => { meal.onlyMine = b.dataset.mine === '1'; renderMeal(); }));
   watchDay();
   mealGoPhoto();
+  poolMineCheck();
 })();
+
+// 📤 내가 예전에 올린 식단(아직 모음에 안 보낸 것)을 한 번에 유아식 모음으로 — 올린 사람 본인만 볼 수 있는 버튼이에요
+async function poolMineCheck(){
+  const b = document.getElementById('poolMine'); if(!b) return;
+  try{
+    if(!(await sosReady()) || !ME.uid) return;
+    const now = Date.now();
+    const q = await roomRef().collection('meals').where('uid', '==', ME.uid).get();
+    const mine = q.docs.map(d => ({id: d.id, ...d.data()})).filter(d => (!d.expireAt || d.expireAt.toMillis() > now) && !poolSent(d.id));
+    if(!mine.length){ b.hidden = true; return; }
+    b.hidden = false; b.disabled = false;
+    b.innerHTML = `📤 내가 올린 식단 <b>${mine.length}개</b>도 유아식 모음에 보내기`;
+    b.onclick = async () => {
+      b.disabled = true; b.textContent = '보내는 중…';
+      let ok = 0;
+      for(const d of mine){
+        const pool = {img: d.img, slot: d.slot, date: d.date, createdAt: firebase.firestore.FieldValue.serverTimestamp()};
+        if(d.memo) pool.memo = d.memo; if(d.mo != null) pool.mo = d.mo;
+        try{ await sosDb().collection('mealpool').doc(d.id).set(pool); ok++; markPoolSent(d.id); }
+        catch(err){ if(err && err.code === 'permission-denied') markPoolSent(d.id); }   // 이미 보낸 식단
+      }
+      b.textContent = `✅ ${ok ? ok + '개 보냈어요' : '이미 다 보냈어요'} · 고마워요!`;
+      setTimeout(() => { b.hidden = true; }, 4000);
+    };
+  }catch(e){ b.hidden = true; }
+}
