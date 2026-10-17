@@ -144,6 +144,7 @@ TOPICS = [('play', '🧸', '놀이·발달'), ('mind', '💛', '마음·행동')
           ('sleep', '😴', '잠·배변·양치'), ('health', '🩺', '건강·검진·안전'), ('together', '🤝', '공동육아')]
 TOPIC_SHORT = {'play': '놀이', 'mind': '마음', 'lang': '말·미디어', 'food': '먹기', 'sleep': '잠·습관', 'health': '건강·안전', 'together': '공동육아'}   # 작은 탭에 쓰는 짧은 이름
 TOPIC_OF = {   # 글 id → 주제 (여기 없는 글은 아래 기본 규칙으로)
+  'separate-sleep': 'sleep',
   'mouthing-dropping': 'play', 'same-book-again': 'play', 'why-questions': 'play',
   'stranger-separation-anxiety': 'mind', 'crying-curve': 'mind', 'tantrum-how-common': 'mind', 'toddler-biting': 'mind',
   'attachment-secure-base': 'mind', 'still-face': 'mind', 'praise-effort': 'mind', 'discipline-no-spanking': 'mind', 'postpartum-depression': 'mind',
