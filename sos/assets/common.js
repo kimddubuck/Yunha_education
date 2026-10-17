@@ -249,6 +249,12 @@ function attachUI(form, opts){
     // 💬 인스타그램처럼: [이모지 한 줄] + [넓은 둥근 칸 안에 글 · 🖼 · 게시]
     row.hidden = true; form.classList.add('ig');
     txt = form.querySelector('input[type="text"]'); const sub = form.querySelector('button[type="submit"]');
+    // 💬 카톡처럼 여러 줄: 한 줄 칸(input)을 저절로 늘어나는 칸(textarea)으로 바꿔요. 엔터는 줄바꿈, 올리기는 '게시'
+    if(txt){ const ta = document.createElement('textarea'); ta.rows = 1;
+      ['maxlength', 'placeholder', 'aria-label', 'class'].forEach(a => { if(txt.hasAttribute(a)) ta.setAttribute(a, txt.getAttribute(a)); });
+      ta.value = txt.value; ta.className = (ta.className + ' cf-ta').trim(); txt.replaceWith(ta); txt = ta;
+      const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 132) + 'px'; ta.style.overflowY = ta.scrollHeight > 132 ? 'auto' : 'hidden'; };
+      ta.addEventListener('input', grow); ta._grow = grow; requestAnimationFrame(grow); }
     tog = document.createElement('button'); tog.type = 'button'; tog.className = 'at-tog'; tog.setAttribute('aria-label', '사진·링크 붙이기'); tog.setAttribute('aria-pressed', 'false');
     tog.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 15.5l-5-5L5 21"/></svg>';
     const pill = document.createElement('div'); pill.className = 'cf-pill';

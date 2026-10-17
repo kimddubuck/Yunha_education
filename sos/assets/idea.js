@@ -24,7 +24,7 @@ function ago(ts){
 function renderIdeas(){
   const ul = $i('#ideaList'), keys = ideaKeys();
   const fo = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-idea]');   // 쓰는 중인 댓글은 지켜요
-  const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('input').value} : null;
+  const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('textarea, input[type="text"]').value} : null;
   ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
   const list = idea.items.filter(x => !x.deleted);   // 말머리는 글에 붙어만 있고, 걸러 보기는 없어요
   if(!list.length){ ul.innerHTML = `<li class="hint idea-empty">아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂</li>`; return; }
@@ -145,7 +145,7 @@ async function removeDoc(ref, path){
   });
   $i('#ideaList').addEventListener('submit', async e => {
     const f = e.target.closest('[data-idea]'); if(!f) return; e.preventDefault();
-    const inp = f.querySelector('input'), b = inp.value.trim();
+    const inp = f.querySelector('textarea, input[type="text"]'), b = inp.value.trim();
     const x = idea.items.find(y => y.id === f.dataset.idea); if(!x) return;
     let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
     if(!b && !at.img) return;   // 글이 없어도 사진만 있으면 올라가요 (v19)

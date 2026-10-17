@@ -202,8 +202,8 @@ function renderMeets(){
   const pl = $('#pastList'); pl.innerHTML = ''; past.forEach(o => pl.appendChild(meetCard(o, true)));
   $('#pastSec').hidden = !past.length;
 
-  document.querySelectorAll('.comment-form[data-comment]').forEach(f => { f.querySelector('input').value = meet.drafts[f.dataset.comment] || ''; });   // 수정 폼은 건드리지 않아요
-  if(focusId){ const f = document.querySelector(`.comment-form[data-comment="${focusId}"]`); if(f) f.querySelector('input').focus(); }
+  document.querySelectorAll('.comment-form[data-comment]').forEach(f => { { const t = f.querySelector('textarea, input[type="text"]'); t.value = meet.drafts[f.dataset.comment] || ''; if(t._grow) t._grow(); } });   // 수정 폼은 건드리지 않아요
+  if(focusId){ const f = document.querySelector(`.comment-form[data-comment="${focusId}"]`); if(f) f.querySelector('textarea, input[type="text"]').focus(); }
   if(meet.editing && !focusId){ const ef = document.querySelector(`[data-edit-comment="${meet.editing}"] input`); if(ef){ ef.focus(); if(editSel) try{ ef.setSelectionRange(editSel[0], editSel[1]); }catch(e){} } }
 }
 
@@ -382,11 +382,11 @@ $('#meetList').addEventListener('submit', async e => {
   }
   const f = e.target.closest('[data-comment]'); if(!f) return;
   e.preventDefault();
-  const id = f.dataset.comment, text = f.querySelector('input').value.trim();
+  const id = f.dataset.comment, text = f.querySelector('textarea, input[type="text"]').value.trim();
   if(!meet.col) return;
   let at = {}; try{ at = f._at ? f._at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ meetSay('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
   if(!text && !at.img) return;   // 글이 없어도 사진만 있으면 올라가요 (v19)
-  meet.drafts[id] = ''; f.querySelector('input').value = '';   // 먼저 비우고, 실패하면 되돌려요
+  meet.drafts[id] = ''; { const t = f.querySelector('textarea, input[type="text"]'); t.value = ''; if(t._grow) t._grow(); }   // 먼저 비우고, 실패하면 되돌려요
   if(meet.atDrafts) delete meet.atDrafts[id]; if(f._at) f._at.clear();
   try{
     // 화면에 댓글이 먼저 뜨기 전에 열쇠부터 저장해 둬요 (그래야 바로 수정·삭제 버튼이 보여요)

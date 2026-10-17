@@ -147,8 +147,9 @@ function openPhoto(id){
   // ❤️ 좋아요 (v17) + 누가 눌렀는지 ('가영맘님 외 2명이 좋아해요'). 누를 때마다 그 줄도 다시 그려요
   const who = () => { box.querySelector('.like-who')?.remove(); const lw = likeWho(d); if(lw) box.querySelector('.meal-line').insertAdjacentElement('afterend', lw); };
   box.querySelector('.meal-like').appendChild(likeBtn(d, ME.uid, roomRef().collection('meals').doc(d.id), {val: ME.nick, after: who})); who();
-  const ul = box.querySelector('.comment-list'), chip = box.querySelector('.reply-chip'), form = box.querySelector('.comment-form'), inp = form.querySelector('input');
+  const ul = box.querySelector('.comment-list'), chip = box.querySelector('.reply-chip'), form = box.querySelector('.comment-form');
   const at = typeof attachUI === 'function' ? attachUI(form, {compact: true}) : null;
+  const inp = form.querySelector('textarea, input[type="text"]');   // attachUI가 여러 줄 칸으로 바꾼 뒤에 잡아요
   let list = [], replyTo = null;
   const draw = () => {
     ul.innerHTML = '';
@@ -195,7 +196,7 @@ function openPhoto(id){
     try{
       const ref = mealCmts(id).doc();
       await ref.set({text, ...atv, uid: ME.uid, n: ME.nick, ...(rt ? {to: rt.root} : {}), expireAt: d.expireAt, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-      rememberMyCmt(id, ref.id); inp.value = ''; replyTo = null; if(at) at.clear(); draw();
+      rememberMyCmt(id, ref.id); inp.value = ''; if(inp._grow) inp._grow(); replyTo = null; if(at) at.clear(); draw();
       // 🔔 알림: 사진 올린 사람에게 + 답글이면 그 댓글 쓴 사람에게 (같은 사람이면 한 번만)
       if(typeof pushMealComment === 'function'){
         if(rt) pushMealComment(d, rt.uid, text || '📷 사진', true);
