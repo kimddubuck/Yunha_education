@@ -139,7 +139,7 @@ def in_band(p, lo, hi):
 # 🥣 유아식 모음 링크를 사이트 안에 걸지 여부: 애드센스 승인 전에는 False (페이지는 있지만 사이트 어디에서도 안 이어지고, 검색에도 안 나가요. SOS 앱 버튼으로만 들어와요)
 MEALS_PUBLIC = False
 # 💉 예방접종 계산기: 운영자가 질병관리청 공식 표와 맞춰 본 뒤 True (그 전엔 검색·링크 없이 주소로만)
-VACCINE_OK = False
+VACCINE_OK = True   # 2026-10-19 운영자가 병원 예방접종 수첩 표준 일정과 맞춰 봄
 MEALS_CARD = '<a class="box" href="../food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>'
 STG_CARD = '<a class="box" href="../food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>'   # 🥣 이유식 단계표 바로가기 (🍚 먹기 주제 맨 위)
 TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
@@ -238,7 +238,7 @@ def page_keywords(path):
   if top in KW_DIR: return KW_DIR[top]
   return {'index.html': ['독박육아', '공동육아', '아기놀이', '엄마표 놀이', '이유식', '수면교육'], 'growth.html': ['아기 키 몸무게', '아기 백분위', '영유아검진', '머리둘레', '이유식 양'],
           'songs.html': ['동요 추천', '아기 동요', '율동', '자장가'], 'food.html': KW_TOPIC['food'], 'research.html': ['육아 연구', '아기 발달', '놀이 연구'],
-          'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도']}.get(path, [])
+          'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도'], 'vaccine.html': ['아기 예방접종', '예방접종 일정', '영유아검진', '국가예방접종']}.get(path, [])
 
 NOINDEX = {'404.html', 'search.html', 'admin.html'} | {f'principles/{PR_SLUG[k]}.html' for k, v in PR_SRC.items() if not v}   # 연구 근거 없는 '놀이 만들기용 분류'는 검색엔진에 안 내보내요
 # 개인정보처리방침·이용약관 시행일: 내용을 바꿀 때만 손으로 고쳐요 (빌드할 때마다 바뀌면 안 돼요)
@@ -524,7 +524,7 @@ draw();
     <a href="food/stages.html"><b>🥣 이유식 단계표</b><span>개월수별 끼니 수·한 끼 양을 종이컵으로</span></a>
     <a href="map.html"><b>🗺 육아 지도</b><span>내 주변 소아과, 지금 문 연 약국</span></a>
     <a href="plays/"><b>🔎 놀이 찾기</b><span>개월수·장소·키우고 싶은 힘으로 골라요</span></a>
-    <a href="#sos"><b>🆘 공동육아 SOS</b><span>독박인 시간을 눌러 이웃과 모임을 열어요</span></a>
+    <a href="vaccine.html"><b>💉 예방접종·검진 날짜</b><span>생일만 넣으면 0~6세 접종·영유아검진 날짜</span></a>
   </div>
 </div></section>
 
@@ -822,6 +822,7 @@ segs(); render();
 </div>
 <div id="gout"></div>
 <a class="box" href="food/stages.html" style="display:block;margin:14px 0 0;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>
+<a class="box" href="vaccine.html" style="display:block;margin:10px 0 0;color:inherit;text-decoration:none"><b>💉 예방접종·검진 날짜 계산기</b> — 태어난 날만 넣으면 0~6세 국가예방접종·영유아검진 날짜를 달력 순서로 ›</a>
 <div class="box"><h2>📚 출처는 누구예요?</h2><p class="src" style="margin:0 0 8px">자료 이름을 누르면 설명이 펼쳐져요. 숫자는 평균 아이 기준이라 참고용이에요. 걱정되면 소아과 의사와 상의하세요.</p>{gsrc}</div>
 </section></div>'''
   files['growth.html'] = page('아기 키·몸무게 백분위 계산 · 개월수별 식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게·머리둘레 백분위(100명 중 몇 등, WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', gbody, 'growth.html', 'growth.html',
