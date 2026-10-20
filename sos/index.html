@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610200730">
+<link rel="manifest" href="manifest.webmanifest?v=202610200737">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610200730">
-<script src="assets/gate.js?v=202610200730"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610200737">
+<script src="assets/gate.js?v=202610200737"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -85,8 +85,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610200730"></script>
-<script src="assets/push.js?v=202610200730"></script>
+<script src="assets/common.js?v=202610200737"></script>
+<script src="assets/push.js?v=202610200737"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -247,13 +247,12 @@ watchMeets(list => {
     const box = sosInfo({icon: '', title: '띵동~ 친구야 놀자!', body: `<div class="dd">
       <img class="dd-img" src="assets/dingdong.webp?v=2" alt="띵동~ 친구야 놀자! 라떼는 키즈룸 없이, 친구 집에서 놀았어!" width="1146" height="1040">
       <p class="dd-when">어느 날 오후 3시</p>
-      <p>오전 공동육아 끝, 애매한 오후.<br>비까지 추적추적, 놀이터도 센터도<br>내키지 않는 날.</p>
+      <p>오전 공동육아 끝, 애매한 오후.<br>비까지 추적추적, 놀이터도 센터도 내키지 않는 날.</p>
       <p class="dd-hi">그때, 띵동. "친구야~ 놀자!"</p>
       <p>키즈룸에선 엄마 뒤에 숨던 아이가<br>오늘은 먼저 달려가 문을 연다.<br><b>여기는 우리 집이니까.</b></p>
-      <p>청소는 안 해도 OK, 간식은 각자 하나씩.</p>
-      <p>라떼는 대문 앞에서 이름 한 번 부르면 충분했다.</p>
+      <p>청소는 안 해도 OK, 간식은 각자 하나씩.<br>라떼는 대문 앞에서 이름 한 번 부르면 충분했다.</p>
       <p class="dd-hi">오늘 오후, 우리도 불러 볼까요?</p>
-      <a class="dd-sos" href="meet.html"><b>🛟 공동육아 SOS! 띵동~ 보내 보세요</b><br>오후가 막막한 날, SOS 한 번이면 충분해요.<br>놀러 가도 좋고, 우리 집 문을 열어 모임을 열어도 좋아요.<span class="dd-go">🆘 지금 SOS 보내러 가기 ›</span></a>
+      <a class="dd-sos" href="meet.html"><b>🛟 공동육아 SOS! 띵동~ 보내 보세요</b><br>놀러 가도 좋고, 우리 집 문을 열어도 좋아요.<span class="dd-go">🆘 지금 SOS 보내러 가기 ›</span></a>
       <button type="button" class="dd-later" data-pop="1">오늘은 괜찮아요</button></div>`});
     box.querySelector('.pop').classList.add('pop-dd');
   }, 900);

@@ -1450,3 +1450,13 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 a.dd-sos{display:block;text-decoration:none;color:var(--fg)!important;background:color-mix(in srgb,var(--pick) 14%,transparent);cursor:pointer}
 a.dd-sos:active{transform:scale(.98)}
 .dd-go{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--pick);color:var(--pick-fg,#fff);font-weight:800;font-size:15px}
+/* 띵동 팝업 세로 줄이기 */
+.pop-dd{padding:10px 12px 10px}
+.dd{gap:6px;font-size:13.5px;line-height:1.45}
+.dd-when{font-size:15.5px;margin-top:0!important}
+.dd-hi{font-size:14.5px}
+.dd-img{margin:0}
+a.dd-sos{padding:8px 10px;font-size:13px;line-height:1.45}
+.dd-go{margin-top:6px;padding:8px 10px;font-size:14px}
+.dd-later{padding:2px}
+.pop-info.pop-dd{padding-bottom:10px}
