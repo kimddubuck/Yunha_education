@@ -256,9 +256,9 @@ watchMeets(list => {
     box.querySelector('.pop').classList.add('pop-dd', 'pop-we');
   }, 900);
 })();
-// 🔔 띵동~ 친구야 놀자: 오후 3시~5시 사이에 홈을 열면 하루 한 번 띄워요 (알림 눌러 온 창이 먼저 떠 있으면 건너뛰어요)
+// 🔔 띵동~ 친구야 놀자: 평일 오후 3시~5시 사이에 홈을 열면 하루 한 번 띄워요 (알림 눌러 온 창이 먼저 떠 있으면 건너뛰어요)
 (function dingdong(){
-  const h = new Date().getHours(); if(h < 15 || h >= 17) return;
+  const d = new Date(), h = d.getHours(), wd = d.getDay(); if(wd === 0 || wd === 6 || h < 15 || h >= 17) return;   // 평일만
   let seen = ''; try{ seen = localStorage.getItem('sosDingdong') || ''; }catch(e){}
   if(seen === todayStr()) return;
   setTimeout(() => {
