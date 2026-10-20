@@ -1447,3 +1447,6 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .pop-dd .pop-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .dd-img{width:100%;height:auto;border-radius:12px;display:block;margin:0 0 4px}
 .pop-dd .pop-x{z-index:2;background:rgba(0,0,0,.45);color:#fff}
+a.dd-sos{display:block;text-decoration:none;color:var(--fg)!important;background:color-mix(in srgb,var(--pick) 14%,transparent);cursor:pointer}
+a.dd-sos:active{transform:scale(.98)}
+.dd-go{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--pick);color:var(--pick-fg,#fff);font-weight:800;font-size:15px}
