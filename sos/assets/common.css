@@ -1460,3 +1460,6 @@ a.dd-sos{padding:8px 10px;font-size:13px;line-height:1.45}
 .dd-go{margin-top:6px;padding:8px 10px;font-size:14px}
 .dd-later{padding:2px}
 .pop-info.pop-dd{padding-bottom:10px}
+/* 🌤 주말 아침 팝업: 그림 없이 아이콘·제목은 보이게 */
+.pop-we .pop-t{position:static;width:auto;height:auto;clip:auto;overflow:visible;margin:0 0 6px}
+.pop-we{padding-top:22px}
