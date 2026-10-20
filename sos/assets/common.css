@@ -1441,3 +1441,5 @@ p,li,dd,figcaption,label,small{text-wrap:pretty}
 .dd .btn{margin-top:6px}
 .dd-later{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:4px}
 .dd{text-align:center}
+.dd-sos{border:1.5px dashed var(--pick);border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.55}
+.dd-sos b{font-size:14.5px}
