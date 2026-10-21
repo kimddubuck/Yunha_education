@@ -539,6 +539,7 @@ function showSosNames(day, h, v, nudge){
       : '<p class="who-none">이 날 SOS가 하나라도 생기면 댓글을 달 수 있어요.</p>'}</div>`;
   const box = sosInfo({icon: nudge ? '🚨' : '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body: (isNow ? top + cm + body : top + body + cm) + (nudge ? '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>' : '')});
   if(nudge) box.classList.add('siren-pop');
+  const vid = `s${day}-${h}`, vt = viewTag(vid); vt.classList.add('views-pop'); const pt = box.querySelector('.pop-t'); if(pt) pt.after(vt); viewHit(vid);   // 👁 이 시간 SOS 본 사람
   sosCmtWire(box, day, h);
   box.addEventListener('click', async e => {
     if(e.target.closest('[data-brave]') && typeof openMeetForm === 'function'){ e.preventDefault(); box.remove(); openMeetForm(day, h + '시'); return; }
@@ -547,6 +548,30 @@ function showSosNames(day, h, v, nudge){
     try{ const nv = await sosToggleHour(day, h, v); box.remove(); showSosNames(day, h, nv); if(nudge && typeof pushToast === 'function' && sosMine(nv).includes(h)) pushToast('🆘 SOS 보냈어요! 같은 시간 이웃이 보고 힘이 될 거예요'); }
     catch(err){ sosTrouble(err); b.disabled = false; b.innerHTML = '⚠️ 저장하지 못했어요<small>다시 눌러 주세요</small>'; }
   });
+}
+
+// 👁 조회수 (v22): rooms/{방}/views/{대상} {n} — i익명글, m모임, s날짜-시. 이 휴대폰에서는 대상마다 한 번만 세요
+const VIEWS = {n: {}, on: false};
+function viewsWatch(){
+  if(VIEWS.on || !roomRef() || typeof sosReady !== 'function') return; VIEWS.on = true;
+  sosReady().then(ok => { if(ok) roomRef().collection('views').limit(500).onSnapshot(q => {
+    VIEWS.n = {}; q.docs.forEach(d => { VIEWS.n[d.id] = d.data().n || 0; }); viewsPaint(); }, () => {}); });
+}
+function viewsPaint(){ document.querySelectorAll('[data-views]').forEach(e => { const n = VIEWS.n[e.dataset.views] || 0; e.textContent = '👁 ' + n; e.hidden = !n; }); }
+function viewTag(id){
+  viewsWatch();
+  const s = document.createElement('span'); s.className = 'views'; s.dataset.views = id; s.title = '본 사람 수';
+  const n = VIEWS.n[id] || 0; s.textContent = '👁 ' + n; s.hidden = !n; return s;
+}
+async function viewHit(id){
+  if(!roomRef() || !ME.uid) return;
+  const KEY = 'sosViewed'; let seen = {}; try{ seen = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){}
+  const k = ROOM.key + '/' + id; if(seen[k]) return;
+  seen[k] = Date.now();
+  const ks = Object.keys(seen); if(ks.length > 400) ks.sort((a, b) => seen[a] - seen[b]).slice(0, ks.length - 400).forEach(x => delete seen[x]);
+  try{ localStorage.setItem(KEY, JSON.stringify(seen)); }catch(e){}
+  try{ await roomRef().collection('views').doc(id).set({n: firebase.firestore.FieldValue.increment(1), ...(TTL_READY ? {expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + 14 * 864e5)} : {})}, {merge: true}); }
+  catch(e){ try{ delete seen[k]; localStorage.setItem(KEY, JSON.stringify(seen)); }catch(err){} }   // 규칙이 아직 없으면 다음에 다시 세요
 }
 
 // 💬 SOS 시간 댓글: rooms/{방}/sos/{날짜}/comments {h, text, uid, n} — 날짜 문서와 함께 지워져요
@@ -1080,6 +1105,8 @@ async function cleanupExpired(){
   }
   const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
   for(const d of sos.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); }   // 💬 그 날 SOS 댓글도 함께
+  const views = await r.collection('views').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 👁 지난 조회수
+  await Promise.all(views.docs.map(d => del(d.ref)));
   const meals = await r.collection('meals').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 🍚 1달 지난 식단 사진
   const ideas = await r.collection('ideas').where('expireAt', '<', now).limit(50).get().catch(() => ({docs: []}));   // 🙈 3일 지난 익명게시판 글
   for(const d of ideas.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); }

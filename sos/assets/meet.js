@@ -102,7 +102,7 @@ function meetCard(o, past){
   cb.className = 'join comment-toggle act cmt';
   row.append(jb, nb, lb); body.append(row);
   const lw = likeWho(o); if(lw) body.append(lw);   // 누가 눌렀는지
-  const ft = document.createElement('div'); ft.className = 'meet-foot'; ft.append(cb, meetShareBtn(o)); body.append(ft);   // 📣 투표 부탁 공유
+  const ft = document.createElement('div'); ft.className = 'meet-foot'; ft.append(cb, meetShareBtn(o), viewTag('m' + o.id)); body.append(ft); viewHit('m' + o.id);   // 📣 투표 부탁 공유 · 👁 본 사람
   // ✏️ 수정 · 🗑 취소는 한 줄에 작게 (연 사람·방장만 보여요)
   const own = document.createElement('div'); own.className = 'own-row';
   if(isMine(o)){   // ⏰ 연 사람은 끝나는 시간을 정하거나 바꿀 수 있어요

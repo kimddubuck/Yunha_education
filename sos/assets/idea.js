@@ -39,7 +39,9 @@ function renderIdeas(){
     if(opened && typeof attachView === 'function'){ const av = attachView(x); if(av) b.insertAdjacentElement('afterend', av); }
     // ❤️ 좋아요 (v17): 누가 눌렀는지 안 남게 글마다 다른 지문(내 번호+글 번호)을 칸 이름으로 써요
     const foot = document.createElement('div'); foot.className = 'idea-foot';
-    if(!opened){ const more = document.createElement('button'); more.type = 'button'; more.className = 'idea-more'; more.dataset.toggle = x.id; more.textContent = '💬 펼쳐서 댓글 보기'; foot.appendChild(more); }
+    const ccount = (idea.cmts[x.id] || []).filter(c => !c.deleted).length;   // 💬 펼치기 전에도 댓글 수
+    if(!opened){ const more = document.createElement('button'); more.type = 'button'; more.className = 'idea-more'; more.dataset.toggle = x.id; more.textContent = ccount ? `💬 댓글 ${ccount}개 · 펼쳐 보기` : '💬 펼쳐서 댓글 달기'; foot.appendChild(more); }
+    foot.appendChild(viewTag('i' + x.id));   // 👁 펼쳐 본 사람 수
     foot.appendChild(likeBtn(x, idea.lkey[x.id] || '', idea.col.doc(x.id)));
     if(!idea.lkey[x.id] && ME.uid) sha(ME.uid + '/' + x.id).then(h => { idea.lkey[x.id] = h; const lb = li.querySelector('.idea-foot .like'); if(lb) lb.replaceWith(likeBtn(x, h, idea.col.doc(x.id))); });
     li.appendChild(foot);
@@ -80,7 +82,8 @@ function renderIdeas(){
 function watchCmts(id){
   if(idea.subs[id]) return;
   idea.subs[id] = idea.col.doc(id).collection('comments').orderBy('createdAt').limit(200).onSnapshot(q => {
-    idea.cmts[id] = q.docs.map(d => ({id: d.id, ...d.data()})); renderIdeas();
+    idea.cmts[id] = q.docs.map(d => ({id: d.id, ...d.data()}));
+    clearTimeout(idea.rt); idea.rt = setTimeout(renderIdeas, 30);   // 여러 글 댓글이 한꺼번에 와도 한 번만 그려요
   }, () => {});
 }
 
@@ -113,6 +116,7 @@ async function removeDoc(ref, path){
       const now = Date.now();
       idea.items = q.docs.map(d => ({id: d.id, ...d.data()})).filter(x => !x.expireAt || x.expireAt.toMillis() > now);
       renderIdeas();
+      idea.items.filter(x => !x.deleted).forEach(x => watchCmts(x.id));   // 💬 펼치기 전에도 댓글 수를 보여 주려고 미리 들어요
     }, () => { $i('#ideaList').innerHTML = '<li class="hint">🙈 익명게시판을 준비하고 있어요. 잠시 뒤 다시 열어 주세요.</li>'; });
     document.addEventListener('sos:owner', renderIdeas);
   });
@@ -135,7 +139,7 @@ async function removeDoc(ref, path){
   });
   $i('#ideaList').addEventListener('click', async e => {
     const tg = e.target.closest('[data-toggle]');
-    if(tg){ const id = tg.dataset.toggle; if(idea.open.has(id)) idea.open.delete(id); else { idea.open.add(id); watchCmts(id); } renderIdeas(); return; }
+    if(tg){ const id = tg.dataset.toggle; if(idea.open.has(id)) idea.open.delete(id); else { idea.open.add(id); watchCmts(id); viewHit('i' + id); } renderIdeas(); return; }
     const del = e.target.closest('[data-del]');
     if(del){ if(!confirm('이 글을 지울까요? 댓글도 함께 안 보이게 돼요.')) return; del.disabled = true;
       try{ await removeDoc(idea.col.doc(del.dataset.del), ipath(del.dataset.del)); }catch(err){ del.disabled = false; if(typeof sosTrouble === 'function') sosTrouble(err); } return; }

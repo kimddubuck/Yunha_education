@@ -491,7 +491,7 @@ async function deleteRoom(){
       (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path));
     for(const d of (await room.collection('sos').get()).docs)   // 💬 SOS 시간 댓글 먼저
       (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path));
-    for(const name of ['sos', 'plays', 'reports', 'meals', 'members']) (await room.collection(name).get()).docs.forEach(d => paths.push(d.ref.path));
+    for(const name of ['sos', 'plays', 'reports', 'meals', 'members', 'views']) (await room.collection(name).get()).docs.forEach(d => paths.push(d.ref.path));
     paths.push(room.collection('private').doc('owner').path);
     job = {roomId: ROOM.roomId, key: ROOM.key, k: ROOM.owner || '', paths, marked: false};
     setPendingDelete(ROOM.roomId, job);

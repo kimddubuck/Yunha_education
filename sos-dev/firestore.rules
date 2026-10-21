@@ -27,6 +27,7 @@ service cloud.firestore {
     // v19: 📷 사진만 있는 댓글 허용 — 글(text/b)이 비어 있어도 사진(img)이 있으면 돼요 (모임·식단·익명게시판 댓글)
     // v20: 🥣 유아식 모음 — 식단 사진·메뉴·개월수를 닉네임 없이 mealpool 에 쌓고, 운영자가 확인한 것만 mealpub(누구나 읽기)으로 옮겨요
     // v21: 💬 SOS 시간 댓글 — rooms/{방}/sos/{날짜}/comments 에 그 시간(h) 댓글을 달아요
+    // v22: 👁 조회수 — rooms/{방}/views/{대상} 에 숫자 하나 (익명글·모임·SOS 시간)
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+'/'+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get('lk', {});
@@ -400,6 +401,22 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time
             && expireOk(request.resource.data);
         }
+      }
+
+      // v22: 👁 조회수 — 대상마다 숫자 하나(n). 방 사람이 1씩만 올려요. 누가 봤는지는 남기지 않아요
+      //  문서 이름: i{익명글}, m{모임}, s{날짜}-{시}
+      match /views/{vid} {
+        allow read: if canUse(roomKey);
+        allow delete: if roomDeleted(roomKey) || expired() || (canUse(roomKey) && isOwner(roomKey));
+        allow create: if canUse(roomKey)
+          && vid.matches('^([im][A-Za-z0-9]{1,40}|s[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2})$')
+          && request.resource.data.keys().hasOnly(['n', 'expireAt'])
+          && request.resource.data.n == 1
+          && expireOk(request.resource.data);
+        allow update: if canUse(roomKey)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['n', 'expireAt'])
+          && request.resource.data.n == resource.data.get('n', 0) + 1
+          && expireOk(request.resource.data);
       }
 
       // v13: 🍚 식단 사진 — 방 사람만 봐요. 올린 사람·방장만 지워요. 1달(31일) 뒤 자동 삭제

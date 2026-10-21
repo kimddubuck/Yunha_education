@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610211022">
+<link rel="manifest" href="manifest.webmanifest?v=202610211314">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610211022">
-<script src="assets/gate.js?v=202610211022"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610211314">
+<script src="assets/gate.js?v=202610211314"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -85,8 +85,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610211022"></script>
-<script src="assets/push.js?v=202610211022"></script>
+<script src="assets/common.js?v=202610211314"></script>
+<script src="assets/push.js?v=202610211314"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -175,14 +175,14 @@ sosSummary();
 const homeCmt = { subs: {}, data: {} };
 function homeCmtDraw(id){
   const pv = document.querySelector(`[data-cpv="${id}"]`); if(!pv) return;
-  const cs = homeCmt.data[id] || []; pv.hidden = !cs.length; pv.innerHTML = '';
-  cs.forEach(c => { const r = document.createElement('p'); const b = document.createElement('b'); b.textContent = c.n || '이웃'; const t = document.createElement('span'); t.textContent = c.text; r.append(b, t); pv.appendChild(r); });
-  const cm = pv.parentNode.querySelector('.meet-foot > .cmt'); if(cm) cm.textContent = cs.length ? '💬 댓글 전체 보기 · 남기기' : '💬 댓글 보기 · 남기기';
+  const all = homeCmt.data[id] || [], cs = all.slice(-2); pv.hidden = !cs.length; pv.innerHTML = '';
+  cs.forEach(c => { const r = document.createElement('p'); const b = document.createElement('b'); b.textContent = c.n || '이웃'; const t = document.createElement('span'); t.textContent = c.text || '📷 사진'; r.append(b, t); pv.appendChild(r); });
+  const cm = pv.parentNode.querySelector('.meet-foot > .cmt'); if(cm) cm.textContent = all.length ? `💬 댓글 ${all.length}개 보기` : '💬 댓글 남기기';
 }
 function homeCmtWatch(id){
   if(homeCmt.subs[id]){ homeCmtDraw(id); return; }
-  homeCmt.subs[id] = copCollection().doc(id).collection('comments').orderBy('createdAt', 'desc').limit(4).onSnapshot(snap => {
-    homeCmt.data[id] = snap.docs.map(d => d.data()).filter(c => !c.deleted && c.text).slice(0, 2).reverse();
+  homeCmt.subs[id] = copCollection().doc(id).collection('comments').orderBy('createdAt', 'desc').limit(100).onSnapshot(snap => {
+    homeCmt.data[id] = snap.docs.map(d => d.data()).filter(c => !c.deleted && (c.text || c.img)).reverse();   // 개수는 전체, 미리보기는 최근 2개
     homeCmtDraw(id);
   }, () => {});
 }
@@ -226,8 +226,8 @@ watchMeets(list => {
     const lw = likeWho(o); if(lw){ lw.classList.add('vote-hint'); li.appendChild(lw); }
     const pv = document.createElement('a'); pv.className = 'cmt-pv'; pv.href = 'meet.html#c=' + o.id; pv.dataset.cpv = o.id; pv.hidden = true; li.appendChild(pv);
     const cm = document.createElement('a'); cm.className = 'act cmt'; cm.href = 'meet.html#c=' + o.id; cm.textContent = '💬 댓글 보기 · 남기기';
-    const ft = document.createElement('div'); ft.className = 'meet-foot'; ft.append(cm, meetShareBtn(o)); li.appendChild(ft);   // 📣 투표 부탁 공유
-    ul.appendChild(li);
+    const ft = document.createElement('div'); ft.className = 'meet-foot'; ft.append(cm, meetShareBtn(o), viewTag('m' + o.id)); li.appendChild(ft);   // 📣 투표 부탁 공유 · 👁 본 사람
+    ul.appendChild(li); viewHit('m' + o.id);
     homeCmtWatch(o.id);
   });
   Object.keys(homeCmt.subs).forEach(id => { if(!list || !list.slice(0,3).some(o => o.id === id)){ homeCmt.subs[id](); delete homeCmt.subs[id]; delete homeCmt.data[id]; } });
