@@ -536,7 +536,7 @@ function showSosNames(day, h, v, nudge){
   const cm = `<div class="comments sos-cmts${isNow ? ' now' : ''}"><p class="sos-cmt-h">${isNow ? `🔥 지금 ${h}시 · 같이 버텨요` : `💬 ${h}시 이야기`}<small></small></p>
     <ul class="comment-list"><li class="hint">댓글을 불러오는 중…</li></ul>
     ${v ? `<form class="comment-form"><input type="text" maxlength="300" placeholder="${isNow ? '지금 어때요? 한마디 남겨요' : '댓글 달기 (예: 저도 이 시간 혼자예요)'}" aria-label="댓글"><button class="btn" type="submit">달기</button></form>`
-      : '<p class="who-none">SOS를 보내면 이 시간에 댓글을 달 수 있어요.</p>'}</div>`;
+      : '<p class="who-none">이 날 SOS가 하나라도 생기면 댓글을 달 수 있어요.</p>'}</div>`;
   const box = sosInfo({icon: nudge ? '🚨' : '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body: (isNow ? top + cm + body : top + body + cm) + (nudge ? '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>' : '')});
   if(nudge) box.classList.add('siren-pop');
   sosCmtWire(box, day, h);
@@ -572,7 +572,8 @@ function sosCmtWire(box, day, h){
         x.innerHTML = `<button type="button" data-sc-del="${c.id}">${c.uid === ME.uid ? '삭제' : '삭제(방장)'}</button>`; li.appendChild(x); }
       ul.appendChild(li);
     });
-    if(!list.length){ const e = document.createElement('li'); e.className = 'hint'; e.textContent = '첫 댓글을 남겨 보세요 💬'; ul.appendChild(e); }
+    if(!list.length && form){ const e = document.createElement('li'); e.className = 'hint'; e.textContent = '첫 댓글을 남겨 보세요 💬'; ul.appendChild(e); }
+    ul.hidden = !list.length && !form;   // SOS가 없는 날은 '보내면 달 수 있어요' 한 줄만
     wrap.querySelector('.sos-cmt-h small').textContent = list.length ? ` ${list.length}` : '';
   };
   const unsub = sosCmts(day).where('h', '==', h).limit(100).onSnapshot(q => {
