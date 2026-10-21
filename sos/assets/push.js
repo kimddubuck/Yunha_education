@@ -206,6 +206,13 @@ async function pushSosCrowd(date, slot, count){
   pushNotify(TO_ROOM, crowd ? `🆘 SOS가 몰렸어요 (${count}명)` : '🆘 SOS 요청이 왔어요',
     `${dayLabel(date)} ${slot} · ${crowd ? '용기 내서 모임을 열어 볼까요?' : '나도 이 시간 독박이면 눌러서 SOS 🙋'}`, pushLink('index.html') + `&go=s${date}-${parseInt(slot)}`, 'sos-' + date + slot);
 }
+// 💬 SOS 시간 댓글: 그 시간에 SOS 보낸 사람들에게 (같은 시간 10분에 한 번만 — 수다가 길어져도 알림이 쏟아지지 않게)
+async function pushSosComment(date, h, text){
+  if(!PUSH_VAPID || !ROOM) return;
+  const k = 'sosCmtPush:' + ROOM.key + ':' + date + ':' + h;
+  try{ if(Date.now() - (+localStorage.getItem(k) || 0) < 600000) return; localStorage.setItem(k, String(Date.now())); }catch(e){}
+  pushNotify({kind: 'sos', date, hours: [h]}, `💬 ${h}시 SOS에 댓글이 달렸어요`, `${ROOM.name} · ${ME.nick}: ${String(text).slice(0, 60)}`, pushLink('index.html') + `&go=s${date}-${h}`, 'scmt-' + date + '-' + h);
+}
 async function pushMeetJoin(o, joins){
   if(!PUSH_VAPID || !ROOM) return;
   pushNotify(toMeet(o.id), '🙋 내 모임에 참석이 늘었어요', `${ROOM.name} · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);

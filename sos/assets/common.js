@@ -531,14 +531,72 @@ function showSosNames(day, h, v, nudge){
     + btn
     + (past ? '' : `<a class="sos-brave-btn" href="meet.html?d=${day}&s=${h}#new" data-brave>🙌 용기 내서 이 시간 모임 열기</a>`);
   const top = nudge && !mine && !past ? (names.length + old ? '<p class="go-nudge">🔔 같은 시간에 힘든 이웃이 있어요.<br>나도 이 시간 독박이면 <b>눌러 주세요</b> 👇</p>' : '<p class="go-nudge">🔔 방금 SOS가 취소됐나 봐요.<br>그래도 이 시간 독박이면 <b>눌러 주세요</b> 👇</p>') : '';
-  const box = sosInfo({icon: nudge ? '🚨' : '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body: top + body + (nudge ? '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>' : '')});
+  // 💬 이 시간 댓글 (v21): 지금 이 시간이면 맨 위에 크게, 아니면 아래에
+  const isNow = day === todayStr() && h === new Date().getHours();
+  const cm = `<div class="comments sos-cmts${isNow ? ' now' : ''}"><p class="sos-cmt-h">${isNow ? `🔥 지금 ${h}시 · 같이 버텨요` : `💬 ${h}시 이야기`}<small></small></p>
+    <ul class="comment-list"><li class="hint">댓글을 불러오는 중…</li></ul>
+    ${v ? `<form class="comment-form"><input type="text" maxlength="300" placeholder="${isNow ? '지금 어때요? 한마디 남겨요' : '댓글 달기 (예: 저도 이 시간 혼자예요)'}" aria-label="댓글"><button class="btn" type="submit">달기</button></form>`
+      : '<p class="who-none">SOS를 보내면 이 시간에 댓글을 달 수 있어요.</p>'}</div>`;
+  const box = sosInfo({icon: nudge ? '🚨' : '🆘', title: `${dayLabel(day)} ${h}시 SOS ${names.length + old}명`, body: (isNow ? top + cm + body : top + body + cm) + (nudge ? '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>' : '')});
   if(nudge) box.classList.add('siren-pop');
+  sosCmtWire(box, day, h);
   box.addEventListener('click', async e => {
     if(e.target.closest('[data-brave]') && typeof openMeetForm === 'function'){ e.preventDefault(); box.remove(); openMeetForm(day, h + '시'); return; }
     const b = e.target.closest('[data-sos-toggle]'); if(!b || b.disabled) return;
     b.disabled = true; b.innerHTML = '저장 중…';
     try{ const nv = await sosToggleHour(day, h, v); box.remove(); showSosNames(day, h, nv); if(nudge && typeof pushToast === 'function' && sosMine(nv).includes(h)) pushToast('🆘 SOS 보냈어요! 같은 시간 이웃이 보고 힘이 될 거예요'); }
     catch(err){ sosTrouble(err); b.disabled = false; b.innerHTML = '⚠️ 저장하지 못했어요<small>다시 눌러 주세요</small>'; }
+  });
+}
+
+// 💬 SOS 시간 댓글: rooms/{방}/sos/{날짜}/comments {h, text, uid, n} — 날짜 문서와 함께 지워져요
+const sosCmts = day => roomRef().collection('sos').doc(day).collection('comments');
+function sosCmtWire(box, day, h){
+  const wrap = box.querySelector('.sos-cmts'); if(!wrap || !roomRef()) return;
+  const ul = wrap.querySelector('.comment-list'), form = wrap.querySelector('.comment-form');
+  const at = form && typeof attachUI === 'function' ? attachUI(form, {compact: true}) : null;
+  const inp = form && form.querySelector('textarea, input[type="text"]');
+  if(inp) inp.placeholder = wrap.classList.contains('now') ? '지금 어때요? 한마디!' : '저도 이 시간 혼자예요…';
+  let list = [];
+  const draw = () => {
+    ul.innerHTML = '';
+    list.forEach(c => {
+      const li = document.createElement('li');
+      const n = document.createElement('b'); n.className = 'comment-nick'; n.textContent = c.n || '';
+      const t = document.createElement('span'); t.className = 'cp'; t.textContent = c.text;
+      const w = document.createElement('small'); const d = c.createdAt && c.createdAt.toDate ? c.createdAt.toDate() : null;
+      w.textContent = d ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
+      li.append(n, t, w);
+      if(typeof attachView === 'function'){ const av = attachView(c); if(av) li.appendChild(av); }
+      if(c.uid === ME.uid || ME.owner){ const x = document.createElement('span'); x.className = 'comment-act';
+        x.innerHTML = `<button type="button" data-sc-del="${c.id}">${c.uid === ME.uid ? '삭제' : '삭제(방장)'}</button>`; li.appendChild(x); }
+      ul.appendChild(li);
+    });
+    if(!list.length){ const e = document.createElement('li'); e.className = 'hint'; e.textContent = '첫 댓글을 남겨 보세요 💬'; ul.appendChild(e); }
+    wrap.querySelector('.sos-cmt-h small').textContent = list.length ? ` ${list.length}` : '';
+  };
+  const unsub = sosCmts(day).where('h', '==', h).limit(100).onSnapshot(q => {
+    if(!box.isConnected){ unsub(); return; }
+    list = q.docs.map(x => ({id: x.id, ...x.data()})).sort((a, b) => ((a.createdAt && a.createdAt.toMillis()) || 9e15) - ((b.createdAt && b.createdAt.toMillis()) || 9e15)); draw();
+    ul.scrollTop = ul.scrollHeight;
+  }, () => { ul.innerHTML = '<li class="hint">댓글을 불러오지 못했어요.</li>'; });
+  const watch = setInterval(() => { if(!box.isConnected){ unsub(); clearInterval(watch); } }, 1000);
+  wrap.addEventListener('click', async e => {
+    const del = e.target.closest('[data-sc-del]');
+    if(del && confirm('이 댓글을 지울까요?')){ del.disabled = true; try{ await sosCmts(day).doc(del.dataset.scDel).delete(); }catch(err){ del.disabled = false; sosTrouble(err); } }
+  });
+  if(form) form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = inp.value.trim();
+    let atv = {}; try{ atv = at ? at.get() : {}; }catch(err){ if(err.code === 'bad-url'){ if(typeof pushToast === 'function') pushToast('🔗 링크는 https://로 시작하는 주소만 넣을 수 있어요'); return; } throw err; }
+    if(!text && !atv.img) return;
+    const btn = form.querySelector('button[type="submit"]'); btn.disabled = true;
+    try{
+      await sosCmts(day).doc().set({h, text, ...atv, uid: ME.uid, n: ME.nick, ...ttl(day), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      inp.value = ''; if(inp._grow) inp._grow(); if(at) at.clear();
+      if(typeof pushSosComment === 'function') pushSosComment(day, h, text || '📷 사진');
+    }catch(err){ sosTrouble(err); if(typeof pushToast === 'function') pushToast('⚠️ 댓글을 저장하지 못했어요'); }
+    btn.disabled = false;
   });
 }
 
@@ -631,7 +689,10 @@ function sosSummary(){
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; });
   const name = () => null;   // 탭은 오늘·내일도 날짜·요일로 똑같이 (10/8 목)
   let sel = 0, last = null;
-  let failed = false;
+  let failed = false, cmtN = {};
+  // 💬 오늘 시간별 댓글 수 (오늘 날짜 문서 아래 댓글만 읽어요)
+  sosReady().then(ok => { if(!ok || !roomRef()) return;
+    sosCmts(todayStr()).limit(300).onSnapshot(q => { cmtN = {}; q.docs.forEach(d => { const h = d.data().h; cmtN[h] = (cmtN[h] || 0) + 1; }); if(last) draw(last); }, () => {}); });
   const draw = data => {
     last = data;
     const keep = box.querySelector('.sos-tabs'), sx = keep ? keep.scrollLeft : 0;   // 다시 그려도 날짜 줄 스크롤 위치는 그대로
@@ -641,13 +702,18 @@ function sosSummary(){
       return `<button type="button" class="sos-tab ${dayKind(d)}" data-sos-day="${i}" aria-pressed="${i===sel}">${name(i) || dayLabel(d).replace(' (', ' ').replace(')', '')}${n ? `<small>${n}</small>` : ''}</button>`; }).join('');
     const nowH = new Date().getHours();
     const cells = HOURS.map(h => { const n = sosHourCount(t, h), gone = day === today && h < nowH;   // 오늘 지나간 시간은 못 눌러요
-      return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}</span></button>`; }).join('');
+      const cc = day === today ? (cmtN[h] || 0) : 0;
+      return `<button type="button" class="sos-cell${n ? ' on' : ''}${gone ? ' gone' : ''}${day === today && h === nowH ? ' now' : ''}" data-sos-hour="${h}"${data && !gone ? '' : ' disabled'}><b>${h}시</b><span>${data ? n + '명' : failed ? '–' : '…'}${cc ? ` · 💬${cc}` : ''}</span></button>`; }).join('');
+    // 💬 지금 이 시간에 SOS나 댓글이 있으면 댓글창 바로가기를 크게 (오늘 탭에서만)
+    const nowBar = () => { const n = sosHourCount((data && data[today]) || {}, nowH), cc = cmtN[nowH] || 0;
+      if(sel !== 0 || !data || !HOURS.includes(nowH) || !(n || cc)) return '';
+      return `<button type="button" class="sos-now-cmt" data-sos-hour="${nowH}" data-sos-date="${today}"><b>🔥 지금 ${nowH}시 SOS ${n}명${cc ? ` · 💬 댓글 ${cc}개` : ''}</b><span>같이 버텨요 · 댓글 남기러 가기 ›</span></button>`; };
     // 한 화면에 방 제목·SOS·모임이 다 보이게 짧게: 안내 한 줄, 시간 칸은 한 줄짜리 (다가오는 SOS 목록은 빼고 날짜 탭으로 봐요)
     box.innerHTML = `<div class="sos-top"><p class="sos-h">🆘 SOS 달력</p><p class="sos-count">${label} SOS <b>${data ? sosDayTotal(t) : failed ? '?' : '…'}</b>명</p></div>
       <p class="sos-nudge" aria-label="SOS 장려 글귀"></p>
       <div class="sos-tabs" role="group" aria-label="날짜 고르기">${tabs}</div>
       <p class="sos-note1">👆 시간을 누르면 누가 보냈는지 보여요</p>
-      <div class="sos-today">${cells}</div>`;
+      <div class="sos-today">${cells}</div>${nowBar()}`;
     box.querySelector('.sos-tabs').scrollLeft = sx;
     nudgePaint(box);
   };
@@ -1012,7 +1078,7 @@ async function cleanupExpired(){
     await del(d.ref);
   }
   const sos = await r.collection('sos').where('expireAt', '<', now).limit(50).get();
-  await Promise.all(sos.docs.map(d => del(d.ref)));
+  for(const d of sos.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); }   // 💬 그 날 SOS 댓글도 함께
   const meals = await r.collection('meals').where('expireAt', '<', now).limit(100).get().catch(() => ({docs: []}));   // 🍚 1달 지난 식단 사진
   const ideas = await r.collection('ideas').where('expireAt', '<', now).limit(50).get().catch(() => ({docs: []}));   // 🙈 3일 지난 익명게시판 글
   for(const d of ideas.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); }

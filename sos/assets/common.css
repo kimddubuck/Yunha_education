@@ -1463,3 +1463,21 @@ a.dd-sos{padding:8px 10px;font-size:13px;line-height:1.45}
 /* 🌤 주말 아침 팝업: 그림 없이 아이콘·제목은 보이게 */
 .pop-we .pop-t{position:static;width:auto;height:auto;clip:auto;overflow:visible;margin:0 0 6px}
 .pop-we{padding-top:22px}
+/* 💬 SOS 시간 댓글 (v21): 지금 이 시간이면 위에 크게 */
+.sos-cmts{margin:10px 0 6px;text-align:left;display:flex;flex-direction:column;gap:8px}
+.sos-cmts .comment-list{max-height:38vh;overflow-y:auto}
+.sos-cmt-h{margin:0;font-weight:800;font-size:14px}
+.sos-cmt-h small{font-weight:700;color:var(--muted);font-size:12.5px;margin-left:2px}
+.sos-cmts.now{margin:4px 0 12px;padding:10px 12px;border-radius:12px;background:var(--tag);border:2px solid var(--pick)}
+.sos-cmts.now .sos-cmt-h{font-size:15px}
+.sos-cmts.now .comment-list{max-height:30vh}
+.sos-cell.now{border-color:var(--pick)}
+.sos-now-cmt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin-top:8px;padding:10px 12px;border-radius:12px;border:2px solid var(--pick);background:var(--tag);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.sos-now-cmt b{font-size:14.5px}
+.sos-now-cmt span{font-size:13px;color:var(--muted);font-weight:700}
+.sos-cmts .comment-list li{display:block;padding:6px 0;border-bottom:1px solid var(--line)}
+.sos-cmts .comment-list li:last-child{border-bottom:0}
+.sos-cmts .comment-list li.hint{border:0;color:var(--muted)}
+.sos-cmts .comment-list li .cp{display:block;white-space:pre-wrap;margin:1px 0 2px}
+.sos-cmts .comment-list li small{margin-right:8px}
+.sos-cmts .comment-act{display:inline}

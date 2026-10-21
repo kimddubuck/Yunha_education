@@ -429,6 +429,8 @@ async function sosDeleteMyMeals(db, uid, rooms){
   for(const r of rooms){
     try{ const q = await db.collection('rooms').doc(r.key).collection('meals').where('uid', '==', uid).get();
       for(const d of q.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); } }catch(e){}   // 내 사진 + 그 사진의 댓글
+    try{ for(const d of (await db.collection('rooms').doc(r.key).collection('sos').get()).docs){   // 💬 내가 단 SOS 시간 댓글
+      const cs = await d.ref.collection('comments').where('uid', '==', uid).get(); await Promise.all(cs.docs.map(c => del(c.ref))); } }catch(e){}
   }
   let saved = []; try{ saved = JSON.parse(localStorage.getItem('sosMyMeals') || '[]'); }catch(e){}
   const keys = new Set(rooms.map(r => r.key));
@@ -486,6 +488,8 @@ async function deleteRoom(){
     for(const d of (await room.collection('ideas').get()).docs){   // 🙈 익명게시판 글 + 댓글
       (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path)); paths.push(d.ref.path); }
     for(const d of (await room.collection('meals').get()).docs)   // 🍚 식단 사진의 댓글 먼저
+      (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path));
+    for(const d of (await room.collection('sos').get()).docs)   // 💬 SOS 시간 댓글 먼저
       (await d.ref.collection('comments').get()).docs.forEach(c => paths.push(c.ref.path));
     for(const name of ['sos', 'plays', 'reports', 'meals', 'members']) (await room.collection(name).get()).docs.forEach(d => paths.push(d.ref.path));
     paths.push(room.collection('private').doc('owner').path);

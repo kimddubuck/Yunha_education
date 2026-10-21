@@ -4,7 +4,7 @@ rules_version = '2';
 //
 // 구조: rooms/{방 열쇠}                — 방 이름
 //       rooms/{방 열쇠}/opinions/{id}  — 모임 (topic 'meet'), 아래 comments 에 댓글
-//       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20)
+//       rooms/{방 열쇠}/sos/{날짜}      — 시간별 SOS 예약 수 (h8 ~ h20), 아래 comments 에 시간별 댓글 (v21)
 //       rooms/{방 열쇠}/meals/{id}     — 🍚 식단 사진 (v13, 3일 뒤 자동 삭제), 아래 comments 에 댓글·답글 (v14)
 //       rooms/{방 열쇠}/ideas/{id}     — 💡 익명 제안함 (v15, 3일 뒤 자동 삭제), 아래 comments 에 익명 댓글
 //       rooms/{방 열쇠}/plays/{id}     — 엄마 아빠가 추가한 놀이 (지금은 앱에서 안 씀)
@@ -26,6 +26,7 @@ service cloud.firestore {
     // v17: ❤️ 좋아요 — 글의 lk 지도에서 내 칸(me)만 넣기·빼기. v18: 댓글(모임·식단·익명게시판)에도
     // v19: 📷 사진만 있는 댓글 허용 — 글(text/b)이 비어 있어도 사진(img)이 있으면 돼요 (모임·식단·익명게시판 댓글)
     // v20: 🥣 유아식 모음 — 식단 사진·메뉴·개월수를 닉네임 없이 mealpool 에 쌓고, 운영자가 확인한 것만 mealpub(누구나 읽기)으로 옮겨요
+    // v21: 💬 SOS 시간 댓글 — rooms/{방}/sos/{날짜}/comments 에 그 시간(h) 댓글을 달아요
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+'/'+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get('lk', {});
@@ -377,6 +378,28 @@ service cloud.firestore {
               || (request.resource.data.get('expireAt', null) is timestamp && request.resource.data.expireAt > request.time))
           && request.resource.data.get('p', {}).diff(resource.data.get('p', {})).affectedKeys().hasOnly([request.auth.uid])
           && (!(request.auth.uid in request.resource.data.get('p', {})) || entryOk(request.resource.data.p[request.auth.uid]));
+
+        // v21: 💬 SOS 시간 댓글 — 그 날짜·시간(h)에 방 사람 누구나 달고, 쓴 사람·방장이 지워요. SOS 날짜와 함께 지워져요
+        match /comments/{cid} {
+          function sosDay() { return /databases/$(database)/documents/rooms/$(roomKey)/sos/$(day); }
+          allow read: if canUse(roomKey);
+          allow update: if false;
+          allow delete: if roomDeleted(roomKey) || expired() || !exists(sosDay())
+            || (request.auth != null && resource.data.uid == request.auth.uid)
+            || (canUse(roomKey) && isOwner(roomKey));
+          allow create: if canUse(roomKey)
+            && exists(sosDay())
+            && request.resource.data.keys().hasOnly(['h', 'text', 'uid', 'n', 'createdAt', 'expireAt', 'img', 'url'])
+            && attachOk(request.resource.data)
+            && request.resource.data.h in [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.n == myNick(roomKey)
+            && request.resource.data.text is string
+            && (request.resource.data.text.size() > 0 || request.resource.data.get('img', '') != '')
+            && request.resource.data.text.size() <= 300
+            && request.resource.data.createdAt == request.time
+            && expireOk(request.resource.data);
+        }
       }
 
       // v13: 🍚 식단 사진 — 방 사람만 봐요. 올린 사람·방장만 지워요. 1달(31일) 뒤 자동 삭제
