@@ -100,7 +100,7 @@
     else if(next) h += `<p class="gck-now">다음은 <b>${next[0]} 검진</b>(${next[3]})이에요. <b>${Math.max(0, Math.ceil(next[1] - n0))}개월</b>쯤 뒤예요.</p>`;
     else h += '<p class="gck-now">8차(66~71개월)까지 모두 지났어요. 다음은 초등학교 입학 뒤 학생 건강검사예요.</p>';
     h += `<ol class="gtl">${CHECK.map(c => { const st = cur === c ? 'now' : n0 > c[2] ? 'done' : ''; return `<li class="${st}"><i>${st === 'done' ? '✓' : c[0].replace('차', '')}</i><b>${c[0]}</b><span>${c[3]}</span></li>`; }).join('')}</ol>`;
-    h += '<p class="src">1차(생후 14~35일)는 2021년생부터예요. 검진은 국민건강보험공단이 지정한 소아과·병원에서 받고, 키·몸무게·머리둘레 백분위와 발달 선별검사(K-DST)를 해요. 자세한 건 <a href="tips.html">육아 상식</a>의 영유아 건강검진 글을 봐 주세요.</p></div>';
+    h += '<p class="src">1차(생후 14~35일)는 2021년생부터예요. 검진은 국민건강보험공단이 지정한 소아과·병원에서 받고, 키·몸무게·머리둘레 백분위와 발달 선별검사(K-DST)를 해요. 자세한 건 <a href="tips">육아 상식</a>의 영유아 건강검진 글을 봐 주세요.</p></div>';
     out.innerHTML = h;
   }
   [y, m, $('#gd'), $('#gw'), $('#gh'), $('#gc'), $('#gpre'), $('#gwhen')].forEach(el => el.addEventListener('input', render));

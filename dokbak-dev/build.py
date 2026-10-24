@@ -1039,7 +1039,7 @@ segs(); render();
     body = strip(re.sub(r'<div class="box newp">.*?</div>|<p class="crumb">.*?</p>|<div class="pager">.*?</div>', ' ', mm.group(1), flags=re.S)) if mm else ''   # 공통 안내·길 표시는 빼요
     k = next(lab for pre, lab in SKIND if path.startswith(pre))
     sidx.append({'u': path.replace('index.html', ''), 't': t, 'd': d[:110], 'k': k, 'x': body[:380 if path.startswith('plays/') else 650]})
-  sjs = json.dumps(sidx, ensure_ascii=False, separators=(',', ':'))
+  sjs = json.dumps([{**x, 'u': pretty(x['u']) or './'} if isinstance(x, dict) and str(x.get('u', '')).endswith('.html') else x for x in sidx], ensure_ascii=False, separators=(',', ':'))   # 🔗 검색 결과 링크도 대표 주소로
   open(os.path.join(OUT, 'search.json'), 'w', encoding='utf-8').write(sjs)
   import hashlib; sver = hashlib.md5(sjs.encode()).hexdigest()[:8]
   sbody = '''<div class="wrap"><section class="blk" style="padding-top:12px"><div class="sh"><span class="ey">🔍 통합 검색</span><h1 style="font-size:clamp(24px,5vw,34px)">무엇이 궁금하세요?</h1><p>놀이, 육아 상식, 연구, 이유식, 어린이집, 국가지원까지 한 번에 찾아요.</p></div>
@@ -1124,9 +1124,22 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
   print(f'얇은 글 {len(thin)}개는 검색엔진에서만 빼요 (본문 {THIN_MIN}자 미만)')
 
   # ── 쓰기 + sitemap
+  # 🔗 사이트 안 링크는 대표 주소(.html 없는 주소)로 써요: growth.html → growth, plays/index.html → plays/
+  #   (.html 주소가 따로 색인되거나 '리디렉션 페이지'로 쌓이지 않게. sitemap·canonical 과 같은 모양. lastmod 지문은 바꾸기 전 글로 계산해요)
+  def clean_links(t):
+    def f(m):
+      u = m.group(1)
+      if u.startswith(BASE + '/'): pre, u = BASE + '/', u[len(BASE) + 1:]
+      elif re.match(r'(?:[a-z]+:|//|#)', u): return m.group(0)
+      else: pre = ''
+      path, rest = re.match(r'([^#?]*)(.*)', u).groups()
+      if not path.endswith('.html'): return m.group(0)
+      path = (path[:-10] or './') if path.endswith('index.html') else path[:-5]
+      return f'href="{pre}{path}{rest}"'
+    return re.sub(r'href="([^"]*)"', f, t)
   for path, txt in files.items():
     os.makedirs(os.path.dirname(os.path.join(OUT, path)), exist_ok=True)
-    open(os.path.join(OUT, path), 'w', encoding='utf-8').write(txt)
+    open(os.path.join(OUT, path), 'w', encoding='utf-8').write(clean_links(txt))
   # sitemap lastmod: 본문(<main>)이 실제로 바뀐 페이지만 날짜를 새로 적어요 (빌드할 때마다 전부 '오늘'로 바꾸면 검색엔진이 날짜를 믿지 않아요)
   today = datetime.date.today().isoformat()
   lm_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'lastmod.json')
