@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610231005">
+<link rel="manifest" href="manifest.webmanifest?v=202610240037">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610231005">
-<script src="assets/gate.js?v=202610231005"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610240037">
+<script src="assets/gate.js?v=202610240037"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -52,7 +52,7 @@
         <div><b>🏠 방</b><span><em>방 이름만</em><br><span class="nw">비밀번호는</span> <span class="nw">저장 안 해요</span></span></div>
         <div><b>🍚 식단공유</b><span><span class="nw">작게 줄인 사진</span><br>+ <em>닉네임</em><br><span class="nw">3일 뒤 삭제</span></span></div>
         <div><b>🙈 익명게시판</b><span>제목·내용·댓글<br><em>닉네임 없음</em><br><span class="nw">3일 뒤 삭제</span></span></div>
-        <div><b>👁 조회수</b><span><em>숫자만</em><br><span class="nw">누가 봤는지 없음</span></span></div>
+        <div><b>👁 조회수</b><span>모임은 본 사람 <em>닉네임</em><br><span class="nw">그 밖엔 숫자만</span></span></div>
         <div><b>🥣 유아식 모음</b><span>사진·메뉴·개월수<br><em>닉네임 없음</em></span></div>
       </div>
       <p class="safe-auto">⏳ 모임 날짜·장소는 <b>우리 방 사람만</b> 볼 수 있어요.<span class="ttl-only"> <b>지난 모임·댓글·SOS는 3일 뒤 자동으로 지워져요.</b></span></p>
@@ -101,7 +101,7 @@
         <tr><td>🙋 멤버</td><td>방에서 쓰는 <b>닉네임</b>(직접 적은 것), 들어온 시각, 마지막 접속 시간(방장만 봐요. 1시간 단위로 남아요. 중복·오래 안 온 멤버 정리와 방장 이어받기에 써요), <b>쓰는 브라우저 종류</b>(크롬·사파리·카톡 등 정해진 이름 하나. 방장만 봐요. 같은 사람이 두 번 들어온 중복을 찾는 데 써요), 익명 로그인 번호(uid). 내보내진 사람의 내보낸 시각과 <b>'다시 받아 주세요' 부탁 글</b>(방장만 봐요. 내보낸 지 30일이 지나거나 허용·거절하면 지워져요)</td></tr>
         <tr><td>🆘 SOS 요청</td><td>날짜·시간 + <b>요청한 사람의 닉네임</b>. 방 사람들은 시간 숫자를 눌러 누가 보냈는지 볼 수 있어요.</td></tr>
         <tr><td>💬 SOS 시간 댓글</td><td>날짜·시간, 댓글 글, <b>쓴 사람의 닉네임</b>과 익명 로그인 번호(uid), 붙인 경우 작게 줄인 사진 한 장과 링크. 쓴 사람·방장이 지울 수 있고, 그 날 SOS와 함께 날짜가 지나고 3일 뒤 지워져요.</td></tr>
-        <tr><td>👁 조회수</td><td>모임·익명게시판 글·SOS 시간마다 <b>숫자 하나</b>. 누가 봤는지는 저장하지 않아요. 2주 뒤 지워져요.</td></tr>
+        <tr><td>👁 조회수</td><td>모임·익명게시판 글·SOS 시간마다 <b>숫자 하나</b>. <b>모임만</b> 본 사람의 익명 로그인 번호(uid)와 <b>닉네임</b>을 함께 남겨서, 방 사람들이 👁를 누르면 누가 봤는지 볼 수 있어요. 익명게시판·SOS 시간은 누가 봤는지 저장하지 않아요. 2주 뒤 지워지고, '내 정보 모두 지우기'를 하면 내 닉네임이 빠져요.</td></tr>
         <tr><td>🥣 유아식 모음</td><td>식단을 올리면 <b>사진·메뉴·끼니·날짜·개월수만</b> 닉네임·방 이름 없이 따로 모여요. 운영자가 확인한 것만 독박육아.com에 누구나 볼 수 있게 올라가고, 3일 뒤에도 지워지지 않아요. 올릴 때 '모음에 넣지 않기'를 고르면 빠져요.</td></tr>
         <tr><td>🙌 모임</td><td>날짜·시간, 장소/놀이 글, <b>주최자 닉네임</b>(연 사람은 처음부터 '참석'으로 표시돼요), 참석·불참한 사람의 닉네임, 댓글 글과 닉네임, 붙인 경우 미리보기 크기로 줄인 사진 한 장(약 20KB)과 링크 주소, ❤️ 좋아요 누른 사람의 익명 로그인 번호(uid)와 닉네임(누가 눌렀는지 보여요, 댓글 좋아요도 같아요)</td></tr>
         <tr><td>🍚 식단 사진</td><td>작게 줄인 사진(한 장 약 20KB), <b>올린 사람의 닉네임</b>, 끼니·날짜, 적은 경우 메모·아이 개월수, 익명 로그인 번호(uid), ❤️ 좋아요 누른 사람의 익명 로그인 번호와 닉네임(누가 눌렀는지 보여요). 올린 날부터 3일 뒤 지워져요.</td></tr>
@@ -157,8 +157,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610231005"></script>
-<script src="assets/push.js?v=202610231005"></script>
+<script src="assets/common.js?v=202610240037"></script>
+<script src="assets/push.js?v=202610240037"></script>
 <script>
 document.getElementById('deleteMe').addEventListener('click', async e => {
   const owning = sosRooms().filter(r => r.owner).map(r => r.name);   // 내가 방장인 방이 있으면 먼저 알려 줘요

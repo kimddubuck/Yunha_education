@@ -429,6 +429,8 @@ async function sosDeleteMyMeals(db, uid, rooms){
   for(const r of rooms){
     try{ const q = await db.collection('rooms').doc(r.key).collection('meals').where('uid', '==', uid).get();
       for(const d of q.docs){ const cs = await d.ref.collection('comments').get().catch(() => ({docs: []})); await Promise.all(cs.docs.map(c => del(c.ref))); await del(d.ref); } }catch(e){}   // 내 사진 + 그 사진의 댓글
+    try{ const vq = await db.collection('rooms').doc(r.key).collection('views').where(new firebase.firestore.FieldPath('w', uid), '>=', '').get();   // 👁 모임 본 사람 목록에서 내 닉네임 빼기
+      await Promise.all(vq.docs.map(d => d.ref.update({['w.' + uid]: firebase.firestore.FieldValue.delete()}).catch(() => {}))); }catch(e){}
     try{ for(const d of (await db.collection('rooms').doc(r.key).collection('sos').get()).docs){   // 💬 내가 단 SOS 시간 댓글
       const cs = await d.ref.collection('comments').where('uid', '==', uid).get(); await Promise.all(cs.docs.map(c => del(c.ref))); } }catch(e){}
   }

@@ -551,26 +551,44 @@ function showSosNames(day, h, v, nudge){
 }
 
 // 👁 조회수 (v22): rooms/{방}/views/{대상} {n} — i익명글, m모임, s날짜-시. 이 휴대폰에서는 대상마다 한 번만 세요
-const VIEWS = {n: {}, on: false};
+//   v23: 모임(m…)은 본 사람 닉네임도 w 지도에 남겨서, 👁 를 누르면 누가 봤는지 보여요
+const VIEWS = {n: {}, w: {}, on: false, ready: false, pend: new Set(), fixed: new Set()};
 function viewsWatch(){
   if(VIEWS.on || !roomRef() || typeof sosReady !== 'function') return; VIEWS.on = true;
   sosReady().then(ok => { if(ok) roomRef().collection('views').limit(500).onSnapshot(q => {
-    VIEWS.n = {}; q.docs.forEach(d => { VIEWS.n[d.id] = d.data().n || 0; }); viewsPaint(); }, () => {}); });
+    VIEWS.n = {}; VIEWS.w = {}; q.docs.forEach(d => { const x = d.data(); VIEWS.n[d.id] = x.n || 0; if(x.w) VIEWS.w[d.id] = x.w; });
+    VIEWS.ready = true; viewsPaint(); viewsBackfill(); }, () => {}); });
 }
 function viewsPaint(){ document.querySelectorAll('[data-views]').forEach(e => { const n = VIEWS.n[e.dataset.views] || 0; e.textContent = '👁 ' + n; e.hidden = !n; }); }
+// 이 기능 전에 이미 본 모임: 숫자는 그대로 두고 내 닉네임만 넣어요 (모임마다 한 번)
+function viewsBackfill(){
+  if(!VIEWS.ready || !ME.uid || !ME.nick) return;
+  VIEWS.pend.forEach(id => { if(VIEWS.fixed.has(id) || !VIEWS.n[id] || (VIEWS.w[id] || {})[ME.uid] === ME.nick) return; VIEWS.fixed.add(id);
+    roomRef().collection('views').doc(id).set({w: {[ME.uid]: ME.nick}}, {merge: true}).catch(() => {}); });
+}
 function viewTag(id){
   viewsWatch();
-  const s = document.createElement('span'); s.className = 'views'; s.dataset.views = id; s.title = '본 사람 수';
+  const meet = id[0] === 'm';
+  const s = document.createElement(meet ? 'button' : 'span'); s.className = 'views' + (meet ? ' views-btn' : ''); s.dataset.views = id; s.title = meet ? '누가 봤는지 보기' : '본 사람 수';
+  if(meet){ s.type = 'button'; s.addEventListener('click', () => viewersPop(id)); }
   const n = VIEWS.n[id] || 0; s.textContent = '👁 ' + n; s.hidden = !n; return s;
+}
+// 👁 모임을 본 사람 닉네임 팝업
+function viewersPop(id){
+  const w = VIEWS.w[id] || {}, names = Object.values(w).filter(Boolean).sort((a, b) => a.localeCompare(b, 'ko')), n = VIEWS.n[id] || 0, rest = Math.max(0, n - names.length);
+  sosInfo({icon: '👁', title: `이 모임을 본 사람 ${n}명`, body: (names.length ? `<div class="who-list">${names.map(x => `<span class="who-chip">${esc(x)}</span>`).join('')}</div>` : '')
+    + (rest ? `<p class="who-none">+ 닉네임 없이 ${rest}명 <small>(닉네임 보기 전에 본 사람 · 다시 열면 이름이 보여요)</small></p>` : '')
+    + '<p class="who-tip">모임 카드를 한 번이라도 본 휴대폰이에요.</p>'});
 }
 async function viewHit(id){
   if(!roomRef() || !ME.uid) return;
   const KEY = 'sosViewed'; let seen = {}; try{ seen = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){}
-  const k = ROOM.key + '/' + id; if(seen[k]) return;
+  const k = ROOM.key + '/' + id, meet = id[0] === 'm';
+  if(seen[k]){ if(meet){ VIEWS.pend.add(id); viewsBackfill(); } return; }
   seen[k] = Date.now();
   const ks = Object.keys(seen); if(ks.length > 400) ks.sort((a, b) => seen[a] - seen[b]).slice(0, ks.length - 400).forEach(x => delete seen[x]);
   try{ localStorage.setItem(KEY, JSON.stringify(seen)); }catch(e){}
-  try{ await roomRef().collection('views').doc(id).set({n: firebase.firestore.FieldValue.increment(1), ...(TTL_READY ? {expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + 14 * 864e5)} : {})}, {merge: true}); }
+  try{ await roomRef().collection('views').doc(id).set({n: firebase.firestore.FieldValue.increment(1), ...(meet && ME.nick ? {w: {[ME.uid]: ME.nick}} : {}), ...(TTL_READY ? {expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + 14 * 864e5)} : {})}, {merge: true}); }
   catch(e){ try{ delete seen[k]; localStorage.setItem(KEY, JSON.stringify(seen)); }catch(err){} }   // 규칙이 아직 없으면 다음에 다시 세요
 }
 
