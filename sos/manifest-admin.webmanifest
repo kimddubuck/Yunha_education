@@ -1,0 +1,33 @@
+{
+  "id": "./admin",
+  "name": "공동육아 SOS 운영",
+  "short_name": "SOS 운영",
+  "description": "공동육아 SOS 운영자 현황판",
+  "start_url": "./admin",
+  "scope": "./admin",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f4f4",
+  "theme_color": "#1c7276",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "assets/icon-sos-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-sos-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-sos-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
