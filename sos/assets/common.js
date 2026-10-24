@@ -1204,3 +1204,112 @@ function showMeetVote(o, remind){
     }catch(err){ sosTrouble(err); box.querySelectorAll('[data-go-vote]').forEach(x => { x.disabled = false; }); }
   });
 }
+
+/* 📍 우리 동네 (규칙 v24): rooms/{방}.area = '부산 동래구' (방장이 정해요)
+   → 🌤 오늘 날씨·👕 아이 옷차림·💧 습도 안내, ☔ 비 오는 날 팝업 문구, 🗺 우리 동네 육아지도 바로가기
+   날씨: Open-Meteo(무료·키 없음)에 구 가운데 좌표만 보내요. 1시간 동안 이 휴대폰에 저장해 두고 다시 써요 */
+function loadRegions(){
+  if(typeof REGIONS !== 'undefined') return Promise.resolve(REGIONS);
+  return loadRegions.p || (loadRegions.p = new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'assets/regions.js?v=1'; s.onload = () => ok(REGIONS); s.onerror = () => { loadRegions.p = null; no(new Error('regions')); }; document.head.appendChild(s); }));
+}
+const areaGu = a => String(a || '').split(' ')[1] || '';
+function areaCoord(a){
+  if(typeof REGIONS === 'undefined' || !a) return null;
+  const [sd, gu] = a.split(' '), r = (REGIONS[sd] || []).find(x => x[0] === gu);
+  return r ? [r[1], r[2]] : null;
+}
+// 시·도 → 시·군·구 고르기 (el 안에 select 두 개). 고른 값은 el.dataset.area ('' = 안 정함)
+async function areaPicker(el, cur){
+  el.innerHTML = '<p class="hint">동네 목록을 불러오는 중…</p>';
+  try{ await loadRegions(); }catch(e){ el.innerHTML = '<p class="hint">동네 목록을 불러오지 못했어요. 나중에 👥 멤버에서 정할 수 있어요.</p>'; return; }
+  const [sd0, gu0] = String(cur || '').split(' ');
+  el.innerHTML = `<div class="area-sel"><select data-sd aria-label="시·도"><option value="">시·도</option>${Object.keys(REGIONS).map(s => `<option${s === sd0 ? ' selected' : ''}>${s}</option>`).join('')}</select><select data-gu aria-label="시·군·구"></select></div>`;
+  const sd = el.querySelector('[data-sd]'), gu = el.querySelector('[data-gu]');
+  const fill = keep => { const list = REGIONS[sd.value] || []; gu.disabled = !list.length;
+    gu.innerHTML = '<option value="">시·군·구</option>' + list.map(r => `<option${keep && r[0] === gu0 ? ' selected' : ''}>${r[0]}</option>`).join(''); sync(); };
+  const sync = () => { el.dataset.area = sd.value && gu.value ? sd.value + ' ' + gu.value : ''; };
+  sd.addEventListener('change', () => fill(false)); gu.addEventListener('change', sync); fill(true);
+}
+const WX_RAIN = c => (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || c >= 95;
+const wxIcon = c => c === 0 ? '☀️' : c <= 2 ? '🌤' : c === 3 ? '☁️' : c <= 48 ? '🌫' : WX_RAIN(c) ? '☔' : c <= 77 || c === 85 || c === 86 ? '❄️' : '☁️';
+async function areaWeather(a){
+  const K = 'sosWx', now = Date.now();
+  try{ const c = JSON.parse(localStorage.getItem(K) || 'null'); if(c && c.a === a && c.d === todayStr() && now - c.t < 36e5) return c.w; }catch(e){}
+  await loadRegions(); const xy = areaCoord(a); if(!xy) return null;
+  const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${xy[0]}&longitude=${xy[1]}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&hourly=precipitation,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=1`, {signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined});
+  if(!r.ok) return null;
+  const j = await r.json(), h = new Date().getHours(), cur = j.current || {};
+  const restP = ((j.hourly || {}).precipitation || []).slice(h, 19), restC = ((j.hourly || {}).weather_code || []).slice(h, 19);
+  const w = {t: Math.round(cur.temperature_2m), rh: Math.round(cur.relative_humidity_2m), code: cur.weather_code,
+    max: Math.round(j.daily.temperature_2m_max[0]), min: Math.round(j.daily.temperature_2m_min[0]),
+    rainNow: WX_RAIN(cur.weather_code) || cur.precipitation > 0, rainLater: restP.reduce((s, x) => s + (x || 0), 0) >= 0.5 || restC.some(WX_RAIN)};
+  if(!Number.isFinite(w.t) || !Number.isFinite(w.max)) return null;
+  try{ localStorage.setItem(K, JSON.stringify({a, d: todayStr(), t: now, w})); }catch(e){}
+  return w;
+}
+// 👕 낮 최고 기온으로 고르는 아이 옷차림 (흔히 쓰는 기온별 옷차림을 아이 기준으로 줄였어요)
+function wxWear(w){
+  const t = w.max;
+  const s = t >= 28 ? '민소매·반팔, 반바지' : t >= 23 ? '반팔, 얇은 반바지·면바지' : t >= 20 ? '얇은 긴팔, 얇은 가디건' : t >= 17 ? '긴팔 맨투맨·얇은 니트' : t >= 12 ? '긴팔 + 얇은 점퍼·바람막이' : t >= 9 ? '도톰한 긴팔 + 점퍼' : t >= 5 ? '내복 + 두꺼운 점퍼·코트' : '내복 + 패딩, 모자·장갑';
+  return {s, gap: w.max - w.min >= 10 ? w.max - w.min : 0};
+}
+// 💧 바깥 습도로 보는 집 안 습도 안내 (집 안 습도는 30~50%, 60%는 넘지 않게: 미국 환경보호청)
+function wxHumid(w){
+  if(w.rh < 35) return {k: 'dry', s: '바깥이 건조해요. 가습기·젖은 빨래로 집 안 습도를 올려 주세요'};
+  if(w.rh >= 75) return {k: 'wet', s: '바깥이 습해요. 제습기·에어컨 제습이나 환기로 60% 아래로'};
+  return {k: 'ok', s: '바깥 습도는 무난해요. 집 안은 30~50%면 좋아요'};
+}
+function wxPop(a, w){
+  const wr = wxWear(w), hm = wxHumid(w), xy = areaCoord(a);
+  sosInfo({icon: wxIcon(w.code), title: `${areaGu(a)} 오늘 날씨`, body: `<div class="wx-pop">
+    <p class="wx-big">${w.t}° <small>오늘 ${w.min}° ~ ${w.max}° · 💧 습도 ${w.rh}%</small></p>
+    ${w.rainNow || w.rainLater ? `<p class="wx-rain">☔ ${w.rainNow ? '지금 비가 와요' : '오늘 저녁 전에 비 소식이 있어요'}. 우산·여벌 옷 챙기기</p>` : ''}
+    <h3>👕 아이 옷차림</h3><p><b>${wr.s}</b>${wr.gap ? `<br>🌬 일교차 ${wr.gap}°라 아침저녁엔 한 겹 더 챙겨요` : ''}<br><small>아기는 같은 날씨에 어른보다 한 겹 더 입혀요 (미국소아과학회). 땀이 나면 한 겹 벗겨 주세요.</small></p>
+    <h3>💧 습도</h3><p><b>${hm.s}</b><br><small>바깥 습도예요. 집 안은 습도계로 확인해 주세요. 집 안 습도는 30~50%가 좋고 60%는 넘지 않게 (미국 환경보호청 실내 공기 안내).</small></p>
+    ${xy ? `<a class="btn block" href="https://xn--iq1br1ns0hr0b.com/map.html?at=${xy[0]},${xy[1]}&n=${encodeURIComponent(areaGu(a))}" target="_blank" rel="noopener">🗺 ${esc(areaGu(a))} 육아지도 · 소아과·문 연 약국 ›</a>` : ''}
+    <p class="who-tip">날씨: Open-Meteo · ${esc(a)} 가운데 기준, 1시간마다 새로 받아요. 예보라 틀릴 수 있어요.</p></div>`});
+}
+// 방장: 우리 동네 정하기·바꾸기
+function areaEdit(cur, done){
+  const box = sosInfo({icon: '📍', title: '우리 동네 정하기', body: `<p>동네를 정하면 방 사람 모두에게 이런 게 보여요.</p>
+    <ul class="area-why"><li>🌤 오늘 날씨와 <b>👕 아이 옷차림</b>(반팔·긴팔·점퍼)</li><li>💧 습도 안내 (건조할 땐 가습, 습할 땐 제습)</li><li>☔ 비 오는 날 맞춤 안내</li><li>🗺 <b>우리 동네 육아지도</b> 바로가기 (소아과·문 연 약국·키즈카페)</li></ul>
+    <div data-area-pick></div><p class="who-tip">구까지만 정해요. 휴대폰 위치(GPS)는 쓰지 않아요.</p>
+    <button type="button" class="btn primary block" data-area-save>저장하기</button>${cur ? '<button type="button" class="btn block" data-area-clear>동네 지우기</button>' : ''}<p class="g-msg" data-area-msg></p>`});
+  const pick = box.querySelector('[data-area-pick]'); areaPicker(pick, cur);
+  box.addEventListener('click', async e => {
+    const sv = e.target.closest('[data-area-save]'), cl = e.target.closest('[data-area-clear]'); if(!sv && !cl) return;
+    const v = cl ? '' : pick.dataset.area || ''; const msg = box.querySelector('[data-area-msg]');
+    if(sv && !v){ msg.textContent = '시·도와 시·군·구를 골라 주세요.'; return; }
+    (sv || cl).disabled = true;
+    try{ await roomRef().update({area: v || firebase.firestore.FieldValue.delete()}); box.remove(); done(v); }
+    catch(err){ (sv || cl).disabled = false; msg.textContent = err && err.code === 'permission-denied' ? '저장하지 못했어요. 방장만 정할 수 있어요 (서버 규칙 v24가 필요해요).' : '저장하지 못했어요. 다시 눌러 주세요.'; }
+  });
+}
+// 홈 표지 아래 날씨 칸
+function sosAreaHome(){
+  const el = document.querySelector('[data-wx]'); if(!el || !roomRef()) return;
+  let area = '';
+  const draw = async () => {
+    const own = ME.owner || !!ROOM.owner;
+    if(!area){ el.hidden = !own; el.innerHTML = own ? '<button type="button" class="wx-set" data-area-edit>📍 우리 동네 정하기 <small>날씨·아이 옷차림·습도·육아지도</small></button>' : ''; return; }
+    el.hidden = false;
+    el.innerHTML = `<button type="button" class="wx-card" data-wx-open><span class="wx-l1">📍 ${esc(areaGu(area))} · <i class="wx-now">날씨 불러오는 중…</i></span><span class="wx-l2"></span></button>${own ? '<button type="button" class="wx-edit" data-area-edit aria-label="동네 바꾸기">✏️</button>' : ''}`;
+    const w = await window.sosWxP.catch(() => null); if(!el.isConnected) return;
+    if(!w){ el.querySelector('.wx-now').textContent = '날씨를 불러오지 못했어요'; return; }
+    const wr = wxWear(w), hm = wxHumid(w);
+    el.querySelector('.wx-now').textContent = `${wxIcon(w.code)} ${w.t}° (${w.min}~${w.max}°) · 💧${w.rh}%`;
+    el.querySelector('.wx-l2').textContent = `${w.rainNow || w.rainLater ? '☔ 비 소식 · ' : ''}👕 ${wr.s}${hm.k !== 'ok' ? (hm.k === 'dry' ? ' · 💧 건조해요' : ' · 💧 습해요') : ''}`;
+  };
+  el.addEventListener('click', async e => {
+    if(e.target.closest('[data-area-edit]')){ areaEdit(area, v => { area = v; try{ localStorage.removeItem('sosWx'); }catch(err){} window.sosWxP = v ? areaWeather(v) : Promise.resolve(null); draw(); }); return; }
+    if(e.target.closest('[data-wx-open]')){ const w = await window.sosWxP.catch(() => null); if(w) wxPop(area, w); }
+  });
+  let res; window.sosWxP = new Promise(r => { res = r; });
+  sosReady().then(async ok => {
+    if(!ok){ res(null); return; }
+    try{ area = ((await roomRef().get()).data() || {}).area || ''; }catch(e){}
+    res(area ? areaWeather(area).catch(() => null) : null);
+    draw();
+  });
+  document.addEventListener('sos:owner', () => draw());
+}

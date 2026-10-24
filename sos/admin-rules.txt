@@ -29,6 +29,7 @@ service cloud.firestore {
     // v21: 💬 SOS 시간 댓글 — rooms/{방}/sos/{날짜}/comments 에 그 시간(h) 댓글을 달아요
     // v22: 👁 조회수 — rooms/{방}/views/{대상} 에 숫자 하나 (익명글·모임·SOS 시간)
     // v23: 👁 모임 조회수는 눈을 누르면 본 사람 닉네임이 보여요 (views/m… 의 w 지도)
+    // v24: 📍 방 지역(area) — 방장이 정하는 시·도+시·군·구. 날씨·옷차림·습도 안내와 우리 동네 육아지도에 써요
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+'/'+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get('lk', {});
@@ -113,13 +114,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // v24: 📍 방 지역 '시도 시군구' (예: 부산 동래구)
+    function areaOk(a) { return a is string && a.size() <= 20 && a.matches('^[가-힣]{2} [가-힣]{1,8}$'); }
     match /rooms/{roomKey} {
       allow get: if true;
       allow list: if isAdmin();
       // 운영자: '지워짐' 표시된 방의 흔적(문서)만 지울 수 있어요
       allow delete: if isAdmin() && resource.data.get('deleted', false) == true;
       allow create: if roomKey.matches('^[0-9a-f]{64}$')
-        && request.resource.data.keys().hasOnly(['name', 'oh', 'ou', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['name', 'oh', 'ou', 'createdAt', 'area'])
+        && (!('area' in request.resource.data) || areaOk(request.resource.data.area))
         && (!('ou' in request.resource.data) || (request.auth != null && request.resource.data.ou == request.auth.uid))
         && (!('oh' in request.resource.data)
             || (request.resource.data.oh is string && request.resource.data.oh.size() == 64))
@@ -148,6 +152,10 @@ service cloud.firestore {
           && resource.data.get('createdAt', request.time) < request.time - duration.value(7, 'd')
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted', 'name'])
           && request.resource.data.deleted == true && request.resource.data.name == '')
+        // v24: 📍 우리 동네 — 방장이 '부산 동래구'처럼 시·도 + 시·군·구를 정하거나 바꾸거나 지워요
+        || (resource.data.get('deleted', false) == false && isMember(roomKey) && isOwner(roomKey)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['area'])
+          && (!('area' in request.resource.data) || areaOk(request.resource.data.area)))
         // 👑 방장 열쇠 다시 만들기: 지금 방장이 이 휴대폰에 열쇠가 없을 때(기록이 지워졌을 때) 새 지문(oh)으로 바꿔요
         || (resource.data.get('deleted', false) == false && isMember(roomKey) && isOwner(roomKey)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['oh'])

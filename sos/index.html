@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610240037">
+<link rel="manifest" href="manifest.webmanifest?v=202610240343">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610240037">
-<script src="assets/gate.js?v=202610240037"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610240343">
+<script src="assets/gate.js?v=202610240343"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -27,6 +27,7 @@
       <button type="button" class="mem-btn" data-members aria-label="방 멤버 보기">👥 <b>…</b><small>멤버</small></button>
       <p class="eyebrow cover-app">공동육아 SOS 🆘</p>
       <div class="title-row"><h1 class="room-title" data-room-name></h1><span id="titleBell"></span></div>
+      <div class="wx" data-wx hidden></div>
       <p class="cover-sub">오늘도 독박으로 힘든 누군가의 <b>SOS</b>,<br>용기 낸 한 명이 <b>모임으로 구출합니다</b> 💪</p>
       <div class="room-bar"><button type="button" class="btn" data-invite>🔗 친구 초대하기</button><button type="button" class="btn" data-leave></button></div>
     </section>
@@ -85,8 +86,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610240037"></script>
-<script src="assets/push.js?v=202610240037"></script>
+<script src="assets/common.js?v=202610240343"></script>
+<script src="assets/push.js?v=202610240343"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -237,6 +238,7 @@ watchMeets(list => {
   $('#nextCount').hidden = !list.length; $('#nextCount').textContent = `${list.length}개`;
   $('#nextMake').hidden = !!list.length; $('#nextAll').hidden = !list.length;
 });
+sosAreaHome();   // 📍 우리 동네 날씨·옷차림·습도 (방장이 동네를 정한 방만)
 // 🌤 주말 아침 같이 버텨요: 토·일 오전 9시~10시 사이에 홈을 열면 하루 한 번 띄워요
 (function weekendMorning(){
   const d = new Date(), h = d.getHours(), wd = d.getDay(); if(!(wd === 0 || wd === 6) || h < 9 || h >= 10) return;
@@ -261,14 +263,17 @@ watchMeets(list => {
   const d = new Date(), h = d.getHours(), wd = d.getDay(); if(wd === 0 || wd === 6 || h < 15 || h >= 17) return;   // 평일만
   let seen = ''; try{ seen = localStorage.getItem('sosDingdong') || ''; }catch(e){}
   if(seen === todayStr()) return;
-  setTimeout(() => {
+  setTimeout(async () => {
+    // ☔ 우리 동네에 비가 오면(오거나 저녁 전 비 소식) 비 오는 날 문구로 (날씨는 2.5초까지만 기다려요)
+    const w = await Promise.race([(window.sosWxP || Promise.resolve(null)).catch(() => null), new Promise(r => setTimeout(() => r(null), 2500))]);
+    const rain = !!(w && (w.rainNow || w.rainLater));
     if(document.querySelector('.pop-back')) return;
     try{ localStorage.setItem('sosDingdong', todayStr()); }catch(e){}
     const box = sosInfo({icon: '', title: '띵동~ 친구야 놀자!', body: `<div class="dd">
       <img class="dd-img" src="assets/dingdong.webp?v=2" alt="띵동~ 친구야 놀자! 라떼는 키즈룸 없이, 친구 집에서 놀았어!" width="1146" height="1040">
-      <p class="dd-when">어느 날 오후 3시</p>
-      <p>오전 공동육아 끝, 애매한 오후.<br>비까지 추적추적, 놀이터도 센터도 내키지 않는 날.</p>
-      <p class="dd-hi">그때, 띵동. "친구야~ 놀자!"</p>
+      <p class="dd-when">${rain ? '☔ 비 오는 오후 3시' : '어느 날 오후 3시'}</p>
+      <p>오전 공동육아 끝, 애매한 오후.<br>${rain ? '오늘같이 비 오는 날엔 축축하니, 놀이터도 센터도 내키지 않는 날.' : '놀이터도 센터도 내키지 않는 날.'}</p>
+      <p class="dd-hi">${rain ? '그때, 띵동. "축축한 날엔 친구들아~ 놀자!"' : '그때, 띵동. "친구야~ 놀자!"'}</p>
       <p>키즈룸에선 엄마 뒤에 숨던 아이가<br>오늘은 먼저 달려가 문을 연다.<br><b>여기는 우리 집이니까.</b></p>
       <p>청소는 안 해도 OK, 간식은 각자 하나씩.<br>라떼는 대문 앞에서 이름 한 번 부르면 충분했다.</p>
       <p class="dd-hi">오늘 오후, 우리도 불러 볼까요?</p>

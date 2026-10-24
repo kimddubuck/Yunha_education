@@ -144,5 +144,11 @@
     if (st.fitting || !st.anchor || st.pop){ st.fitting = false; st.anchor = c; return; }
     if (map.distance(c, st.anchor) > 800) $('#again').hidden = false;
   });
-  locate();
+  // 🆘 공동육아 SOS 의 '우리 동네 육아지도'에서 왔으면 (?at=위도,경도&n=동네) 위치 허용 없이 그 동네에서 시작해요
+  const q = new URLSearchParams(location.search), at = /^(3[3-8]\.\d{1,4}),(12[4-9]\.\d{1,4}|13[01]\.\d{1,4})$/.exec(q.get('at') || '');
+  if (at){
+    st.center = [+at[1], +at[2]]; st.fitting = true; map.setView(st.center, 14);
+    $('#msay').textContent = `📍 ${String(q.get('n') || '우리 동네').slice(0, 20)} 기준이에요. 「내 위치」를 누르면 내 주변으로 바꿔요.`;
+    load();
+  } else locate();
 })();

@@ -1492,3 +1492,27 @@ a.dd-sos{padding:8px 10px;font-size:13px;line-height:1.45}
 .idea-foot .views[hidden] + .like{margin-left:auto}
 /* 👁 모임 본 사람 (v23): 눌러서 닉네임 보기 */
 button.views-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--muted);background:var(--tag);border:0;border-radius:999px;padding:5px 10px;cursor:pointer}
+/* 📍 우리 동네 날씨 (v24) */
+.wx{display:flex;gap:6px;align-items:stretch;margin:2px 0 2px}
+.wx[hidden]{display:none}
+.wx-card{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;font:inherit;color:var(--fg);background:var(--tag);border:0;border-radius:12px;padding:8px 11px;cursor:pointer}
+.wx-l1{font-size:13.5px;font-weight:800;overflow-wrap:anywhere}
+.wx-l1 i{font-style:normal;font-weight:700}
+.wx-l2{font-size:12.5px;color:var(--muted);font-weight:700;overflow-wrap:anywhere}
+.wx-l2:empty{display:none}
+.wx-edit{flex:none;font:inherit;border:0;border-radius:12px;background:var(--tag);color:var(--fg);padding:0 10px;cursor:pointer}
+.wx-set{flex:1;font:inherit;font-size:13.5px;font-weight:800;text-align:left;color:var(--fg);background:var(--tag);border:1px dashed var(--pick);border-radius:12px;padding:8px 11px;cursor:pointer}
+.wx-set small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.wx-pop{text-align:left}
+.wx-pop h3{margin:12px 0 4px;font-size:14.5px}
+.wx-pop p{margin:0 0 4px;font-size:14px;line-height:1.55}
+.wx-pop small{color:var(--muted);font-size:12.5px}
+.wx-big{font-size:28px!important;font-weight:800;margin-bottom:2px!important}
+.wx-big small{display:block;font-size:13px!important;font-weight:700}
+.wx-rain{background:var(--tag);border-radius:10px;padding:7px 10px;font-weight:700}
+.wx-pop .btn{margin-top:10px}
+.area-sel{display:flex;gap:6px;margin:8px 0 4px}
+.area-sel select{flex:1;min-width:0;font:inherit;font-size:15px;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.area-why{text-align:left;margin:4px 0 6px;padding-left:18px;font-size:13.5px;line-height:1.6}
+.g-area{margin:2px 0}
+.g-area-h{margin:6px 0 0;font-size:13px;font-weight:700;text-align:left;opacity:.85}

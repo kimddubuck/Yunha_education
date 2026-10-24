@@ -912,6 +912,7 @@ ${closable || invite ? '' : GATE_HOW_CREATE}
       : `<p class="g-box-h">🏠 새 모임 방 만들기</p>
       <p>방을 만들고 초대 링크를 단톡방에 올리면 끝!</p>
       <input id="gateName" aria-label="방 이름" placeholder="방 이름 (예: 래미안 3단지 공동육아)" maxlength="30">
+      <p class="g-area-h">📍 우리 동네 (선택) · 날씨·아이 옷차림·육아지도에 써요</p><div class="g-area" data-g-area></div>
       <input type="password" id="gatePw" aria-label="방 비밀번호" placeholder="비밀번호 (4자 이상)" maxlength="40">
       <input id="gateNick" aria-label="내 닉네임" placeholder="내 닉네임 (예: 윤하아빠/2단지)" maxlength="${NICK_MAX}" autocomplete="off">
       <div class="g-brw">${(b => `<p class="g-brw-h">📌 처음이라면 꼭 읽어 주세요</p>
@@ -1021,7 +1022,10 @@ ${invite ? '' : GATE_PASTE}
         if(!user){ msg('로그인 준비가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); return; }
         const roomId = newRoomId(), key = await roomKey(roomId, pw);
         const owner = randomHex();   // 방장 열쇠: 이 휴대폰에만 두고, 서버에는 지문만
-        await db.collection('rooms').doc(key).set({name, oh: await sha256Hex(owner), ou: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+        const ga = box.querySelector('[data-g-area]'), area = (ga && ga.dataset.area) || '';   // 📍 우리 동네 (선택)
+        const mk = withArea => db.collection('rooms').doc(key).set({name, oh: ohash, ou: user.uid, ...(withArea && area ? {area} : {}), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+        const ohash = await sha256Hex(owner);
+        try{ await mk(true); }catch(err){ if(!area || err.code !== 'permission-denied') throw err; await mk(false); }   // 서버 규칙이 아직 동네 칸(v24)을 모르면 동네 없이 만들어요
         // 방장을 바로 멤버로 넣어요 (홈으로 넘어가기 전에 닫아도 '멤버 없는 빈 방'이 남지 않게)
         try{ await db.collection('rooms').doc(key).collection('members').doc(user.uid).set({nick: nick.slice(0, NICK_MAX), on: true, joinedAt: firebase.firestore.FieldValue.serverTimestamp()}); }catch(e){}
         enter({roomId, key, name, owner, nick});
@@ -1030,6 +1034,7 @@ ${invite ? '' : GATE_PASTE}
     finally{ btn.disabled = false; }
   });
   document.body.appendChild(box);
+  box.querySelectorAll('[data-g-area]').forEach(el => { if(typeof areaPicker === 'function') areaPicker(el, ''); });
 }
 
 // 방마다 1주일 안의 SOS 요청 수와 다가오는 모임 수를 세요 (방 목록 옆 표시용). 못 세면 null
