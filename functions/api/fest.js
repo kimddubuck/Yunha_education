@@ -30,7 +30,8 @@ export async function onRequestGet({ request, env, waitUntil }) {
     const rows = items.filter(i => i && i.title && i.eventenddate >= day).map(i => ({
       id: String(i.contentid || ''), t: String(i.title).slice(0, 80), a: String(i.addr1 || '').slice(0, 80),
       s: String(i.eventstartdate || ''), e: String(i.eventenddate || ''),
-      img: /^Type[13]$/.test(i.cpyrhtDivCd || '') ? https(i.firstimage2 || i.firstimage) : '', tel:   // 사진은 공공누리 1·3유형(상업적 이용 가능)만 String(i.tel || '').slice(0, 40),
+      img: /^Type[13]$/.test(i.cpyrhtDivCd || '') ? https(i.firstimage2 || i.firstimage) : '',   // 사진은 공공누리 1·3유형(상업적 이용 가능)만
+      tel: String(i.tel || '').slice(0, 40),
       x: Number(i.mapx) || 0, y: Number(i.mapy) || 0
     }));
     const res = json({ ok: true, day, rows }, 200, 6 * 3600);
