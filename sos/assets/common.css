@@ -1495,14 +1495,14 @@ button.views-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--muted
 /* 📍 우리 동네 날씨 (v24) */
 .wx{display:flex;gap:6px;align-items:stretch;margin:2px 0 2px}
 .wx[hidden]{display:none}
-.wx-card{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;font:inherit;color:var(--fg);background:var(--tag);border:0;border-radius:12px;padding:8px 11px;cursor:pointer}
-.wx-l1{font-size:13.5px;font-weight:800;overflow-wrap:anywhere}
+.wx-card{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:left;font:inherit;color:var(--fg);background:transparent;border:0;border-radius:8px;padding:2px 0;cursor:pointer}
+.wx-l1{font-size:12.5px;font-weight:700;color:var(--muted);overflow-wrap:anywhere;line-height:1.4}
 .wx-l1 i{font-style:normal;font-weight:700}
-.wx-l2{font-size:12.5px;color:var(--muted);font-weight:700;overflow-wrap:anywhere}
+.wx-l2{font-size:12px;color:var(--muted);font-weight:600;overflow-wrap:anywhere;line-height:1.4}
 .wx-l2:empty{display:none}
-.wx-edit{flex:none;font:inherit;border:0;border-radius:12px;background:var(--tag);color:var(--fg);padding:0 10px;cursor:pointer}
-.wx-set{flex:1;font:inherit;font-size:13.5px;font-weight:800;text-align:left;color:var(--fg);background:var(--tag);border:1px dashed var(--pick);border-radius:12px;padding:8px 11px;cursor:pointer}
-.wx-set small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.wx-edit{flex:none;align-self:flex-start;font:inherit;font-size:12px;border:0;border-radius:8px;background:transparent;color:var(--muted);padding:2px 4px;cursor:pointer;opacity:.7}
+.wx-set{flex:1;font:inherit;font-size:12.5px;font-weight:700;text-align:left;color:var(--muted);background:transparent;border:1px dashed var(--line);border-radius:10px;padding:5px 9px;cursor:pointer}
+.wx-set small{display:block;font-size:11.5px;font-weight:600;opacity:.85}
 .wx-pop{text-align:left}
 .wx-pop h3{margin:12px 0 4px;font-size:14.5px}
 .wx-pop p{margin:0 0 4px;font-size:14px;line-height:1.55}

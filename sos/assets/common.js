@@ -1207,7 +1207,7 @@ function showMeetVote(o, remind){
 
 /* 📍 우리 동네 (규칙 v24): rooms/{방}.area = '부산 동래구' (방장이 정해요)
    → 🌤 오늘 날씨·👕 아이 옷차림·💧 습도 안내, ☔ 비 오는 날 팝업 문구, 🗺 우리 동네 육아지도 바로가기
-   날씨: Open-Meteo(무료·키 없음)에 구 가운데 좌표만 보내요. 1시간 동안 이 휴대폰에 저장해 두고 다시 써요 */
+   날씨: 기상청 단기예보(공공데이터포털)를 우리 서버(/api/weather)가 대신 물어봐요. 구 가운데 좌표만 보내고, 30분 동안 이 휴대폰에 저장해 두고 다시 써요 */
 function loadRegions(){
   if(typeof REGIONS !== 'undefined') return Promise.resolve(REGIONS);
   return loadRegions.p || (loadRegions.p = new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'assets/regions.js?v=1'; s.onload = () => ok(REGIONS); s.onerror = () => { loadRegions.p = null; no(new Error('regions')); }; document.head.appendChild(s); }));
@@ -1230,22 +1230,16 @@ async function areaPicker(el, cur){
   const sync = () => { el.dataset.area = sd.value && gu.value ? sd.value + ' ' + gu.value : ''; };
   sd.addEventListener('change', () => fill(false)); gu.addEventListener('change', sync); fill(true);
 }
-const WX_RAIN = c => (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || c >= 95;
-const wxIcon = c => c === 0 ? '☀️' : c <= 2 ? '🌤' : c === 3 ? '☁️' : c <= 48 ? '🌫' : WX_RAIN(c) ? '☔' : c <= 77 || c === 85 || c === 86 ? '❄️' : '☁️';
 async function areaWeather(a){
   const K = 'sosWx', now = Date.now();
-  try{ const c = JSON.parse(localStorage.getItem(K) || 'null'); if(c && c.a === a && c.d === todayStr() && now - c.t < 36e5) return c.w; }catch(e){}
+  try{ const c = JSON.parse(localStorage.getItem(K) || 'null'); if(c && c.a === a && c.d === todayStr() && now - c.t < 30 * 60e3) return c.w; }catch(e){}
   await loadRegions(); const xy = areaCoord(a); if(!xy) return null;
-  const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${xy[0]}&longitude=${xy[1]}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&hourly=precipitation,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=1`, {signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined});
-  if(!r.ok) return null;
-  const j = await r.json(), h = new Date().getHours(), cur = j.current || {};
-  const restP = ((j.hourly || {}).precipitation || []).slice(h, 19), restC = ((j.hourly || {}).weather_code || []).slice(h, 19);
-  const w = {t: Math.round(cur.temperature_2m), rh: Math.round(cur.relative_humidity_2m), code: cur.weather_code,
-    max: Math.round(j.daily.temperature_2m_max[0]), min: Math.round(j.daily.temperature_2m_min[0]),
-    rainNow: WX_RAIN(cur.weather_code) || cur.precipitation > 0, rainLater: restP.reduce((s, x) => s + (x || 0), 0) >= 0.5 || restC.some(WX_RAIN)};
-  if(!Number.isFinite(w.t) || !Number.isFinite(w.max)) return null;
-  try{ localStorage.setItem(K, JSON.stringify({a, d: todayStr(), t: now, w})); }catch(e){}
-  return w;
+  // 🌤 기상청 단기예보 (공공데이터포털) — 우리 서버(/api/weather)가 키를 숨긴 채 대신 물어봐요
+  const r = await fetch(`/api/weather?lat=${xy[0]}&lon=${xy[1]}`, {signal: AbortSignal.timeout ? AbortSignal.timeout(9000) : undefined});
+  const j = await r.json().catch(() => ({}));
+  if(!j.ok || !j.w){ areaWeather.err = j.error || ('http_' + r.status); return null; }
+  try{ localStorage.setItem(K, JSON.stringify({a, d: todayStr(), t: now, w: j.w})); }catch(e){}
+  return j.w;
 }
 // 👕 낮 최고 기온으로 고르는 아이 옷차림 (흔히 쓰는 기온별 옷차림을 아이 기준으로 줄였어요)
 function wxWear(w){
@@ -1261,13 +1255,13 @@ function wxHumid(w){
 }
 function wxPop(a, w){
   const wr = wxWear(w), hm = wxHumid(w), xy = areaCoord(a);
-  sosInfo({icon: wxIcon(w.code), title: `${areaGu(a)} 오늘 날씨`, body: `<div class="wx-pop">
+  sosInfo({icon: (w.icon || '☁️'), title: `${areaGu(a)} 오늘 날씨`, body: `<div class="wx-pop">
     <p class="wx-big">${w.t}° <small>오늘 ${w.min}° ~ ${w.max}° · 💧 습도 ${w.rh}%</small></p>
     ${w.rainNow || w.rainLater ? `<p class="wx-rain">☔ ${w.rainNow ? '지금 비가 와요' : '오늘 저녁 전에 비 소식이 있어요'}. 우산·여벌 옷 챙기기</p>` : ''}
     <h3>👕 아이 옷차림</h3><p><b>${wr.s}</b>${wr.gap ? `<br>🌬 일교차 ${wr.gap}°라 아침저녁엔 한 겹 더 챙겨요` : ''}<br><small>아기는 같은 날씨에 어른보다 한 겹 더 입혀요 (미국소아과학회). 땀이 나면 한 겹 벗겨 주세요.</small></p>
     <h3>💧 습도</h3><p><b>${hm.s}</b><br><small>바깥 습도예요. 집 안은 습도계로 확인해 주세요. 집 안 습도는 30~50%가 좋고 60%는 넘지 않게 (미국 환경보호청 실내 공기 안내).</small></p>
     ${xy ? `<a class="btn block" href="https://xn--iq1br1ns0hr0b.com/map.html?at=${xy[0]},${xy[1]}&n=${encodeURIComponent(areaGu(a))}" target="_blank" rel="noopener">🗺 ${esc(areaGu(a))} 육아지도 · 소아과·문 연 약국 ›</a>` : ''}
-    <p class="who-tip">날씨: Open-Meteo · ${esc(a)} 가운데 기준, 1시간마다 새로 받아요. 예보라 틀릴 수 있어요.</p></div>`});
+    <p class="who-tip">날씨: 기상청 단기예보·초단기실황 (공공데이터포털) · ${esc(a)} 가운데 기준, 30분마다 새로 받아요. 예보라 틀릴 수 있어요.</p></div>`});
 }
 // 방장: 우리 동네 정하기·바꾸기
 function areaEdit(cur, done){
@@ -1293,12 +1287,12 @@ function sosAreaHome(){
     const own = ME.owner || !!ROOM.owner;
     if(!area){ el.hidden = !own; el.innerHTML = own ? '<button type="button" class="wx-set" data-area-edit>📍 우리 동네 정하기 <small>날씨·아이 옷차림·습도·육아지도</small></button>' : ''; return; }
     el.hidden = false;
-    el.innerHTML = `<button type="button" class="wx-card" data-wx-open><span class="wx-l1">📍 ${esc(areaGu(area))} · <i class="wx-now">날씨 불러오는 중…</i></span><span class="wx-l2"></span></button>${own ? '<button type="button" class="wx-edit" data-area-edit aria-label="동네 바꾸기">✏️</button>' : ''}`;
+    el.innerHTML = `<button type="button" class="wx-card" data-wx-open><span class="wx-l1">📍${esc(areaGu(area))} <i class="wx-now">날씨 불러오는 중…</i></span><span class="wx-l2"></span></button>${own ? '<button type="button" class="wx-edit" data-area-edit aria-label="동네 바꾸기">✏️</button>' : ''}`;
     const w = await window.sosWxP.catch(() => null); if(!el.isConnected) return;
-    if(!w){ el.querySelector('.wx-now').textContent = '날씨를 불러오지 못했어요'; return; }
+    if(!w){ el.querySelector('.wx-now').textContent = /KEY|need_key/i.test(areaWeather.err || '') ? '날씨 준비 중이에요' : '날씨를 불러오지 못했어요'; return; }
     const wr = wxWear(w), hm = wxHumid(w);
-    el.querySelector('.wx-now').textContent = `${wxIcon(w.code)} ${w.t}° (${w.min}~${w.max}°) · 💧${w.rh}%`;
-    el.querySelector('.wx-l2').textContent = `${w.rainNow || w.rainLater ? '☔ 비 소식 · ' : ''}👕 ${wr.s}${hm.k !== 'ok' ? (hm.k === 'dry' ? ' · 💧 건조해요' : ' · 💧 습해요') : ''}`;
+    el.querySelector('.wx-now').textContent = `${w.icon || '☁️'}${w.t}° (${w.min}~${w.max}°) 💧${w.rh}%${!w.rainNow && w.rainLater ? ' ☔비 소식' : ''}`;
+    el.querySelector('.wx-l2').textContent = `👕 ${wr.s}`;   // 습도·자세한 건 눌러서 봐요
   };
   el.addEventListener('click', async e => {
     if(e.target.closest('[data-area-edit]')){ areaEdit(area, v => { area = v; try{ localStorage.removeItem('sosWx'); }catch(err){} window.sosWxP = v ? areaWeather(v) : Promise.resolve(null); draw(); }); return; }
