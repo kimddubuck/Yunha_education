@@ -83,7 +83,7 @@ function dayKind(ymd){ const [y,m,d] = ymd.split('-').map(Number), w = new Date(
 function dayLabel(ymd){ const [y,m,d] = ymd.split('-').map(Number); return `${m}/${d} (${WEEK[new Date(y, m-1, d).getDay()]})`; }
 
 /* 위쪽 메뉴: 페이지마다 <nav id="siteNav" data-page="..."> 만 두면 여기서 채워요 */
-const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단공유'],['idea.html','idea','🙈','익명게시판'],['https://xn--iq1br1ns0hr0b.com/?utm_source=sos','dokbak','<img class="ti-img" src="assets/dokbak.svg" alt="">','독박육아'],['terms.html','safety','📜','이용약관']];   // 독박육아: 놀이·연구·지도 사이트 (새 창)
+const NAV = [['index.html','home','🏠','홈'],['meet.html','meet','🆘','SOS 예약'],['meal.html','meal','<img class="ti-img" src="assets/baby-eat.svg" alt="">','식단공유'],['idea.html','idea','🙈','익명게시판'],['https://xn--iq1br1ns0hr0b.com/?utm_source=sos','dokbak','<img class="ti-img" src="assets/dokbak.svg" alt="">','독박육아'],['fest.html','fest','🎪','축제']];   // 독박육아: 놀이·연구·지도 사이트 (새 창) · 📜 이용약관은 홈·축제 맨 아래 링크로
 // 💬 전광판 글귀: 8초마다 바뀌고, 누르면 바로 다음으로. 첫 줄은 늘 우리 약속
 //    출처가 분명한 말만 이름을 붙이고, 널리 쓰이지만 출처가 불확실한 말은 이름 없이 둬요
 const SLOGANS = [
