@@ -1528,6 +1528,7 @@ button.views-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--muted
 .fest-tags:empty{display:none}
 .fest-tag{font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .fest-t{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
-.fest-when,.fest-addr{margin:0;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.fest-when{margin:0;font-size:12.5px;color:var(--muted)}
+.fest-addr{display:block;width:100%;margin:0;padding:0;border:0;background:none;font:inherit;font-size:11.5px;color:var(--muted);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:copy}
 .fest-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .fest-btns .btn{font-size:12.5px;padding:6px 10px}

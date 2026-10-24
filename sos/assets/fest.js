@@ -34,10 +34,12 @@
       const go = r.s > a ? r.s : a;   // 모임 날짜: 기간 안에서 축제가 열리는 첫날
       li.innerHTML = `${r.img ? `<img class="fest-img" src="${esc(r.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
         <div class="fest-body"><p class="fest-tags">${r.gu ? '<span class="fest-tag">📍 우리 동네</span>' : ''}${r.kid ? '<span class="fest-tag">👶 아이랑</span>' : ''}</p>
-        <b class="fest-t"></b><p class="fest-when">🗓 ${md(r.s)}${r.e !== r.s ? ` ~ ${md(r.e)}` : ''}</p><p class="fest-addr"></p>
+        <b class="fest-t"></b><p class="fest-when">🗓 ${md(r.s)}${r.e !== r.s ? ` ~ ${md(r.e)}` : ''}</p><button type="button" class="fest-addr" title="눌러서 주소 복사"></button>
         <div class="fest-btns"><a class="btn" href="meet.html?d=${dash(go)}#new">🙌 같이 갈 모임 열기</a>${r.x && r.y ? `<a class="btn" href="https://map.kakao.com/link/map/${encodeURIComponent(r.t)},${r.y},${r.x}" target="_blank" rel="noopener">🗺 지도</a>` : ''}</div></div>`;
       li.querySelector('.fest-t').textContent = r.t;
-      li.querySelector('.fest-addr').textContent = '📍 ' + r.a;
+      // 📍 주소는 한 줄로: 맨 앞 시·도(부산광역시 등)는 빼고, 넘치면 … 으로. 누르면 전체 주소를 복사해요
+      const ad = li.querySelector('.fest-addr'); ad.textContent = '📍 ' + r.a.replace(/^\S+(특별시|광역시|특별자치시|특별자치도|도)\s+/, '');
+      ad.addEventListener('click', async () => { try{ await navigator.clipboard.writeText(r.a); if(typeof pushToast === 'function') pushToast('📋 주소를 복사했어요'); }catch(e){ prompt('주소를 복사해 주세요', r.a); } });
       const im = li.querySelector('.fest-img'); if(im) im.addEventListener('error', () => im.remove());
       list.appendChild(li);
     });

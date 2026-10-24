@@ -785,7 +785,7 @@ function showIntro(){
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
 ${GATE_STORY}
       <button type="button" class="g-ok">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(24장)</small></a>
       <a class="g-link" href="index.html#install">📲 홈 화면에 설치하는 방법 보기</a>
     </div>`;
   const close = () => { box.remove(); document.removeEventListener('keydown', esc); };
@@ -817,7 +817,7 @@ const GATE_HOW_INVITE = `      <div class="g-guide">
           <li>모임 이야기는 원래 쓰던 단톡방·밴드에서 편하게 해요.</li>
           <li>오늘 뭐 먹이지? <b>🍚 식단공유</b> 탭에서 이웃 식단을 구경해요.</li>
         </ol>
-        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
+        <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(24장)</small></a>
       </div>`;
 
 // 방에 들어가기 전에도 볼 수 있는 것: 초대 링크 붙여넣기, 홈 화면 설치 안내(홈의 설치 안내와 같은 글), 개인정보 안내
@@ -949,7 +949,7 @@ ${GATE_PASTE}
       <h1>공동육아 SOS 🆘<button type="button" class="g-demo" aria-label="베타 버전 안내">베타</button></h1>
 ${GATE_STORY}
       <button type="button" class="g-start">시작하기</button>
-      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(20장)</small></a>
+      <a class="g-howto" href="guide.html">📖 그림으로 보는 사용법 <small>(24장)</small></a>
 ${GATE_EXTRA}
     </div>
     <form class="g-card g-step2" autocomplete="off"${invite ? '' : ' hidden'}>
