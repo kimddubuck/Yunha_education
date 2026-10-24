@@ -276,7 +276,19 @@ function attachUI(form, opts){
   // 글이나 사진이 있으면 '게시'가 진해져요
   const sync = () => { if(txt) form.classList.toggle('has', !!(txt.value.trim() || st.img)); };
   const changed = () => { if(tog) tog.setAttribute('aria-pressed', String(!!(st.img || row.querySelector('.at-url').value.trim()))); sync(); if(opts.onChange) opts.onChange({img: st.img, url: row.querySelector('.at-url').value}); };
-  const pick = async inp => { const f = inp.files && inp.files[0]; if(!f) return;
+  // 📷 multi: 글 사진 여러 장(최대 5장) — 앨범에서 여러 장 고르기, 미리보기 줄에서 하나씩 빼기
+  const MAXN = 5, strip = document.createElement('div'); strip.className = 'at-strip'; strip.hidden = true;
+  if(opts.multi){ row.querySelector('.at-file2').multiple = true; prev.after(strip);
+    strip.addEventListener('click', e => { const x = e.target.closest('[data-at-i]'); if(!x) return; st.list.splice(+x.dataset.atI, 1); drawStrip(); changed(); }); }
+  st.list = [];
+  const drawStrip = () => { st.img = st.list[0] || ''; strip.hidden = !st.list.length;
+    strip.innerHTML = st.list.map((u, i) => `<span class="at-th"><img src="${u}" alt="사진 ${i + 1}"><button type="button" class="meal-del" data-at-i="${i}" aria-label="${i + 1}번째 사진 빼기">✕</button></span>`).join('')
+      + (st.list.length ? `<small class="hint">${st.list.length} / ${MAXN}장 · 옆으로 넘겨 보여요</small>` : ''); };
+  const pick = async inp => { if(opts.multi){ const fs = Array.from(inp.files || []).slice(0, MAXN - st.list.length); inp.value = '';
+      if(!fs.length){ if(st.list.length >= MAXN && typeof pushToast === 'function') pushToast(`📷 사진은 ${MAXN}장까지예요`); return; }
+      for(const f of fs){ try{ st.list.push(await shrinkPhoto(f, {max: 720, limit: 76000})); }catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 읽지 못한 사진은 뺐어요'); } }
+      drawStrip(); changed(); return; }
+    const f = inp.files && inp.files[0]; if(!f) return;
     // 댓글 사진은 작게(320px), 글 사진은 피드처럼 크게 보여서 조금 더 선명하게(720px, 서버 규칙 80KB 안)
     try{ st.img = await shrinkPhoto(f, opts.compact ? {max: 320, limit: 28000} : {max: 720, limit: 76000}); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요`; prev.hidden = false; }
     catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; changed(); };
@@ -287,9 +299,11 @@ function attachUI(form, opts){
   const url = row.querySelector('.at-url'); url.addEventListener('input', changed);
   return {
     get(){ const u = safeUrl(url.value); if(u === null){ url.focus(); throw Object.assign(new Error('bad url'), {code: 'bad-url'}); }
+      if(opts.multi) return {...(st.list[0] ? {img: st.list[0]} : {}), ...(st.list.length > 1 ? {imgs: st.list.slice(1)} : {}), ...(u ? {url: u} : {})};
       return {...(st.img ? {img: st.img} : {}), ...(u ? {url: u} : {})}; },
-    clear(){ st.img = ''; img.removeAttribute('src'); prev.hidden = true; url.value = ''; if(tog) row.hidden = true; changed(); },
-    set(d){ st.img = d && d.img || ''; if(st.img){ img.src = st.img; prev.hidden = false; } else prev.hidden = true; url.value = d && d.url || ''; if(tog && (st.img || url.value)) row.hidden = false; changed(); }
+    clear(){ st.img = ''; st.list = []; drawStrip(); img.removeAttribute('src'); prev.hidden = true; url.value = ''; if(tog) row.hidden = true; changed(); },
+    set(d){ if(opts.multi){ st.list = [d && d.img, ...((d && d.imgs) || [])].filter(Boolean).slice(0, MAXN); drawStrip(); url.value = d && d.url || ''; changed(); return; }
+      st.img = d && d.img || ''; if(st.img){ img.src = st.img; prev.hidden = false; } else prev.hidden = true; url.value = d && d.url || ''; if(tog && (st.img || url.value)) row.hidden = false; changed(); }
   };
 }
 // 글 아래에 붙은 사진·링크를 그려요 (글은 textContent 로만, 링크는 검사한 주소만)

@@ -30,6 +30,7 @@ service cloud.firestore {
     // v22: 👁 조회수 — rooms/{방}/views/{대상} 에 숫자 하나 (익명글·모임·SOS 시간)
     // v23: 👁 모임 조회수는 눈을 누르면 본 사람 닉네임이 보여요 (views/m… 의 w 지도)
     // v24: 📍 방 지역(area) — 방장이 정하는 시·도+시·군·구. 날씨·옷차림·습도 안내와 우리 동네 육아지도에 써요
+    // v25: 📷 익명게시판 글 사진 여러 장(최대 5장, 옆으로 넘겨 보기) — img + imgs 목록
     //   모임·식단은 내 uid 칸에 내 닉네임(누가 눌렀는지 보여요), 익명게시판은 글마다 다른 지문(uid+'/'+글 번호의 sha256) 칸에 true (누가 눌렀는지 안 남아요)
     function likeMine(me, val) {
       let nl = request.resource.data.get('lk', {});
@@ -37,6 +38,13 @@ service cloud.firestore {
         && nl is map
         && nl.diff(resource.data.get('lk', {})).affectedKeys().hasOnly([me])
         && (!(me in nl) || nl[me] == val);
+    }
+    // v25: 📷 익명게시판 글 사진 여러 장 — 첫 장은 img, 2~5번째는 imgs 목록(최대 4장, 한 장 80KB 안)
+    function imgOk(x) { return x is string && x.size() <= 80000 && x.matches('^data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+$'); }
+    function imgsOk(d) {
+      return !('imgs' in d) || (d.imgs is list && d.imgs.size() <= 4
+        && (d.imgs.size() < 1 || imgOk(d.imgs[0])) && (d.imgs.size() < 2 || imgOk(d.imgs[1]))
+        && (d.imgs.size() < 3 || imgOk(d.imgs[2])) && (d.imgs.size() < 4 || imgOk(d.imgs[3])));
     }
     function attachOk(d) {
       return (!('img' in d) || (d.img is string && d.img.size() <= 80000 && (d.img == '' || d.img.matches('^data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+$'))))
@@ -495,8 +503,8 @@ service cloud.firestore {
       match /ideas/{id} {
         allow read: if canUse(roomKey);
         allow create: if canUse(roomKey)
-          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt', 'img', 'url', 'c'])
-          && attachOk(request.resource.data)
+          && request.resource.data.keys().hasOnly(['t', 'b', 'kh', 'createdAt', 'expireAt', 'img', 'imgs', 'url', 'c'])
+          && attachOk(request.resource.data) && imgsOk(request.resource.data)
           && (!('c' in request.resource.data) || request.resource.data.c in ['talk', 'idea', 'buy', 'place', 'club', 'etc'])
           && request.resource.data.t is string && request.resource.data.t.size() > 0 && request.resource.data.t.size() <= 40
           && request.resource.data.b is string && request.resource.data.b.size() > 0 && request.resource.data.b.size() <= 1000
@@ -506,11 +514,12 @@ service cloud.firestore {
           && request.resource.data.expireAt <= request.time + duration.value(32, 'd');
         allow update: if (request.auth != null
           && resource.data.get('deleted', false) == false
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['t', 'b', 'deleted', 'k', 'img', 'url'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['t', 'b', 'deleted', 'k', 'img', 'imgs', 'url'])
           && request.resource.data.k is string
           && hashing.sha256(request.resource.data.k).toHexString().lower() == resource.data.kh
           && request.resource.data.t == '' && request.resource.data.b == '' && request.resource.data.deleted == true
-          && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == '')
+          && request.resource.data.get('img', '') == '' && request.resource.data.get('url', '') == ''
+          && request.resource.data.get('imgs', []).size() == 0)
           // v17: ❤️ 좋아요 — 누가 눌렀는지 안 남게 글마다 다른 지문으로
           || (canUse(roomKey) && resource.data.get('deleted', false) == false
             && likeMine(hashing.sha256(request.auth.uid + '/' + id).toHexString().lower(), true));

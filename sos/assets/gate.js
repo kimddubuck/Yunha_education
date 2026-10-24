@@ -408,7 +408,8 @@ async function sosDeleteMe(){
   if(user && db) await sosDeleteMyMeals(db, user.uid, [...sosRooms(), ...sosKicked()]);   // 🍚 내가 올린 식단 사진 모두
   // 🙈 익명게시판 글·댓글: 이 휴대폰에 기억한 비밀값으로 '지움' 표시 (서버에는 누가 썼는지 없어서 이 방법뿐이에요)
   if(db){ let ik = {}; try{ ik = JSON.parse(localStorage.getItem('sosIdeaKeys') || '{}'); }catch(e){}
-    await Promise.all(Object.entries(ik).map(([path, k]) => db.doc(path).update({...(path.includes('/comments/') ? {} : {t: ''}), b: '', img: '', url: '', deleted: true, k}).catch(() => {}))); }
+    await Promise.all(Object.entries(ik).map(([path, k]) => { const post = !path.includes('/comments/'), base = {...(post ? {t: ''} : {}), b: '', img: '', url: '', deleted: true, k};
+      return db.doc(path).update(post ? {...base, imgs: []} : base).catch(() => post ? db.doc(path).update(base).catch(() => {}) : null); })); }   // 📷 여러 장 사진(imgs)도 비워요
   // ❤️ 내가 누른 좋아요(모임·식단) 빼기. 익명게시판 좋아요는 글마다 다른 지문이라 누가 눌렀는지 알 수 없고, 글과 함께 3일 안에 사라져요
   if(user && db) for(const r of sosRooms()) for(const col of ['opinions', 'meals']){
     try{ const q = await db.collection('rooms').doc(r.key).collection(col).where('lk.' + user.uid, '>', '').get();

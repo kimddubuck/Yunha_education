@@ -37,8 +37,17 @@ function renderIdeas(){
     li.querySelector('.idea-t').appendChild(document.createTextNode(x.t));
     const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
     // 📷 사진은 인스타그램 피드처럼 카드 맨 위에 크게 (누르면 크게 보기). 링크는 펼쳤을 때 글 아래에
-    if(x.img && /^data:image\/(webp|jpeg);base64,/.test(x.img)){ const fi = document.createElement('img'); fi.className = 'feed-img'; fi.src = x.img; fi.alt = '첨부 사진'; fi.loading = 'lazy';
-      fi.addEventListener('click', () => { if(typeof bigPhoto === 'function') bigPhoto(x.img); }); li.prepend(fi); li.classList.add('has-img'); }
+    //   여러 장이면 옆으로 넘기는 슬라이드 + 오른쪽 위 '1/3'
+    const pics = [x.img, ...(Array.isArray(x.imgs) ? x.imgs : [])].filter(u => typeof u === 'string' && /^data:image\/(webp|jpeg);base64,/.test(u)).slice(0, 5);
+    if(pics.length){ const car = document.createElement('div'); car.className = 'feed-car';
+      const tr = document.createElement('div'); tr.className = 'feed-track';
+      pics.forEach((u, i) => { const fi = document.createElement('img'); fi.className = 'feed-img'; fi.src = u; fi.alt = `첨부 사진 ${i + 1}`; fi.loading = 'lazy';
+        fi.addEventListener('click', () => { if(typeof bigPhoto === 'function') bigPhoto(u); }); tr.appendChild(fi); });
+      car.appendChild(tr);
+      if(pics.length > 1){ const n = document.createElement('span'); n.className = 'feed-n'; n.textContent = `1/${pics.length}`; car.appendChild(n);
+        const dots = document.createElement('div'); dots.className = 'feed-dots'; dots.innerHTML = pics.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join(''); car.appendChild(dots);
+        tr.addEventListener('scroll', () => { const i = Math.round(tr.scrollLeft / tr.clientWidth); n.textContent = `${i + 1}/${pics.length}`; dots.querySelectorAll('i').forEach((d, k) => d.classList.toggle('on', k === i)); }, {passive: true}); }
+      li.prepend(car); li.classList.add('has-img'); }
     if(opened && typeof attachView === 'function'){ const av = attachView({...x, img: ''}); if(av) b.insertAdjacentElement('afterend', av); }
     // ❤️ 좋아요 (v17): 누가 눌렀는지 안 남게 글마다 다른 지문(내 번호+글 번호)을 칸 이름으로 써요
     const foot = document.createElement('div'); foot.className = 'idea-foot';
@@ -94,7 +103,10 @@ function watchCmts(id){
 async function removeDoc(ref, path){
   const k = ideaKeys()[path];
   const isPost = !path.includes('/comments/');
-  if(k){ await ref.update({...(isPost ? {t: ''} : {}), b: '', img: '', url: '', deleted: true, k}); return; }
+  if(k){ const base = {...(isPost ? {t: ''} : {}), b: '', img: '', url: '', deleted: true, k};
+    try{ await ref.update(isPost ? {...base, imgs: []} : base); }   // 📷 여러 장 사진(imgs)도 비워요
+    catch(e){ if(!isPost || e.code !== 'permission-denied') throw e; await ref.update(base); }   // 규칙 v25 전이면 예전 방식
+    return; }
   if(ME.owner){
     if(isPost){ const cs = await ref.collection('comments').get(); await Promise.all(cs.docs.map(c => c.ref.delete().catch(() => {}))); }
     await ref.delete();
@@ -107,7 +119,7 @@ async function removeDoc(ref, path){
   $i('#ideaOpen').addEventListener('click', () => { form.hidden = false; $i('#ideaOpen').hidden = true; title.focus(); });
   $i('#ideaCancel').addEventListener('click', () => { form.hidden = true; $i('#ideaOpen').hidden = false; });
   body.addEventListener('input', () => { $i('#ideaCount').textContent = `${body.value.length} / 1000`; });
-  if(typeof attachUI === 'function') idea.attach = attachUI(form, {before: $i('#ideaAttach')});
+  if(typeof attachUI === 'function') idea.attach = attachUI(form, {before: $i('#ideaAttach'), multi: true});   // 📷 글 사진은 여러 장
   // 🏷 말머리 고르기 (글쓰기) · 말머리로 보기 (목록)
   const cats = $i('#ideaCats'); cats.innerHTML = IDEA_CATS.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="${k === idea.cat}">${n}</button>`).join('');
   cats.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; idea.cat = b.dataset.cat; cats.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
@@ -132,8 +144,11 @@ async function removeDoc(ref, path){
     try{
       const ref = idea.col.doc(), k = secret();
       setIdeaKey(ipath(ref.id), k);
-      await ref.set({t, b, c: idea.cat, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + IDEA_DAYS * 864e5)});
+      const doc = {t, b, c: idea.cat, ...at, kh: await sha(k), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + IDEA_DAYS * 864e5)};
+      try{ await ref.set(doc); }
+      catch(err){ if(!doc.imgs || err.code !== 'permission-denied') throw err;   // 서버 규칙 v25 전이면 첫 장만 올려요
+        delete doc.imgs; await ref.set(doc); if(typeof pushToast === 'function') pushToast('📷 지금은 첫 장만 올라갔어요 (여러 장은 준비 중)'); }
       title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000'; if(idea.attach) idea.attach.clear();
       form.hidden = true; $i('#ideaOpen').hidden = false;
       if(typeof pushToast === 'function') pushToast('🙈 익명으로 올렸어요');

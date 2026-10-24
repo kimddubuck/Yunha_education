@@ -1540,3 +1540,17 @@ a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:
 /* 📷 익명게시판 사진: 인스타그램 피드처럼 카드 위에 꽉 차게 */
 .idea-card.has-img{padding-top:0;overflow:hidden}
 .feed-img{display:block;width:calc(100% + 28px);margin:0 -14px 10px;max-height:min(110vw,520px);object-fit:cover;background:var(--bg);cursor:zoom-in}
+/* 📷 사진 여러 장: 옆으로 넘기기 (인스타그램처럼) */
+.feed-car{position:relative;margin:0 -14px 10px}
+.feed-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.feed-track::-webkit-scrollbar{display:none}
+.feed-track .feed-img{flex:0 0 100%;width:100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always}
+.feed-n{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;pointer-events:none}
+.feed-dots{display:flex;justify-content:center;gap:5px;padding:7px 0 0}
+.feed-dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.feed-dots i.on{background:var(--pick)}
+.at-strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 0}
+.at-strip .at-th{position:relative;width:64px;height:64px}
+.at-strip .at-th img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:block}
+.at-strip .at-th .meal-del{position:absolute;top:-6px;right:-6px}
+.at-strip .hint{flex-basis:100%}
