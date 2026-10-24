@@ -248,7 +248,7 @@ sosAreaHome();   // 📍 우리 동네 날씨·옷차림·습도 (방장이 동�
     if(document.querySelector('.pop-back')) return;
     try{ localStorage.setItem('sosWeekendAm', todayStr()); }catch(e){}
     const box = sosInfo({icon: '', title: '주말 아침, 같이 버텨요', body: `<div class="dd">
-      <img class="dd-img" src="assets/weekend.webp?v=1" alt="띵동~ 친구야 놀자! 주말 아침, 같이 나가 놀자!" width="1146" height="1040">
+      <p class="rain-hero" aria-hidden="true">🌤</p>
       <p class="dd-when">주말 아침</p>
       <p>오후엔 놀러 나가기로 했는데,<br>그 전까지 오전은 <b>왜 이렇게 안 가는지.</b></p>
       <p class="dd-hi">긴 오전, 혼자 말고 같이 버텨요!</p>
