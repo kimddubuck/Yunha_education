@@ -277,7 +277,8 @@ function attachUI(form, opts){
   const sync = () => { if(txt) form.classList.toggle('has', !!(txt.value.trim() || st.img)); };
   const changed = () => { if(tog) tog.setAttribute('aria-pressed', String(!!(st.img || row.querySelector('.at-url').value.trim()))); sync(); if(opts.onChange) opts.onChange({img: st.img, url: row.querySelector('.at-url').value}); };
   const pick = async inp => { const f = inp.files && inp.files[0]; if(!f) return;
-    try{ st.img = await shrinkPhoto(f, {max: 320, limit: 28000}); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요 · 미리보기 크기로만 보여요`; prev.hidden = false; }
+    // 댓글 사진은 작게(320px), 글 사진은 피드처럼 크게 보여서 조금 더 선명하게(720px, 서버 규칙 80KB 안)
+    try{ st.img = await shrinkPhoto(f, opts.compact ? {max: 320, limit: 28000} : {max: 720, limit: 76000}); img.src = st.img; note.textContent = `${Math.round(st.img.length * 3 / 4 / 1024)}KB로 줄였어요`; prev.hidden = false; }
     catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); } inp.value = ''; changed(); };
   const f1 = row.querySelector('.at-file'), f2 = row.querySelector('.at-file2');
   row.querySelector('.at-cam').addEventListener('click', () => f1.click()); row.querySelector('.at-alb').addEventListener('click', () => f2.click());

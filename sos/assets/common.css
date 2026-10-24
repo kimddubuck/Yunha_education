@@ -1537,3 +1537,6 @@ button.views-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--muted
 .rain-ideas{list-style:none;margin:2px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .rain-ideas li{background:var(--tag);border-radius:10px;padding:7px 8px;font-size:12.5px;font-weight:700;text-align:center}
 a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:6px 0}
+/* 📷 익명게시판 사진: 인스타그램 피드처럼 카드 위에 꽉 차게 */
+.idea-card.has-img{padding-top:0;overflow:hidden}
+.feed-img{display:block;width:calc(100% + 28px);margin:0 -14px 10px;max-height:min(110vw,520px);object-fit:cover;background:var(--bg);cursor:zoom-in}

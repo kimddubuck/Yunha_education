@@ -36,7 +36,10 @@ function renderIdeas(){
       <p class="idea-b cp"></p>`;
     li.querySelector('.idea-t').appendChild(document.createTextNode(x.t));
     const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
-    if(opened && typeof attachView === 'function'){ const av = attachView(x); if(av) b.insertAdjacentElement('afterend', av); }
+    // 📷 사진은 인스타그램 피드처럼 카드 맨 위에 크게 (누르면 크게 보기). 링크는 펼쳤을 때 글 아래에
+    if(x.img && /^data:image\/(webp|jpeg);base64,/.test(x.img)){ const fi = document.createElement('img'); fi.className = 'feed-img'; fi.src = x.img; fi.alt = '첨부 사진'; fi.loading = 'lazy';
+      fi.addEventListener('click', () => { if(typeof bigPhoto === 'function') bigPhoto(x.img); }); li.prepend(fi); li.classList.add('has-img'); }
+    if(opened && typeof attachView === 'function'){ const av = attachView({...x, img: ''}); if(av) b.insertAdjacentElement('afterend', av); }
     // ❤️ 좋아요 (v17): 누가 눌렀는지 안 남게 글마다 다른 지문(내 번호+글 번호)을 칸 이름으로 써요
     const foot = document.createElement('div'); foot.className = 'idea-foot';
     const ccount = (idea.cmts[x.id] || []).filter(c => !c.deleted).length;   // 💬 펼치기 전에도 댓글 수
