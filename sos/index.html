@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610240439">
+<link rel="manifest" href="manifest.webmanifest?v=202610240445">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610240439">
-<script src="assets/gate.js?v=202610240439"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610240445">
+<script src="assets/gate.js?v=202610240445"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -86,8 +86,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610240439"></script>
-<script src="assets/push.js?v=202610240439"></script>
+<script src="assets/common.js?v=202610240445"></script>
+<script src="assets/push.js?v=202610240445"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -281,6 +281,30 @@ sosAreaHome();   // 📍 우리 동네 날씨·옷차림·습도 (방장이 동�
       <button type="button" class="dd-later" data-pop="1">오늘은 괜찮아요</button></div>`});
     box.querySelector('.pop').classList.add('pop-dd');
   }, 900);
+})();
+// ☔ 비 오는 날: 우리 동네에 비가 오거나 저녁 전 비 소식이 있으면 9시~19시 사이 하루 한 번
+//   (평일 오후 3~5시는 띵동 팝업이 비 오는 날 문구로 대신하고, 주말 아침 9시대는 주말 팝업이 먼저라 건너뛰어요)
+(function rainyDay(){
+  const d = new Date(), h = d.getHours(), wd = d.getDay(), weekend = wd === 0 || wd === 6;
+  if(h < 9 || h >= 19 || (!weekend && h >= 15 && h < 17) || (weekend && h === 9)) return;
+  let seen = ''; try{ seen = localStorage.getItem('sosRainDay') || ''; }catch(e){}
+  if(seen === todayStr()) return;
+  setTimeout(async () => {
+    const w = await Promise.race([(window.sosWxP || Promise.resolve(null)).catch(() => null), new Promise(r => setTimeout(() => r(null), 4000))]);
+    if(!w || !(w.rainNow || w.rainLater) || document.querySelector('.pop-back')) return;
+    try{ localStorage.setItem('sosRainDay', todayStr()); }catch(e){}
+    const area = window.sosArea || '', gu = typeof areaGu === 'function' ? areaGu(area) : '', xy = typeof areaCoord === 'function' ? areaCoord(area) : null;
+    const box = sosInfo({icon: '', title: '비 오는 날, 같이 놀아요', body: `<div class="dd dd-rainy">
+      <p class="rain-hero" aria-hidden="true">☔</p>
+      <p class="dd-when">${w.rainNow ? '지금 ' : '오늘 '}${esc(gu || '우리 동네')} 비 소식 · ${w.t}°</p>
+      <p>놀이터는 축축하고, 집에만 있자니 하루가 길고.<br><b>비 오는 날은 어디 나가기도 애매하죠.</b></p>
+      <p class="dd-hi">이런 날일수록, 혼자 말고 같이!</p>
+      <ul class="rain-ideas"><li>🏠 우리 집 놀이</li><li>🛝 키즈카페</li><li>🏫 육아지원센터</li><li>📚 도서관</li></ul>
+      <a class="dd-sos" href="meet.html"><b>🛟 비 오는 날 SOS! 실내에서 같이 놀 이웃 찾기</b><br>우리 집 문을 열어도, 같이 키즈카페에 가도 좋아요.<span class="dd-go">🆘 SOS 보내러 가기 ›</span></a>
+      ${xy ? `<a class="rain-map" href="https://xn--iq1br1ns0hr0b.com/map.html?at=${xy[0]},${xy[1]}&n=${encodeURIComponent(gu)}" target="_blank" rel="noopener">🗺 ${esc(gu)} 키즈카페·육아지원센터 찾기 ›</a>` : ''}
+      <button type="button" class="dd-later" data-pop="1">오늘은 괜찮아요</button></div>`});
+    box.querySelector('.pop').classList.add('pop-dd');
+  }, 1200);
 })();
 </script>
 </body>

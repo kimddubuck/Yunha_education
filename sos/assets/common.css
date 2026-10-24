@@ -1532,3 +1532,8 @@ button.views-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--muted
 .fest-addr{display:block;width:100%;margin:0;padding:0;border:0;background:none;font:inherit;font-size:11.5px;color:var(--muted);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:copy}
 .fest-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .fest-btns .btn{font-size:12.5px;padding:6px 10px}
+/* ☔ 비 오는 날 팝업 */
+.rain-hero{margin:4px 0 0;font-size:54px;line-height:1;text-align:center}
+.rain-ideas{list-style:none;margin:2px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.rain-ideas li{background:var(--tag);border-radius:10px;padding:7px 8px;font-size:12.5px;font-weight:700;text-align:center}
+a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:6px 0}

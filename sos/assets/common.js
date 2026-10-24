@@ -1295,13 +1295,14 @@ function sosAreaHome(){
     el.querySelector('.wx-l2').textContent = `👕 ${wr.s}`;   // 습도·자세한 건 눌러서 봐요
   };
   el.addEventListener('click', async e => {
-    if(e.target.closest('[data-area-edit]')){ areaEdit(area, v => { area = v; try{ localStorage.removeItem('sosWx'); }catch(err){} window.sosWxP = v ? areaWeather(v) : Promise.resolve(null); draw(); }); return; }
+    if(e.target.closest('[data-area-edit]')){ areaEdit(area, v => { area = v; window.sosArea = v; try{ localStorage.removeItem('sosWx'); }catch(err){} window.sosWxP = v ? areaWeather(v) : Promise.resolve(null); draw(); }); return; }
     if(e.target.closest('[data-wx-open]')){ const w = await window.sosWxP.catch(() => null); if(w) wxPop(area, w); }
   });
   let res; window.sosWxP = new Promise(r => { res = r; });
   sosReady().then(async ok => {
     if(!ok){ res(null); return; }
     try{ area = ((await roomRef().get()).data() || {}).area || ''; }catch(e){}
+    window.sosArea = area;
     res(area ? areaWeather(area).catch(() => null) : null);
     draw();
   });
