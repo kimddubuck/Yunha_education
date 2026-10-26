@@ -342,7 +342,7 @@ footer p{font-size:14px;color:var(--soft)}
 .bd-badge small{font-size:11.5px;color:var(--soft)}
 .post h1{font-size:clamp(24px,5.5vw,32px);line-height:1.3}
 .post-meta{font-size:14px;color:var(--soft);margin:-4px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.pager a{white-space:nowrap}
+.pager a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .prose a.bd-row,a.bd-row,.bd-row .bd-t,.bd-badge b{color:var(--ink);text-decoration:none}
 /* 탭 8개: 휴대폰은 4칸 2줄, 1200px까지는 탭을 로고 아래 한 줄로 */
 @media (max-width:1200px){.top-sos{margin-left:auto}.nav{order:3;margin-left:0;width:100%}}
@@ -674,3 +674,11 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .vx-t td.num{width:31%;white-space:normal}
 .vx-t td:first-child b{display:inline;white-space:normal}
 .vx-t td:first-child{line-height:1.45}
+
+/* 📋 가이드 목록: 굵은 제목은 한 줄, 설명은 그 아래 줄 (읽기 쉽게) · 숫자 표는 오른쪽 줄맞춤 */
+.glist li{margin:0 0 12px;line-height:1.65}
+.glist li > b{display:block;margin-bottom:2px}
+.gtable td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gtable.n4 th,.gtable.n4 td{padding:8px 6px;font-size:13.5px}
+.gtable.n4 th:not(:first-child){text-align:right}
+@media (max-width:340px){.gtable.n4 th,.gtable.n4 td{padding:8px 4px;font-size:12.5px}}

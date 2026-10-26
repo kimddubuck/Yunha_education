@@ -841,8 +841,10 @@ segs(); render();
     if 'list' in b: return mark + '<ul class="glist">' + ''.join(f'<li><b>{e(x["b"])}{vb(x.get("v"))}</b> {e(x.get("t", ""))}</li>' for x in b['list']) + '</ul>'
     if 'table' in b:
       head = ''.join(f'<th>{e(h)}</th>' for h in b['table']['head'])
-      rows_ = ''.join('<tr>' + ''.join(f'<td>{e(c)}</td>' for c in r) + '</tr>' for r in b['table']['rows'])
-      return mark + f'<div class="tablewrap"><table class="gtable"><thead><tr>{head}</tr></thead><tbody>{rows_}</tbody></table></div>'
+      num = lambda c: ' class="num"' if re.fullmatch(r'[\d,.]+(원|만원|%)?', str(c)) else ''   # 숫자 칸은 오른쪽 줄맞춤
+      rows_ = ''.join('<tr>' + ''.join(f'<td{num(c)}>{e(c)}</td>' for c in r) + '</tr>' for r in b['table']['rows'])
+      wide = ' n4' if len(b['table']['head']) >= 4 else ''
+      return mark + f'<div class="tablewrap"><table class="gtable{wide}"><thead><tr>{head}</tr></thead><tbody>{rows_}</tbody></table></div>'
     if 'timeline' in b: return mark + '<ol class="timeline">' + ''.join(f'<li><time>{e(t)}</time><span>{e(x)}</span></li>' for t, x in b['timeline']) + '</ol>'
     if 'ask' in b: return '<div class="ask"><h3>🙋 방문해서 물어보세요</h3><ul>' + ''.join(f'<li>{e(q)}</li>' for q in b['ask']) + '</ul></div>'
     return ''
