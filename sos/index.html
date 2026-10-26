@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610241342">
+<link rel="manifest" href="manifest.webmanifest?v=202610261136">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610241342">
-<script src="assets/gate.js?v=202610241342"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610261136">
+<script src="assets/gate.js?v=202610261136"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -86,8 +86,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610241342"></script>
-<script src="assets/push.js?v=202610241342"></script>
+<script src="assets/common.js?v=202610261136"></script>
+<script src="assets/push.js?v=202610261136"></script>
 <script>
 sosSummary();
 // 🦸 구원자: 처음엔 오른쪽 위에서 흔들흔들 → 조금 뒤 테두리를 한 바퀴 날고 다시 제자리 (그 뒤로도 가끔)
@@ -190,6 +190,7 @@ function homeCmtWatch(id){
 // 홈: 다가오는 모임 요청 3개
 watchMeets(list => {
   sosGoMeet(list);   // 🔔 새 모임 알림을 눌러 왔으면 그 모임 창을 띄워요
+  if(list && typeof sosAskVotes === 'function') sosAskVotes(list);   // 📣 아직 답 안 한 모임 투표 부탁
   const ul = $('#next'); ul.innerHTML = '';
   if(list === null){ $('#nextEmpty').textContent = '모임을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'; return; }
   list.slice(0,3).forEach(o => {
@@ -209,9 +210,9 @@ watchMeets(list => {
     const mine = ((o.v || {})[ME.uid] || {}).s || null;
     const row = document.createElement('div'); row.className = 'vote-row';
     const cnt = meetVotes(o);
-    [['join', 'joins', '🙋 참석'], ['no', 'nos', '🙅 불참']].forEach(([s, k, label]) => {
+    [['join', 'joins', '🙋 참석'], ['maybe', 'maybes', '🤔 미확정'], ['no', 'nos', '🙅 불참']].forEach(([s, k, label]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'join'; b.dataset.vote = k;
-      b.setAttribute('aria-pressed', mine === s); b.textContent = label + ' '; const c = document.createElement('b'); c.textContent = cnt[s].count; b.appendChild(c);
+      b.setAttribute('aria-pressed', mine === s); const [ve, vl] = label.split(' '); b.innerHTML = `<i class="ve">${ve}</i> `; b.append(vl + ' '); const c = document.createElement('b'); c.textContent = cnt[s].count; b.appendChild(c);
       b.addEventListener('click', async () => {
         if(!ME.uid) return;
         row.querySelectorAll('button').forEach(x => { x.disabled = true; });

@@ -92,15 +92,15 @@ function meetCard(o, past){
   const row = document.createElement('div'); row.className = 'vote-row';
   const mine = {join: 'joins', maybe: 'maybes', no: 'nos'}[myVote(o)], cnt = meetVotes(o);
   const vbtn = (k, s, label) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'join'; b.dataset.vote = k; b.dataset.id = o.id;
-    b.setAttribute('aria-pressed', mine===k); b.textContent = label + ' '; const c = document.createElement('b'); c.textContent = cnt[s].count; b.appendChild(c); return b; };
-  const jb = vbtn('joins', 'join', '🙋 참석'), nb = vbtn('nos', 'no', '🙅 불참');
+    b.setAttribute('aria-pressed', mine===k); const [ve, vl] = label.split(' '); b.innerHTML = `<i class="ve">${ve}</i> `; b.append(vl + ' '); const c = document.createElement('b'); c.textContent = cnt[s].count; b.appendChild(c); return b; };
+  const jb = vbtn('joins', 'join', '🙋 참석'), mb = vbtn('maybes', 'maybe', '🤔 미확정'), nb = vbtn('nos', 'no', '🙅 불참');
   const lb = likeBtn(o, ME.uid, meet.col.doc(o.id), {val: ME.nick});   // ❤️ 좋아요 (v17)
   const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'join'; cb.dataset.toggle = o.id;
   cb.setAttribute('aria-expanded', meet.open.has(o.id));
   cb.textContent = cs.length ? `💬 댓글 ${cs.length}개 보기` : '💬 댓글 남기기';
   if(meet.open.has(o.id)) cb.textContent = '💬 댓글 접기';
   cb.className = 'join comment-toggle act cmt';
-  row.append(jb, nb, lb); body.append(row);
+  row.append(jb, mb, nb, lb); body.append(row);
   const lw = likeWho(o); if(lw) body.append(lw);   // 누가 눌렀는지
   const ft = document.createElement('div'); ft.className = 'meet-foot'; ft.append(cb, meetShareBtn(o), viewTag('m' + o.id)); body.append(ft); viewHit('m' + o.id);   // 📣 투표 부탁 공유 · 👁 본 사람
   // ✏️ 수정 · 🗑 취소는 한 줄에 작게 (연 사람·방장만 보여요)

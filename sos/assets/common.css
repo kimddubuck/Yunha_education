@@ -1554,3 +1554,17 @@ a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:
 .at-strip .at-th img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:block}
 .at-strip .at-th .meal-del{position:absolute;top:-6px;right:-6px}
 .at-strip .hint{flex-basis:100%}
+
+/* 🗳 참석·미확정·불참 세 칸 + ❤️ */
+.vote-row{grid-template-columns:1fr 1fr 1fr auto}
+.vote-row .join{font-size:13px}
+/* 좁은 화면: 세 칸이 넘치지 않게 숫자를 이름 아래 줄로 */
+@media (max-width:400px){
+  :is(.next-card,.up-sec,body) .vote-row{grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:5px}
+  :is(.next-card,.up-sec,body) .vote-row .join{font-size:12.5px;padding:6px 1px;letter-spacing:-.3px;line-height:1.25}
+  :is(.next-card,.up-sec,body) .vote-row .join b{display:block;margin:1px 0 0}
+  .vote-row .join .ve{display:none}   /* 이모지는 숨기고 글자·숫자만 */
+  .vote-row .like{padding:6px 9px}
+}
+
+.vote-row .join .ve{font-style:normal}

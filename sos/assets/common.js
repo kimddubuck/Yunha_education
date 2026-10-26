@@ -1195,15 +1195,16 @@ function sosNamesIn(o){
   const ids = Object.keys(p).filter(id => (p[id].h || []).some(h => h >= s && h < e));
   return ids.sort((a, b) => (b === ME.uid) - (a === ME.uid)).map(id => id === ME.uid ? '나' : (p[id].n || '이웃'));
 }
-function showMeetVote(o, remind){
+function showMeetVote(o, remind, ask){   // ask: {i, n, next} 방에 들어왔을 때 아직 답 안 한 모임 차례로 묻기
   const cnt = meetVotes(o), sosN = sosNamesIn(o);
-  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">${remind ? '⏰ 1시간 뒤 모임이에요!<br>늦지 않게 만나요 😊' : mySosIn(o) ? '🆘 내가 SOS 보낸 시간에<br>구원자가 모임을 열었어요!' : '🦸 구원자가 모임을 열었어요!'}</p>
+  const box = sosInfo({icon: '<img class="hero-img" src="assets/hero-up.svg" alt="">', title: `${dayLabel(o.date)} ${meetWhen(o)} 모임`, body: `<p class="go-nudge">${ask ? `📣 아직 답하지 않은 모임이에요${ask.n > 1 ? ` <small>(${ask.i}/${ask.n})</small>` : ''}<br>참석·미확정·불참을 알려 주세요 🙏` : remind ? '⏰ 1시간 뒤 모임이에요!<br>늦지 않게 만나요 😊' : mySosIn(o) ? '🆘 내가 SOS 보낸 시간에<br>구원자가 모임을 열었어요!' : '🦸 구원자가 모임을 열었어요!'}</p>
     ${sosN.length ? `<div class="go-sos"><p>🆘 이 시간 SOS 보낸 이웃 <b>${sosN.length}명</b></p><div class="who-list">${sosN.map(n => `<span class="who-chip sos">${esc(n)}</span>`).join('')}</div></div>` : ''}
     ${o.host ? '<p class="host-tag go-host"></p>' : ''}<p class="op-text go-text"></p>
     <div class="vote-row go-votes">${[['join', '🙋 참석'], ['maybe', '🤔 미확정'], ['no', '🙅 불참']].map(([s, l]) => `<button type="button" class="join" data-go-vote="${s}" aria-pressed="${((o.v || {})[ME.uid] || {}).s === s}">${l} <b>${cnt[s].count}</b></button>`).join('')}</div>
-    <p class="go-tip">${remind ? '못 가게 되면 <b>불참</b>으로 바꿔 주세요<br>주최자가 기다리지 않게요 🙏' : '👆 <b>참석 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊'}</p>
-    <button type="button" class="go-later" data-pop="1">나중에 할게요</button>`});
+    <p class="go-tip">${ask ? '👆 <b>참석 · 미확정 · 불참</b> 중 하나를 눌러 주세요<br>주최자가 준비하기 편해요 😊' : remind ? '못 가게 되면 <b>불참</b>으로 바꿔 주세요<br>주최자가 기다리지 않게요 🙏' : '👆 <b>참석 · 불참</b> 중 하나를 눌러 주세요<br>미리 알려 주면 주최자가 준비하기 편해요 😊'}</p>
+    ${ask ? `<p class="go-tip go-ask">✋ 답할 때까지 들어올 때마다 다시 물어봐요.${ask.i < ask.n ? '<br><button type="button" class="go-later" data-ask-skip>이 모임은 다음에 · 다음 모임 보기</button>' : ''}</p>` : '<button type="button" class="go-later" data-pop="1">나중에 할게요</button>'}`});
   box.classList.add('hero-pop');
+  if(ask) box.addEventListener('click', e => { if(e.target.closest('[data-ask-skip]')){ box.remove(); setTimeout(ask.next, 300); } });
   if(o.host) box.querySelector('.go-host').textContent = `👑 ${o.host} 주최`;   // 글은 글자로만
   box.querySelector('.go-text').textContent = o.text;
   box.addEventListener('click', async e => {
@@ -1216,8 +1217,24 @@ function showMeetVote(o, remind){
       if(s === 'join' && o.uid !== ME.uid && typeof pushMeetJoin === 'function') pushMeetJoin(o, cnt.join.count + 1);   // 주최자에게 참석 알림
       box.remove();
       if(typeof pushToast === 'function') pushToast(s === 'join' ? '🙋 참석으로 알렸어요! 그날 만나요' : s === 'maybe' ? '🤔 미확정으로 알렸어요' : '🙅 불참으로 알렸어요');
+      if(ask && ask.next) setTimeout(ask.next, 700);   // 답 안 한 모임이 더 있으면 이어서
     }catch(err){ sosTrouble(err); box.querySelectorAll('[data-go-vote]').forEach(x => { x.disabled = false; }); }
   });
+}
+// 📣 방에 들어왔을 때(홈): 아직 참석·불참을 안 누른 다가오는 모임이 있으면 하나씩 물어봐요
+//   내가 연 모임은 빼요. 참석·미확정·불참 중 하나를 누를 때까지 홈에 들어올 때마다 다시 물어요. 다른 창이 떠 있으면 닫힐 때까지 기다려요
+function sosAskVotes(list){
+  if(sosAskVotes.done || !ME.uid || !list || SOS_GO) return; sosAskVotes.done = true;
+  const todo = list.filter(o => o.uid !== ME.uid && !((o.v || {})[ME.uid]));   // 답할 때까지 홈에 들어올 때마다 물어요
+  if(!todo.length) return;
+  let i = 0, tries = 0;
+  const next = () => {
+    if(i >= todo.length) return;
+    if(document.querySelector('.pop-back')){ if(++tries < 40) setTimeout(next, 700); return; }   // 띵동·날씨 같은 창이 먼저 떠 있으면 기다려요
+    const o = todo[i++];
+    showMeetVote(o, false, {i, n: todo.length, next});
+  };
+  setTimeout(next, 1500);
 }
 
 /* 📍 우리 동네 (규칙 v24): rooms/{방}.area = '부산 동래구' (방장이 정해요)
