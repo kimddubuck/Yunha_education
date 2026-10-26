@@ -142,14 +142,15 @@ MEALS_PUBLIC = False
 VACCINE_OK = True   # 2026-10-19 운영자가 병원 예방접종 수첩 표준 일정과 맞춰 봄
 MEALS_CARD = '<a class="box" href="../food/meals.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🍚 유아식 모음</b> — 다른 집은 오늘 뭐 먹였을까? 개월수별 실제 식단 사진 보기 ›</a>'
 STG_CARD = '<a class="box" href="../food/stages.html" style="display:block;margin:0 0 14px;color:inherit;text-decoration:none"><b>🥣 이유식 단계표</b> — 6~8·9~11·12~23개월 하루 끼니·한 끼 양·질감 한눈에 보기 ›</a>'   # 🥣 이유식 단계표 바로가기 (🍚 먹기 주제 맨 위)
-TOPIC_SEO = {'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
+TOPIC_SEO = {'gift': '아기 증여·증여세 신고·아기 통장', 'sleep': '수면교육·분리수면·배변훈련·양치', 'food': '아기 이유식·간식·편식', 'lang': '말 늦은 아기·책 읽기·영상 노출', 'together': '공동육아'}
 AGE_SEO = {'10-12m': '(돌 아기)', '13-18m': '(돌 지난 아기)'}
 PLAY_SEO = {'shadow': ' (집에서 그림자극장)', 'c-puppet-shadow-story': ' (그림자극장)'}
 TOPICS = [('play', '🧸', '놀이·발달'), ('mind', '💛', '마음·행동'), ('lang', '🗣', '말·책·미디어'), ('food', '🍚', '먹기·이유식'),
-          ('sleep', '😴', '잠·배변·양치'), ('health', '🩺', '건강·검진·안전'), ('together', '🤝', '공동육아')]
-TOPIC_SHORT = {'play': '놀이', 'mind': '마음', 'lang': '말·미디어', 'food': '먹기', 'sleep': '잠·습관', 'health': '건강·안전', 'together': '공동육아'}   # 작은 탭에 쓰는 짧은 이름
+          ('sleep', '😴', '잠·배변·양치'), ('health', '🩺', '건강·검진·안전'), ('together', '🤝', '공동육아'), ('gift', '🎁', '증여·아이 돈')]
+TOPIC_SHORT = {'play': '놀이', 'mind': '마음', 'lang': '말·미디어', 'food': '먹기', 'sleep': '잠·습관', 'health': '건강·안전', 'together': '공동육아', 'gift': '증여'}   # 작은 탭에 쓰는 짧은 이름
 TOPIC_OF = {   # 글 id → 주제 (여기 없는 글은 아래 기본 규칙으로)
   'separate-sleep': 'sleep',
+  'baby-gift-tax-free': 'gift', 'baby-gift-report': 'gift', 'baby-money-two-accounts': 'gift',
   'mouthing-dropping': 'play', 'same-book-again': 'play', 'why-questions': 'play',
   'stranger-separation-anxiety': 'mind', 'crying-curve': 'mind', 'tantrum-how-common': 'mind', 'toddler-biting': 'mind',
   'attachment-secure-base': 'mind', 'still-face': 'mind', 'praise-effort': 'mind', 'discipline-no-spanking': 'mind', 'postpartum-depression': 'mind',
@@ -162,8 +163,9 @@ TOPIC_INTRO = {'play': '아이가 왜 그렇게 노는지, 놀이가 발달에 �
   'food': '이유식 시작부터 편식·재촉·간식·설탕·주스까지, 먹이기에 대한 기관 안내와 연구예요.',
   'sleep': '안전한 잠자리, 수면교육, 분리수면, 배변 훈련, 양치에 대한 연구와 안내예요.',
   'health': '영유아 검진, 발달 질문지, 예방접종, 구강검진과 이앓이·질식·카시트 같은 안전 수칙이에요.',
-  'together': '엄마 모임, 또래 지지, 놀이모임이 부모 마음과 아이 발달에 어떤 도움이 되는지 본 연구예요.'}
-OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'www.ncbi.nlm.nih.gov', 'www.healthychildren.org', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io')
+  'together': '엄마 모임, 또래 지지, 놀이모임이 부모 마음과 아이 발달에 어떤 도움이 되는지 본 연구예요.',
+  'gift': '아이에게 세금 없이 줄 수 있는 돈, 증여세 신고 기한, 나라 돈과 가족 돈을 나눠 모으는 법을 법령 원문 기준으로 정리했어요.'}
+OK_HOSTS = ('doi.org', 'pubmed.ncbi.nlm.nih.gov', 'www.ncbi.nlm.nih.gov', 'www.healthychildren.org', 'pmc.ncbi.nlm.nih.gov', 'www.who.int', 'www.cdc.gov', 'jamanetwork.com', 'health.kdca.go.kr', 'en.wikipedia.org', 'kimddubuck.github.io', 'www.law.go.kr', 'www.nts.go.kr', 'www.hometax.go.kr', 'www.bokjiro.go.kr')
 def okurl(u):
   m = re.match(r'https://([^/]+)/', u or '')
   return bool(m) and m.group(1) in OK_HOSTS
@@ -221,6 +223,7 @@ KW_TOPIC = {
   'mind': ['떼쓰기', '애착', '분리불안', '아기 훈육', '칭찬'],
   'health': ['영유아검진', '예방접종', '아기 키 몸무게', '아기 백분위', '안전수면'],
   'together': ['공동육아', '독박육아', '육아 모임'],
+  'gift': ['아기 증여', '증여세 신고', '미성년 증여 2000만원', '아기 통장', '아이 연금저축'],
 }
 KW_DIR = {
   'plays': ['아기놀이', '엄마표 놀이', '집에서 아기 놀이', '개월수별 놀이'],
@@ -351,6 +354,7 @@ def build():
   shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
   shutil.copy(os.path.join(DEV, 'leavepay.js'), os.path.join(OUT, 'assets', 'leavepay.js'))
   shutil.copy(os.path.join(DEV, 'vaccine.js'), os.path.join(OUT, 'assets', 'vaccine.js'))
+  if os.path.isdir(os.path.join(DEV, 'pics')): shutil.copytree(os.path.join(DEV, 'pics'), os.path.join(OUT, 'assets', 'pics'))   # 🖼 글에 넣는 설명 그림 (글 secs 의 img)
   if os.path.isdir(os.path.join(DEV, 'play-photos')): shutil.copytree(os.path.join(DEV, 'play-photos'), os.path.join(OUT, 'assets', 'plays'))   # 👨‍🍼 아빠가 해 본 놀이 사진 (plays.json 의 photo)
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
   write_care(os.path.join(OUT, 'functions', '_lib', 'care.js'))
@@ -692,7 +696,8 @@ segs(); render();
     for i, c in enumerate(posts):
       prv = posts[i - 1] if i else None; nxt = posts[i + 1] if i + 1 < len(posts) else None
       pager = '<div class="pager">' + (f'<a href="{prv["id"]}.html">‹ 이전 글</a>' if prv else '<span></span>') + f'<a href="../{slug}.html">☰ 목록</a>' + (f'<a href="{nxt["id"]}.html">다음 글 ›</a>' if nxt else '<span></span>') + '</div>'
-      secs = ''.join(f'<h2>{e(x["h"])}</h2><p>{e(x["p"])}</p>' for x in c['secs'])
+      pic = lambda x: f'<figure class="pic"><img src="../assets/pics/{e(x["img"])}" alt="{e(x.get("alt", ""))}" width="{x.get("w", 1080)}" height="{x.get("height", 1080)}" loading="lazy"></figure>' if x.get('img') else ''   # 🖼 설명 그림
+      secs = ''.join(f'<h2>{e(x["h"])}</h2>{pic(x)}<p>{e(x["p"])}</p>' for x in c['secs'])
       note = f'<p class="gnote">⚠️ {e(c["note"])}</p>' if c.get('note') else ''
       srcs = ''.join(f'<div class="box ref"><p class="who" style="margin:0">📄 {link(x.get("url"), x["name"])}<br>{e(x["who"])}</p><p class="ppl">👤 <b>누가 쓴 자료예요?</b> {e(x["people"])}</p></div>' for x in c['src'])
       meta = ' · '.join(v for v in [c['cat'], c.get('age', ''), c.get('basis') or ((c['yr'][:4] + '년 기준') if c.get('yr') else '')] if v)
@@ -943,7 +948,7 @@ segs(); render();
     body = f'''<div class="wrap"><p class="crumb"><a href="../">홈</a> › 육아 정보 › {e(nm)}</p><section class="blk prose" style="padding-top:12px">
 <h1>{ic} {e(nm)}</h1><p>{e(TOPIC_INTRO[sl])} 글 {len(entries[sl])}개예요. 글마다 누가 쓴 자료인지 밝혔고, 자료에 적힌 내용만 옮겼어요.</p>
 {(STG_CARD + (MEALS_CARD if MEALS_PUBLIC else '')) if sl == 'food' else ''}<div class="bd">{trows}</div>{bysrc}
-<p class="src">2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.</p></section></div>'''
+<p class="src">{'2026년 10월에 검색으로 확인한 법 조문과 공공 안내를 쉽게 옮겼어요. 세무 상담이 아니에요. 세법은 바뀔 수 있으니 큰 금액은 국세상담센터(126)나 세무사에게 확인하세요.' if sl == 'gift' else '2026년 10월에 검색으로 확인한 자료예요. 원문 전체가 아니라 초록·보도자료·공식 안내를 바탕으로 정리했어요. 아이마다 다르니 걱정되면 소아과 의사와 상의하세요.'}</p></section></div>'''
     files[f'info/{sl}.html'] = page(f'{TOPIC_SEO.get(sl, nm)} · 육아 정보 | 오늘도 독박육아', f'{TOPIC_INTRO[sl]} 글 {len(entries[sl])}개.', body, f'info/{sl}.html', f'info/{sl}.html')
 
   # ── 🥣 이유식 단계표: WHO 나이 구간(6~8 · 9~11 · 12~23개월) 기준. 초기·중기·후기·완료기는 흔히 쓰는 이름으로만 붙여요
@@ -1093,7 +1098,7 @@ const p=new URLSearchParams(location.search).get('q');if(p){q.value=p;run(p);}el
           part = part.replace(term, f'<abbr class="gl" title="{e(d)}">{term}</abbr>', 1); used.append(term)
         out.append(part)
       body_ = ''.join(out)
-      if top in ('research', 'tips', 'food', 'principles'):   # 🩺 건강 정보 안내 (의학적 조언이 아니에요)
+      if top in ('research', 'tips', 'food', 'principles') and TOPIC_OF.get(path.rsplit('/', 1)[-1][:-5]) != 'gift':   # 🩺 건강 정보 안내 (의학적 조언이 아니에요) · 증여 글은 세무 안내가 따로 있어요
         note_ = '<p class="src health-note">🩺 이 글은 일반 정보예요. 의사의 진료를 대신하지 않아요. 아이마다 다르니 걱정되면 소아청소년과 의사와 상의해 주세요.</p>'
         body_ = body_.replace('<h2>📚 출처</h2>', note_ + '<h2>📚 출처</h2>', 1) if '<h2>📚 출처</h2>' in body_ else body_.replace('</article>', note_ + '</article>', 1)
       if used:

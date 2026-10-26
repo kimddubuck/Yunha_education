@@ -682,3 +682,7 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .gtable.n4 th,.gtable.n4 td{padding:8px 6px;font-size:13.5px}
 .gtable.n4 th:not(:first-child){text-align:right}
 @media (max-width:340px){.gtable.n4 th,.gtable.n4 td{padding:8px 4px;font-size:12.5px}}
+
+/* 🖼 글 안 설명 그림 */
+.pic{margin:12px 0 14px}
+.pic img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line)}

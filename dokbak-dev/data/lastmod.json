@@ -203,6 +203,10 @@
 "875a326d09dc",
 "2026-10-17"
 ],
+"info/gift.html": [
+"4ef11dc52a73",
+"2026-10-26"
+],
 "info/health.html": [
 "ad286f9c0100",
 "2026-10-17"
@@ -228,7 +232,7 @@
 "2026-10-16"
 ],
 "map.html": [
-"1e8131df80e1",
+"b38cdd46115e",
 "2026-10-26"
 ],
 "plays/baby-massage.html": [
@@ -644,7 +648,7 @@
 "2026-10-16"
 ],
 "search.html": [
-"5fff4ca5a0c8",
+"762a7ae80812",
 "2026-10-26"
 ],
 "songs.html": [
@@ -668,8 +672,8 @@
 "2026-10-16"
 ],
 "support/home-care-allowance.html": [
-"d60aba06ef29",
-"2026-10-16"
+"a6aa950e13c7",
+"2026-10-26"
 ],
 "support/idolbom-2026.html": [
 "36fd85c45652",
@@ -704,16 +708,16 @@
 "2026-10-16"
 ],
 "support/six-plus-six.html": [
-"868dbbc74539",
-"2026-10-16"
+"a331b9ebcb6b",
+"2026-10-26"
 ],
 "terms.html": [
 "a77ea9099c5f",
 "2026-10-17"
 ],
 "tips.html": [
-"b47acd6d3aa1",
-"2026-10-17"
+"37491bd2d299",
+"2026-10-26"
 ],
 "tips/attachment-secure-base.html": [
 "df8d39f11bac",
@@ -722,6 +726,18 @@
 "tips/babbling-first-words.html": [
 "29357cfba450",
 "2026-10-16"
+],
+"tips/baby-gift-report.html": [
+"62ccf92aa9b8",
+"2026-10-26"
+],
+"tips/baby-gift-tax-free.html": [
+"b1bc94381126",
+"2026-10-26"
+],
+"tips/baby-money-two-accounts.html": [
+"4cf644b8594b",
+"2026-10-26"
 ],
 "tips/background-tv.html": [
 "1ef3b2cee5a7",
@@ -804,8 +820,8 @@
 "2026-10-17"
 ],
 "tips/safe-sleep-sids.html": [
-"0d8558d27b0c",
-"2026-10-16"
+"8c40ac26d7e7",
+"2026-10-26"
 ],
 "tips/same-book-again.html": [
 "0dceb89fa5f6",
