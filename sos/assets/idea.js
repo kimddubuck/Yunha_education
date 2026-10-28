@@ -5,8 +5,14 @@
 const $i = s => document.querySelector(s);
 const IDEA_DAYS = 3, IDEA_KEYS = 'sosIdeaKeys';   // v16: 3일 뒤 자동 삭제
 const idea = {lkey: {},  col: null, items: [], open: new Set(), cmts: {}, subs: {}, drafts: {}, cat: 'talk', filter: '' };
-// 말머리 4개 (코드는 서버 규칙 v16 목록 안에서 골랐어요: 나눔=etc, 육아정보=idea). 예전 말머리(피크닉·독서)는 수다·고민으로 보여요
-const IDEA_CATS = [['etc', '🎁 나눔'], ['talk', '💬 수다·고민'], ['buy', '🛒 공동구매'], ['idea', '💡 육아정보']];
+// 말머리 4개 (코드는 서버 규칙 v16 목록 안에서 골랐어요: 나눔·교환=etc, 육아정보=idea). 예전 말머리(피크닉·독서)는 수다·고민으로 보여요
+const IDEA_CATS = [['etc', '🎁 나눔·교환'], ['talk', '💬 수다·고민'], ['buy', '🛒 공동구매'], ['idea', '💡 육아정보']];
+// 말머리 탭을 누르면 아래에 보이는 안내 (글쓰기에서 말머리를 고를 때도 같은 안내가 보여요)
+const CAT_TIP = {'': '🙈 우리 방 익명 글을 모두 모아 봐요. 3일 뒤 저절로 지워져요.',
+  etc: '🥕 남는 식재료·이유식 재료, 🧸 작아진 옷·장난감·책을 나누거나 서로 바꿔요. 주고받기는 방 사람들끼리 자율로 해요.',
+  talk: '💭 밤잠·떼쓰기·어린이집 적응·부부 이야기… 이름 없이 편하게 털어놓고 서로 다독여요.',
+  buy: '📦 코스트코·쿠팡 대용량 기저귀·물티슈·식재료를 같이 사서 나눠요. 돈은 방 사람들끼리 자율로 주고받아요.',
+  idea: '📌 소아과 야간진료·키즈카페·지원금처럼 직접 겪은 육아 정보를 나눠요. 출처를 같이 적으면 더 좋아요.'};
 const catOf = c => IDEA_CATS.some(x => x[0] === c) ? c : 'talk';
 const catName = c => (IDEA_CATS.find(x => x[0] === catOf(c)) || ['', ''])[1];
 // 말머리를 바꾸기 전(2026-10-28 14:35)에 올라온 글은 모두 💬 수다·고민으로 봐요 (예전 '기타'·'꿀팁'이 나눔·육아정보로 잘못 보이지 않게)
@@ -128,11 +134,14 @@ async function removeDoc(ref, path){
   // 🏷 말머리 고르기 (글쓰기) · 말머리로 보기 (목록)
   const cats = $i('#ideaCats'); cats.innerHTML = IDEA_CATS.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="${k === idea.cat}">${n}</button>`).join('');
   cats.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; idea.cat = b.dataset.cat; cats.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    title.placeholder = {etc: '제목 (예: 작아진 아기 옷·장난감 나눠요)', talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', buy: '제목 (예: 코스트코 기저귀 같이 사실 분?)', idea: '제목 (예: 소아과 야간진료 정보 공유해요)'}[idea.cat] || '제목'; });
-  // 🗂 말머리 탭: 전체 · 나눔 · 수다·고민 · 공동구매 · 육아정보
+    $i('#ideaCatTip').textContent = CAT_TIP[idea.cat] || '';
+    title.placeholder = {etc: '제목 (예: 남는 단호박 나눠요)', talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', buy: '제목 (예: 코스트코 기저귀 같이 사실 분?)', idea: '제목 (예: 소아과 야간진료 정보 공유해요)'}[idea.cat] || '제목'; });
+  // 🗂 말머리 탭: 전체 · 나눔·교환 · 수다·고민 · 공동구매 · 육아정보
   const ft = $i('#ideaFilter');
   if(ft){ ft.innerHTML = [['', '전체'], ...IDEA_CATS].map(([k, n]) => `<button type="button" data-f="${k}" aria-pressed="${k === idea.filter}">${n}</button>`).join('');
-    ft.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if(!b) return; idea.filter = b.dataset.f; ft.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); renderIdeas(); }); }
+    ft.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if(!b) return; idea.filter = b.dataset.f; ft.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); tip(); renderIdeas(); });
+    const tip = () => { $i('#ideaFilterTip').textContent = CAT_TIP[idea.filter] || ''; }; tip(); }
+  $i('#ideaCatTip').textContent = CAT_TIP[idea.cat] || '';
   sosReady().then(ok => {
     if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
     idea.col = roomRef().collection('ideas');

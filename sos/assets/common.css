@@ -1574,3 +1574,7 @@ a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:
 .idea-filter{margin:12px 0 8px;padding:0;flex-wrap:wrap;overflow:visible;gap:6px}
 .idea-filter button{padding:6px 10px}
 @media (max-width:360px){ .idea-slogan{font-size:13.5px;padding:10px 8px} }
+/* 🗂 익명게시판 말머리 안내 (탭·말머리를 누르면 바뀌어요) */
+.idea-cat-tip{margin:0 0 10px;padding:8px 11px;border-radius:10px;background:var(--tag);color:var(--muted);font-size:13px;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere}
+.idea-cat-tip:empty{display:none}
+.idea-form .idea-cat-tip{margin:0}
