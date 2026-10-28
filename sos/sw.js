@@ -12,9 +12,11 @@ self.addEventListener('push', e => {
   e.waitUntil((async () => {
     // 내가 올린 것(내 SOS·내가 연 모임 등)의 알림은 나에게 띄우지 않아요
     const from = d.sender || d.from;   // 'from' 은 FCM 예약어라 sender 로 받아요
-    if (from) {
+    // 🙈 익명게시판 글은 보낸 사람 정보가 없어서, 이 휴대폰에 적어 둔 '내가 쓴 글 번호'로 내 글인지 봐요
+    const myIdea = /^idea-/.test(d.tag || '') && (await caches.open('sos-self').then(c => c.match('/ideas')).then(r => (r ? r.json() : [])).catch(() => [])).includes(d.tag.slice(5));
+    if (from || myIdea) {
       const me = await caches.open('sos-self').then(c => c.match('/me')).then(r => (r ? r.text() : '')).catch(() => '');
-      if (me && me === from) {
+      if (myIdea || (me && me === from)) {
         const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
         if (wins.some(w => w.visibilityState === 'visible')) return;
         // 앱이 꺼져 있을 때는 크롬 규칙상 알림을 하나 띄워야 해서, 소리 없이 띄우고 바로 닫아요

@@ -213,6 +213,13 @@ async function pushSosComment(date, h, text){
   try{ if(Date.now() - (+localStorage.getItem(k) || 0) < 600000) return; localStorage.setItem(k, String(Date.now())); }catch(e){}
   pushNotify({kind: 'sos', date, hours: [h]}, `💬 ${h}시 SOS에 댓글이 달렸어요`, `${ROOM.name} · ${ME.nick}: ${String(text).slice(0, 60)}`, pushLink('index.html') + `&go=s${date}-${h}`, 'scmt-' + date + '-' + h);
 }
+// 🙈 익명게시판 새 글: 방 전체에 말머리·제목만 (쓴 사람 정보는 보내지 않아요)
+//   내 글 알림은 나에게 안 뜨게, 글 번호를 이 휴대폰에만 적어 두고 알림 받는 쪽(sw.js)이 확인해요
+async function pushNewIdea(id, cat, title){
+  if(!PUSH_VAPID || !ROOM) return;
+  try{ const c = await caches.open('sos-self'), r = await c.match('/ideas'), a = r ? await r.json() : []; a.push(id); await c.put('/ideas', new Response(JSON.stringify(a.slice(-50)))); }catch(e){}
+  pushNotify(TO_ROOM, '🙈 익명게시판에 새 글이 올라왔어요', `${ROOM.name} · ${cat} ${String(title).slice(0, 40)}`, pushLink('idea.html') + '&go=i' + id, 'idea-' + id, {anon: true});
+}
 async function pushMeetJoin(o, joins){
   if(!PUSH_VAPID || !ROOM) return;
   pushNotify(toMeet(o.id), '🙋 내 모임에 참석이 늘었어요', `${ROOM.name} · 참석 ${joins}명`, pushLink('meet.html'), 'join-' + o.id);

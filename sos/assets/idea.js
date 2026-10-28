@@ -9,6 +9,9 @@ const idea = {lkey: {},  col: null, items: [], open: new Set(), cmts: {}, subs: 
 const IDEA_CATS = [['etc', '🎁 나눔'], ['talk', '💬 수다·고민'], ['buy', '🛒 공동구매'], ['idea', '💡 육아정보']];
 const catOf = c => IDEA_CATS.some(x => x[0] === c) ? c : 'talk';
 const catName = c => (IDEA_CATS.find(x => x[0] === catOf(c)) || ['', ''])[1];
+// 말머리를 바꾸기 전(2026-10-28 14:35)에 올라온 글은 모두 💬 수다·고민으로 봐요 (예전 '기타'·'꿀팁'이 나눔·육아정보로 잘못 보이지 않게)
+const CAT_CUT = Date.UTC(2026, 9, 28, 5, 35);
+const catX = x => x.createdAt && x.createdAt.toMillis && x.createdAt.toMillis() < CAT_CUT ? 'talk' : catOf(x.c);
 
 const ideaKeys = () => { try{ return JSON.parse(localStorage.getItem(IDEA_KEYS) || '{}'); }catch(e){ return {}; } };
 function setIdeaKey(path, k){ try{ const m = ideaKeys(); m[path] = k; localStorage.setItem(IDEA_KEYS, JSON.stringify(m)); }catch(e){} }
@@ -27,14 +30,14 @@ function renderIdeas(){
   const fo = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-idea]');   // 쓰는 중인 댓글은 지켜요
   const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('textarea, input[type="text"]').value} : null;
   ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
-  const list = idea.items.filter(x => !x.deleted && (!idea.filter || catOf(x.c) === idea.filter));   // 말머리 탭으로 걸러 보기
+  const list = idea.items.filter(x => !x.deleted && (!idea.filter || catX(x) === idea.filter));   // 말머리 탭으로 걸러 보기
   if(!list.length && idea.items.some(x => !x.deleted)){ ul.innerHTML = `<li class="hint idea-empty">${catName(idea.filter)} 글이 아직 없어요. 첫 글을 남겨 보세요 🙂</li>`; return; }
   if(!list.length){ ul.innerHTML = `<li class="hint idea-empty">아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂</li>`; return; }
   ul.innerHTML = '';
   list.forEach(x => {
     const li = document.createElement('li'); li.className = 'idea-card'; li.dataset.id = x.id;
     const mine = !!keys[ipath(x.id)], opened = idea.open.has(x.id);
-    li.innerHTML = `<button type="button" class="idea-head" data-toggle="${x.id}" aria-expanded="${opened}"><b class="idea-t"><span class="idea-cat">${catName(x.c || 'talk')}</span></b><span class="idea-m">🙈 익명 · ${ago(x.createdAt)}${mine ? ' · 내 글' : ''}</span></button>
+    li.innerHTML = `<button type="button" class="idea-head" data-toggle="${x.id}" aria-expanded="${opened}"><b class="idea-t"><span class="idea-cat">${catName(catX(x))}</span></b><span class="idea-m">🙈 익명 · ${ago(x.createdAt)}${mine ? ' · 내 글' : ''}</span></button>
       <p class="idea-b cp"></p>`;
     li.querySelector('.idea-t').appendChild(document.createTextNode(x.t));
     const b = li.querySelector('.idea-b'); b.textContent = x.b; if(!opened) b.classList.add('clip');
@@ -136,6 +139,9 @@ async function removeDoc(ref, path){
     idea.col.orderBy('createdAt', 'desc').limit(100).onSnapshot(q => {
       const now = Date.now();
       idea.items = q.docs.map(d => ({id: d.id, ...d.data()})).filter(x => !x.expireAt || x.expireAt.toMillis() > now);
+      // 🔔 새 글 알림을 눌러 왔으면(?go=i글) 그 글을 펼쳐서 보여 줘요
+      if(/^i[A-Za-z0-9]{1,40}$/.test(SOS_GO || '')){ const gid = SOS_GO.slice(1); if(idea.items.some(x => x.id === gid && !x.deleted)){ SOS_GO = ''; idea.open.add(gid); watchCmts(gid); viewHit('i' + gid);
+        setTimeout(() => { const li = document.querySelector(`.idea-card[data-id="${gid}"]`); if(li) li.scrollIntoView({block: 'start', behavior: 'smooth'}); }, 300); } }
       renderIdeas();
       idea.items.filter(x => !x.deleted).forEach(x => watchCmts(x.id));   // 💬 펼치기 전에도 댓글 수를 보여 주려고 미리 들어요
     }, () => { $i('#ideaList').innerHTML = '<li class="hint">🙈 익명게시판을 준비하고 있어요. 잠시 뒤 다시 열어 주세요.</li>'; });
@@ -158,6 +164,7 @@ async function removeDoc(ref, path){
       title.value = ''; body.value = ''; $i('#ideaCount').textContent = '0 / 1000'; if(idea.attach) idea.attach.clear();
       form.hidden = true; $i('#ideaOpen').hidden = false;
       if(typeof pushToast === 'function') pushToast('🙈 익명으로 올렸어요');
+      if(typeof pushNewIdea === 'function') pushNewIdea(ref.id, catName(doc.c), t);   // 🔔 방 사람들에게 새 글 알림 (쓴 사람 정보 없이)
     }catch(err){ if(typeof sosTrouble === 'function') sosTrouble(err); else alert('올리지 못했어요. 잠시 뒤 다시 해 주세요.'); }
     btn.disabled = false; btn.textContent = '익명으로 올리기';
   });
