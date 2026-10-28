@@ -948,15 +948,6 @@ function sosReport(kind, mid, cid){
   });
   const nickOf = (list, uid) => (list.find(m => m.uid === uid) || {}).nick || '';
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const ago = m => {
-    const t = m.seen || m.joinedAt; if(!t || !t.toMillis) return '';
-    // 달력 날짜 기준: 오늘 오전 8:12 · 어제 오후 9:30 · 3일 전 (10/6) · 2달 전
-    const at = t.toDate(), now = new Date(), day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-    const d = Math.round((day0(now) - day0(at)) / 864e5), h = at.getHours();
-    const hm = `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${String(at.getMinutes()).padStart(2, '0')}`;
-    return d < 1 ? `오늘 ${hm}` : d < 2 ? `어제 ${hm}` : d < 30 ? `${d}일 전 (${at.getMonth() + 1}/${at.getDate()})` : d < 365 ? `${Math.floor(d / 30)}달 전` : '1년 넘게 전';
-  };
-  const sleepy = m => { const t = m.seen || m.joinedAt; return !!(t && t.toMillis && Date.now() - t.toMillis() > OWNER_GONE_DAYS * 864e5); };
   async function becomeOwner(list, how){
     try{
       await sosBecomeOwner();
@@ -988,31 +979,13 @@ function sosReport(kind, mid, cid){
     if(sosOwnerGone(list)) return `<div class="mem-own-box"><p>${list.some(m => m.uid === ME.ou) ? `<b>👑 방장이 오래 안 들어왔어요</b><br><small>${OWNER_GONE_DAYS}일 넘게 접속이 없어서<br>멤버 누구나 방장을 이어받을 수 있어요.</small>` : '<b>👑 방장이 방에서 나갔어요</b><br><small>멤버 누구나 방장을 이어받을 수 있어요.</small>'}</p><button type="button" class="mem-kick mem-allow" data-take>내가 방장 이어받기</button></div>`;
     return '';
   }
-  // 정렬: 나 → 새 멤버 → (방장에게는) 최근 접속한 순서
-  const seenMs = m => { const t = m.seen || m.joinedAt; return t && t.toMillis ? t.toMillis() : 0; };
+  // 정렬: 나 → 새 멤버 → 나머지 (익명게시판 글쓴이를 짐작할 수 없게 접속 시간·순서는 방장에게도 안 보여요)
   const sortMembers = list => { const me = list.filter(m => m.uid === ME.uid), rest = list.filter(m => m.uid !== ME.uid);
-    const byRecent = a => ME.owner ? [...a].sort((x, y) => seenMs(y) - seenMs(x)) : a;
-    return [...me, ...byRecent(rest.filter(isNew)), ...byRecent(rest.filter(m => !isNew(m)))]; };
+    return [...me, ...rest.filter(isNew), ...rest.filter(m => !isNew(m))]; };
   function open(list){
     const cnt = {}; list.forEach(m => { cnt[m.nick] = (cnt[m.nick] || 0) + 1; });
     const joined = m => { const t = m.joinedAt && m.joinedAt.toDate ? m.joinedAt.toDate() : null; return t ? `${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} 들어옴` : ''; };
-    // 브라우저 로고 (작은 SVG) + 이름. 카톡 등 앱 안 브라우저는 주황 테두리
-    const IC = {
-      kakao: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#FEE500"/><path d="M12 5.5c-4.1 0-7.3 2.5-7.3 5.6 0 2 1.3 3.7 3.3 4.7l-.8 2.9c-.1.3.2.5.5.3l3.4-2.3h.9c4.1 0 7.3-2.5 7.3-5.6S16.1 5.5 12 5.5z" fill="#3C1E1E"/></svg>',
-      insta: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#E1306C"/><path d="M0 18a6 6 0 0 0 6 6h6L0 12z" fill="#F77737" opacity=".9"/><path d="M24 6a6 6 0 0 0-6-6h-6l12 12z" fill="#833AB4" opacity=".9"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.4" cy="7.6" r="1" fill="#fff"/></svg>',
-      naver: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#03C75A"/><path d="M13.6 12.4 10.2 7H7.5v10h2.9v-5.4l3.4 5.4h2.7V7h-2.9z" fill="#fff"/></svg>',
-      band: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#06C755"/><path d="M8 6h4.5c2 0 3.2 1 3.2 2.6 0 1-.5 1.7-1.3 2.1 1.1.3 1.8 1.2 1.8 2.4 0 1.9-1.4 2.9-3.6 2.9H8V6zm2.6 4h1.6c.7 0 1-.3 1-.9s-.4-.9-1-.9h-1.6V10zm0 4.1h1.9c.8 0 1.2-.3 1.2-1s-.4-1-1.2-1h-1.9v2z" fill="#fff"/></svg>',
-      inapp: '<svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3" fill="#8a949c"/><rect x="8" y="5" width="8" height="12" rx="1" fill="#1c2326"/></svg>',
-      home: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#2a9095"/><path d="M12 5 5 11h2v7h4v-4h2v4h4v-7h2z" fill="#fff"/></svg>',
-      chrome: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#DB4437"/><path d="M12 12 2.5 17.5A11 11 0 0 0 12 23l5.5-9.5z" fill="#0F9D58"/><path d="M12 12h11a11 11 0 0 0-1.5-5.5L17.5 14 12 23a11 11 0 0 0 11-11z" fill="#FFCD40"/><path d="M2.5 17.5 7.3 9.2A5 5 0 0 0 12 17l-2.8 4.8A11 11 0 0 1 2.5 17.5z" fill="#0F9D58" opacity=".9"/><circle cx="12" cy="12" r="5" fill="#fff"/><circle cx="12" cy="12" r="3.9" fill="#4285F4"/></svg>',
-      safari: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1E8CF0"/><circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width=".8" stroke-dasharray="1 1.6"/><path d="M17 7l-3.6 6.4L7 17l3.6-6.4z" fill="#fff"/><path d="M17 7l-6.4 3.6 2.8 2.8z" fill="#FF3B30"/></svg>',
-      samsung: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#6E5CF0"/><circle cx="12" cy="12" r="5" fill="#fff"/><ellipse cx="12" cy="12" rx="10" ry="3.2" fill="none" stroke="#fff" stroke-width="1.6" transform="rotate(-25 12 12)"/></svg>',
-      whale: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1EC8F0"/><path d="M5 13c2-3 6-4 9-2 1-1 2.5-1.5 4-1-1 .6-1.5 1.5-1.5 2.5 0 2.5-2.5 4.5-6 4.5-3 0-5-1.5-5.5-4z" fill="#fff"/></svg>',
-      other: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#8a949c" stroke-width="2"/><path d="M2 12h20M12 2c3 3 3 17 0 20M12 2c-3 3-3 17 0 20" fill="none" stroke="#8a949c" stroke-width="1.5"/></svg>'};
-    const BR = {kakao: '카톡', insta: '인스타', naver: '네이버', band: '밴드', inapp: '앱 안 브라우저', home: '홈 화면 앱', chrome: '크롬', safari: '사파리', samsung: '삼성 인터넷', whale: '웨일', other: '기타 브라우저'};
-    const brTag = m => ME.owner && BR[m.br] ? `<span class="mem-br${['kakao', 'insta', 'naver', 'band', 'inapp'].includes(m.br) ? ' inapp' : ''}">${IC[m.br]}<i>${BR[m.br]}</i></span>` : '';
-    const seenLine = m => ME.owner && m.uid !== ME.uid && ago(m) ? `<small class="mem-seen${sleepy(m) ? ' old' : ''}">${sleepy(m) ? '😴 ' : ''}마지막 접속 ${ago(m)}</small>` : '';
-    const row = m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick-line"><span class="mem-nick"></span>${isNew(m) ? '<span class="mem-new">NEW</span>' : ''}${brTag(m)}</span>${cnt[m.nick] > 1 ? `<small class="mem-dup">⚠️ 중복 · ${joined(m)}</small>` : ''}${seenLine(m)}</span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.po ? '<span class="mem-tag po">👑 넘기는 중</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
+    const row = m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick-line"><span class="mem-nick"></span>${isNew(m) ? '<span class="mem-new">NEW</span>' : ''}</span>${cnt[m.nick] > 1 ? `<small class="mem-dup">⚠️ 중복 · ${joined(m)}</small>` : ''}</span>${m.uid === ME.ou ? '<span class="mem-tag own">👑 방장</span>' : ''}${m.uid === ME.po ? '<span class="mem-tag po">👑 넘기는 중</span>' : ''}${m.uid === ME.uid ? '<span class="mem-tag me">나</span>' : ''}`
       + (ME.owner && m.uid !== ME.uid ? `<button type="button" class="mem-kick" data-kick="${m.uid}">내보내기</button>` : '') + '</li>';
     const box = sosInfo({icon: '👥', title: `'${ROOM.name}' 멤버 ${list.length}명`,
       body: `<p class="who-tip">초대 링크 + 비밀번호로 들어온 사람만 보여요.</p>${Object.values(cnt).some(n => n > 1) ? `<p class="who-tip mem-dup-tip">⚠️ <b>중복</b>은 같은 사람이 다른 브라우저·앱으로 다시 들어온 기록일 수 있어요.${ME.owner ? ' 안 쓰는 쪽(보통 먼저 들어온 쪽)을 내보내기 해 주세요.' : ' 방장에게 정리를 부탁해 주세요.'}</p>` : ''}
@@ -1020,11 +993,9 @@ function sosReport(kind, mid, cid){
         ${ownerBox(list)}
         <button type="button" class="btn block mem-renick" data-renick>✏️ 내 닉네임 바꾸기</button>
         ${ME.owner ? `<details class="mem-guide"><summary>🔍 중복 닉네임 관리 <small>방장만 보여요</small></summary>
-          <p>이름 옆 <b>로고</b>는 그 멤버가<br><b>어떤 브라우저로 들어왔는지</b>예요.</p>
-          <ul class="mem-legend">${['home', 'chrome', 'safari', 'samsung', 'kakao', 'insta', 'naver', 'band'].map(k => `<li${['kakao', 'insta', 'naver', 'band'].includes(k) ? ' class="warn"' : ''}>${IC[k]}<span>${BR[k]}</span></li>`).join('')}</ul>
-          <p>앱은 <b>브라우저마다 따로 로그인</b>돼요.<br>같은 사람이 카톡 링크와 크롬으로 각각<br>들어오면 멤버가 두 명으로 보여요.</p>
-          <p class="mem-guide-do">👉 비슷한 이름이 두 개면<br><b>노란 테두리(카톡 등)</b> 쪽을 내보내기 해 주세요</p>
-          <p class="mem-guide-sm">로고는 멤버가 앱을 한 번 열면 생겨요.<br>헷갈리면 단톡방에서 본인에게 먼저 물어봐 주세요.</p></details>` : ''}
+          <p>앱은 <b>브라우저마다 따로 로그인</b>돼요. 같은 사람이 카톡 링크와 크롬으로 각각 들어오면 멤버가 두 명으로 보여요.</p>
+          <p class="mem-guide-do">👉 비슷한 이름이 두 개면 단톡방에서 본인에게 먼저 물어보고 안 쓰는 쪽을 내보내기 해 주세요</p>
+          <p class="mem-guide-sm">🙈 익명게시판 글쓴이를 짐작할 수 없게 접속 시간·브라우저는 방장에게도 안 보여요.</p></details>` : ''}
         <ul class="mem-list">${sortMembers(list).map(row).join('')}</ul>
         ${ME.owner ? '<div class="mem-out"></div>' : ''}`});
     // 방장: 다시 받아 달라는 부탁(위쪽) + 내보낸 사람 목록(아래쪽) — 닉네임·부탁 글은 글자로만
@@ -1086,7 +1057,7 @@ function sosReport(kind, mid, cid){
         box.remove();
         const others = list.filter(m => m.uid !== ME.uid);
         const pick = sosInfo({icon: '👑', title: '누구에게 넘길까요?',
-          body: `<p class="who-tip">고른 사람이 앱에서 <b>받기</b>를 누르면 넘어가요.<br>공동육아를 졸업하기 전에 꼭 넘겨 주세요.</p><ul class="mem-list">${others.map(m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick"></span>${ago(m) ? `<small class="mem-seen">마지막 접속 ${ago(m)}</small>` : ''}</span><button type="button" class="mem-kick mem-allow" data-pick="${m.uid}">넘기기</button></li>`).join('')}</ul>`});
+          body: `<p class="who-tip">고른 사람이 앱에서 <b>받기</b>를 누르면 넘어가요.<br>공동육아를 졸업하기 전에 꼭 넘겨 주세요.</p><ul class="mem-list">${others.map(m => `<li data-uid="${m.uid}"><span class="mem-who"><span class="mem-nick"></span></span><button type="button" class="mem-kick mem-allow" data-pick="${m.uid}">넘기기</button></li>`).join('')}</ul>`});
         pick.querySelectorAll('.mem-list li').forEach(li => { li.querySelector('.mem-nick').textContent = nickOf(list, li.dataset.uid); });
         pick.addEventListener('click', async ev => {
           const p = ev.target.closest('[data-pick]'); if(!p) return;
