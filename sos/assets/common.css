@@ -1568,3 +1568,9 @@ a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:
 }
 
 .vote-row .join .ve{font-style:normal}
+
+/* 🙈 익명게시판 슬로건 */
+.idea-slogan{margin:4px 0 2px;padding:12px 14px;border-radius:12px;background:var(--tag);font-size:15px;line-height:1.6;text-align:center}
+.idea-filter{margin:12px 0 8px;padding:0;flex-wrap:wrap;overflow:visible;gap:6px}
+.idea-filter button{padding:6px 10px}
+@media (max-width:360px){ .idea-slogan{font-size:13.5px;padding:10px 8px} }

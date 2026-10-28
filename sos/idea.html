@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610261136">
+<link rel="manifest" href="manifest.webmanifest?v=202610280521">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610261136">
-<script src="assets/gate.js?v=202610261136"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610280521">
+<script src="assets/gate.js?v=202610280521"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -23,7 +23,8 @@
   <main>
     <section class="sec idea-sec">
       <h2>🙈 익명게시판</h2>
-      <p class="hint idea-note"><b>닉네임 없이 익명으로</b> 올라가요. <span class="nw">🤫 <b>방장도 누가 썼는지 몰라요.</b></span><br><span class="nw">💬 수다·고민, 🧺 피크닉·나들이,</span> <span class="nw">📚 독서, 🛒 공구, 💡 꿀팁까지</span><br><span class="nw">말머리 골라서 편하게 이야기해 주세요 🙂</span><br><span class="nw">👥 우리 방만 봐요 · 🗑 <b>3일 뒤</b> 자동 삭제</span></p>
+      <p class="idea-slogan">🤍 <span class="nw">육아에 정답은 없지만,</span> <span class="nw"><b>서로에게 다정한 건 언제나 정답이에요.</b></span></p>
+      <p class="hint idea-note"><b>닉네임 없이 익명으로</b> 올라가요. <span class="nw">🤫 <b>방장도 누가 썼는지 몰라요.</b></span><br><span class="nw">🎁 나눔 · 💬 수다·고민 ·</span> <span class="nw">🛒 공동구매 · 💡 육아정보</span><br><span class="nw">날 선 말·욕설 대신,</span> <span class="nw">다른 육아도 존중해 주세요.</span><br><span class="nw">👥 우리 방만 봐요 · 🗑 <b>3일 뒤</b> 자동 삭제</span></p>
       <button type="button" class="btn primary block" id="ideaOpen">✏️ 글 쓰기</button>
       <form class="idea-form" id="ideaForm" hidden>
         <div class="idea-cats" id="ideaCats" role="group" aria-label="말머리"></div>
@@ -32,6 +33,7 @@
         <div id="ideaAttach"></div>
         <div class="idea-row"><span class="hint" id="ideaCount">0 / 1000</span><button type="button" class="btn" id="ideaCancel">취소</button><button type="submit" class="btn primary" id="ideaSend">익명으로 올리기</button></div>
       </form>
+      <div class="idea-cats idea-filter" id="ideaFilter" role="group" aria-label="말머리로 보기"></div>
       <ul class="idea-list" id="ideaList"><li class="hint">불러오는 중…</li></ul>
     </section>
     <p class="tiny-note">🙈 쓴 사람이 누구인지 서버에도 남지 않아요.<br><span class="nw">(닉네임·로그인 번호 저장 안 함)</span><br>내 글은 <b>쓴 휴대폰</b>에서만 지울 수 있어요.<br>비방·개인정보가 담긴 글은 <b>방장</b>이 지울 수 있어요.</p>
@@ -42,8 +44,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610261136"></script>
-<script src="assets/push.js?v=202610261136"></script>
-<script src="assets/idea.js?v=202610261136"></script>
+<script src="assets/common.js?v=202610280521"></script>
+<script src="assets/push.js?v=202610280521"></script>
+<script src="assets/idea.js?v=202610280521"></script>
 </body>
 </html>

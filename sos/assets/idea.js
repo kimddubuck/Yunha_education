@@ -5,9 +5,10 @@
 const $i = s => document.querySelector(s);
 const IDEA_DAYS = 3, IDEA_KEYS = 'sosIdeaKeys';   // v16: 3일 뒤 자동 삭제
 const idea = {lkey: {},  col: null, items: [], open: new Set(), cmts: {}, subs: {}, drafts: {}, cat: 'talk', filter: '' };
-// 말머리 (서버 규칙 v16의 목록과 같아야 해요)
-const IDEA_CATS = [['talk', '💬 수다·고민'], ['place', '🧺 피크닉·나들이'], ['club', '📚 독서'], ['buy', '🛒 공구'], ['idea', '💡 꿀팁'], ['etc', '🙂 기타']];   // 코드는 규칙 v16 그대로, 이름만 바꿨어요
-const catName = c => (IDEA_CATS.find(x => x[0] === c) || ['', ''])[1];
+// 말머리 4개 (코드는 서버 규칙 v16 목록 안에서 골랐어요: 나눔=etc, 육아정보=idea). 예전 말머리(피크닉·독서)는 수다·고민으로 보여요
+const IDEA_CATS = [['etc', '🎁 나눔'], ['talk', '💬 수다·고민'], ['buy', '🛒 공동구매'], ['idea', '💡 육아정보']];
+const catOf = c => IDEA_CATS.some(x => x[0] === c) ? c : 'talk';
+const catName = c => (IDEA_CATS.find(x => x[0] === catOf(c)) || ['', ''])[1];
 
 const ideaKeys = () => { try{ return JSON.parse(localStorage.getItem(IDEA_KEYS) || '{}'); }catch(e){ return {}; } };
 function setIdeaKey(path, k){ try{ const m = ideaKeys(); m[path] = k; localStorage.setItem(IDEA_KEYS, JSON.stringify(m)); }catch(e){} }
@@ -26,7 +27,8 @@ function renderIdeas(){
   const fo = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-idea]');   // 쓰는 중인 댓글은 지켜요
   const draft = fo ? {id: fo.dataset.idea, v: fo.querySelector('textarea, input[type="text"]').value} : null;
   ul.querySelectorAll('[data-idea] input[type="text"]').forEach(i => { if(i.value) idea.drafts[i.closest('[data-idea]').dataset.idea] = i.value; });
-  const list = idea.items.filter(x => !x.deleted);   // 말머리는 글에 붙어만 있고, 걸러 보기는 없어요
+  const list = idea.items.filter(x => !x.deleted && (!idea.filter || catOf(x.c) === idea.filter));   // 말머리 탭으로 걸러 보기
+  if(!list.length && idea.items.some(x => !x.deleted)){ ul.innerHTML = `<li class="hint idea-empty">${catName(idea.filter)} 글이 아직 없어요. 첫 글을 남겨 보세요 🙂</li>`; return; }
   if(!list.length){ ul.innerHTML = `<li class="hint idea-empty">아직 글이 없어요. 첫 이야기를 편하게 남겨 보세요 🙂</li>`; return; }
   ul.innerHTML = '';
   list.forEach(x => {
@@ -123,7 +125,11 @@ async function removeDoc(ref, path){
   // 🏷 말머리 고르기 (글쓰기) · 말머리로 보기 (목록)
   const cats = $i('#ideaCats'); cats.innerHTML = IDEA_CATS.map(([k, n]) => `<button type="button" data-cat="${k}" aria-pressed="${k === idea.cat}">${n}</button>`).join('');
   cats.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(!b) return; idea.cat = b.dataset.cat; cats.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    title.placeholder = {talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', place: '제목 (예: 이번 주말 공원 피크닉 같이 가실 분?)', club: '제목 (예: 그림책 같이 읽을 분 모여요)', buy: '제목 (예: 기저귀 공구 같이 하실 분?)', idea: '제목 (예: 밤잠 꿀팁 하나 공유해요)', etc: '제목'}[idea.cat] || '제목'; });
+    title.placeholder = {etc: '제목 (예: 작아진 아기 옷·장난감 나눠요)', talk: '제목 (예: 요즘 밤잠 어떻게 재우세요?)', buy: '제목 (예: 코스트코 기저귀 같이 사실 분?)', idea: '제목 (예: 소아과 야간진료 정보 공유해요)'}[idea.cat] || '제목'; });
+  // 🗂 말머리 탭: 전체 · 나눔 · 수다·고민 · 공동구매 · 육아정보
+  const ft = $i('#ideaFilter');
+  if(ft){ ft.innerHTML = [['', '전체'], ...IDEA_CATS].map(([k, n]) => `<button type="button" data-f="${k}" aria-pressed="${k === idea.filter}">${n}</button>`).join('');
+    ft.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if(!b) return; idea.filter = b.dataset.f; ft.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); renderIdeas(); }); }
   sosReady().then(ok => {
     if(!ok){ $i('#ideaList').innerHTML = '<li class="hint">익명게시판을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</li>'; return; }
     idea.col = roomRef().collection('ideas');
