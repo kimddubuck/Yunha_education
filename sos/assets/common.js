@@ -883,13 +883,13 @@ function sosReport(kind, mid, cid){
     lv.addEventListener('click', async () => {
       if(!canDelete){
         const yes = await sosConfirm({icon: '🚪', title: `이 휴대폰에서 '${ROOM.name}' 방을 뺄까요?`,
-          body: '<p class="bye-note">🌱 공동육아는 아이가 자라는 동안의 짧고 귀한 만남이에요. 함께해 주셔서 고마웠어요.<br><small>떠나기 전, 단톡방에 따뜻한 인사 한마디 남겨 주세요.</small></p><p>멤버 목록에서 내 닉네임이 빠지고, 내 목록에서도 사라져요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>'
+          body: '<p class="bye-note"><span class="bye-q">🪡 넓은 땅 위에 바늘 하나를 세우고, 하늘에서 씨앗 하나를 떨어뜨려 그 바늘에 꽂힐 만큼의 확률로 우리는 이 방에서 만났어요.</span>🌱 아이가 자라는 동안의 짧고 귀한 만남, 함께해 주셔서 고마웠어요.<br><small>떠나기 전, 단톡방에 따뜻한 인사 한마디 남겨 주세요.</small></p><p>멤버 목록에서 내 닉네임이 빠지고, 내 목록에서도 사라져요.</p><p>초대 링크와 비밀번호로 언제든 다시 들어올 수 있어요.</p>'
             + (ME.owner ? '<p class="pop-warn">지금 방장이에요. 나가면 멤버 누구나 방장을 이어받을 수 있어요.<br>먼저 👥 멤버에서 방장을 넘기는 게 좋아요.</p>' : ''), ok: '방 빼기'});
         if(!yes) return;
         await sosLeaveRoom(); location.href = 'index.html'; return;
       }
       const yes = await sosConfirm({icon: '⚠️', title: `'${ROOM.name}' 방을 지울까요?`, danger: true, ok: '네, 지울게요',
-        body: '<p class="bye-note">🌱 함께한 시간, <span class="nw">모두 수고 많으셨어요.</span><br><small>시작만큼 끝맺음도 아름답게. 단톡방에 고마운 마음을 먼저 전해 주세요.</small></p><p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 요청, 모임, 댓글이 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
+        body: '<p class="bye-note"><span class="bye-q">🪡 넓은 땅 위에 바늘 하나를 세우고, 하늘에서 씨앗 하나를 떨어뜨려 그 바늘에 꽂힐 만큼의 확률로 우리는 이 방에서 만났어요.</span>🌱 함께한 시간, <span class="nw">모두 수고 많으셨어요.</span><br><small>시작만큼 끝맺음도 아름답게. 단톡방에 고마운 마음을 먼저 전해 주세요.</small></p><p class="pop-warn">방을 지우면 기록도 다 사라져요.</p><ul><li>SOS 요청, 모임, 댓글이 모두 지워져요.</li><li>방 사람 모두 더 이상 이 방에 들어올 수 없어요.</li><li><b>되돌릴 수 없어요.</b></li></ul>'});
       if(!yes) return;
       lv.disabled = true; lv.textContent = '지우는 중…';
       try{ await deleteRoom(); await sosConfirm({icon: '🗑', title: '방을 지웠어요.', body: '<p>기록도 모두 지웠어요.</p>', ok: '확인'}); location.href = 'index.html'; }

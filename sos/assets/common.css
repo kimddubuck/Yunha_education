@@ -1581,3 +1581,4 @@ a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:
 /* 🌱 방 빼기·지우기 확인 창의 작별 인사 */
 .bye-note{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:var(--tag);color:var(--fg);line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
 .bye-note small{color:var(--muted)}
+.bye-note .bye-q{display:block;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed var(--line);color:var(--muted);font-size:.93em}
