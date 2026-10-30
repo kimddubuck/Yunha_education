@@ -1248,10 +1248,14 @@ async function areaWeather(a){
 }
 // 👕 낮 최고 기온으로 고르는 아이 옷차림 (흔히 쓰는 기온별 옷차림을 아이 기준으로 줄였어요)
 function wxWear(w){
-  const t = w.max;
-  const s = t >= 28 ? '민소매·반팔, 반바지' : t >= 23 ? '반팔, 얇은 반바지·면바지' : t >= 20 ? '얇은 긴팔, 얇은 가디건' : t >= 17 ? '긴팔 맨투맨·얇은 니트' : t >= 12 ? '긴팔 + 얇은 점퍼·바람막이' : t >= 9 ? '도톰한 긴팔 + 점퍼' : t >= 5 ? '내복 + 두꺼운 점퍼·코트' : '내복 + 패딩, 모자·장갑';
-  return {s, gap: w.max - w.min >= 10 ? w.max - w.min : 0};
+  // 체감 기준: 낮(9~16시)은 지금 기온과 하루 평균 중 낮은 쪽, 아침·저녁·밤은 최저기온 쪽에 가깝게 (아이는 밖에서 오래 있고 해 지면 금방 추워요)
+  const h = new Date().getHours(), avg = Math.round((w.max + w.min) / 2), night = h < 9 || h >= 16;
+  const t = night ? Math.min(w.t, w.min + 3) : Math.min(w.t, avg);
+  const s = t >= 28 ? '민소매·반팔, 반바지' : t >= 23 ? '반팔, 얇은 반바지·면바지' : t >= 20 ? '얇은 긴팔, 얇은 가디건' : t >= 17 ? '긴팔 맨투맨·얇은 니트' : t >= 12 ? '긴팔 + 얇은 점퍼' : t >= 9 ? '도톰한 긴팔 + 점퍼' : t >= 5 ? '내복 + 두꺼운 점퍼·코트' : '내복 + 패딩, 모자·장갑';
+  return {s, t, night, ic: t >= 23 ? '👕' : t >= 17 ? '👚' : '🧥', gap: w.max - w.min >= 10 ? w.max - w.min : 0};
 }
+// 해 진 뒤(19~6시)엔 ☀️·⛅ 대신 🌙
+function wxIcon(w){ const h = new Date().getHours(), ic = w.icon || '☁️'; return (h >= 19 || h < 6) && (ic === '☀️' || ic === '⛅') ? '🌙' : ic; }
 // 💧 바깥 습도로 보는 집 안 습도 안내 (집 안 습도는 30~50%, 60%는 넘지 않게: 미국 환경보호청)
 function wxHumid(w){
   if(w.rh < 35) return {k: 'dry', s: '바깥이 건조해요. 가습기·젖은 빨래로 집 안 습도를 올려 주세요'};
@@ -1260,10 +1264,10 @@ function wxHumid(w){
 }
 function wxPop(a, w){
   const wr = wxWear(w), hm = wxHumid(w), xy = areaCoord(a);
-  sosInfo({icon: (w.icon || '☁️'), title: `${areaGu(a)} 오늘 날씨`, body: `<div class="wx-pop">
+  sosInfo({icon: wxIcon(w), title: `${areaGu(a)} 오늘 날씨`, body: `<div class="wx-pop">
     <p class="wx-big">${w.t}° <small>오늘 ${w.min}° ~ ${w.max}° · 💧 습도 ${w.rh}%</small></p>
     ${w.rainNow || w.rainLater ? `<p class="wx-rain">☔ ${w.rainNow ? '지금 비가 와요' : '오늘 저녁 전에 비 소식이 있어요'}. 우산·여벌 옷 챙기기</p>` : ''}
-    <h3>👕 아이 옷차림</h3><p><b>${wr.s}</b>${wr.gap ? `<br>🌬 일교차 ${wr.gap}°라 아침저녁엔 한 겹 더 챙겨요` : ''}<br><small>아기는 같은 날씨에 어른보다 한 겹 더 입혀요 (미국소아과학회). 땀이 나면 한 겹 벗겨 주세요.</small></p>
+    <h3>${wr.ic} 아이 옷차림 <small>(체감 ${wr.t}° 기준${wr.night ? ', 아침·저녁' : ''})</small></h3><p><b>${wr.s}</b>${wr.gap ? `<br>🌬 일교차 ${wr.gap}°라 아침저녁엔 한 겹 더 챙겨요` : ''}<br><small>아기는 같은 날씨에 어른보다 한 겹 더 입혀요 (미국소아과학회). 땀이 나면 한 겹 벗겨 주세요.</small></p>
     <h3>💧 습도</h3><p><b>${hm.s}</b><br><small>바깥 습도예요. 집 안은 습도계로 확인해 주세요. 집 안 습도는 30~50%가 좋고 60%는 넘지 않게 (미국 환경보호청 실내 공기 안내).</small></p>
     ${xy ? `<a class="btn block" href="https://xn--iq1br1ns0hr0b.com/map.html?at=${xy[0]},${xy[1]}&n=${encodeURIComponent(areaGu(a))}" target="_blank" rel="noopener">🗺 ${esc(areaGu(a))} 육아지도 · 소아과·문 연 약국 ›</a>` : ''}
     <p class="who-tip">날씨: 기상청 단기예보·초단기실황 (공공데이터포털) · ${esc(a)} 가운데 기준, 30분마다 새로 받아요. 예보라 틀릴 수 있어요.</p></div>`});
@@ -1296,8 +1300,8 @@ function sosAreaHome(){
     const w = await window.sosWxP.catch(() => null); if(!el.isConnected) return;
     if(!w){ el.querySelector('.wx-now').textContent = /KEY|need_key/i.test(areaWeather.err || '') ? '날씨 준비 중이에요' : '날씨를 불러오지 못했어요'; return; }
     const wr = wxWear(w), hm = wxHumid(w);
-    el.querySelector('.wx-now').textContent = `${w.icon || '☁️'}${w.t}° (${w.min}~${w.max}°) 💧${w.rh}%${!w.rainNow && w.rainLater ? ' ☔비 소식' : ''}`;
-    el.querySelector('.wx-l2').textContent = `👕 ${wr.s}`;   // 습도·자세한 건 눌러서 봐요
+    el.querySelector('.wx-now').textContent = `${wxIcon(w)}${w.t}° (${w.min}~${w.max}°) 💧${w.rh}%${!w.rainNow && w.rainLater ? ' ☔비 소식' : ''}`;
+    el.querySelector('.wx-l2').textContent = `${wr.ic} ${wr.night ? '지금은 ' : ''}${wr.s}`;   // 습도·자세한 건 눌러서 봐요
   };
   el.addEventListener('click', async e => {
     if(e.target.closest('[data-area-edit]')){ areaEdit(area, v => { area = v; window.sosArea = v; try{ localStorage.removeItem('sosWx'); }catch(err){} window.sosWxP = v ? areaWeather(v) : Promise.resolve(null); draw(); }); return; }
