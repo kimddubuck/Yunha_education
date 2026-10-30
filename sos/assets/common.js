@@ -216,9 +216,13 @@ if(document.readyState === 'loading') document.addEventListener('DOMContentLoade
 /* 사진 줄이기: 긴 쪽 360px · WebP(안 되면 JPEG) · 60KB 넘으면 더 줄여요 */
 async function shrinkPhoto(file, opt){
   opt = opt || {};   // {max: 긴 쪽 px, limit: 글자 수 상한} — 첨부 사진은 더 작게 (약 20KB)
+  // 사진 읽기: createImageBitmap → <img>(파일 주소) → <img>(FileReader) 순서로 시도해요. 아이폰·카톡 브라우저마다 되는 길이 달라요
+  const late = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error('timeout')), ms))]);
+  const viaImg = url => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('decode')); i.src = url; });
   let src = null;
-  try{ src = await createImageBitmap(file); }
-  catch(e){ src = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(file); }); }
+  try{ if(typeof createImageBitmap === 'function') src = await late(createImageBitmap(file), 8000); }catch(e){}
+  if(!src || !src.width){ try{ src = await late(viaImg(URL.createObjectURL(file)), 8000); }catch(e){ src = null; } }
+  if(!src || !src.width){ src = await late(new Promise((ok, no) => { const r = new FileReader(); r.onload = () => viaImg(r.result).then(ok, no); r.onerror = () => no(new Error('read')); r.readAsDataURL(file); }), 12000); }
   let max = opt.max || 360, q = 0.6; const limit = opt.limit || 60000;
   for(let k = 0; k < 6; k++){
     const w = src.width, h = src.height, s = Math.min(1, max / Math.max(w, h));

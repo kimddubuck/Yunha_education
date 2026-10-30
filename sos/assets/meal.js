@@ -136,6 +136,8 @@ function askUpload(slot, img){
       // 이유를 버튼에 짧게: 규칙 거부(방장이 규칙을 새로 게시했는지) / 인터넷 / 그 밖
       const code = err && err.code;
       b.textContent = code === 'permission-denied' ? '⚠️ 서버가 거절했어요 · 다시 누르기' : code === 'resource-exhausted' ? '⚠️ 오늘 사용량이 꽉 찼어요' : err && err.message === 'offline' ? '⚠️ 인터넷 연결을 확인해 주세요 · 다시 누르기' : '⚠️ 못 올렸어요 · 다시 누르기';
+      let note = box.querySelector('.meal-err'); if(!note){ note = document.createElement('p'); note.className = 'meal-err'; b.after(note); }
+      note.textContent = `오류: ${(err && (err.code || err.message)) || '알 수 없음'} · 이 화면을 캡처해서 방장에게 알려 주세요`;
       if(typeof sosTrouble === 'function') sosTrouble(err);
     }
   });
@@ -270,18 +272,22 @@ async function mealGoPhoto(){
     const al = e.target.closest('[data-alb]'); if(al){ pendingSlot = al.dataset.alb; album.value = ''; album.click(); return; }
     const card = e.target.closest('[data-open]'); if(card) openPhoto(card.dataset.open);
   });
+  let busy = false;
   const picked = async inp => {
-    const f = inp.files && inp.files[0]; if(!f) return;
-    try{ askUpload(pendingSlot, await shrinkPhoto(f)); }
+    const f = inp.files && inp.files[0]; if(!f || busy) return;
+    busy = true; if(typeof pushToast === 'function') pushToast('📷 사진 준비 중…', 8000);
+    try{ askUpload(pendingSlot, await shrinkPhoto(f)); if(typeof pushToast === 'function') pushToast('📷 준비됐어요', 800); }
     catch(e){
+      busy = false;
       // 왜 못 읽었는지 알려 줘요: 아이폰 HEIC(안드로이드·일부 브라우저는 못 읽어요) / 그 밖(손상된 파일 등)
       const heic = /hei[cf]/i.test(f.type || '') || /\.hei[cf]$/i.test(f.name || '');
-      if(typeof pushToast === 'function') pushToast(heic ? '⚠️ 아이폰 HEIC 사진은 이 브라우저에서 못 읽어요. 스크린샷을 찍어 올리거나, 아이폰 설정 › 카메라 › 포맷을 "높은 호환성"으로 바꿔 주세요' : `⚠️ 이 사진은 읽지 못했어요 (${f.type || '형식 모름'}). 다른 사진으로 해 주세요`, 6000);
-      try{ const bar = document.getElementById('troubleBar'); if(bar) bar.remove(); }catch(err){}
+      if(typeof pushToast === 'function') pushToast(heic ? '⚠️ 아이폰 HEIC 사진은 이 브라우저에서 못 읽어요. 스크린샷을 찍어 올리거나, 아이폰 설정 › 카메라 › 포맷을 "높은 호환성"으로 바꿔 주세요' : `⚠️ 이 사진은 읽지 못했어요 (${f.type || '형식 모름'} · ${Math.round((f.size || 0) / 1024)}KB · ${e && e.message || '오류'}). 다른 사진으로 해 주세요`, 8000);
+      return;
     }
+    busy = false;
   };
-  file.addEventListener('change', () => picked(file));
-  album.addEventListener('change', () => picked(album));
+  // 아이폰 일부는 change 대신 input 만 보내요 → 둘 다 받고, 같은 파일을 두 번 처리하지 않게 busy 로 막아요
+  ['change', 'input'].forEach(ev => { file.addEventListener(ev, () => picked(file)); album.addEventListener(ev, () => picked(album)); });
   $m('#mealPrev').addEventListener('click', () => { if(meal.date > oldestDay()){ meal.date = addDays(meal.date, -1); watchDay(); } });
   $m('#mealNext').addEventListener('click', () => { if(meal.date < todayStr()){ meal.date = addDays(meal.date, 1); watchDay(); } });
   document.querySelectorAll('[data-mine]').forEach(b => b.addEventListener('click', () => { meal.onlyMine = b.dataset.mine === '1'; renderMeal(); }));

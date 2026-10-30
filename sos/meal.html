@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="manifest" href="manifest.webmanifest?v=202610301048">
+<link rel="manifest" href="manifest.webmanifest?v=202610301125">
 <meta name="theme-color" content="#2a9095">
 <link rel="apple-touch-icon" href="assets/icon-sos-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="공동육아 SOS">
-<link rel="stylesheet" href="assets/common.css?v=202610301048">
-<script src="assets/gate.js?v=202610301048"></script>
+<link rel="stylesheet" href="assets/common.css?v=202610301125">
+<script src="assets/gate.js?v=202610301125"></script>
 </head>
 <body>
 <div class="wrap single">
@@ -35,8 +35,8 @@
         <button type="button" class="meal-nav" id="mealNext" aria-label="다음 날">›</button>
       </div>
       <div id="mealSlots"></div>
-      <input type="file" id="mealFile" accept="image/*" capture="environment" hidden>
-      <input type="file" id="mealAlbum" accept="image/*" hidden>
+      <input type="file" id="mealFile" class="vh-file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+      <input type="file" id="mealAlbum" class="vh-file" accept="image/*" tabindex="-1" aria-hidden="true">
     </section>
     <p class="tiny-note">📷 음식만 나오게 찍어 주세요. 사진은 휴대폰에서 작게 줄여 올려요.<br>지우기는 <b>올린 사람</b>과 <b>방장</b>만 할 수 있어요.</p>
   </main>
@@ -46,8 +46,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="assets/common.js?v=202610301048"></script>
-<script src="assets/push.js?v=202610301048"></script>
-<script src="assets/meal.js?v=202610301048"></script>
+<script src="assets/common.js?v=202610301125"></script>
+<script src="assets/push.js?v=202610301125"></script>
+<script src="assets/meal.js?v=202610301125"></script>
 </body>
 </html>
