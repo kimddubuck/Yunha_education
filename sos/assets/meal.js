@@ -131,7 +131,13 @@ function askUpload(slot, img){
       box.remove();
       if(typeof pushMealNew === 'function') pushMealNew(ref.id, (MEAL_SLOTS.find(s => s[0] === slot) || ['', '식단'])[1].replace(/^\S+\s/, ''), memo);   // 🔔 방 사람들에게
       if(typeof pushToast === 'function') pushToast('🍚 올렸어요! 우리 방 사람들이 볼 수 있어요');
-    }catch(err){ b.disabled = false; b.textContent = '⚠️ 못 올렸어요 · 다시 누르기'; if(typeof sosTrouble === 'function') sosTrouble(err); }
+    }catch(err){
+      b.disabled = false;
+      // 이유를 버튼에 짧게: 규칙 거부(방장이 규칙을 새로 게시했는지) / 인터넷 / 그 밖
+      const code = err && err.code;
+      b.textContent = code === 'permission-denied' ? '⚠️ 서버가 거절했어요 · 다시 누르기' : code === 'resource-exhausted' ? '⚠️ 오늘 사용량이 꽉 찼어요' : err && err.message === 'offline' ? '⚠️ 인터넷 연결을 확인해 주세요 · 다시 누르기' : '⚠️ 못 올렸어요 · 다시 누르기';
+      if(typeof sosTrouble === 'function') sosTrouble(err);
+    }
   });
 }
 
@@ -267,7 +273,12 @@ async function mealGoPhoto(){
   const picked = async inp => {
     const f = inp.files && inp.files[0]; if(!f) return;
     try{ askUpload(pendingSlot, await shrinkPhoto(f)); }
-    catch(e){ if(typeof pushToast === 'function') pushToast('⚠️ 이 사진은 읽지 못했어요. 다른 사진으로 해 주세요'); }
+    catch(e){
+      // 왜 못 읽었는지 알려 줘요: 아이폰 HEIC(안드로이드·일부 브라우저는 못 읽어요) / 그 밖(손상된 파일 등)
+      const heic = /hei[cf]/i.test(f.type || '') || /\.hei[cf]$/i.test(f.name || '');
+      if(typeof pushToast === 'function') pushToast(heic ? '⚠️ 아이폰 HEIC 사진은 이 브라우저에서 못 읽어요. 스크린샷을 찍어 올리거나, 아이폰 설정 › 카메라 › 포맷을 "높은 호환성"으로 바꿔 주세요' : `⚠️ 이 사진은 읽지 못했어요 (${f.type || '형식 모름'}). 다른 사진으로 해 주세요`, 6000);
+      try{ const bar = document.getElementById('troubleBar'); if(bar) bar.remove(); }catch(err){}
+    }
   };
   file.addEventListener('change', () => picked(file));
   album.addEventListener('change', () => picked(album));

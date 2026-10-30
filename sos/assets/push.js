@@ -326,11 +326,11 @@ function pushBellsRedraw(){
   document.querySelectorAll('[data-bell]').forEach(b => { b.outerHTML = pushBell(b.dataset.bell); });
 }
 // 잠깐 떠 있다 사라지는 안내 글
-function pushToast(t){
+function pushToast(t, ms){   // ms: 오래 보여야 하는 안내(사진 못 읽은 이유 등)는 길게
   let el = document.getElementById('pushToast');
   if(!el){ el = document.createElement('p'); el.id = 'pushToast'; el.className = 'push-toast'; el.setAttribute('aria-live', 'polite'); document.body.appendChild(el); }
   el.textContent = t; el.hidden = false;
-  clearTimeout(pushToast.t); pushToast.t = setTimeout(() => { el.hidden = true; }, 2600);
+  clearTimeout(pushToast.t); pushToast.t = setTimeout(() => { el.hidden = true; }, ms || 2600);
 }
 // 안 될 때: 가까운 「📖 알림 설정 방법」을 펼쳐서 보여 줘요
 function pushOpenHelp(from){
