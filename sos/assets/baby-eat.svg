@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 몸 + 턱받이 -->
+  <path d="M14 62c0-11 8-17 18-17s18 6 18 17z" fill="#ffb37a"/>
+  <path d="M21 46c2 6 6 9 11 9s9-3 11-9c-3-1.5-7-2.4-11-2.4S24 44.5 21 46z" fill="#fff"/>
+  <circle cx="32" cy="50" r="1.6" fill="#ffb37a"/>
+  <!-- 얼굴 -->
+  <circle cx="32" cy="27" r="17" fill="#ffd9b8"/>
+  <path d="M30 10.5c-1-3 1.5-5.5 4-4.2 1.4.8 1.2 2.6-.2 2.8" fill="none" stroke="#7a4b2a" stroke-width="2" stroke-linecap="round"/>
+  <!-- 웃는 눈 -->
+  <path d="M22.5 25.5q2.5-3 5 0M36.5 25.5q2.5-3 5 0" fill="none" stroke="#3a2a20" stroke-width="2" stroke-linecap="round"/>
+  <!-- 볼 -->
+  <ellipse cx="21.5" cy="31.5" rx="3" ry="2" fill="#ff9e9e" opacity=".8"/>
+  <ellipse cx="42.5" cy="31.5" rx="3" ry="2" fill="#ff9e9e" opacity=".8"/>
+  <!-- 오물오물 입 -->
+  <ellipse cx="32" cy="34" rx="3.4" ry="2.8" fill="#c94f4f"/>
+  <!-- 숟가락 + 손 -->
+  <path d="M33 34l14 10" stroke="#c9cfd6" stroke-width="2.6" stroke-linecap="round"/>
+  <ellipse cx="32.6" cy="33.6" rx="3.2" ry="2.2" transform="rotate(35 32.6 33.6)" fill="#e3e7ec"/>
+  <circle cx="48" cy="45" r="4" fill="#ffd9b8"/>
+  <!-- 밥그릇 -->
+  <path d="M6 50h22c0 7-5 11-11 11S6 57 6 50z" fill="#8fb8ff"/>
+  <path d="M7.5 50c1-3.4 5-5.2 9.5-5.2s8.5 1.8 9.5 5.2z" fill="#fff"/>
+  <circle cx="13" cy="47.5" r=".9" fill="#e9e2c9"/><circle cx="18" cy="46.6" r=".9" fill="#e9e2c9"/><circle cx="22" cy="48" r=".9" fill="#e9e2c9"/>
+  <rect x="6" y="49.4" width="22" height="1.6" rx=".8" fill="#6f9be6"/>
+</svg>
