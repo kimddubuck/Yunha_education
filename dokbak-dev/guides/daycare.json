@@ -18,6 +18,12 @@
    "name": "동래구 선생님 근속연수 지도",
    "url": "https://dongnae-daycare.yunha-family.workers.dev/",
    "desc": "동래구 어린이집 94곳을 지도에 올렸어요. 점이 진할수록 선생님이 오래 머무는 곳. 집 위치를 찍으면 차로 가는 거리순으로 볼 수 있어요."
+  },
+  {
+   "icon": "📝",
+   "name": "어린이집 상담 노트",
+   "url": "https://super-field-c13b.yunha-family.workers.dev/",
+   "desc": "돌 지난 아이의 어린이집 상담을 준비하는 글이에요. 선생님의 근속과 행복이 왜 중요한지, 상담에서 무엇을 물을지."
   }
  ],
  "sections": [
