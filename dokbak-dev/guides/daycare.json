@@ -12,6 +12,14 @@
   "url": "https://kimddubuck.github.io/daycare-checklist/",
   "desc": "방문하며 항목별로 체크하고 여러 곳을 점수로 비교해요. 기록은 내 휴대폰에만 저장돼요."
  },
+ "tools_more": [
+  {
+   "icon": "🗺️",
+   "name": "동래구 선생님 근속연수 지도",
+   "url": "https://dongnae-daycare.yunha-family.workers.dev/",
+   "desc": "동래구 어린이집 94곳을 지도에 올렸어요. 점이 진할수록 선생님이 오래 머무는 곳. 집 위치를 찍으면 차로 가는 거리순으로 볼 수 있어요."
+  }
+ ],
  "sections": [
   {
    "id": "g-sum",

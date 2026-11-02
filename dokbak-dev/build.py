@@ -865,8 +865,10 @@ segs(); render();
     G = json.load(open(os.path.join(DEV, 'guides', gf), encoding='utf-8'))
     sl = G['slug']; os.makedirs(os.path.join(OUT, sl), exist_ok=True)
     tool = ''
+    tool_card = lambda T: f'<div class="bridge tool"><p><b>{T.get("icon", "🧰")} {e(T["name"])}</b><br>{e(T["desc"])}</p><a class="btn teal" href="{e(T["url"])}" rel="noopener">열기</a></div>'
     if G.get('tool'):
-      tool = f'<div class="bridge tool"><p><b>🧰 {e(G["tool"]["name"])}</b><br>{e(G["tool"]["desc"])}</p><a class="btn teal" href="{e(G["tool"]["url"])}" rel="noopener">열기</a></div>'
+      tool = tool_card(G['tool'])
+    tools_all = tool + ''.join(tool_card(T) for T in G.get('tools_more', []))   # 목록 페이지에만 더 보여 주는 도구 카드
     # 근거를 확인한 내용이 하나도 없는 항목(관행만 있는 것)은 페이지를 만들지 않아요 (빈 페이지 방지)
     secs = [x for x in G['sections'] if any(b.get('v') != 'x' and 'ask' not in b for b in x.get('blocks', []))]
     for i, sec in enumerate(secs):
@@ -901,7 +903,7 @@ segs(); render();
     cards = '<div class="bd">' + ''.join(brow(f'{s2["id"]}.html', s2['title'], gprev(s2), badge(str(gcount(s2)), '항목') if gcount(s2) else badge('Q&A')) for s2 in secs) + '</div>'
     body = f'''<div class="wrap"><section class="blk prose" style="max-width:none">
 <div class="sh"><span class="ey">{G["icon"]} {e(G["ey"])}</span><h1 style="font-size:clamp(26px,5vw,36px)">{e(G["title"])}</h1><p>{e(G["intro"])}</p></div>
-{tool}
+{tools_all}
 <div style="margin-top:14px">{cards}</div>
 <div id="src">{DAYCARE_SRC if sl == 'daycare' else ''}</div>
 <p class="src">{e(G["source"])}</p>

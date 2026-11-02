@@ -686,3 +686,4 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 /* 🖼 글 안 설명 그림 */
 .pic{margin:12px 0 14px}
 .pic img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line)}
+.bridge.tool+.bridge.tool{margin-top:12px}
