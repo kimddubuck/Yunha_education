@@ -1595,3 +1595,5 @@ a.rain-map{display:block;text-align:center;font-size:13px;font-weight:700;color:
 /* 📷 파일 고르기 칸: 화면에는 안 보이지만 display:none 은 아니게 (아이폰에서 고른 뒤 신호가 안 오는 경우 대비) */
 .vh-file{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
 .meal-err{margin:6px 0 0;font-size:12px;color:var(--muted);word-break:break-all}
+/* 아래 메뉴 8칸: 좁은 화면에선 글자를 조금 줄여 붙지 않게 */
+@media (max-width:380px){ .nav-links{grid-auto-columns:auto;justify-content:space-between;padding-left:6px;padding-right:6px} .nav-links a{padding-left:1px;padding-right:1px} }   /* 칸 너비를 글자 길이에 맞춰 나눠요 (익명게시판처럼 긴 이름이 옆 칸에 붙지 않게) */
