@@ -687,3 +687,62 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
 .pic{margin:12px 0 14px}
 .pic img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line)}
 .bridge.tool+.bridge.tool{margin-top:12px}
+
+/* 🎓 부모교육 달력 (edu.html) */
+.pe-chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 10px}
+.pe-chips .chip{padding:5px 11px;font-size:14px;display:inline-flex;align-items:center;gap:5px}
+.pe-chips .chip small{color:var(--soft);font-size:12px}
+.pe-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pc,var(--teal));flex:none}
+.pe-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.pe-nav{display:flex;align-items:center;gap:8px}
+.pe-nav b{font-family:var(--display);font-weight:400;font-size:22px;min-width:150px;text-align:center}
+.pe-nav button{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;width:36px;height:36px;font-size:20px;cursor:pointer}
+.pe-nav button:hover{border-color:var(--teal);color:var(--teal-ink)}
+.pe-open{font-size:14px}
+.pe-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px}
+.pe-w{text-align:center;font-size:12.5px;color:var(--soft);padding:4px 0}
+.pe-w.sun{color:#c0504a}.pe-w.sat{color:#3a7bd5}
+.pe-d{min-height:84px;border-radius:9px;padding:4px;background:var(--bg);display:flex;flex-direction:column;gap:2px;min-width:0}
+.pe-d.empty{background:transparent}
+.pe-d .pe-n{font-size:12.5px;color:var(--soft);line-height:1.2;font-variant-numeric:tabular-nums}
+.pe-d.sun .pe-n{color:#c0504a}.pe-d.sat .pe-n{color:#3a7bd5}
+.pe-d.today{outline:2px solid var(--teal)}
+.pe-d.today .pe-n{color:var(--teal-ink);font-weight:800}
+.pe-ev{display:flex;align-items:center;gap:3px;font-size:11px;line-height:1.25;padding:2px 4px;border-radius:5px;background:var(--paper);border:1px solid var(--line);color:var(--ink);text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
+.pe-ev>i{width:6px;height:6px;border-radius:50%;background:var(--pc,var(--teal));flex:none}
+.pe-ev.off{opacity:.55}
+.pe-more{font-size:11px;color:var(--soft)}
+.pe-h{font-size:21px;margin:22px 0 8px}
+.pe-h small{font-size:14px;color:var(--soft);font-family:var(--body)}
+.pe-empty{color:var(--soft)}
+.pe-list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.pe-item{display:grid;grid-template-columns:118px 1fr;gap:12px;background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--pc,var(--teal));border-radius:14px;padding:10px 14px;min-width:0}
+.pe-item.flash{background:var(--teal-tint)}
+.pe-when{display:flex;flex-direction:column;gap:2px;font-size:13.5px;color:var(--soft)}
+.pe-when b{color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums}
+.pe-body{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pe-meta{font-size:13px;color:var(--soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pe-meta a{color:var(--teal-ink)}
+.pe-meta em{font-style:normal;background:var(--teal-tint);color:var(--teal-ink);border-radius:999px;padding:0 8px;font-size:12px}
+.pe-item h3{font-size:16px;line-height:1.4;font-family:var(--body);font-weight:700}
+.pe-foot{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--soft);align-items:center}
+.pe-st{border-radius:999px;padding:1px 9px;font-weight:700;font-size:12.5px;background:var(--line);color:var(--ink)}
+.pe-st.on{background:#dff3e6;color:#1d6b3b}.pe-st.wait{background:#fff1d6;color:#8a5a00}.pe-st.soon{background:#e3ecfb;color:#2a5bb0}.pe-st.off{background:var(--line);color:var(--soft)}
+.pe-go{margin-left:auto;color:var(--teal-ink);font-weight:700;white-space:nowrap}
+.pe-centers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
+.pe-centers a{display:flex;flex-direction:column;gap:3px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:11px 13px;text-decoration:none;color:inherit;min-width:0}
+.pe-centers a b{display:flex;align-items:center;gap:6px;font-size:15.5px}
+.pe-centers a span{font-size:13px;color:var(--soft)}
+.pe-centers a:hover{border-color:var(--teal)}
+/* 센터마다 다른 색 (달력 점·목록 왼쪽 띠) */
+.c0{--pc:#2a9095}.c1{--pc:#e4574b}.c2{--pc:#f29c38}.c3{--pc:#c9a600}.c4{--pc:#45b36b}.c5{--pc:#3a7bd5}.c6{--pc:#8e5bd9}.c7{--pc:#d85fa8}.c8{--pc:#1f9e89}.c9{--pc:#b5651d}.c10{--pc:#5b7fa6}.c11{--pc:#c2185b}.c12{--pc:#6d8f2f}.c13{--pc:#e07b39}
+@media (max-width:760px){
+  .pe-cal{padding:5px;gap:2px}
+  .pe-d{min-height:52px;padding:3px}
+  .pe-ev{font-size:0;padding:0;border:0;background:transparent;gap:2px}
+  .pe-ev>i{width:7px;height:7px}
+  .pe-more{font-size:10px}
+  .pe-item{grid-template-columns:1fr;gap:4px;padding:10px 12px}
+  .pe-when{flex-direction:row;gap:8px;align-items:baseline}
+  .pe-nav b{font-size:19px;min-width:120px}
+}

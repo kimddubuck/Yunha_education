@@ -241,7 +241,7 @@ def page_keywords(path):
   if top in KW_DIR: return KW_DIR[top]
   return {'index.html': ['독박육아', '공동육아', '아기놀이', '엄마표 놀이', '이유식', '수면교육'], 'growth.html': ['아기 키 몸무게', '아기 백분위', '영유아검진', '머리둘레', '이유식 양'],
           'songs.html': ['동요 추천', '아기 동요', '율동', '자장가'], 'food.html': KW_TOPIC['food'], 'research.html': ['육아 연구', '아기 발달', '놀이 연구'],
-          'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도'], 'vaccine.html': ['아기 예방접종', '예방접종 일정', '영유아검진', '국가예방접종']}.get(path, [])
+          'tips.html': ['육아 상식', '육아 정보'], 'support.html': KW_DIR['support'], 'map.html': ['소아과', '키즈카페', '놀이터', '육아 지도'], 'edu.html': ['부모교육', '부산 부모교육', '육아종합지원센터 부모교육', '부모교육 일정'], 'vaccine.html': ['아기 예방접종', '예방접종 일정', '영유아검진', '국가예방접종']}.get(path, [])
 
 NOINDEX = {'404.html', 'search.html', 'admin.html'} | {f'principles/{PR_SLUG[k]}.html' for k, v in PR_SRC.items() if not v}   # 연구 근거 없는 '놀이 만들기용 분류'는 검색엔진에 안 내보내요
 # 개인정보처리방침·이용약관 시행일: 내용을 바꿀 때만 손으로 고쳐요 (빌드할 때마다 바뀌면 안 돼요)
@@ -256,7 +256,8 @@ def page(title, desc, body, path, active='', extra_head=''):
             ('info/play.html', '육아 정보', [(f'info/{sl}.html', f'{ic} {TOPIC_SHORT[sl]}') for sl, ic, nm in TOPICS], ['tips.html', 'research.html', 'food.html']),
             ('daycare/', '어린이집', []),
             ('support.html', '국가지원', []),
-            ('map.html', '육아 지도', [])]
+            ('map.html', '육아 지도', []),
+            ('edu.html', '부모교육', [])]
   has = lambda h: h not in ('tips.html', 'support.html') or os.path.exists(os.path.join(DEV, 'columns', h.replace('.html', '.json')))
   GROUPS = [(g[0], g[1], [c for c in g[2] if has(c[0])], g[3] if len(g) > 3 else []) for g in GROUPS if has(g[0])]
   grp = next((g for g in GROUPS if active == g[0] or any(active == c[0] for c in g[2]) or active in g[3]), None)
@@ -354,6 +355,7 @@ def build():
   shutil.copy(os.path.join(DEV, 'growth.js'), os.path.join(OUT, 'assets', 'growth.js'))
   shutil.copy(os.path.join(DEV, 'leavepay.js'), os.path.join(OUT, 'assets', 'leavepay.js'))
   shutil.copy(os.path.join(DEV, 'vaccine.js'), os.path.join(OUT, 'assets', 'vaccine.js'))
+  shutil.copy(os.path.join(DEV, 'parent_edu.js'), os.path.join(OUT, 'assets', 'parent_edu.js'))
   if os.path.isdir(os.path.join(DEV, 'pics')): shutil.copytree(os.path.join(DEV, 'pics'), os.path.join(OUT, 'assets', 'pics'))   # 🖼 글에 넣는 설명 그림 (글 secs 의 img)
   if os.path.isdir(os.path.join(DEV, 'play-photos')): shutil.copytree(os.path.join(DEV, 'play-photos'), os.path.join(OUT, 'assets', 'plays'))   # 👨‍🍼 아빠가 해 본 놀이 사진 (plays.json 의 photo)
   shutil.copytree(os.path.join(DEV, 'functions'), os.path.join(OUT, 'functions'))
@@ -529,6 +531,7 @@ draw();
     <a href="map.html"><b>🗺 육아 지도</b><span>내 주변 소아과, 지금 문 연 약국</span></a>
     <a href="plays/"><b>🔎 놀이 찾기</b><span>개월수·장소·키우고 싶은 힘으로 골라요</span></a>
     <a href="vaccine.html"><b>💉 예방접종·검진 날짜</b><span>생일만 넣으면 0~6세 접종·영유아검진 날짜</span></a>
+    <a href="edu.html"><b>🎓 부산 부모교육 달력</b><span>구별 육아종합지원센터 부모교육·체험활동 일정 한눈에</span></a>
   </div>
 </div></section>
 
@@ -833,6 +836,28 @@ segs(); render();
   files['growth.html'] = page('아기 키·몸무게 백분위 계산 · 개월수별 식사량·검진 | 오늘도 독박육아', '태어난 해·달과 성별을 고르면 지금 개월수의 키·몸무게·머리둘레 백분위(100명 중 몇 등, WHO 성장 기준), 하루 먹는 양, 영유아 건강검진 시기를 보여 줘요.', gbody, 'growth.html', 'growth.html',
     f'<script>window.WHO_LMS={LMSJ};</script><script defer src="assets/growth.js?v={V}"></script>')
   files['map.html'] = page('육아 지도 · 내 주변 소아과·문 연 약국 | 오늘도 독박육아', '아이가 아플 때 내 주변 소아청소년과와 지금 문 연 약국을 지도에서 찾아요. 달빛어린이병원 안내까지.', body, 'map.html', 'map.html', '<link rel="stylesheet" href="assets/leaflet/leaflet.css">')
+
+  # ── 🎓 부모교육 달력 (부산): 각 구 육아종합지원센터 부모교육 게시판을 한 달력에 모아요. 자료는 data/parent_edu_busan.json (센터 게시판에서 옮긴 것, fetched 날짜를 페이지에 적어요)
+  PEDU = json.load(open(os.path.join(DEV, 'data', 'parent_edu_busan.json'), encoding='utf-8'))
+  pe_centers = ''.join(f'<a href="{e(c["url"])}" rel="noopener"><b><i class="pe-dot c{i}"></i>{e(c["gu"])}</b><span>{e(c["name"])}{(" · " + e(c["tel"])) if c.get("tel") else ""}</span>{("<span>" + e(c["memo"]) + "</span>") if c.get("memo") else ""}</a>' for i, c in enumerate(PEDU['centers']))
+  pe_fetched = PEDU['fetched'].replace('-', '. ')
+  body = f'''<div class="wrap"><p class="crumb"><a href="./">홈</a> › 부모교육</p><section class="blk prose" style="padding-top:12px;max-width:none">
+<h1>🎓 부산 부모교육 달력</h1><p class="mlead">부산시와 13개 구·군 <b>육아종합지원센터</b>가 여는 부모교육·부모-자녀 체험활동을 <b>한 달력</b>에 모았어요. 구를 고르면 그 센터 것만 보여요. 신청은 각 센터 홈페이지에서 해요(대부분 센터 회원가입이 필요해요).</p>
+<p class="src">📅 {e(pe_fetched)} 기준으로 각 센터 홈페이지 부모교육(교육신청) 게시판에서 옮겼어요. 자리 수·상태는 그 뒤 바뀌었을 수 있으니 센터 페이지에서 다시 확인하세요. 어린이집(기관) 단체 신청용 교육은 뺐어요.</p>
+<div id="pedu" class="pedu"><p class="pe-empty">달력을 그리는 중이에요…</p></div>
+<h2 style="margin-top:26px">🏢 센터 바로 가기</h2><p class="src" style="margin:0">구 이름을 누르면 그 센터의 부모교육 신청 페이지로 가요.</p>
+<div class="pe-centers">{pe_centers}</div>
+<div class="box"><h2>📌 알아 두면 좋아요</h2><ul>
+<li><b>공통부모교육</b>은 부산시 센터가 만든 공통 과정이에요. '영유아 기질 이해', '양육태도 바로보기', '자녀권리존중', '아동학대 예방', '우리 집 육아환경 체크', '양육스트레스 관리(4모듈)' 같은 과정이 구마다 돌아가며 열려요. 우리 구에 없으면 이웃 구 일정을 보세요(구에 따라 거주지 제한이 있을 수 있어요).</li>
+<li><b>부모-자녀 체험활동</b>은 아이와 함께 가는 놀이 수업이에요. 영아·유아로 나뉘고 정원이 10명 안팎이라 신청 시작 날 바로 마감되는 경우가 많아요. 신청 기간이 적힌 교육은 그 날짜를 보세요.</li>
+<li><b>온라인 교육</b>('집에서도 놀(면서) 자(란다)' 등)은 정해진 기간 안에 영상을 보는 방식이에요. 교육 뒤 놀이키트를 주는 곳도 있어요.</li>
+<li><b>찾아가는 부모교육</b>은 어린이집이 신청해 강사가 어린이집으로 가는 교육이에요. 개인 신청이 아니라서 목록에 "1곳"처럼 보여요.</li>
+<li>중구·동구·남구는 구 육아종합지원센터가 없어서 <a href="https://www.bcsc.kr/2023/04/01.php" rel="noopener">부산시 센터</a> 교육을 보면 돼요. 부산시 센터의 2026년 공통부모교육 연간 일정은 <a href="https://www.bcsc.kr/2023/04/02.php" rel="noopener">센터 공통부모교육 페이지</a>에서 내려받을 수 있어요.</li>
+</ul></div>
+<p class="src">자료: 부산광역시육아종합지원센터 「슬기로운 부모교육」 구·군 센터 링크 모음(bcsc.kr) · 각 구·군 육아종합지원센터 홈페이지 부모교육 게시판. 이 페이지는 일정을 모아 보여 줄 뿐 신청을 대신 받지 않아요.</p>
+</section></div>
+<script>window.PEDU={json.dumps(PEDU, ensure_ascii=False)};</script><script defer src="assets/parent_edu.js?v={V}"></script>'''
+  files['edu.html'] = page('부산 부모교육 달력 · 구별 육아종합지원센터 교육 일정 한눈에 | 오늘도 독박육아', '부산시와 13개 구·군 육아종합지원센터의 부모교육·부모-자녀 체험활동·온라인 교육 일정을 한 달력에 모았어요. 구를 골라 보고 센터 신청 페이지로 바로 가요.', body, 'edu.html', 'edu.html')
 
   # ── 꿀팁 가이드 (dokbak-dev/guides/*.json · 어린이집, 앞으로 유아식 등)
   VB = {'x': '근거 미확인', 'i': '간접 확인'}
