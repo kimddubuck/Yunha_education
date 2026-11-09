@@ -12,11 +12,9 @@
   // 보여 줄 달: 오늘이 자료 범위 안이면 이번 달, 아니면 자료가 있는 첫 달
   var cur = (tkey >= first.slice(0, 7) + '-01' && tkey <= last) ? new Date(today.getFullYear(), today.getMonth(), 1) : new Date(+first.slice(0, 4), +first.slice(5, 7) - 1, 1);
   var gu = '';   // 고른 구 (센터 id)
-  var onlyOpen = false;
+  var stf = '';   // 고른 신청 상태 (on 신청중 · wait 대기 · soon 예정 · off 마감)
+  var ST = [['', '전체'], ['on', '🟢 신청중'], ['wait', '🟡 대기 신청'], ['soon', '🔵 접수 예정'], ['off', '⚪ 마감']];
 
-  function openNow(e) {   // 지금 신청할 수 있어 보이는 교육: 상태 글자로만 봐요 (센터마다 말이 달라요)
-    return /접수중|신청가능|대기접수|대기가능|대기신청/.test(e.st || '');
-  }
   function stClass(e) {
     var s = e.st || '';
     if (/접수중|신청가능/.test(s)) return 'on';
@@ -25,7 +23,7 @@
     if (/마감|종료|끝/.test(s)) return 'off';
     return 'na';
   }
-  function visible(e) { return (!gu || e.c === gu) && (!onlyOpen || openNow(e)); }
+  function visible(e) { return (!gu || e.c === gu) && (!stf || stClass(e) === stf); }
   function dayEvents(key) { return D.events.filter(function (e) { return visible(e) && e.d.indexOf(key) >= 0; }); }
   function fmtD(k) { return (+k.slice(5, 7)) + '/' + (+k.slice(8, 10)) + '(' + '일월화수목금토'[new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)).getDay()] + ')'; }
 
@@ -42,7 +40,14 @@
     });
     h += '</div>';
     h += '<div class="pe-bar"><div class="pe-nav"><button type="button" class="pe-prev" aria-label="이전 달">‹</button><b>' + y + '년 ' + (m + 1) + '월</b><button type="button" class="pe-next" aria-label="다음 달">›</button></div>' +
-      '<button type="button" class="pe-open chip" aria-pressed="' + onlyOpen + '">🟢 지금 신청 가능한 것만</button></div>';
+      '</div>';
+    // 신청 상태 고르기 칩 (숫자는 고른 구 안에서 센 것)
+    h += '<div class="pe-chips pe-stf" role="group" aria-label="신청 상태로 보기">';
+    ST.forEach(function (x) {
+      var n = D.events.filter(function (e) { return (!gu || e.c === gu) && (!x[0] || stClass(e) === x[0]); }).length;
+      h += '<button type="button" class="chip" data-st="' + x[0] + '" aria-pressed="' + (stf === x[0]) + '"' + (!n && x[0] ? ' disabled' : '') + '>' + x[1] + ' <small>' + n + '</small></button>';
+    });
+    h += '</div>';
     // 달력
     h += '<div class="pe-cal" role="grid" aria-label="' + y + '년 ' + (m + 1) + '월 부모교육 달력">';
     '일월화수목금토'.split('').forEach(function (w, i) { h += '<div class="pe-w' + (i === 0 ? ' sun' : i === 6 ? ' sat' : '') + '">' + w + '</div>'; });
@@ -61,7 +66,7 @@
     list.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : C[a[1].c].i - C[b[1].c].i; });
     var seen = {};
     h += '<h2 class="pe-h">📋 ' + (m + 1) + '월 교육 ' + (list.length ? '<small>' + Object.keys(list.reduce(function (o, x) { o[D.events.indexOf(x[1])] = 1; return o; }, {})).length + '개</small>' : '') + '</h2>';
-    if (!list.length) h += '<p class="pe-empty">이 달에 올라온 교육이 없어요. ' + (gu ? '다른 구를 골라 보거나 ' : '') + '센터 홈페이지에서 다음 달 일정을 확인해 주세요.</p>';
+    if (!list.length) h += '<p class="pe-empty">이 달에 ' + (stf ? '이 상태인 ' : '올라온 ') + '교육이 없어요. ' + (gu || stf ? '다른 구·상태를 골라 보거나 ' : '') + '센터 홈페이지에서 다음 달 일정을 확인해 주세요.</p>';
     h += '<ul class="pe-list">';
     list.forEach(function (x) {
       var k = x[0], e = x[1], id = D.events.indexOf(e), c = C[e.c];
@@ -78,7 +83,7 @@
     root.querySelectorAll('.pe-chips .chip').forEach(function (b) { b.addEventListener('click', function () { gu = b.dataset.gu; render(); }); });
     root.querySelector('.pe-prev').addEventListener('click', function () { cur = new Date(y, m - 1, 1); render(); });
     root.querySelector('.pe-next').addEventListener('click', function () { cur = new Date(y, m + 1, 1); render(); });
-    root.querySelector('.pe-open').addEventListener('click', function () { onlyOpen = !onlyOpen; render(); });
+    root.querySelectorAll('.pe-stf .chip').forEach(function (b) { b.addEventListener('click', function () { stf = b.dataset.st; render(); }); });
     root.querySelectorAll('.pe-ev').forEach(function (a) {
       a.addEventListener('click', function (ev) { ev.preventDefault(); var t = document.getElementById(a.getAttribute('href').slice(1)); if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.add('flash'); setTimeout(function () { t.classList.remove('flash'); }, 1600); } });
     });

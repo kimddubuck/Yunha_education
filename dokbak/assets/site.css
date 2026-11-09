@@ -746,3 +746,8 @@ abbr.gl{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-un
   .pe-when{flex-direction:row;gap:8px;align-items:baseline}
   .pe-nav b{font-size:19px;min-width:120px}
 }
+/* 🎓 부모교육: 신청 상태 칩 */
+.pe-stf{margin:0 0 10px}
+.pe-stf .chip[disabled]{opacity:.45;cursor:default}
+.pe-stf{display:flex;flex-wrap:wrap;gap:6px}
+.pe-stf .chip{font-size:13px;padding:5px 10px;margin:0}
